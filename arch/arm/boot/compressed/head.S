@@ -118,12 +118,12 @@
 /*
  * sort out different calling conventions
  */
-		.align
+		.align       //@defualt 4byte로 align함 
 		.arm				@ Always enter in ARM state
 start:
 		.type	start,#function
-		.rept	7
-		mov	r0, r0
+		.rept	7     // iamroot 계시판 참조.
+		mov	r0, r0 
 		.endr
    ARM(		mov	r0, r0		)
    ARM(		b	1f		)
@@ -140,6 +140,7 @@ start:
 		bl	__hyp_stub_install	@ get into SVC mode, reversibly
 #endif
 		mov	r7, r1			@ save architecture ID
+		//architecture ID 가 bootloader에서 넘겨준다(r1).
 		mov	r8, r2			@ save atags pointer
 
 		/*
@@ -148,15 +149,23 @@ start:
 		 * We only do this if we were in user mode on entry.
 		 */
 		mrs	r2, cpsr		@ get current mode
-		tst	r2, #3			@ not user?
-		bne	not_angel
+		tst	r2, #3			@ not user?  
+		// z_falg =r2&#3, mode reg. of cpsr 가 user_mode인지 
+		물어봄.
+		
+		bne	not_angel  // user mode가 아니면, 
+		// if (r2==3), hear
 		mov	r0, #0x17		@ angel_SWIreason_EnterSVC
  ARM(		swi	0x123456	)	@ angel_SWI_ARM
  THUMB(		svc	0xab		)	@ angel_SWI_THUMB
 not_angel:
-		safe_svcmode_maskall r0
+		safe_svcmode_maskall r0 //SVC mode로 진입한다.
+		//spsr_cxsf (spst_xxxx: c:control, x:extension, s:status, f:flags file를 
+		// 를 가리킴). arm guide book p.85 참조.
+		// 
 		msr	spsr_cxsf, r9		@ Save the CPU boot mode in
 						@ SPSR
+		// spsr_cxsf<-r9
 		/*
 		 * Note that some cache flushing and other stuff may
 		 * be needed here - is there an Angel SWI call for this?
@@ -172,8 +181,8 @@ not_angel:
 #ifdef CONFIG_AUTO_ZRELADDR
 		@ determine final kernel image address
 		mov	r4, pc
-		and	r4, r4, #0xf8000000
-		add	r4, r4, #TEXT_OFFSET
+		and	r4, r4, #0xf8000000  //r4= pc & 0xf8000000
+		add	r4, r4, #TEXT_OFFSET // r4 = r4 + #TEXT_OFFSET (@@1)
 #else
 		ldr	r4, =zreladdr
 #endif
@@ -185,42 +194,49 @@ not_angel:
 		 * additional 1MB of room for a possible appended DTB.
 		 */
 		mov	r0, pc
-		cmp	r0, r4
-		ldrcc	r0, LC0+32
-		addcc	r0, r0, pc
-		cmpcc	r4, r0
+		cmp	r0, r4  // if r0-r4 >=0, carry is set.
+		// if r0<r4.
+		ldrcc	r0, LC0+32  //  if carry is clear, r0<-*(LC0+32)
+		addcc	r0, r0, pc  //if carry is clear, r0=r0+pc 
+		cmpcc	r4, r0      // @@1에 r4값과 r0 비교하여,
+		 //if r4<r0,
 		orrcc	r4, r4, #1		@ remember we skipped cache_on
-		blcs	cache_on
+		     //r4 reg의 bit0를 set 시킴.
+		blcs	cache_on    //if r0>=r4, branch to cache_on.
 
-restart:	adr	r0, LC0
-		ldmia	r0, {r1, r2, r3, r6, r10, r11, r12}
-		ldr	sp, [r0, #28]
+restart:	adr	r0, LC0 //r0<-LC0 의사명렬어(adr) 
+		ldmia	r0, {r1, r2, r3, r6, r10, r11, r12}//LC0부터 4byte씩증가하면서
+		 //  {r1,r2...}순서로 reg 값을 넣는다. 
+		ldr	sp, [r0, #28] // sp <- *(base_r0+28)
 
 		/*
 		 * We might be running at a different address.  We need
 		 * to fix up various pointers.
 		 */
 		sub	r0, r0, r1		@ calculate the delta offset
+		 // r0=r0-r1
 		add	r6, r6, r0		@ _edata
+		  // r6=r6+r0
 		add	r10, r10, r0		@ inflated kernel size location
+		  //r10=r10+r0     r10<- &(inflated kernel size)
 
 		/*
 		 * The kernel build system appends the size of the
 		 * decompressed kernel at the end of the compressed data
 		 * in little-endian form.
 		 */
-		ldrb	r9, [r10, #0]
-		ldrb	lr, [r10, #1]
-		orr	r9, r9, lr, lsl #8
-		ldrb	lr, [r10, #2]
-		ldrb	r10, [r10, #3]
-		orr	r9, r9, lr, lsl #16
-		orr	r9, r9, r10, lsl #24
+		ldrb	r9, [r10, #0]   // r9= (byte)*(r10)
+		ldrb	lr, [r10, #1]   // lr= (byte)*(r10+1)
+		orr	r9, r9, lr, lsl #8 // r9<- (r9 | lr<<8)
+		ldrb	lr, [r10, #2]    // lr =(byte)*(r10+2)  
+		ldrb	r10, [r10, #3]   // r10=(byte)*(r10+3)
+		orr	r9, r9, lr, lsl #16//  // r9<- (r9 | lr<<16)
+		orr	r9, r9, r10, lsl #24   // r9<- (r9 | r10<<24)
 
 #ifndef CONFIG_ZBOOT_ROM
 		/* malloc space is above the relocated stack (64k max) */
-		add	sp, sp, r0
-		add	r10, sp, #0x10000
+		add	sp, sp, r0           //sp += r0
+		add	r10, sp, #0x10000    //r10 = (sp+0x10000)
 #else
 		/*
 		 * With ZBOOT_ROM the bss/stack is non relocatable,
@@ -254,10 +270,12 @@ restart:	adr	r0, LC0
 		ldr	lr, [r6, #0]
 #ifndef __ARMEB__
 		ldr	r1, =0xedfe0dd0		@ sig is 0xd00dfeed big endian
+		//r1=0xedfe0dd0
 #else
 		ldr	r1, =0xd00dfeed
 #endif
 		cmp	lr, r1
+		   //if (lr != r1), b dtb_check_done
 		bne	dtb_check_done		@ not found
 
 #ifdef CONFIG_ARM_ATAG_DTB_COMPAT
@@ -271,18 +289,19 @@ restart:	adr	r0, LC0
 		 * code we're about to call uses any global variable.
 		*/
 		add	sp, sp, #0x10000
-		stmfd	sp!, {r0-r3, ip, lr}
-		mov	r0, r8
+		stmfd	sp!, {r0-r3, ip, lr}  //*sp-> {r0-r3, ip, lr} store, sp--
+		mov	r0, r8   
 		mov	r1, r6
 		sub	r2, sp, r6
-		bl	atags_to_fdt
+		bl	atags_to_fdt  //
 
 		/*
 		 * If returned value is 1, there is no ATAG at the location
 		 * pointed by r8.  Try the typical 0x100 offset from start
 		 * of RAM and hope for the best.
 		 */
-		cmp	r0, #1
+		cmp	r0, #1 //r0(return 값), if 1, bad  
+		      
 		sub	r0, r4, #TEXT_OFFSET
 		bic	r0, r0, #1
 		add	r0, r0, #0x100
@@ -523,17 +542,17 @@ not_relocated:	mov	r0, #0
 #endif
 
 		.align	2
-		.type	LC0, #object
+		.type	LC0, #object  //전역변수 object 로 가정. 
 LC0:		.word	LC0			@ r1
-		.word	__bss_start		@ r2
+		.word	__bss_start		@ r2 //bss영역의 ram start address.
 		.word	_end			@ r3
-		.word	_edata			@ r6
+		.word	_edata			@ r6   //end of data area. 
 		.word	input_data_end - 4	@ r10 (inflated size location)
-		.word	_got_start		@ r11
-		.word	_got_end		@ ip
+		.word	_got_start		@ r11 //
+		.word	_got_end		@ ip    (instruction pointer)  
 		.word	.L_user_stack_end	@ sp
-		.word	_end - restart + 16384 + 1024*1024
-		.size	LC0, . - LC0
+		.word	_end - restart + 16384 + 1024*1024  //@+32
+		.size	LC0, . - LC0   //.(current address - &LC0) 즉 size.
 
 #ifdef CONFIG_ARCH_RPC
 		.globl	params
@@ -796,6 +815,7 @@ __common_mmu_cache_on:
 call_cache_fn:	adr	r12, proc_types
 #ifdef CONFIG_CPU_CP15
 		mrc	p15, 0, r9, c0, c0	@ get processor ID
+		   //r9 -> CP15 로 move. 추후 나중에??
 #else
 		ldr	r9, =CONFIG_PROCESSOR_ID
 #endif
