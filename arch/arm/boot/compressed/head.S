@@ -182,7 +182,8 @@ not_angel:
 		@ determine final kernel image address
 		mov	r4, pc
 		and	r4, r4, #0xf8000000  //r4= pc & 0xf8000000
-		add	r4, r4, #TEXT_OFFSET // r4 = r4 + #TEXT_OFFSET (@@1)
+		add	r4, r4, #TEXT_OFFSET 
+		// r4 = r4 + #TEXT_OFFSET(0x00008000 at Makefile. iamgroot 참조) (@@1)
 #else
 		ldr	r4, =zreladdr
 #endif
@@ -199,6 +200,7 @@ not_angel:
 		ldrcc	r0, LC0+32  //  if carry is clear, r0<-*(LC0+32)
 		addcc	r0, r0, pc  //if carry is clear, r0=r0+pc 
 		cmpcc	r4, r0      // @@1에 r4값과 r0 비교하여,
+		                  //r4:변환된 kernel주소값, r0:PC값 
 		 //if r4<r0,
 		orrcc	r4, r4, #1		@ remember we skipped cache_on
 		     //r4 reg의 bit0를 set 시킴.
@@ -288,29 +290,30 @@ restart:	adr	r0, LC0 //r0<-LC0 의사명렬어(adr)
 		 * area.  No GOT fixup has occurred yet, but none of the
 		 * code we're about to call uses any global variable.
 		*/
-		add	sp, sp, #0x10000
+		add	sp, sp, #0x10000         //sp+=64K
 		stmfd	sp!, {r0-r3, ip, lr}  //*sp-> {r0-r3, ip, lr} store, sp--
-		mov	r0, r8   
+		mov	r0, r8       
+		//(r0<-atag_list, r1<-fdt, r2<-total_space) of atags_to_fdt()    
 		mov	r1, r6
 		sub	r2, sp, r6
-		bl	atags_to_fdt  //
+		bl	atags_to_fdt  
 
-		/*
+		/*  
 		 * If returned value is 1, there is no ATAG at the location
 		 * pointed by r8.  Try the typical 0x100 offset from start
 		 * of RAM and hope for the best.
 		 */
-		cmp	r0, #1 //r0(return 값), if 1, bad  
-		      
-		sub	r0, r4, #TEXT_OFFSET
-		bic	r0, r0, #1
-		add	r0, r0, #0x100
-		mov	r1, r6
-		sub	r2, sp, r6
-		bleq	atags_to_fdt
+		cmp	r0, #1 //r0(return 값), if 1, bad return value.  
+        
+		sub	r0, r4, #TEXT_OFFSET // r0= r4-TEXT_OFFSET
+		bic	r0, r0, #1           // r0= ~(r0 & 0x1)
+		add	r0, r0, #0x100       // r0= r0+0x100
+		mov	r1, r6               // r1=r6 
+		sub	r2, sp, r6           // r2 = sp-r6
+		bleq	atags_to_fdt      //if (r0==1), call atags_to_fdt()  //flaten deice tree(fdt) 
 
 		ldmfd	sp!, {r0-r3, ip, lr}
-		sub	sp, sp, #0x10000
+		sub	sp, sp, #0x10000  //sp -=64K (restore)
 #endif
 
 		mov	r8, r6			@ use the appended device tree
@@ -321,30 +324,30 @@ restart:	adr	r0, LC0 //r0<-LC0 의사명렬어(adr)
 		 * kernel size to compensate if that .bss size is larger
 		 * than the relocated code.
 		 */
-		ldr	r5, =_kernel_bss_size
-		adr	r1, wont_overwrite
-		sub	r1, r6, r1
-		subs	r1, r5, r1
-		addhi	r9, r9, r1
+		ldr	r5, =_kernel_bss_size//r5= _kernel_bss_size ??
+		adr	r1, wont_overwrite     //r1=wont_overwrite
+		sub	r1, r6, r1             // r1 = r6-r1 
+		subs	r1, r5, r1           // r1 = r5-r1, update CPSR 
+		addhi	r9, r9, r1          //if result value is (r5>r1), and then   r9+=r1 
 
 		/* Get the dtb's size */
-		ldr	r5, [r6, #4]
+		ldr	r5, [r6, #4] //r5 = *(r6+4)
 #ifndef __ARMEB__
 		/* convert r5 (dtb size) to little endian */
-		eor	r1, r5, r5, ror #16
-		bic	r1, r1, #0x00ff0000
-		mov	r5, r5, ror #8
-		eor	r5, r5, r1, lsr #8
+		eor	r1, r5, r5, ror #16 //r1= r5 ^ (r5>>16)
+		bic	r1, r1, #0x00ff0000 //  r1=r1 & ~( 0x00ff0000)
+		mov	r5, r5, ror #8      // r5=(r5 >> 8)
+		eor	r5, r5, r1, lsr #8  // r5=r5^(r1>>8);
 #endif
 
 		/* preserve 64-bit alignment */
-		add	r5, r5, #7
-		bic	r5, r5, #7
+		add	r5, r5, #7    //r5 += 7
+		bic	r5, r5, #7    // r5 = r5 & ~7
 
 		/* relocate some pointers past the appended dtb */
-		add	r6, r6, r5
-		add	r10, r10, r5
-		add	sp, sp, r5
+		add	r6, r6, r5    // r6 += r5
+		add	r10, r10, r5   // r10 += r5
+		add	sp, sp, r5     // sp += r5
 dtb_check_done:
 #endif
 
@@ -354,17 +357,17 @@ dtb_check_done:
  *   r9  = size of decompressed image
  *   r10 = end of this image, including  bss/stack/malloc space if non XIP
  * We basically want:
- *   r4 - 16k page directory >= r10 -> OK
- *   r4 + image length <= address of wont_overwrite -> OK
+ *   (r4 - 16k page directory) >= r10 -> OK
+ *   (r4 + image length) <= address of wont_overwrite -> OK
  * Note: the possible LSB in r4 is harmless here.
  */
-		add	r10, r10, #16384
-		cmp	r4, r10
-		bhs	wont_overwrite
-		add	r10, r4, r9
-		adr	r9, wont_overwrite
-		cmp	r10, r9
-		bls	wont_overwrite
+		add	r10, r10, #16384   //r10 = r10+16384
+		cmp	r4, r10           
+		bhs	wont_overwrite // if(r4-r10)>=0, 테스트
+		add	r10, r4, r9    // r10 = r4+r9 <-- r10(end address of zImage)
+		adr	r9, wont_overwrite //r9=wont_overwrite
+		cmp	r10, r9            //
+		bls	wont_overwrite      //if(r10-r9)<=0 [if(r10<=r9)], branch 
 
 /*
  * Relocate ourselves past the end of the decompressed kernel.
@@ -379,51 +382,53 @@ dtb_check_done:
 		 * ourself when the offset is small.
 		 */
 		add	r10, r10, #((reloc_code_end - restart + 256) & ~255)
-		bic	r10, r10, #255
+		bic	r10, r10, #255  // r10의 하위 1byte만 clear.
 
 		/* Get start of code we want to copy and align it down. */
 		adr	r5, restart
-		bic	r5, r5, #31
+		bic	r5, r5, #31 //r5 = r5 & ~(0x1f)
 
 /* Relocate the hyp vector base if necessary */
 #ifdef CONFIG_ARM_VIRT_EXT
-		mrs	r0, spsr
-		and	r0, r0, #MODE_MASK
-		cmp	r0, #HYP_MODE
-		bne	1f
+		mrs	r0, spsr       //r0<- spsr
+		and	r0, r0, #MODE_MASK // r0 = r0 & MODE_MASK 
+		cmp	r0, #HYP_MODE   // 
+		bne	1f            //if (r0 != HYP_MODE)
 
-		bl	__hyp_get_vectors
-		sub	r0, r0, r5
-		add	r0, r0, r10
-		bl	__hyp_set_vectors
+		bl	__hyp_get_vectors //if (r0 == HYP_MODE) 
+		sub	r0, r0, r5  //r0 = r0-r5  
+		add	r0, r0, r10 //r0 =r0+ r10
+		bl	__hyp_set_vectors 
 1:
 #endif
 
-		sub	r9, r6, r5		@ size to copy
-		add	r9, r9, #31		@ rounded up to a multiple
-		bic	r9, r9, #31		@ ... of 32 bytes
-		add	r6, r9, r5
-		add	r9, r9, r10
+		sub	r9, r6, r5	//r9= r6-r5	@ size to copy
+		add	r9, r9, #31	//r9= r9+31	@ rounded up to a multiple
+		bic	r9, r9, #31	//r9 = r9 & ~(0x1f) 	@ ... of 32 bytes
+		add	r6, r9, r5  // r6 = r9+r5 
+		add	r9, r9, r10 // r9 = r9+r10
 
-1:		ldmdb	r6!, {r0 - r3, r10 - r12, lr}
-		cmp	r6, r5
-		stmdb	r9!, {r0 - r3, r10 - r12, lr}
-		bhi	1b
+1:		ldmdb	r6!, {r0 - r3, r10 - r12, lr} // *r6 부터 4씩감소시키면서  
+              // r0 - r3, r10 - r12, lr 에 저장. r6는 updated. 
+		cmp	r6, r5 
+		stmdb	r9!, {r0 - r3, r10 - r12, lr}//r9가 가리키는 memory에,
+		                                   // {r0 - r3, r10 - r12, lr}를 저장한다.
+		bhi	1b //if(r6>r5), goto back  1:
 
 		/* Preserve offset to relocated code. */
-		sub	r6, r9, r6
+		sub	r6, r9, r6  //r6 = r9-r6  
 
 #ifndef CONFIG_ZBOOT_ROM
 		/* cache_clean_flush may use the stack, so relocate it */
-		add	sp, sp, r6
+		add	sp, sp, r6  //sp += r6
 #endif
 
-		tst	r4, #1
-		bleq	cache_clean_flush
+		tst	r4, #1  
+		bleq	cache_clean_flush //if(r4==1), here
 
-		adr	r0, BSYM(restart)
-		add	r0, r0, r6
-		mov	pc, r0
+		adr	r0, BSYM(restart) //r0= BSYM(restart) wiki 참조할것 
+		add	r0, r0, r6    // r0+=r6   
+		mov	pc, r0        // pc=r0 
 
 wont_overwrite:
 /*
@@ -439,11 +444,12 @@ wont_overwrite:
  *   r12 = GOT end
  *   sp  = stack pointer
  */
-		orrs	r1, r0, r5
-		beq	not_relocated
-
-		add	r11, r11, r0
-		add	r12, r12, r0
+		orrs	r1, r0, r5  //r1 = r0 | r5, update the cpsr. if(both r0,r5==0), 
+		                                             // call not_relocated(). 
+		beq	not_relocated //  
+     //if result !=0, goto blow
+		add	r11, r11, r0 // r11 += r0  
+ 		add	r12, r12, r0 // r12 += r0
 
 #ifndef CONFIG_ZBOOT_ROM
 		/*
@@ -451,21 +457,23 @@ wont_overwrite:
 		 * we need to fix up pointers into the BSS region.
 		 * Note that the stack pointer has already been fixed up.
 		 */
-		add	r2, r2, r0
-		add	r3, r3, r0
+		add	r2, r2, r0 // r2 += r0 (start??)
+		add	r3, r3, r0 // r3 += r0  (r3 , bss end??)
 
 		/*
-		 * Relocate all entries in the GOT table.
+		 * Relocate all entries in the GOT table( global offset table(GOT))  .
 		 * Bump bss entries to _edata + dtb size
+		 * 
 		 */
-1:		ldr	r1, [r11, #0]		@ relocate entries in the GOT
-		add	r1, r1, r0		@ This fixes up C references
-		cmp	r1, r2			@ if entry >= bss_start &&
-		cmphs	r3, r1			@       bss_end > entry
-		addhi	r1, r1, r5		@    entry += dtb size
-		str	r1, [r11], #4		@ next entry
-		cmp	r11, r12
-		blo	1b
+		 
+1:	ldr	r1, [r11, #0] // r1 <- *(r11+0)		@ relocate entries in the GOT
+		add	r1, r1, r0		  // r1 += r0 @ This fixes up C references
+		cmp	r1, r2			 //(r1-r2)      @ if entry >= bss_start &&
+		cmphs	r3, r1		 // if(r1>=r2),cmp문  	      @  bss_end > entry
+		addhi	r1, r1, r5 //if (r3>r1), r1=r1+r5 @    entry += dtb size
+		str	r1, [r11], #4 // *(r11)= r1, r11+=4 @ next entry
+		cmp	r11, r12      
+		blo	1b        //if (r11-r12<0) , goto back 1.   
 
 		/* bump our bss pointers too */
 		add	r2, r2, r5
@@ -486,23 +494,23 @@ wont_overwrite:
 		blo	1b
 #endif
 
-not_relocated:	mov	r0, #0
-1:		str	r0, [r2], #4		@ clear bss
-		str	r0, [r2], #4
-		str	r0, [r2], #4
-		str	r0, [r2], #4
-		cmp	r2, r3
-		blo	1b
+not_relocated:	mov	r0, #0 //r0=0
+1:		str	r0, [r2], #4	 // *r2++= r0	@ clear bss
+		str	r0, [r2], #4     // *r2++=r0, 
+		str	r0, [r2], #4     // *r2++=r0, 
+		str	r0, [r2], #4     // *r2++=r0, 
+		cmp	r2, r3           //r3(end of bss), initialize all bss area.
+		blo	1b         //if (r2<r3) , loop 
 
 		/*
 		 * Did we skip the cache setup earlier?
 		 * That is indicated by the LSB in r4.
 		 * Do it now if so.
 		 */
-		tst	r4, #1
-		bic	r4, r4, #1
-		blne	cache_on
-
+		tst	r4, #1 
+		bic	r4, r4, #1  // clear b0 of r4 reg.
+		blne	cache_on  // if(r4!=1), call cache_on().
+// 140531 여기까지 진행함. 
 /*
  * The C runtime environment should now be setup sufficiently.
  * Set up some pointers, and start decompressing.
@@ -546,9 +554,9 @@ not_relocated:	mov	r0, #0
 LC0:		.word	LC0			@ r1
 		.word	__bss_start		@ r2 //bss영역의 ram start address.
 		.word	_end			@ r3
-		.word	_edata			@ r6   //end of data area. 
+		.word	_edata			@ r6   //end address of zImage . 
 		.word	input_data_end - 4	@ r10 (inflated size location)
-		.word	_got_start		@ r11 //
+		.word	_got_start		@ r11 /2014-05-31 오후 7:51:32/
 		.word	_got_end		@ ip    (instruction pointer)  
 		.word	.L_user_stack_end	@ sp
 		.word	_end - restart + 16384 + 1024*1024  //@+32
@@ -643,7 +651,7 @@ __armv3_mpu_cache_on:
 
 		/* ?? invalidate for the second time? */
 		mcr	p15, 0, r0, c7, c0, 0	@ invalidate whole cache v3
-		mov	pc, lr
+		mov	pc, lr2014-05-31 오후 7:51:36
 
 #ifdef CONFIG_CPU_DCACHE_WRITETHROUGH
 #define CB_BITS 0x08
