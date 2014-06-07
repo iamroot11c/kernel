@@ -11,7 +11,7 @@
 #include <linux/linkage.h>
 #include <asm/assembler.h>
 
-	.arch	armv7-a
+	.arch	armv7-a		// [20140606][blomdhal], Arm arch verion info
 /*
  * Debugging stuff
  *
@@ -27,7 +27,7 @@
 		.macro	loadsp, rb, tmp
 		.endm
 		.macro	writeb, ch, rb
-		mcr	p14, 0, \ch, c0, c5, 0
+		mcr	p14, 0, \ch, c0, c5, 0			// [20140606][blomdhal], ??What is p14 -> TRM
 		.endm
 #elif defined(CONFIG_CPU_XSCALE)
 		.macro	loadsp, rb, tmp
@@ -114,14 +114,41 @@
 #endif
 		.endm
 
-		.section ".start", #alloc, #execinstr
+		.section ".start", #alloc, #execinstr		// [20140606][blomdhal], ??what is #
+													// # or $ means Immediate operand prefix by GNU as quick ref.
+		/*
+		* [20140606][blomdhal]
+		* GNU as, p68
+		* Note that the secition, name is quoted. There may be a sequence of comma separated.
+		* flags:
+		* #alloc - section is allocatable
+		* #write - section is writable
+		* #execinstr - section is executable
+		* #tls   - section is used for thread local storage		// Thread끼리 공유하지 않는 변수
+		* 
+		* ===> section에 대해서 Technical하게 알 필요가 있지 않을까?
+		*/
+
 /*
  * sort out different calling conventions
  */
-		.align       //@defualt 4byte로 align함 
+		.align       		//@defualt 4byte로 align함 
 		.arm				@ Always enter in ARM state
 start:
-		.type	start,#function
+		.type	start,#function		// [20140606][blomdhal]GNU as p73, Mark the symbol as being a function name.
+// [20140606][blomdhal] ARM-10C 참고
+// - 이 코드가 하는 일:
+//   instruction(mov r0, r0)를 8번 반복합니다.
+//
+// - 탄생비화:
+//   옛날옛날에 어떤 거지같은 부트로더가 있었는데 그놈은 이미지 올려놓은 램주소에서
+//   8 Word(32byte = 0x20)만큼의 하위 주소를 call해 버렸었고 올려놓은 주소에서
+//   offset(0x24~0x30)사이에 magic number를 찾았답니다. 그래서 그런 부트로더들
+//   맞춰줄려고 head.s에 의미없는 instruction(mov r0, r0)를 8번(8 Word)해서 소비합니다.
+//
+//   참조:
+//     - http://www.iamroot.org/xe/QnA/23099
+//     - http://comments.gmane.org/gmane.linux.ports.arm.kernel/26690
 		.rept	7     // iamroot 계시판 참조.
 		mov	r0, r0 
 		.endr
@@ -132,7 +159,9 @@ start:
 
 		.word	0x016f2818		@ Magic numbers to help the loader
 		.word	start			@ absolute load/run zImage address
+								// start label을 의미, 0x00000000이 입력됨
 		.word	_edata			@ zImage end address
+								// arch/arm/kerenl/vmlinux.lds.s 에서 정의
  THUMB(		.thumb			)
 1:
 		mrs	r9, cpsr
@@ -140,8 +169,18 @@ start:
 		bl	__hyp_stub_install	@ get into SVC mode, reversibly
 #endif
 		mov	r7, r1			@ save architecture ID
+							// [20140606][blomdhal], r1 is param1 from boot loader.
 		//architecture ID 가 bootloader에서 넘겨준다(r1).
 		mov	r8, r2			@ save atags pointer
+							// [20140606][blomdhal], r2 is param2 from boot loader.
+		// [20140606][blomdhal] 위의 내용은, 아래와 같이 언급되어 있음.
+		// Documentation/arm/Booting
+		//  - CPU register settings
+		//    r0 = 0,
+		//    r1 = machine type number discovered in (3) above.
+		//	  r2 = physical address of tagged list in system RAM, or
+		//	       physical address of device tree block (dtb) in system RAM
+		//
 
 		/*
 		 * Booting from Angel - need to enter SVC mode and disable
@@ -149,10 +188,12 @@ start:
 		 * We only do this if we were in user mode on entry.
 		 */
 		mrs	r2, cpsr		@ get current mode
-		tst	r2, #3			@ not user?  
+		tst	r2, #3			@ not user?
+							// [20140606][blomdhal], #3 means svc(10011), test bits 0-1.
 		// z_falg =r2&#3, mode reg. of cpsr 가 user_mode인지 
 		물어봄.
-		
+	
+		// [20140606][blomdhal], 그러므로, 아래는, user인 경우에 실행된다.
 		bne	not_angel  // user mode가 아니면, 
 		// if (r2==3), hear
 		mov	r0, #0x17		@ angel_SWIreason_EnterSVC
@@ -184,8 +225,17 @@ not_angel:
 		and	r4, r4, #0xf8000000  //r4= pc & 0xf8000000
 		add	r4, r4, #TEXT_OFFSET 
 		// r4 = r4 + #TEXT_OFFSET(0x00008000 at Makefile. iamgroot 참조) (@@1)
+		// [blomdhal]
+		// arch/arm/Makefile
+		//    textofs-y	:= 0x00008000
+		//    # The byte offset of the kernel image in RAM from the start of RAM.
+		//    TEXT_OFFSET := $(textofs-y)
 #else
 		ldr	r4, =zreladdr
+		// zreladdr, 
+		// arch/arm/mach-exynos/Makefile.boot
+		// zreladdr-y	+= 0x40008000
+		// *참고: http://www.picky9.com/blog/downloads/ARM_Linux_Kernel_Porting_(MBA2410).pdf, p5
 #endif
 
 		/*
@@ -206,10 +256,12 @@ not_angel:
 		     //r4 reg의 bit0를 set 시킴.
 		blcs	cache_on    //if r0>=r4, branch to cache_on.
 
+// shjung, 2014-06-06
 restart:	adr	r0, LC0 //r0<-LC0 의사명렬어(adr) 
 		ldmia	r0, {r1, r2, r3, r6, r10, r11, r12}//LC0부터 4byte씩증가하면서
 		 //  {r1,r2...}순서로 reg 값을 넣는다. 
-		ldr	sp, [r0, #28] // sp <- *(base_r0+28)
+		ldr	sp, [r0, #28]		// sp <- *(base_r0+28)
+								// [blomdhal], address of (user_stack + 4096)
 
 		/*
 		 * We might be running at a different address.  We need
@@ -227,18 +279,22 @@ restart:	adr	r0, LC0 //r0<-LC0 의사명렬어(adr)
 		 * decompressed kernel at the end of the compressed data
 		 * in little-endian form.
 		 */
-		ldrb	r9, [r10, #0]   // r9= (byte)*(r10)
-		ldrb	lr, [r10, #1]   // lr= (byte)*(r10+1)
-		orr	r9, r9, lr, lsl #8 // r9<- (r9 | lr<<8)
-		ldrb	lr, [r10, #2]    // lr =(byte)*(r10+2)  
-		ldrb	r10, [r10, #3]   // r10=(byte)*(r10+3)
-		orr	r9, r9, lr, lsl #16//  // r9<- (r9 | lr<<16)
-		orr	r9, r9, r10, lsl #24   // r9<- (r9 | r10<<24)
+		ldrb	r9, [r10, #0]		// r9= (byte)*(r10)
+		ldrb	lr, [r10, #1]		// lr= (byte)*(r10+1)
+		orr	r9, r9, lr, lsl #8		// r9<- (r9 | lr<<8)
+		ldrb	lr, [r10, #2]		// lr =(byte)*(r10+2)  
+		ldrb	r10, [r10, #3]		// r10=(byte)*(r10+3)
+		orr	r9, r9, lr, lsl #16		// r9<- (r9 | lr<<16)
+		orr	r9, r9, r10, lsl #24	// r9<- (r9 | r10<<24)
+
+		// [blomdhal], 위의 코드는 리틀엔디안, 빅엔디안 상관없이 읽기 위한 코드
+		// 리틀엔디안에서는, 'ldr r9, [r10]'과 동일
 
 #ifndef CONFIG_ZBOOT_ROM
 		/* malloc space is above the relocated stack (64k max) */
 		add	sp, sp, r0           //sp += r0
 		add	r10, sp, #0x10000    //r10 = (sp+0x10000)
+								 // [blomdhal], 0x10000 == 64k
 #else
 		/*
 		 * With ZBOOT_ROM the bss/stack is non relocatable,
@@ -550,7 +606,8 @@ not_relocated:	mov	r0, #0 //r0=0
 #endif
 
 		.align	2
-		.type	LC0, #object  //전역변수 object 로 가정. 
+		.type	LC0, #object	//전역변수 object 로 가정.
+								// [blomdhal], Mark the symbol as being a data object, GNU as p73.
 LC0:		.word	LC0			@ r1
 		.word	__bss_start		@ r2 //bss영역의 ram start address.
 		.word	_end			@ r3
@@ -824,17 +881,28 @@ call_cache_fn:	adr	r12, proc_types
 #ifdef CONFIG_CPU_CP15
 		mrc	p15, 0, r9, c0, c0	@ get processor ID
 		   //r9 -> CP15 로 move. 추후 나중에??
+		// [blomdhal], cp15의 co 레지스터값을 r9에 저장
+		// MMU ID 레지스터, c0를 읽는다.
+		// 교재, p665 - 코프로세서에서 ARM 레지스터로 이동
 #else
 		ldr	r9, =CONFIG_PROCESSOR_ID
 #endif
 1:		ldr	r1, [r12, #0]		@ get value
+								// 0x000f0000, new CPU ID
 		ldr	r2, [r12, #4]		@ get mask
+								// 0x000f0000
 		eor	r1, r1, r9		@ (real ^ match)
+							// r9 has processor ID
 		tst	r1, r2			@       & mask
  ARM(		addeq	pc, r12, r3		) @ call cache function
+ 									  // call cache_on, cache_off, cache_flush
+									  // in cache_flush function, call call_cache_fn in case of new CPI ID
  THUMB(		addeq	r12, r3			)
  THUMB(		moveq	pc, r12			) @ call cache function
-		add	r12, r12, #PROC_ENTRY_SIZE
+		add	r12, r12, #PROC_ENTRY_SIZE		// PROC_ENTRY_SIZE (4*5)
+											// 비교한 아키텍쳐가 현재 아키텍쳐와 다른 경우, 
+											// PROC_ENTRY_SIZE(20) 만큼 더한 후,
+											// 1b하여 다음 아키텍쳐를 찾는다.
 		b	1b
 
 /*

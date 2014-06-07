@@ -262,7 +262,8 @@
  * This macro is intended for forcing the CPU into SVC mode at boot time.
  * you cannot return to the original mode.
  */
-.macro safe_svcmode_maskall reg:req
+.macro safe_svcmode_maskall reg:req		// [20140606][blomdhal] req is scratch register such as a note temporarily
+										// http://recipes.egloos.com/4988629
 #if __LINUX_ARM_ARCH__ >= 6
 	mrs	\reg , cpsr
 	eor	\reg, \reg, #HYP_MODE
