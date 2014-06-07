@@ -256,7 +256,6 @@ not_angel:
 		     //r4 reg의 bit0를 set 시킴.
 		blcs	cache_on    //if r0>=r4, branch to cache_on.
 
-// shjung, 2014-06-06
 restart:	adr	r0, LC0 //r0<-LC0 의사명렬어(adr) 
 		ldmia	r0, {r1, r2, r3, r6, r10, r11, r12}//LC0부터 4byte씩증가하면서
 		 //  {r1,r2...}순서로 reg 값을 넣는다. 
@@ -574,29 +573,35 @@ not_relocated:	mov	r0, #0 //r0=0
  *   r7  = architecture ID
  *   r8  = atags pointer
  */
-		mov	r0, r4
+		mov	r0, r4          // r0 = r4 
 		mov	r1, sp			@ malloc space above stack
+		                    // r1= sp
 		add	r2, sp, #0x10000	@ 64k max
-		mov	r3, r7
-		bl	decompress_kernel
+		                        // r2 = sp + 64k
+		mov	r3, r7              // r3 = r7
+		bl	decompress_kernel  
 		bl	cache_clean_flush
 		bl	cache_off
 		mov	r1, r7			@ restore architecture number
+		                    // r1 = r7
 		mov	r2, r8			@ restore atags pointer
+		                    // r2 = r8
 
 #ifdef CONFIG_ARM_VIRT_EXT
 		mrs	r0, spsr		@ Get saved CPU boot mode
-		and	r0, r0, #MODE_MASK
+		and	r0, r0, #MODE_MASK   // r0 = r0&MODE_MASK
 		cmp	r0, #HYP_MODE		@ if not booted in HYP mode...
 		bne	__enter_kernel		@ boot kernel directly
+		                        
 
 		adr	r12, .L__hyp_reentry_vectors_offset
-		ldr	r0, [r12]
-		add	r0, r0, r12
+		ldr	r0, [r12]    // r0 =*r12
+		add	r0, r0, r12  // r0 += r12
 
 		bl	__hyp_set_vectors
 		__HVC(0)			@ otherwise bounce to hyp mode
-
+		                    // .long x -> 매크로의 결과값
+                            // HYP 모드로 현버전에서는 아직 구현이 안된것 같음..추후 분석
 		b	.			@ should never be reached
 
 		.align	2
@@ -644,7 +649,7 @@ params:		ldr	r0, =0x10000100		@ params_phys for RPC
  * This routine must preserve:
  *  r4, r7, r8
  */
-		.align	5
+		.align	5               // 2^5승 bytes align?? 
 cache_on:	mov	r3, #8			@ cache_on function
 		b	call_cache_fn
 
@@ -708,7 +713,7 @@ __armv3_mpu_cache_on:
 
 		/* ?? invalidate for the second time? */
 		mcr	p15, 0, r0, c7, c0, 0	@ invalidate whole cache v3
-		mov	pc, lr2014-05-31 오후 7:51:36
+		mov	pc, lr
 
 #ifdef CONFIG_CPU_DCACHE_WRITETHROUGH
 #define CB_BITS 0x08
@@ -717,28 +722,44 @@ __armv3_mpu_cache_on:
 #endif
 
 __setup_mmu:	sub	r3, r4, #16384		@ Page directory size
-		bic	r3, r3, #0xff		@ Align the pointer
-		bic	r3, r3, #0x3f00
+                                        // r3 = r4 - 16k 
+							            // r4는 압축 풀릴 커널 시작주소
+	    bic	r3, r3, #0xff		@ Align the pointer
+		                        // r3 = r3 & (~0xff)
+		bic	r3, r3, #0x3f00    // r3 = r3 & (~0x3f00)
+		                       // arm architecture manual A5.2.4 참고
+							   //r3는 page directory 실제 시작 주소
 /*
  * Initialise the page tables, turning on the cacheable and bufferable
  * bits for the RAM area only.
  */
-		mov	r0, r3
-		mov	r9, r0, lsr #18
+		mov	r0, r3           // r0 = r3
+		mov	r9, r0, lsr #18  // r9 = (r0>>18)
 		mov	r9, r9, lsl #18		@ start of RAM
+		                     // r9 = (r0<<18)  
 		add	r10, r9, #0x10000000	@ a reasonable RAM size
+		                            // r10 = r9 + 256M
 		mov	r1, #0x12		@ XN|U + section mapping
-		orr	r1, r1, #3 << 10	@ AP=11
-		add	r2, r3, #16384
+		                    //XN|U Execute Never|Section Indicator 실행시키지 않겠다는 마스킹 값
+                            // Section Entry 뜻하는 고정 값
+		orr	r1, r1, #3 << 10	@ AP=11 
+		                        //Access Permission 11= read/write, ARM책 p.531 p.566 참고  
+		add	r2, r3, #16384    // r2 = r3 + 16k
 1:		cmp	r1, r9			@ if virt > start of RAM
+                            //virt = virtual address
 		cmphs	r10, r1			@   && end of RAM > virt
+		                        // if r1>=r9, cmp r10, r1
 		bic	r1, r1, #0x1c		@ clear XN|U + C + B
+		                        // r1 = r1 & (~0x1c)
 		orrlo	r1, r1, #0x10		@ Set XN|U for non-RAM
+		                            // if r10 < r1, r1 = r1|0x10
 		orrhs	r1, r1, r6		@ set RAM section settings
+		                        // if r10 >= r1, r1 = r1|r6 
 		str	r1, [r0], #4		@ 1:1 mapping
-		add	r1, r1, #1048576
-		teq	r0, r2
-		bne	1b
+                                // *r0++ = r1   
+		add	r1, r1, #1048576    // r1 = r1 + 1M
+		teq	r0, r2             
+		bne	1b                
 /*
  * If ever we are running from Flash, then we surely want the cache
  * to be enabled also for our execution instance...  We map 2MB of it
@@ -746,15 +767,17 @@ __setup_mmu:	sub	r3, r4, #16384		@ Page directory size
  * If the execution is in RAM then we would only be duplicating the above.
  */
 		orr	r1, r6, #0x04		@ ensure B is set for this
-		orr	r1, r1, #3 << 10
-		mov	r2, pc
-		mov	r2, r2, lsr #20
-		orr	r1, r1, r2, lsl #20
-		add	r0, r3, r2, lsl #2
-		str	r1, [r0], #4
-		add	r1, r1, #1048576
-		str	r1, [r0]
-		mov	pc, lr
+		                        // r1 = r6 | 0x04
+								// r6의 세번째 비트는 write buffer 활성화
+		orr	r1, r1, #3 << 10    // r1 = r1 | #3<<10
+		mov	r2, pc              // r2 = pc
+		mov	r2, r2, lsr #20     // r2 = r2>>20
+		orr	r1, r1, r2, lsl #20 //r1 = r1|(r2<<20)
+		add	r0, r3, r2, lsl #2  // r0 = r3+(r2<<2)
+		str	r1, [r0], #4        // *r0++ = r1
+		add	r1, r1, #1048576    // r1 = r1 + 1M  
+		str	r1, [r0]            // *r0 = r1
+		mov	pc, lr              // pc = lr 
 ENDPROC(__setup_mmu)
 
 @ Enable unaligned access on v6, to allow better code generation
@@ -793,19 +816,29 @@ __armv4_mmu_cache_on:
 		mov	pc, r12
 
 __armv7_mmu_cache_on:
-		mov	r12, lr
+		mov	r12, lr             
 #ifdef CONFIG_MMU
 		mrc	p15, 0, r11, c0, c1, 4	@ read ID_MMFR0
-		tst	r11, #0xf		@ VMSA
-		movne	r6, #CB_BITS | 0x02	@ !XN
-		blne	__setup_mmu
-		mov	r0, #0
+		                            // r11 <- cp15
+		tst	r11, #0xf		@ VMSA 
+		                    // Virtual Memory System Architecture
+		movne	r6, #CB_BITS | 0x02	@ !XN  // if not equal , r6 = CB_BITS|0x02
+		blne	__setup_mmu   
+		mov	r0, #0    
 		mcr	p15, 0, r0, c7, c10, 4	@ drain write buffer
+		                            // cp15 <- r0
 		tst	r11, #0xf		@ VMSA
 		mcrne	p15, 0, r0, c8, c7, 0	@ flush I,D TLBs
+		                                // if not equal, cp15<- r0
+										// I, D, TLB 초기화
+										// arm책 p.573 참고
+
 #endif
 		mrc	p15, 0, r0, c1, c0, 0	@ read control reg
 		bic	r0, r0, #1 << 28	@ clear SCTLR.TRE
+		                        // r0 28번째 비트 clear
+								// SCTLR = System Control Register
+								// TRE = TEX Remap Enable
 		orr	r0, r0, #0x5000		@ I-cache enable, RR cache replacement
 		orr	r0, r0, #0x003c		@ write buffer
 		bic	r0, r0, #2		@ A (no unaligned access fault)
@@ -816,6 +849,7 @@ __armv7_mmu_cache_on:
 		orr	r0, r0, #1 << 25	@ big-endian page tables
 #endif
 		mrcne   p15, 0, r6, c2, c0, 2   @ read ttb control reg
+		                                // translation table base
 		orrne	r0, r0, #1		@ MMU enabled
 		movne	r1, #0xfffffffd		@ domain 0 = client
 		bic     r6, r6, #1 << 31        @ 32-bit translation system
@@ -825,6 +859,9 @@ __armv7_mmu_cache_on:
 		mcrne   p15, 0, r6, c2, c0, 2   @ load ttb control
 #endif
 		mcr	p15, 0, r0, c7, c5, 4	@ ISB
+		                            // Instrustion synchronization Barrier
+									// 새로운 명령어가 수행되기전에 파이프라인을 플러시
+									// 모든 이전명령어들이 완료되었는지 확인하는 명령어
 		mcr	p15, 0, r0, c1, c0, 0	@ load control register
 		mrc	p15, 0, r0, c1, c0, 0	@ and read it back
 		mov	r0, #0
@@ -877,11 +914,11 @@ __common_mmu_cache_on:
  *  r12 = corrupted
  */
 
-call_cache_fn:	adr	r12, proc_types
+call_cache_fn:	adr	r12, proc_types    
 #ifdef CONFIG_CPU_CP15
 		mrc	p15, 0, r9, c0, c0	@ get processor ID
 		   //r9 -> CP15 로 move. 추후 나중에??
-		// [blomdhal], cp15의 co 레지스터값을 r9에 저장
+		// [blomdhal], cp15의 c0 레지스터값을 r9에 저장
 		// MMU ID 레지스터, c0를 읽는다.
 		// 교재, p665 - 코프로세서에서 ARM 레지스터로 이동
 #else
@@ -1117,20 +1154,24 @@ __armv4_mmu_cache_off:
 		mov	pc, lr
 
 __armv7_mmu_cache_off:
-		mrc	p15, 0, r0, c1, c0
+		mrc	p15, 0, r0, c1, c0 // cp15->r0
 #ifdef CONFIG_MMU
 		bic	r0, r0, #0x000d
 #else
 		bic	r0, r0, #0x000c
 #endif
 		mcr	p15, 0, r0, c1, c0	@ turn MMU and cache off
+		                        // r0->cp15
+								// arm책 p.525 참고, 시스템제어
+								// TRM에 자세한 설명
 		mov	r12, lr
 		bl	__armv7_mmu_cache_flush
-		mov	r0, #0
+		mov	r0, #0             // r0=0
 #ifdef CONFIG_MMU
 		mcr	p15, 0, r0, c8, c7, 0	@ invalidate whole TLB
 #endif
 		mcr	p15, 0, r0, c7, c5, 6	@ invalidate BTC
+		                            //Branch Target Cache
 		mcr	p15, 0, r0, c7, c10, 4	@ DSB
 		mcr	p15, 0, r0, c7, c5, 4	@ ISB
 		mov	pc, r12
@@ -1189,56 +1230,87 @@ __armv7_mmu_cache_flush:
 		b	iflush
 hierarchical:
 		mcr	p15, 0, r10, c7, c10, 5	@ DMB
+		                            // Data Memory Barrier
+									// 새로운 메모리 접근이 수행되기전에 모든 메모리 접근이
+									// 완료되었는지 확인한다
 		stmfd	sp!, {r0-r7, r9-r11}
 		mrc	p15, 1, r0, c0, c0, 1	@ read clidr
 		ands	r3, r0, #0x7000000	@ extract loc from clidr
+		                            // clidr(cache level id register)
+									// loc(level of coherency)
 		mov	r3, r3, lsr #23		@ left align loc bit field
 		beq	finished		@ if loc is 0, then no need to clean
 		mov	r10, #0			@ start clean at cache level 0
 loop1:
 		add	r2, r10, r10, lsr #1	@ work out 3x current cache level
+		                            //r2= r10 + (r10>>1)
 		mov	r1, r0, lsr r2		@ extract cache type bits from clidr
+		                        // r1 = (r0>>r2)
 		and	r1, r1, #7		@ mask of the bits for current cache only
+		                    // r1 = r1&7
 		cmp	r1, #2			@ see what cache we have at this level
 		blt	skip			@ skip if no cache, or just i-cache
+		                    // if r1<2, skip 
 		mcr	p15, 2, r10, c0, c0, 0	@ select current cache level in cssr
+		                            // r10 -> cp15
 		mcr	p15, 0, r10, c7, c5, 4	@ isb to sych the new cssr&csidr
+		                            // r10 ->cp15
 		mrc	p15, 1, r1, c0, c0, 0	@ read the new csidr
+		                            // cp15 -> r1
 		and	r2, r1, #7		@ extract the length of the cache lines
+		                    // r2 =r1&7
 		add	r2, r2, #4		@ add 4 (line length offset)
-		ldr	r4, =0x3ff
+		                    // r2 = r2+4
+		ldr	r4, =0x3ff  
 		ands	r4, r4, r1, lsr #3	@ find maximum number on the way size
+		                            // r4 = r4 & (r1>>3)
 		clz	r5, r4			@ find bit position of way size increment
+		                    // arm책 p.90 참고
+							// r5 <- r4의 '0'개수 카운트
 		ldr	r7, =0x7fff
 		ands	r7, r7, r1, lsr #13	@ extract max number of the index size
-loop2:
+		                            // r7 = r7&(r1>>13)
+loop2: 
 		mov	r9, r4			@ create working copy of max way size
 loop3:
  ARM(		orr	r11, r10, r9, lsl r5	) @ factor way and cache number into r11
+                                          // r11 = r10|(r9<<r5)
  ARM(		orr	r11, r11, r7, lsl r2	) @ factor index number into r11
+                                          // r11= r11|(r7<<r2)
  THUMB(		lsl	r6, r9, r5		)
  THUMB(		orr	r11, r10, r6		) @ factor way and cache number into r11
  THUMB(		lsl	r6, r7, r2		)
  THUMB(		orr	r11, r11, r6		) @ factor index number into r11
 		mcr	p15, 0, r11, c7, c14, 2	@ clean & invalidate by set/way
+		                           // r11 ->cp15
+								   // r11은 cache 구성
+								   // arm책 p.494 참고
 		subs	r9, r9, #1		@ decrement the way
-		bge	loop3
+		                        // r9 = r9-1
+		bge	loop3              
 		subs	r7, r7, #1		@ decrement the index
-		bge	loop2
+		bge	loop2               // for( loop2; set_index --)
+		                        //   for(loop3; way --)
+								//      cache_line clean&invalidate
 skip:
 		add	r10, r10, #2		@ increment cache number
+		                        // r10 = r10 +2
+								// r10은 cache_level
 		cmp	r3, r10
-		bgt	loop1
+		bgt	loop1               // if r3>r10, loop1
 finished:
-		ldmfd	sp!, {r0-r7, r9-r11}
+		ldmfd	sp!, {r0-r7, r9-r11} //sp-> {r0-r7, r9-r11}
 		mov	r10, #0			@ swith back to cache level 0
+		                    // r10 =0
 		mcr	p15, 2, r10, c0, c0, 0	@ select current cache level in cssr
-iflush:
+		                            // cssr(cache size selection register)
+iflush:   //I-cache flush
 		mcr	p15, 0, r10, c7, c10, 4	@ DSB
+		                            // Data Synchlization Barrier
 		mcr	p15, 0, r10, c7, c5, 0	@ invalidate I+BTB
 		mcr	p15, 0, r10, c7, c10, 4	@ DSB
 		mcr	p15, 0, r10, c7, c5, 4	@ ISB
-		mov	pc, lr
+		mov	pc, lr                  //return
 
 __armv5tej_mmu_cache_flush:
 1:		mrc	p15, 0, r15, c7, c14, 3	@ test,clean,invalidate D cache
@@ -1377,9 +1449,12 @@ __hyp_reentry_vectors:
 		W(b)	.			@ fiq
 #endif /* CONFIG_ARM_VIRT_EXT */
 
-__enter_kernel:
+__enter_kernel:                   
 		mov	r0, #0			@ must be 0
  ARM(		mov	pc, r4	)		@ call kernel
+                                // 다음 무엇이 실행 되는지 의문...
+								// r4는 압축 풀린 커널 시작주소
+								// ex)0x40008000
  THUMB(		bx	r4	)		@ entry point is always ARM
 
 reloc_code_end:

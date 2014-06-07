@@ -130,6 +130,8 @@ asmlinkage void __div0(void)
 extern int do_decompress(u8 *input, int len, u8 *output, void (*error)(char *x));
 
 
+// r0 -> output_start(커널 실행 시작주소), r1(sp)->free_mem_ptr_p, r2(sp+64k)->free_mem_ptr_end_p
+//           r3->arch_id)
 void
 decompress_kernel(unsigned long output_start, unsigned long free_mem_ptr_p,
 		unsigned long free_mem_ptr_end_p,
