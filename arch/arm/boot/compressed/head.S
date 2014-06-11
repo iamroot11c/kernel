@@ -191,7 +191,7 @@ start:
 		tst	r2, #3			@ not user?
 							// [20140606][blomdhal], #3 means svc(10011), test bits 0-1.
 		// z_falg =r2&#3, mode reg. of cpsr 가 user_mode인지 
-		물어봄.
+		// 물어봄.
 	
 		// [20140606][blomdhal], 그러므로, 아래는, user인 경우에 실행된다.
 		bne	not_angel  // user mode가 아니면, 
@@ -649,7 +649,8 @@ params:		ldr	r0, =0x10000100		@ params_phys for RPC
  * This routine must preserve:
  *  r4, r7, r8
  */
-		.align	5               // 2^5승 bytes align?? 
+		.align	5               // 2^5승, fifth power of 2, GNU-ARM Quick ref.
+								// [blomdhal], Aligns the address to <power_of_2> bytes
 cache_on:	mov	r3, #8			@ cache_on function
 		b	call_cache_fn
 
