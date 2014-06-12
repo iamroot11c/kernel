@@ -564,7 +564,9 @@ not_relocated:	mov	r0, #0 //r0=0
 		 */
 		tst	r4, #1 
 		bic	r4, r4, #1  // clear b0 of r4 reg.
-		blne	cache_on  // if(r4!=1), call cache_on().
+		blne	cache_on		// if(r4!=1), call cache_on().
+								// [2014-06-12][blomdhal], bl이다. cache_on 후,
+								// return하면 여기로 온다.
 // 140531 여기까지 진행함. 
 /*
  * The C runtime environment should now be setup sufficiently.
@@ -932,9 +934,16 @@ call_cache_fn:	adr	r12, proc_types
 		eor	r1, r1, r9		@ (real ^ match)
 							// r9 has processor ID
 		tst	r1, r2			@       & mask
+
+		// [20140612][blomdhal], 위의 2line의 코드는 아래와 같다.
+		// if( ((real ^ match) & mask) == 0)
  ARM(		addeq	pc, r12, r3		) @ call cache function
  									  // call cache_on, cache_off, cache_flush
 									  // in cache_flush function, call call_cache_fn in case of new CPI ID
+									  // [20140612][blomdhal], When r3 is as follow.
+									  // #8  : __armv7_mmu_cache_on
+									  // #12 : __armv7_mmu_cache_off
+									  // #16 : __armv7_mmu_cache_flush
  THUMB(		addeq	r12, r3			)
  THUMB(		moveq	pc, r12			) @ call cache function
 		add	r12, r12, #PROC_ENTRY_SIZE		// PROC_ENTRY_SIZE (4*5)
