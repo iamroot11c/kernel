@@ -155,10 +155,28 @@ __lookup_processor_type:
 	sub	r3, r3, r4			@ get offset between virt&phys
 	add	r5, r5, r3			@ convert virt addresses to
 	add	r6, r6, r3			@ physical address space
+/* [20140615][blomdhal],
+ * r5<-__proc_info_begin + offset; 으로써, 물리메모리의 위치가 저장되어 있다.
+ * 아래, System.map을 보면, __proc_info_beging == __v7_ca5mp_proc_info이다.
+ * 16388 c03c3a68 T __proc_info_begin
+ * 16389 c03c3a68 t __v7_ca5mp_proc_info
+ * 16390 c03c3a9c t __v7_ca9mp_proc_info
+ * 16391 c03c3ad0 t __v7_cr7mp_proc_info
+ * 16392 c03c3b04 t __v7_ca7mp_proc_info
+ * 16393 c03c3b38 t __v7_ca15mp_proc_info
+ * 16394 c03c3b6c t __krait_proc_info
+ * 16395 c03c3ba0 t __v7_proc_info
+ * 16396 c03c3bd4 T __proc_info_end
+ *
+ * arch/arm/mm/proc-v7.S를 참고하여, __v7_ca5mp_proc_info의 value, mask를 확인 가능
+ * val / mask : 0x410fc050 / 0xff0ffff0 
+*/
 1:	ldmia	r5, {r3, r4}			@ value, mask
 	and	r4, r4, r9			@ mask wanted bits
 	teq	r3, r4
 	beq	2f
+			// if ( ((proc_info.mask & cpuid) ^ proc_info.value == 0)	; A^A = 0
+			// then 2f
 	add	r5, r5, #PROC_INFO_SZ		@ sizeof(proc_info_list)
 	cmp	r5, r6
 	blo	1b

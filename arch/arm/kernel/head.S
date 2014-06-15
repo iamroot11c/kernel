@@ -35,6 +35,10 @@
  * relax this restriction to KERNEL_RAM_VADDR >= PAGE_OFFSET + 0x4000.
  */
 #define KERNEL_RAM_VADDR	(PAGE_OFFSET + TEXT_OFFSET)
+							// [20140615][blomdhal],
+							// By default, PAGE_OFFSET is 0xc0000000 in arch/arm/Kconfig.
+							// TEXT_OFFSET is 0x00008000
+
 #if (KERNEL_RAM_VADDR & 0xffff) != 0x8000
 #error KERNEL_RAM_VADDR must start at 0xXXXX8000
 #endif
@@ -44,7 +48,7 @@
 #define PG_DIR_SIZE	0x5000
 #define PMD_ORDER	3
 #else
-#define PG_DIR_SIZE	0x4000
+#define PG_DIR_SIZE	0x4000		// [blomdhal], PGD means Page Global Directory.
 #define PMD_ORDER	2
 #endif
 
@@ -75,8 +79,19 @@
  */
 	.arm
 
-	__HEAD
-ENTRY(stext)
+	__HEAD					// [20140615][blomdhal],
+							// 	.section	".head.text","ax"
+							// "ax" : allocatable and executable section
+ENTRY(stext)				
+	// decompressed kernel의 시작
+	// 가상주소로 0Xc0008000이다. 아래를 통해서 확인 가능.
+	// System.map, 
+	// $ arm-none-eabi-objdump -d vmlinux | head -n 20
+	//
+	// NOTE!!!
+	// ENTRY(name)는 .global name;으로 전처리된다.
+	// 이것을 강조하는 이유는 외부 참조가 가능하다.
+	// 그러므로, C언어에서 참조 가능하다. 
 
  THUMB(	adr	r9, BSYM(1f)	)	@ Kernel is always entered in ARM.
  THUMB(	bx	r9		)	@ If this is a Thumb-2 kernel,
@@ -105,9 +120,14 @@ ENTRY(stext)
 
 #ifndef CONFIG_XIP_KERNEL
 	adr	r3, 2f
-	ldmia	r3, {r4, r8}
+	ldmia	r3, {r4, r8}	// [20140615][blomdhal],
+							// r4 : current ram of 2f
+							// r8 : PAGE_OFFSET(0xc0000000)
 	sub	r4, r3, r4			@ (PHYS_OFFSET - PAGE_OFFSET)
+							// virt of 2f - cur_ram of 2f = phys_offset
 	add	r8, r8, r4			@ PHYS_OFFSET
+							// PAGE_OFFSET(0xc0000000) + phys_offset
+							// ex) 0xc0008000
 #else
 	ldr	r8, =PHYS_OFFSET		@ always constant in this case
 #endif
