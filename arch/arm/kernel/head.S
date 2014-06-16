@@ -128,10 +128,9 @@ ENTRY(stext)
 							// current ram of 2f - virt = phys_offset
 	add	r8, r8, r4			@ PHYS_OFFSET
 							// PAGE_OFFSET(0xc0000000) + phys_offset
-							// ex) 0xc0008000
-							// ex) r3 - 0x4000_8000, r4 - 0xc000_8000, r8 - 0xc000_000
-							//     r4 = r3 - r4 = 0x8000_0000
-						    //     r8 = 0x4000_000
+							// ex) 0x40008000
+							// ex) r4 = r3(0x4000_8000) - r4(0xc000_8000) = 0x8000_0000
+						    //     r8(0x4000_8000) = r8(0xc000_0000) + r4(0x8000_0000)
 #else
 	ldr	r8, =PHYS_OFFSET		@ always constant in this case
 #endif
