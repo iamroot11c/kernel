@@ -121,13 +121,17 @@ ENTRY(stext)
 #ifndef CONFIG_XIP_KERNEL
 	adr	r3, 2f
 	ldmia	r3, {r4, r8}	// [20140615][blomdhal],
-							// r4 : current ram of 2f
+							// r3 : current ram of 2f
+							// r4 : virt (*r3 - dereference of 2f contain)
 							// r8 : PAGE_OFFSET(0xc0000000)
 	sub	r4, r3, r4			@ (PHYS_OFFSET - PAGE_OFFSET)
-							// virt of 2f - cur_ram of 2f = phys_offset
+							// current ram of 2f - virt = phys_offset
 	add	r8, r8, r4			@ PHYS_OFFSET
 							// PAGE_OFFSET(0xc0000000) + phys_offset
 							// ex) 0xc0008000
+							// ex) r3 - 0x4000_8000, r4 - 0xc000_8000, r8 - 0xc000_000
+							//     r4 = r3 - r4 = 0x8000_0000
+						    //     r8 = 0x4000_000
 #else
 	ldr	r8, =PHYS_OFFSET		@ always constant in this case
 #endif
