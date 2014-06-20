@@ -28,7 +28,7 @@
  * Allow for constants defined here to be used from assembly code
  * by prepending the UL suffix only with actual C code compilation.
  */
-#define UL(x) _AC(x, UL)
+#define UL(x) _AC(x, UL)				//참고 (KDIR)/include/uapi/linux/const.h
 
 #ifdef CONFIG_MMU
 

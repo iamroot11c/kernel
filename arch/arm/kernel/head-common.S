@@ -45,25 +45,26 @@
  */
 __vet_atags:
 	tst	r2, #0x3			@ aligned?
+						//r2의 하위 2bit &연산
 	bne	1f
 
-	ldr	r5, [r2, #0]
-#ifdef CONFIG_OF_FLATTREE
+	ldr	r5, [r2, #0]			//r5= *r2 (r2:atag list address)
+#ifdef CONFIG_OF_FLATTREE		
 	ldr	r6, =OF_DT_MAGIC		@ is it a DTB?
-	cmp	r5, r6
-	beq	2f
+	cmp	r5, r6				//devices tree인지 검사
+	beq	2f					
 #endif
 	cmp	r5, #ATAG_CORE_SIZE		@ is first tag ATAG_CORE?
 	cmpne	r5, #ATAG_CORE_SIZE_EMPTY
 	bne	1f
 	ldr	r5, [r2, #4]
 	ldr	r6, =ATAG_CORE
-	cmp	r5, r6
+	cmp	r5, r6				//ATAG 맞는지 확인
 	bne	1f
 
 2:	mov	pc, lr				@ atag/dtb pointer is ok
 
-1:	mov	r2, #0
+1:	mov	r2, #0				//error시 동작됨
 	mov	pc, lr
 ENDPROC(__vet_atags)
 
@@ -149,14 +150,18 @@ ENDPROC(lookup_processor_type)
  *	r5 = proc_info pointer in physical address space
  *	r9 = cpuid (preserved)
  */
-__lookup_processor_type:
+__lookup_processor_type:			//참고 모기향 P83(물리-가상 주소변경)
 	adr	r3, __lookup_processor_type_data
-	ldmia	r3, {r4 - r6}
+	ldmia	r3, {r4 - r6}			//r3의 값을 offset 하면서 r4-r6 넘겨줌
 	sub	r3, r3, r4			@ get offset between virt&phys
+						//r3=size 
+						//r3=r3-r4  (r3+#12)-r4 = #12(offset값)
 	add	r5, r5, r3			@ convert virt addresses to
+						//r5=r5+r3 (r5물리주소)
 	add	r6, r6, r3			@ physical address space
+						//r6=r6+r3 (r6물리주소)
 /* [20140615][blomdhal],
- * r5<-__proc_info_begin + offset; 으로써, 물리메모리의 위치가 저장되어 있다.
+ * r5<-__proc_info_begin + offset; 으로써, 가상메모리의 위치가 저장되어 있다.
  * 아래, System.map을 보면, __proc_info_beging == __v7_ca5mp_proc_info이다.
  * 16388 c03c3a68 T __proc_info_begin
  * 16389 c03c3a68 t __v7_ca5mp_proc_info
@@ -178,6 +183,7 @@ __lookup_processor_type:
 			// if ( ((proc_info.mask & cpuid) ^ proc_info.value == 0)	; A^A = 0
 			// then 2f
 	add	r5, r5, #PROC_INFO_SZ		@ sizeof(proc_info_list)
+						//arch/arm/include/asm/proinfo.h에 구조체정의됨
 	cmp	r5, r6
 	blo	1b
 	mov	r5, #0				@ unknown processor
@@ -190,11 +196,11 @@ ENDPROC(__lookup_processor_type)
 	.align	2
 	.type	__lookup_processor_type_data, %object
 __lookup_processor_type_data:
-	.long	.
-	.long	__proc_info_begin
-	.long	__proc_info_end
-	.size	__lookup_processor_type_data, . - __lookup_processor_type_data
-
+	.long	.								//#0
+	.long	__proc_info_begin						//#4
+	.long	__proc_info_end							//#8
+	.size	__lookup_processor_type_data, . - __lookup_processor_type_data	//#16
+							//참고 gas manual  p83 7.100 .size
 __error_p:
 #ifdef CONFIG_DEBUG_LL
 	adr	r0, str_p1

@@ -43,12 +43,13 @@
 #error KERNEL_RAM_VADDR must start at 0xXXXX8000
 #endif
 
-#ifdef CONFIG_ARM_LPAE
+#ifdef CONFIG_ARM_LPAE			//un define
 	/* LPAE requires an additional page for the PGD */
 #define PG_DIR_SIZE	0x5000
 #define PMD_ORDER	3
 #else
 #define PG_DIR_SIZE	0x4000		// [blomdhal], PGD means Page Global Directory.
+                         		//16KB
 #define PMD_ORDER	2
 #endif
 
@@ -106,11 +107,12 @@ ENTRY(stext)
 
 	mrc	p15, 0, r9, c0, c0		@ get processor id
 	bl	__lookup_processor_type		@ r5=procinfo r9=cpuid
+						//arch/arm/kernel/head_common.S 파일에 구현됨
 	movs	r10, r5				@ invalid processor (r5=0)?
  THUMB( it	eq )		@ force fixup-able long branch encoding
 	beq	__error_p			@ yes, error 'p'
 
-#ifdef CONFIG_ARM_LPAE
+#ifdef CONFIG_ARM_LPAE				//define 안됨
 	mrc	p15, 0, r3, c0, c1, 4		@ read ID_MMFR0
 	and	r3, r3, #0xf			@ extract VMSA support
 	cmp	r3, #5				@ long-descriptor translation table format?
@@ -118,7 +120,7 @@ ENTRY(stext)
 	blo	__error_p			@ only classic page table format
 #endif
 
-#ifndef CONFIG_XIP_KERNEL
+#ifndef CONFIG_XIP_KERNEL			//define 안됨
 	adr	r3, 2f
 	ldmia	r3, {r4, r8}	// [20140615][blomdhal],
 							// r3 : current ram of 2f
@@ -139,7 +141,7 @@ ENTRY(stext)
 	 * r1 = machine no, r2 = atags or dtb,
 	 * r8 = phys_offset, r9 = cpuid, r10 = procinfo
 	 */
-	bl	__vet_atags
+	bl	__vet_atags			//(KDIR)/arch/arm/kernel/head_common.S
 #ifdef CONFIG_SMP_ON_UP
 	bl	__fixup_smp
 #endif
@@ -166,8 +168,9 @@ ENTRY(stext)
 ENDPROC(stext)
 	.ltorg
 #ifndef CONFIG_XIP_KERNEL
-2:	.long	.
-	.long	PAGE_OFFSET
+2:	.long	.			// 주소..
+	.long	PAGE_OFFSET		// 가상메모리 상에서 커널 시작주소 3G(ex. 0xc0000000)
+					//(KDIR)/arch/arm/include/asm/memory.h
 #endif
 
 /*
@@ -186,6 +189,7 @@ __create_page_tables:
 
 	/*
 	 * Clear the swapper page table
+	 * 16KB 페이지 테이블 영역(PGD)을 0으로 초기화
 	 */
 	mov	r0, r4
 	mov	r3, #0
@@ -224,7 +228,7 @@ __create_page_tables:
 	add	r4, r4, #4			@ we only write the bottom word
 #endif
 #endif
-
+	//r10 = procinfo
 	ldr	r7, [r10, #PROCINFO_MM_MMUFLAGS] @ mm_mmuflags
 
 	/*
@@ -234,11 +238,14 @@ __create_page_tables:
 	adr	r0, __turn_mmu_on_loc
 	ldmia	r0, {r3, r5, r6}
 	sub	r0, r0, r3			@ virt->phys offset
+								//r0=r0-r3
 	add	r5, r5, r0			@ phys __turn_mmu_on
+								//r5=r5+r0
 	add	r6, r6, r0			@ phys __turn_mmu_on_end
-	mov	r5, r5, lsr #SECTION_SHIFT
+								//r6=r6+r0
+	mov	r5, r5, lsr #SECTION_SHIFT	//SECTION_SHIFT=20   MB만 나타냄
 	mov	r6, r6, lsr #SECTION_SHIFT
-
+//2014-06-14 여기까지 진행함
 1:	orr	r3, r7, r5, lsl #SECTION_SHIFT	@ flags + kernel base
 	str	r3, [r4, r5, lsl #PMD_ORDER]	@ identity mapping
 	cmp	r5, r6
@@ -494,11 +501,11 @@ ENDPROC(__turn_mmu_on)
 
 #ifdef CONFIG_SMP_ON_UP
 	__INIT
-__fixup_smp:
-	and	r3, r9, #0x000f0000	@ architecture version
+__fixup_smp:				//smp:cpu여러개 있어도 하나의 메모리로 공유
+	and	r3, r9, #0x000f0000	@ architecture version		//r9=cpuid
 	teq	r3, #0x000f0000		@ CPU ID supported?
-	bne	__fixup_smp_on_up	@ no, assume UP
-
+	bne	__fixup_smp_on_up	@ no, assume UP		//SMP를 지원안하는경우(UP인 경우)
+								//__fixup_smp_on_up 수행(UP인 경우)	
 	bic	r3, r9, #0x00ff0000
 	bic	r3, r3, #0x0000000f	@ mask 0xff00fff0
 	mov	r4, #0x41000000
@@ -508,6 +515,9 @@ __fixup_smp:
 	moveq	pc, lr			@ yes, assume SMP
 
 	mrc	p15, 0, r0, c0, c0, 5	@ read MPIDR
+					//(CORTEX-A9인 경우 b31는 항상 "1")
+					//하위 2bit core id
+					//b30: 0=MP 1=UP
 	and	r0, r0, #0xc0000000	@ multiprocessing extensions and
 	teq	r0, #0x80000000		@ not part of a uniprocessor system?
 	bne    __fixup_smp_on_up	@ no, assume UP
@@ -531,19 +541,19 @@ __fixup_smp:
 	teq	r0, #0x0		@ is 1?
 	movne	pc, lr
 
-__fixup_smp_on_up:
+__fixup_smp_on_up:			//virtual to physical address
 	adr	r0, 1f
 	ldmia	r0, {r3 - r5}
-	sub	r3, r0, r3
+	sub	r3, r0, r3		//r3:offset
 	add	r4, r4, r3
 	add	r5, r5, r3
 	b	__do_fixup_smp_on_up
 ENDPROC(__fixup_smp)
 
 	.align
-1:	.word	.
-	.word	__smpalt_begin
-	.word	__smpalt_end
+1:	.word	.				//r3
+	.word	__smpalt_begin			//r4
+	.word	__smpalt_end			//r5
 
 	.pushsection .data
 	.globl	smp_on_up
@@ -554,11 +564,13 @@ smp_on_up:
 #endif
 
 	.text
-__do_fixup_smp_on_up:
+__do_fixup_smp_on_up:			//SMP로 설정하여 컴파일 되었지만, 실행시에 판정을 해 보니 UP(Uni Processor,싱글코어)라고 판정되었을 때
+					//참조 http://www.iamroot.org/xe/index.php?mid=Kernel_10_ARM&listStyle=gallery&document_srl=180812&sort_index=regdate&order_type=desc
 	cmp	r4, r5
 	movhs	pc, lr
-	ldmia	r4!, {r0, r6}
- ARM(	str	r6, [r0, r3]	)
+	ldmia	r4!, {r0, r6}		//r0:__smpalt_begin, r6:__smpalt_end
+ ARM(	str	r6, [r0, r3]	)	//*(r0+r3)=r6	r3:offset
+					//r0(가상주소)+r3(offset)=물리주소
  THUMB(	add	r0, r0, r3	)
 #ifdef __ARMEB__
  THUMB(	mov	r6, r6, ror #16	)	@ Convert word order for big-endian.
@@ -586,13 +598,14 @@ ENDPROC(fixup_smp)
  * has a form of '(add|sub) rd, rn, #imm'.
  */
 	__HEAD
-__fixup_pv_table:
+__fixup_pv_table:			//참조 http://www.iamroot.org/xe/Kernel_8_ARM/61099
 	adr	r0, 1f
 	ldmia	r0, {r3-r5, r7}
 	sub	r3, r0, r3	@ PHYS_OFFSET - PAGE_OFFSET
 	add	r4, r4, r3	@ adjust table start address
 	add	r5, r5, r3	@ adjust table end address
 	add	r7, r7, r3	@ adjust __pv_phys_offset address
+				//컴파일 타임때 정해진 offset을 실제 머신에서 계산한 값으로 바꾼다???
 	str	r8, [r7]	@ save computed PHYS_OFFSET to __pv_phys_offset
 	mov	r6, r3, lsr #24	@ constant for add/sub instructions
 	teq	r3, r6, lsl #24 @ must be 16MiB aligned
