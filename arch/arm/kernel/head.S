@@ -56,8 +56,9 @@
 	.globl	swapper_pg_dir
 	.equ	swapper_pg_dir, KERNEL_RAM_VADDR - PG_DIR_SIZE
 
-	.macro	pgtbl, rd, phys
-	add	\rd, \phys, #TEXT_OFFSET - PG_DIR_SIZE
+	.macro	pgtbl, rd, phys								// r4, r8
+	add	\rd, \phys, #TEXT_OFFSET - PG_DIR_SIZE         // r4(0x4000_4000) =  
+													   // r8(0x4000_0000) + (#TEXT_OFFSET(0x8000) - PG_DIR_SIZE(0x4000)) 
 	.endm
 
 /*
@@ -158,11 +159,19 @@ ENTRY(stext)
 	 * turned on, and r0 will hold the CPU control register value.
 	 */
 	ldr	r13, =__mmap_switched		@ address to jump to after
-						@ mmu has been enabled
+									@ mmu has been enabled
+									// r13(sp) = addr of __mmap_switched 
 	adr	lr, BSYM(1f)			@ return (PIC) address
+									// lr = __enable_mmu
 	mov	r8, r4				@ set TTBR1 to swapper_pg_dir
- ARM(	add	pc, r10, #PROCINFO_INITFUNC	)
- THUMB(	add	r12, r10, #PROCINFO_INITFUNC	)
+									// r8 = r4
+									// 이전까지는 r8(phys_offset), r4(pabe_table_addr:0x4000_4000)
+									// 뭔가 중요한 일이???
+ ARM(	add	pc, r10, #PROCINFO_INITFUNC	)	// pc = r10(proc_info_begin) + offset
+ 											// pc = __v7_ca15mp_setup
+											// pc를 컨트롤 했기때문에, Function Call과 같은 동작 발생
+											// PROCINFO_INITFUNC 16 /* offsetof(struct proc_info_list, __cpu_flush)    @ */ 
+ THUMB(	add	r12, r10, #PROCINFO_INITFUNC	)		
  THUMB(	mov	pc, r12				)
 1:	b	__enable_mmu
 ENDPROC(stext)
@@ -191,9 +200,9 @@ __create_page_tables:
 	 * Clear the swapper page table
 	 * 16KB 페이지 테이블 영역(PGD)을 0으로 초기화
 	 */
-	mov	r0, r4
-	mov	r3, #0
-	add	r6, r0, #PG_DIR_SIZE
+	mov	r0, r4					// r0 = 0x4000_4000
+	mov	r3, #0					// r3 = #0
+	add	r6, r0, #PG_DIR_SIZE    // r6(0x4000_8000) = r0(0x4000_4000) + 0x4000
 1:	str	r3, [r0], #4
 	str	r3, [r0], #4
 	str	r3, [r0], #4
@@ -227,41 +236,83 @@ __create_page_tables:
 #ifdef CONFIG_CPU_ENDIAN_BE8
 	add	r4, r4, #4			@ we only write the bottom word
 #endif
-#endif
+#endif /* CONFIG_ARM_LPAE */
 	//r10 = procinfo
 	ldr	r7, [r10, #PROCINFO_MM_MMUFLAGS] @ mm_mmuflags
-
+										 // PROCINFO_MM_MMUFLAGS, kernel/asm-offset.c L132
+										 // PROCINFO_MM_MMUFLAGS = proc_info_list의 멤버 __cpu_mm_mmu_flags의 offset
+										 // r7 = *(r10 + offset)
+										 
 	/*
 	 * Create identity mapping to cater for __enable_mmu.
 	 * This identity mapping will be removed by paging_init().
 	 */
-	adr	r0, __turn_mmu_on_loc
-	ldmia	r0, {r3, r5, r6}
+	adr	r0, __turn_mmu_on_loc			// r0 = __turn_mmu_on_loc(virt: c000812c) of ram
+	ldmia	r0, {r3, r5, r6}			// r3 = . of virt
+										// r5 = turn_mmu_on
+										// r6 = turn_mmu_on_end
 	sub	r0, r0, r3			@ virt->phys offset
-								//r0=r0-r3
+							//r0 = r0-r3
 	add	r5, r5, r0			@ phys __turn_mmu_on
-								//r5=r5+r0
+							//r5=r5+r0
 	add	r6, r6, r0			@ phys __turn_mmu_on_end
-								//r6=r6+r0
+							//r6=r6+r0
 	mov	r5, r5, lsr #SECTION_SHIFT	//SECTION_SHIFT=20   MB만 나타냄
-	mov	r6, r6, lsr #SECTION_SHIFT
+	mov	r6, r6, lsr #SECTION_SHIFT  // MB만 나타냄
+	                                // turn_mmu_on, turn_mmu_on_end의 물리주소 중에서 MB단위만 레지스터에 저장
 //2014-06-14 여기까지 진행함
+    // 참고: proc_info정의
+	// arch/arm/mm/proc_v7.S
+	// __v7_ca15mp_proc_info
+	// 
+
+	// 파란책 : p564, p572, 
+	// 가상 메모리 구조와 원리에 대한 기본 이해가 있어야지 이해할 수 있는 코드들이다.
+	/*
+	     조금더 자세한 건, 위의 파일을 참고하자.
+		 __v7_proc은  macro이다.
+	     * ARM Ltd. Cortex A15 processor.
+	    .type   __v7_ca15mp_proc_info, #object
+	 __v7_ca15mp_proc_info:
+	     .long   0x410fc0f0
+	     .long   0xff0ffff0
+	     __v7_proc __v7_ca15mp_setup
+	     .size   __v7_ca15mp_proc_info, . - __v7_ca15mp_proc_info
+	*/
 1:	orr	r3, r7, r5, lsl #SECTION_SHIFT	@ flags + kernel base
-	str	r3, [r4, r5, lsl #PMD_ORDER]	@ identity mapping
-	cmp	r5, r6
+										// r3(#0), r7(mmu_flags), r5(phys of turn_mmu_on)
+										// r3 = r7 | r5(cur addr + 1MB)
+	str	r3, [r4, r5, lsl #PMD_ORDER]	@ identity mapping:
+										// #PMD_ORDER : 2
+										// r4 : page_table_addr(ex. 0x4000_O000) 
+										// r5 : addr of turn_mmu_on in phys
+										// *(r4 + something of offset) = r3
+										// 추측: 1MB단위로 Virtual address 맵핑하고 있는 것 아닐까?
+
+										// ?? r3의 내용과, Target address 구하는 방식에 대해서 이해가 필요?
+
+	cmp	r5, r6							// r5 : addr of turn_mmu_on in phys
+										// r6 : addr of turn_mmu_on_end in phys
 	addlo	r5, r5, #1			@ next section
 	blo	1b
 
 	/*
 	 * Map our RAM from the start to the end of the kernel .bss section.
 	 */
-	add	r0, r4, #PAGE_OFFSET >> (SECTION_SHIFT - PMD_ORDER)
-	ldr	r6, =(_end - 1)
-	orr	r3, r8, r7
-	add	r6, r4, r6, lsr #(SECTION_SHIFT - PMD_ORDER)
-1:	str	r3, [r0], #1 << PMD_ORDER
-	add	r3, r3, #1 << SECTION_SHIFT
-	cmp	r0, r6
+	add	r0, r4, #PAGE_OFFSET >> (SECTION_SHIFT - PMD_ORDER) 
+																// r0(0x4000_40c0) = r4(ex.0x4000_4000) + 0xc0
+																// 0xc000_0000 >> (20 - 2) = c0
+	ldr	r6, =(_end - 1)											// r6 = (end of .bss) - 1
+	orr	r3, r8, r7												// r8 : page_offset(0xc000_0000)
+																// r7 : mmu_flags of proc_info
+																// r3 = r8 | r7
+	add	r6, r4, r6, lsr #(SECTION_SHIFT - PMD_ORDER)			// r6 : end of .bss
+																// r6 = r4(0x4000_4000) + r6(mmu_on_end) >> (20-2)
+																// 
+1:	str	r3, [r0], #1 << PMD_ORDER								// *(r0 + 1 << 2) = r3	; offset 4
+	add	r3, r3, #1 << SECTION_SHIFT								// r3 = r3 + #1 << 20	; 1MB
+	cmp	r0, r6													// r0 : 0x4000_40c0
+																// r6 : Updated of addr of mmu_on_end by L298
 	bls	1b
 
 #ifdef CONFIG_XIP_KERNEL
@@ -287,16 +338,24 @@ __create_page_tables:
 	 * Then map boot params address in r2 if specified.
 	 * We map 2 sections in case the ATAGs/DTB crosses a section boundary.
 	 */
-	mov	r0, r2, lsr #SECTION_SHIFT
-	movs	r0, r0, lsl #SECTION_SHIFT
-	subne	r3, r0, r8
-	addne	r3, r3, #PAGE_OFFSET
-	addne	r3, r4, r3, lsr #(SECTION_SHIFT - PMD_ORDER)
-	orrne	r6, r7, r0
-	strne	r6, [r3], #1 << PMD_ORDER
-	addne	r6, r6, #1 << SECTION_SHIFT
-	strne	r6, [r3]
-
+	mov	r0, r2, lsr #SECTION_SHIFT						// r0 = r2 >> 20;  r2 - ATAG ptr?
+														// r0에 31:20까지의 값을 추출
+	movs	r0, r0, lsl #SECTION_SHIFT					// r0 = r0 << 20;
+														// r0에 19:0까지의 내용을 0으로 채운다.
+														// cpsr update
+	
+	// 위의 두라인은,
+	// Base Address만 남기고, Offset을 삭제하는 기능이다.
+	
+	// if r0 != 0 {
+	subne	r3, r0, r8									// r3 = r0 - r8(phys_offset: 0x4000_0000)
+	addne	r3, r3, #PAGE_OFFSET						// r3 = r3 + 0xc000_0000
+	addne	r3, r4, r3, lsr #(SECTION_SHIFT - PMD_ORDER)	// r3 = r4 + (r3 >> 18)
+	orrne	r6, r7, r0										// r6 = r7 | r0
+	strne	r6, [r3], #1 << PMD_ORDER						// *(r3 + 1 << 2) = r6
+	addne	r6, r6, #1 << SECTION_SHIFT						// r6 = r6 + (1<<20)
+	strne	r6, [r3]										// *r3 = r6
+	// }
 #if defined(CONFIG_ARM_LPAE) && defined(CONFIG_CPU_ENDIAN_BE8)
 	sub	r4, r4, #4			@ Fixup page table pointer
 						@ for 64-bit descriptors
@@ -489,6 +548,7 @@ ENTRY(__turn_mmu_on)
 	mov	r0, r0
 	instr_sync
 	mcr	p15, 0, r0, c1, c0, 0		@ write control reg
+									// ?? r0에 어떤값이???
 	mrc	p15, 0, r3, c0, c0, 0		@ read id reg
 	instr_sync
 	mov	r3, r3

@@ -189,12 +189,13 @@ __v7_ca15mp_setup:
 	mov	r10, #0
 1:
 #ifdef CONFIG_SMP
-	ALT_SMP(mrc	p15, 0, r0, c1, c0, 1)
+	ALT_SMP(mrc	p15, 0, r0, c1, c0, 1)		// Read - ACTLR, TRM p127
 	ALT_UP(mov	r0, #(1 << 6))		@ fake it for UP
-	tst	r0, #(1 << 6)			@ SMP/nAMP mode enabled?
+	tst	r0, #(1 << 6)				@ SMP/nAMP mode enabled?
+									// r0 & #(1<<6)   6번 비트 : SMP
 	orreq	r0, r0, #(1 << 6)		@ Enable SMP/nAMP mode
-	orreq	r0, r0, r10			@ Enable CPU-specific SMP bits
-	mcreq	p15, 0, r0, c1, c0, 1
+	orreq	r0, r0, r10				@ Enable CPU-specific SMP bits
+	mcreq	p15, 0, r0, c1, c0, 1	// Write - ACTLR SMP
 #endif
 	b	__v7_setup
 
@@ -254,6 +255,7 @@ __v7_pj4b_setup:
 
 #endif /* CONFIG_CPU_PJ4B */
 
+// 20140621, 여기까지 진행
 __v7_setup:
 	adr	r12, __v7_setup_stack		@ the local stack
 	stmia	r12, {r0-r5, r7, r9, r11, lr}
@@ -407,10 +409,11 @@ __v7_setup_stack:
 .macro __v7_proc initfunc, mm_mmuflags = 0, io_mmuflags = 0, hwcaps = 0, proc_fns = v7_processor_functions
 	ALT_SMP(.long	PMD_TYPE_SECT | PMD_SECT_AP_WRITE | PMD_SECT_AP_READ | \
 			PMD_SECT_AF | PMD_FLAGS_SMP | \mm_mmuflags)
+																// mmuflags
 	ALT_UP(.long	PMD_TYPE_SECT | PMD_SECT_AP_WRITE | PMD_SECT_AP_READ | \
 			PMD_SECT_AF | PMD_FLAGS_UP | \mm_mmuflags)
 	.long	PMD_TYPE_SECT | PMD_SECT_AP_WRITE | \
-		PMD_SECT_AP_READ | PMD_SECT_AF | \io_mmuflags
+		PMD_SECT_AP_READ | PMD_SECT_AF | \io_mmuflags			// io_mmuflags
 	W(b)	\initfunc
 	.long	cpu_arch_name
 	.long	cpu_elf_name

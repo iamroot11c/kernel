@@ -174,7 +174,9 @@
 	.long	9999b,9001f;			\
 	.popsection
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP				// 우리는 CONFIG_SMP 정의되어 있음.
+								// ALT_SMP : 멀티코어에서 메모리를 하나로 공유할 때, 
+								// Macro에서 instruction 수행함.
 #define ALT_SMP(instr...)					\
 9998:	instr
 /*
@@ -197,7 +199,7 @@
 	W(b)	. + up_b_offset					;\
 	.popsection
 #else
-#define ALT_SMP(instr...)
+#define ALT_SMP(instr...)					// ALT_SMP instruction 무시함.
 #define ALT_UP(instr...) instr
 #define ALT_UP_B(label) b label
 #endif
