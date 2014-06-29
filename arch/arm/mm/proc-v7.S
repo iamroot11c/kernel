@@ -265,16 +265,18 @@ __v7_setup:
 	mrc	p15, 0, r0, c0, c0, 0		@ read main ID register
 	and	r10, r0, #0xff000000		@ ARM?
 	teq	r10, #0x41000000
+	//우리꺼는 0x41이다.
 	bne	3f
 	and	r5, r0, #0x00f00000		@ variant
 	and	r6, r0, #0x0000000f		@ revision
 	orr	r6, r6, r5, lsr #20-4		@ combine variant and revision
 	ubfx	r0, r0, #4, #12			@ primary part number
-
+//ubfs 부호없는 비트필드 추출. 
 	/* Cortex-A8 Errata */
 	ldr	r10, =0x00000c08		@ Cortex-A8 primary part number
 	teq	r0, r10
 	bne	2f
+	//primary part number 가 a8이 아니면 2f로 점프
 #if defined(CONFIG_ARM_ERRATA_430973) && !defined(CONFIG_ARCH_MULTIPLATFORM)
 
 	teq	r5, #0x00100000			@ only present in r1p*
@@ -302,6 +304,7 @@ __v7_setup:
 2:	ldr	r10, =0x00000c09		@ Cortex-A9 primary part number
 	teq	r0, r10
 	bne	3f
+	//a9 아니면 3f go
 #ifdef CONFIG_ARM_ERRATA_742230
 	cmp	r6, #0x22			@ only present up to r2p2
 	mrcle	p15, 0, r10, c15, c0, 1		@ read diagnostic register
@@ -336,8 +339,8 @@ __v7_setup:
 3:	ldr	r10, =0x00000c0f		@ Cortex-A15 primary part number
 	teq	r0, r10
 	bne	4f
-
-#ifdef CONFIG_ARM_ERRATA_773022
+//a15아니면 점프, 우리껀 a15이므로 무시.
+#ifdef CONFIG_ARM_ERRATA_773022 //not set
 	cmp	r6, #0x4			@ only present up to r0p4
 	mrcle	p15, 0, r10, c1, c0, 1		@ read aux control register
 	orrle	r10, r10, #1 << 1		@ disable loop buffer
@@ -346,13 +349,42 @@ __v7_setup:
 
 4:	mov	r10, #0
 	mcr	p15, 0, r10, c7, c5, 0		@ I+BTB cache invalidate
+	//i+BTB cache의 dirty bit를 무효화한다.
+	//BTB: branch target buffer . branch prediction 을 위해 최근 pc값을 저장하고 있는 버퍼
+	//Instruction Cache Invalidate All to PoU, VMSA
+	//PoU : For a particular processor, the point by which the instruction and data caches and the translation table walks of that 
+	processor are guaranteed to see the same copy of a memory location.
+	//VMSA : Virtual Memory System Architecture
 #ifdef CONFIG_MMU
 	mcr	p15, 0, r10, c8, c7, 0		@ invalidate I + D TLBs
+	//TLB Invalidate All, VMSA only
+	//I + D TLBs의 dirty bit를 무효화한다.
 	v7_ttb_setup r10, r4, r8, r5		@ TTBCR, TTBRx setup
-	ldr	r5, =PRRR			@ PRRR
-	ldr	r6, =NMRR			@ NMRR
+	//2단계로 가정. mm/proc-v7-2level.S 147
+	/*
+	r4: ttbr0, r8: ttbr1
+	1. Translation Table Base Control Register
+	ttbcr을 0으로 쓰고, r4와 r8를 TTB_FLAGS_SMP와 OR한다. 
+	페이지테이블이 메모리의 어디에 위치에있는지 mmu에 알려주기위한 준비
+	2. Translation Table Base Register 0 and Register 1
+	ttbr1을 로드??
+	arm에서는 ttbcr, ttbr0, ttbr1에 대해 defulat한 세팅에서 바꾸지 않고 그대로 사용한다는 내용이 TRM에 있고, 레지스터에 대한 정보는 레퍼런스 메뉴얼 참고. 
+	http://webcache.googleusercontent.com/search?q=cache:PttqpxNUKfIJ:www.iamroot.org/xe/176798+&cd=1&hl=ko&ct=clnk&gl=kr&lr=lang_ko
+	*/
+	/*
+	long desc로 사용할때 . LPAE : 32bit 로는 표현한계가 있어. 좀 넓혀 어드레싱하는 방식. 그래서 +8bit로 해서 사용. 우리는 short desc를 사용.
+	PAE, LPAE관련자료.
+	http://elinux.org/images/6/6a/Elce11_marinas.pdf
+	*/
+	ldr	r5, =PRRR			@ PRRR  // PRRR 0xff0a81a8
+	//PRRR, Primary Region Remap Register, VMSA
+	ldr	r6, =NMRR			@ NMRR  // NMRR 0x40e040e0
+	//NMRR, Normal Memory Remap Register, VMSA
+	//각 비트들의 역할은 아키텍처 레퍼런스 메뉴얼을 참조.
 	mcr	p15, 0, r5, c10, c2, 0		@ write PRRR
 	mcr	p15, 0, r6, c10, c2, 1		@ write NMRR
+	//여기까지 short desc를 사용할때에 대한 코프로세서 세팅들을 함.
+	//2014-06-28 여기까지 함
 #endif
 	dsb					@ Complete invalidations
 #ifndef CONFIG_ARM_THUMBEE

@@ -154,10 +154,10 @@
  * guarantee that this will preserve the flags.
  */
 	.macro	restore_irqs_notrace, oldcpsr
-#ifdef CONFIG_CPU_V7M
+#ifdef CONFIG_CPU_V7M //not set
 	msr	primask, \oldcpsr
 #else
-	msr	cpsr_c, \oldcpsr
+	msr	cpsr_c, \oldcpsr //
 #endif
 	.endm
 

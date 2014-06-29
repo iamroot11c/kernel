@@ -1,0 +1,2165 @@
+
+proc-v7.o:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <cpu_v7_switch_mm>:
+   0:	e3a02000 	mov	r2, #0
+   4:	e5911178 	ldr	r1, [r1, #376]	; 0x178
+   8:	e380006a 	orr	r0, r0, #106	; 0x6a
+   c:	ee0d1f30 	mcr	15, 0, r1, cr13, cr0, {1}
+  10:	f57ff06f 	isb	sy
+  14:	ee020f10 	mcr	15, 0, r0, cr2, cr0, {0}
+  18:	f57ff06f 	isb	sy
+  1c:	e1a0f00e 	mov	pc, lr
+
+00000020 <cpu_v7_set_pte_ext>:
+  20:	e5801000 	str	r1, [r0]
+  24:	e3c13e3f 	bic	r3, r1, #1008	; 0x3f0
+  28:	e3c33003 	bic	r3, r3, #3
+  2c:	e1833002 	orr	r3, r3, r2
+  30:	e3833012 	orr	r3, r3, #18
+  34:	e3110010 	tst	r1, #16
+  38:	13833040 	orrne	r3, r3, #64	; 0x40
+  3c:	e2211040 	eor	r1, r1, #64	; 0x40
+  40:	e31100c0 	tst	r1, #192	; 0xc0
+  44:	13833c02 	orrne	r3, r3, #512	; 0x200
+  48:	e3110c01 	tst	r1, #256	; 0x100
+  4c:	13833020 	orrne	r3, r3, #32
+  50:	e3110c02 	tst	r1, #512	; 0x200
+  54:	13833001 	orrne	r3, r3, #1
+  58:	e3110002 	tst	r1, #2
+  5c:	13110001 	tstne	r1, #1
+  60:	12211b02 	eorne	r1, r1, #2048	; 0x800
+  64:	13110b02 	tstne	r1, #2048	; 0x800
+  68:	03a03000 	moveq	r3, #0
+  6c:	e5a03800 	str	r3, [r0, #2048]!	; 0x800
+  70:	e320f000 	nop	{0}
+  74:	e1a0f00e 	mov	pc, lr
+
+00000078 <v7_crval>:
+  78:	2120c302 	teqcs	r0, r2, lsl #6
+  7c:	10c03c7d 	sbcne	r3, r0, sp, ror ip
+
+00000080 <cpu_v7_proc_init>:
+  80:	e1a0f00e 	mov	pc, lr
+
+00000084 <cpu_v7_proc_fin>:
+  84:	ee110f10 	mrc	15, 0, r0, cr1, cr0, {0}
+  88:	e3c00a01 	bic	r0, r0, #4096	; 0x1000
+  8c:	e3c00006 	bic	r0, r0, #6
+  90:	ee010f10 	mcr	15, 0, r0, cr1, cr0, {0}
+  94:	e1a0f00e 	mov	pc, lr
+  98:	e320f000 	nop	{0}
+  9c:	e320f000 	nop	{0}
+
+000000a0 <cpu_v7_do_idle>:
+  a0:	f57ff04f 	dsb	sy
+  a4:	e320f003 	wfi
+  a8:	e1a0f00e 	mov	pc, lr
+
+000000ac <cpu_v7_dcache_clean_area>:
+  ac:	e320f000 	nop	{0}
+  b0:	e1a0f00e 	mov	pc, lr
+  b4:	ee103f30 	mrc	15, 0, r3, cr0, cr0, {1}
+  b8:	e1a03823 	lsr	r3, r3, #16
+  bc:	e203300f 	and	r3, r3, #15
+  c0:	e3a02004 	mov	r2, #4
+  c4:	e1a02312 	lsl	r2, r2, r3
+  c8:	ee070f3a 	mcr	15, 0, r0, cr7, cr10, {1}
+  cc:	e0800002 	add	r0, r0, r2
+  d0:	e0511002 	subs	r1, r1, r2
+  d4:	8afffffb 	bhi	c8 <cpu_v7_dcache_clean_area+0x1c>
+  d8:	f57ff04a 	dsb	ishst
+  dc:	e1a0f00e 	mov	pc, lr
+
+000000e0 <cpu_v7_name>:
+  e0:	764d5241 	strbvc	r5, [sp], -r1, asr #4
+  e4:	72502037 	subsvc	r2, r0, #55	; 0x37
+  e8:	7365636f 	cmnvc	r5, #-1140850687	; 0xbc000001
+  ec:	00726f73 	rsbseq	r6, r2, r3, ror pc
+
+000000f0 <cpu_v7_do_suspend>:
+  f0:	e92d47f0 	push	{r4, r5, r6, r7, r8, r9, sl, lr}
+  f4:	ee1d4f10 	mrc	15, 0, r4, cr13, cr0, {0}
+  f8:	ee1d5f70 	mrc	15, 0, r5, cr13, cr0, {3}
+  fc:	e8a00030 	stmia	r0!, {r4, r5}
+ 100:	ee136f10 	mrc	15, 0, r6, cr3, cr0, {0}
+ 104:	ee127f30 	mrc	15, 0, r7, cr2, cr0, {1}
+ 108:	ee12bf50 	mrc	15, 0, fp, cr2, cr0, {2}
+ 10c:	ee118f10 	mrc	15, 0, r8, cr1, cr0, {0}
+ 110:	ee119f30 	mrc	15, 0, r9, cr1, cr0, {1}
+ 114:	ee11af50 	mrc	15, 0, sl, cr1, cr0, {2}
+ 118:	e8800fc0 	stm	r0, {r6, r7, r8, r9, sl, fp}
+ 11c:	e8bd87f0 	pop	{r4, r5, r6, r7, r8, r9, sl, pc}
+
+00000120 <cpu_v7_do_resume>:
+ 120:	e3a0c000 	mov	ip, #0
+ 124:	ee07cf15 	mcr	15, 0, ip, cr7, cr5, {0}
+ 128:	ee0dcf30 	mcr	15, 0, ip, cr13, cr0, {1}
+ 12c:	e8b00030 	ldm	r0!, {r4, r5}
+ 130:	ee0d4f10 	mcr	15, 0, r4, cr13, cr0, {0}
+ 134:	ee0d5f70 	mcr	15, 0, r5, cr13, cr0, {3}
+ 138:	e8900fc0 	ldm	r0, {r6, r7, r8, r9, sl, fp}
+ 13c:	ee08cf17 	mcr	15, 0, ip, cr8, cr7, {0}
+ 140:	ee036f10 	mcr	15, 0, r6, cr3, cr0, {0}
+ 144:	e381106a 	orr	r1, r1, #106	; 0x6a
+ 148:	ee021f10 	mcr	15, 0, r1, cr2, cr0, {0}
+ 14c:	ee027f30 	mcr	15, 0, r7, cr2, cr0, {1}
+ 150:	ee02bf50 	mcr	15, 0, fp, cr2, cr0, {2}
+ 154:	e59f4144 	ldr	r4, [pc, #324]	; 2a0 <__v7_setup_stack+0x2c>
+ 158:	e59f5144 	ldr	r5, [pc, #324]	; 2a4 <__v7_setup_stack+0x30>
+ 15c:	ee0a4f12 	mcr	15, 0, r4, cr10, cr2, {0}
+ 160:	ee0a5f32 	mcr	15, 0, r5, cr10, cr2, {1}
+ 164:	ee114f30 	mrc	15, 0, r4, cr1, cr0, {1}
+ 168:	e1340009 	teq	r4, r9
+ 16c:	1e019f30 	mcrne	15, 0, r9, cr1, cr0, {1}
+ 170:	ee01af50 	mcr	15, 0, sl, cr1, cr0, {2}
+ 174:	f57ff06f 	isb	sy
+ 178:	f57ff04f 	dsb	sy
+ 17c:	e1a00008 	mov	r0, r8
+ 180:	eafffffe 	b	0 <cpu_resume_mmu>
+
+00000184 <__v7_ca5mp_setup>:
+ 184:	e3a0a001 	mov	sl, #1
+ 188:	ea000000 	b	190 <__v7_ca15mp_setup+0x4>
+
+0000018c <__v7_ca15mp_setup>:
+ 18c:	e3a0a000 	mov	sl, #0
+ 190:	ee110f30 	mrc	15, 0, r0, cr1, cr0, {1}
+ 194:	e3100040 	tst	r0, #64	; 0x40
+ 198:	03800040 	orreq	r0, r0, #64	; 0x40
+ 19c:	0180000a 	orreq	r0, r0, sl
+ 1a0:	0e010f30 	mcreq	15, 0, r0, cr1, cr0, {1}
+ 1a4:	eaffffff 	b	1a8 <__v7_setup>
+
+000001a8 <__v7_setup>:
+ 1a8:	e28fc0c4 	add	ip, pc, #196	; 0xc4
+ 1ac:	e88c4abf 	stm	ip, {r0, r1, r2, r3, r4, r5, r7, r9, fp, lr}
+ 1b0:	ebfffffe 	bl	0 <v7_flush_dcache_louis>
+ 1b4:	e89c4abf 	ldm	ip, {r0, r1, r2, r3, r4, r5, r7, r9, fp, lr}
+ 1b8:	ee100f10 	mrc	15, 0, r0, cr0, cr0, {0}
+ 1bc:	e200a4ff 	and	sl, r0, #-16777216	; 0xff000000
+ 1c0:	e33a0441 	teq	sl, #1090519040	; 0x41000000
+ 1c4:	1a00000a 	bne	1f4 <__v7_setup+0x4c>
+ 1c8:	e200560f 	and	r5, r0, #15728640	; 0xf00000
+ 1cc:	e200600f 	and	r6, r0, #15
+ 1d0:	e1866825 	orr	r6, r6, r5, lsr #16
+ 1d4:	e7eb0250 	ubfx	r0, r0, #4, #12
+ 1d8:	e59fa0c8 	ldr	sl, [pc, #200]	; 2a8 <__v7_setup_stack+0x34>
+ 1dc:	e130000a 	teq	r0, sl
+ 1e0:	1a000000 	bne	1e8 <__v7_setup+0x40>
+ 1e4:	ea000002 	b	1f4 <__v7_setup+0x4c>
+ 1e8:	e59fa0bc 	ldr	sl, [pc, #188]	; 2ac <__v7_setup_stack+0x38>
+ 1ec:	e130000a 	teq	r0, sl
+ 1f0:	1affffff 	bne	1f4 <__v7_setup+0x4c>
+ 1f4:	e59fa0b4 	ldr	sl, [pc, #180]	; 2b0 <__v7_setup_stack+0x3c>
+ 1f8:	e130000a 	teq	r0, sl
+ 1fc:	1affffff 	bne	200 <__v7_setup+0x58>
+ 200:	e3a0a000 	mov	sl, #0
+ 204:	ee07af15 	mcr	15, 0, sl, cr7, cr5, {0}
+ 208:	ee08af17 	mcr	15, 0, sl, cr8, cr7, {0}
+ 20c:	ee02af50 	mcr	15, 0, sl, cr2, cr0, {2}
+ 210:	e384406a 	orr	r4, r4, #106	; 0x6a
+ 214:	e388806a 	orr	r8, r8, #106	; 0x6a
+ 218:	ee028f30 	mcr	15, 0, r8, cr2, cr0, {1}
+ 21c:	e59f507c 	ldr	r5, [pc, #124]	; 2a0 <__v7_setup_stack+0x2c>
+ 220:	e59f607c 	ldr	r6, [pc, #124]	; 2a4 <__v7_setup_stack+0x30>
+ 224:	ee0a5f12 	mcr	15, 0, r5, cr10, cr2, {0}
+ 228:	ee0a6f32 	mcr	15, 0, r6, cr10, cr2, {1}
+ 22c:	f57ff04f 	dsb	sy
+ 230:	ee100f11 	mrc	15, 0, r0, cr0, cr1, {0}
+ 234:	e2000a0f 	and	r0, r0, #61440	; 0xf000
+ 238:	e3300a01 	teq	r0, #4096	; 0x1000
+ 23c:	1a000004 	bne	254 <__v7_setup+0xac>
+ 240:	e3a05000 	mov	r5, #0
+ 244:	eec15e10 	mcr	14, 6, r5, cr1, cr0, {0}
+ 248:	eed00e10 	mrc	14, 6, r0, cr0, cr0, {0}
+ 24c:	e3800001 	orr	r0, r0, #1
+ 250:	eec00e10 	mcr	14, 6, r0, cr0, cr0, {0}
+ 254:	e24f5f79 	sub	r5, pc, #484	; 0x1e4
+ 258:	e8950060 	ldm	r5, {r5, r6}
+ 25c:	e3855b01 	orr	r5, r5, #1024	; 0x400
+ 260:	e3c66b01 	bic	r6, r6, #1024	; 0x400
+ 264:	ee110f10 	mrc	15, 0, r0, cr1, cr0, {0}
+ 268:	e1c00005 	bic	r0, r0, r5
+ 26c:	e1800006 	orr	r0, r0, r6
+ 270:	e1a0f00e 	mov	pc, lr
+
+00000274 <__v7_setup_stack>:
+	...
+ 2a0:	ff0a81a8 			; <UNDEFINED> instruction: 0xff0a81a8
+ 2a4:	40e040e0 	rscmi	r4, r0, r0, ror #1
+ 2a8:	00000c08 	andeq	r0, r0, r8, lsl #24
+ 2ac:	00000c09 	andeq	r0, r0, r9, lsl #24
+ 2b0:	00000c0f 	andeq	r0, r0, pc, lsl #24
+ 2b4:	e320f000 	nop	{0}
+ 2b8:	e320f000 	nop	{0}
+ 2bc:	e320f000 	nop	{0}
+
+Disassembly of section .alt.smp.init:
+
+00000000 <.alt.smp.init>:
+   0:	00000008 	andeq	r0, r0, r8
+   4:	e3800059 	orr	r0, r0, #89	; 0x59
+   8:	00000070 	andeq	r0, r0, r0, ror r0
+   c:	ee070f3a 	mcr	15, 0, r0, cr7, cr10, {1}
+  10:	000000ac 	andeq	r0, r0, ip, lsr #1
+  14:	ea000000 	b	1c <.alt.smp.init+0x1c>
+  18:	00000144 	andeq	r0, r0, r4, asr #2
+  1c:	e3811059 	orr	r1, r1, #89	; 0x59
+  20:	00000190 	muleq	r0, r0, r1
+  24:	e3a00040 	mov	r0, #64	; 0x40
+  28:	00000210 	andeq	r0, r0, r0, lsl r2
+  2c:	e3844059 	orr	r4, r4, #89	; 0x59
+  30:	00000214 	andeq	r0, r0, r4, lsl r2
+  34:	e3888059 	orr	r8, r8, #89	; 0x59
+  38:	00000008 	andeq	r0, r0, r8
+  3c:	00000c0e 	andeq	r0, r0, lr, lsl #24
+  40:	0000003c 	andeq	r0, r0, ip, lsr r0
+  44:	00000c0e 	andeq	r0, r0, lr, lsl #24
+  48:	00000070 	andeq	r0, r0, r0, ror r0
+  4c:	00000c0e 	andeq	r0, r0, lr, lsl #24
+  50:	000000a4 	andeq	r0, r0, r4, lsr #1
+  54:	00000c0e 	andeq	r0, r0, lr, lsl #24
+  58:	000000d8 	ldrdeq	r0, [r0], -r8
+  5c:	00000c0e 	andeq	r0, r0, lr, lsl #24
+  60:	0000010c 	andeq	r0, r0, ip, lsl #2
+  64:	00000c0e 	andeq	r0, r0, lr, lsl #24
+  68:	00000140 	andeq	r0, r0, r0, asr #2
+  6c:	00000c0e 	andeq	r0, r0, lr, lsl #24
+
+Disassembly of section .idmap.text:
+
+00000000 <cpu_v7_reset>:
+   0:	ee111f10 	mrc	15, 0, r1, cr1, cr0, {0}
+   4:	e3c11001 	bic	r1, r1, #1
+   8:	ee011f10 	mcr	15, 0, r1, cr1, cr0, {0}
+   c:	f57ff06f 	isb	sy
+  10:	e12fff10 	bx	r0
+
+Disassembly of section .init.data:
+
+00000000 <v7_processor_functions>:
+	...
+  24:	00000020 	andeq	r0, r0, r0, lsr #32
+	...
+
+Disassembly of section .rodata:
+
+00000000 <cpu_arch_name>:
+   0:	766d7261 	strbtvc	r7, [sp], -r1, ror #4
+   4:	37760037 			; <UNDEFINED> instruction: 0x37760037
+
+00000006 <cpu_elf_name>:
+   6:	00003776 	andeq	r3, r0, r6, ror r7
+	...
+
+Disassembly of section .proc.info.init:
+
+00000000 <__v7_ca5mp_proc_info>:
+   0:	410fc050 	qaddmi	ip, r0, pc	; <UNPREDICTABLE>
+   4:	ff0ffff0 			; <UNDEFINED> instruction: 0xff0ffff0
+   8:	00011c0e 	andeq	r1, r1, lr, lsl #24
+   c:	00000c02 	andeq	r0, r0, r2, lsl #24
+  10:	ea00005f 	b	184 <__v7_ca5mp_setup>
+  14:	00000000 	andeq	r0, r0, r0
+  18:	00000006 	andeq	r0, r0, r6
+  1c:	00008097 	muleq	r0, r7, r0
+  20:	000000e0 	andeq	r0, r0, r0, ror #1
+	...
+
+00000034 <__v7_ca9mp_proc_info>:
+  34:	410fc090 	swpmi	ip, r0, [pc]	; <UNPREDICTABLE>
+  38:	ff0ffff0 			; <UNDEFINED> instruction: 0xff0ffff0
+  3c:	00011c0e 	andeq	r1, r1, lr, lsl #24
+  40:	00000c02 	andeq	r0, r0, r2, lsl #24
+  44:	ea00005f 	b	184 <__v7_ca5mp_setup>
+  48:	00000000 	andeq	r0, r0, r0
+  4c:	00000006 	andeq	r0, r0, r6
+  50:	00008097 	muleq	r0, r7, r0
+  54:	000000e0 	andeq	r0, r0, r0, ror #1
+	...
+
+00000068 <__v7_cr7mp_proc_info>:
+  68:	410fc170 	tstmi	pc, r0, ror r1	; <UNPREDICTABLE>
+  6c:	ff0ffff0 			; <UNDEFINED> instruction: 0xff0ffff0
+  70:	00011c0e 	andeq	r1, r1, lr, lsl #24
+  74:	00000c02 	andeq	r0, r0, r2, lsl #24
+  78:	ea00005f 	b	184 <__v7_ca5mp_setup>
+  7c:	00000000 	andeq	r0, r0, r0
+  80:	00000006 	andeq	r0, r0, r6
+  84:	00008097 	muleq	r0, r7, r0
+  88:	000000e0 	andeq	r0, r0, r0, ror #1
+	...
+
+0000009c <__v7_ca7mp_proc_info>:
+  9c:	410fc070 	tstmi	pc, r0, ror r0	; <UNPREDICTABLE>
+  a0:	ff0ffff0 			; <UNDEFINED> instruction: 0xff0ffff0
+  a4:	00011c0e 	andeq	r1, r1, lr, lsl #24
+  a8:	00000c02 	andeq	r0, r0, r2, lsl #24
+  ac:	ea000061 	b	18c <__v7_ca15mp_setup>
+  b0:	00000000 	andeq	r0, r0, r0
+  b4:	00000006 	andeq	r0, r0, r6
+  b8:	00008097 	muleq	r0, r7, r0
+  bc:	000000e0 	andeq	r0, r0, r0, ror #1
+	...
+
+000000d0 <__v7_ca15mp_proc_info>:
+  d0:	410fc0f0 	strdmi	ip, [pc, -r0]
+  d4:	ff0ffff0 			; <UNDEFINED> instruction: 0xff0ffff0
+  d8:	00011c0e 	andeq	r1, r1, lr, lsl #24
+  dc:	00000c02 	andeq	r0, r0, r2, lsl #24
+  e0:	ea000061 	b	18c <__v7_ca15mp_setup>
+  e4:	00000000 	andeq	r0, r0, r0
+  e8:	00000006 	andeq	r0, r0, r6
+  ec:	00008097 	muleq	r0, r7, r0
+  f0:	000000e0 	andeq	r0, r0, r0, ror #1
+	...
+
+00000104 <__krait_proc_info>:
+ 104:	510f0400 	tstpl	pc, r0, lsl #8
+ 108:	ff0ffc00 			; <UNDEFINED> instruction: 0xff0ffc00
+ 10c:	00011c0e 	andeq	r1, r1, lr, lsl #24
+ 110:	00000c02 	andeq	r0, r0, r2, lsl #24
+ 114:	eafffffe 	b	1a8 <__v7_setup>
+ 118:	00000000 	andeq	r0, r0, r0
+ 11c:	00000006 	andeq	r0, r0, r6
+ 120:	00068097 	muleq	r6, r7, r0
+ 124:	000000e0 	andeq	r0, r0, r0, ror #1
+	...
+
+00000138 <__v7_proc_info>:
+ 138:	000f0000 	andeq	r0, pc, r0
+ 13c:	000f0000 	andeq	r0, pc, r0
+ 140:	00011c0e 	andeq	r1, r1, lr, lsl #24
+ 144:	00000c02 	andeq	r0, r0, r2, lsl #24
+ 148:	eafffffe 	b	1a8 <__v7_setup>
+ 14c:	00000000 	andeq	r0, r0, r0
+ 150:	00000006 	andeq	r0, r0, r6
+ 154:	00008097 	muleq	r0, r7, r0
+ 158:	000000e0 	andeq	r0, r0, r0, ror #1
+	...
+
+Disassembly of section .ARM.attributes:
+
+00000000 <.ARM.attributes>:
+   0:	00001e41 	andeq	r1, r0, r1, asr #28
+   4:	61656100 	cmnvs	r5, r0, lsl #2
+   8:	01006962 	tsteq	r0, r2, ror #18
+   c:	00000014 	andeq	r0, r0, r4, lsl r0
+  10:	412d3705 	teqmi	sp, r5, lsl #14
+  14:	070a0600 	streq	r0, [sl, -r0, lsl #12]
+  18:	09010841 	stmdbeq	r1, {r0, r6, fp}
+  1c:	Address 0x0000001c is out of bounds.
+
+
+Disassembly of section .debug_line:
+
+00000000 <.debug_line>:
+   0:	00000156 	andeq	r0, r0, r6, asr r1
+   4:	00400002 	subeq	r0, r0, r2
+   8:	01020000 	mrseq	r0, (UNDEF: 2)
+   c:	000d0efb 	strdeq	r0, [sp], -fp
+  10:	01010101 	tsteq	r1, r1, lsl #2
+  14:	01000000 	mrseq	r0, (UNDEF: 0)
+  18:	61010000 	mrsvs	r0, (UNDEF: 1)
+  1c:	2f686372 	svccs	0x00686372
+  20:	2f6d7261 	svccs	0x006d7261
+  24:	00006d6d 	andeq	r6, r0, sp, ror #26
+  28:	636f7270 	cmnvs	pc, #112, 4
+  2c:	2d37762d 	ldccs	6, cr7, [r7, #-180]!	; 0xffffff4c
+  30:	76656c32 			; <UNDEFINED> instruction: 0x76656c32
+  34:	532e6c65 	teqpl	lr, #25856	; 0x6500
+  38:	00000100 	andeq	r0, r0, r0, lsl #2
+  3c:	636f7270 	cmnvs	pc, #112, 4
+  40:	2e37762d 	cfmsuba32cs	mvax1, mvax7, mvfx7, mvfx13
+  44:	00010053 	andeq	r0, r1, r3, asr r0
+  48:	05000000 	streq	r0, [r0, #-0]
+  4c:	00000002 	andeq	r0, r0, r2
+  50:	01290300 	teqeq	r9, r0, lsl #6
+  54:	0d032f2f 	stceq	15, cr2, [r3, #-188]	; 0xffffff44
+  58:	2f2f2f2e 	svccs	0x002f2f2e
+  5c:	2e0f0330 	mcrcs	3, 0, r0, cr15, cr0, {1}
+  60:	2f2f2f30 	svccs	0x002f2f30
+  64:	2f302f30 	svccs	0x00302f30
+  68:	302f302f 	eorcc	r3, pc, pc, lsr #32
+  6c:	2f2f302f 	svccs	0x002f302f
+  70:	31302f2f 	teqcc	r0, pc, lsr #30
+  74:	03020431 	movweq	r0, #9265	; 0x2431
+  78:	32667fb0 	rsbcc	r7, r6, #176, 30	; 0x2c0
+  7c:	2f2f2f2f 	svccs	0x002f2f2f
+  80:	2f662303 	svccs	0x00662303
+  84:	2f30322f 	svccs	0x0030322f
+  88:	2f2f2f9f 	svccs	0x002f2f9f
+  8c:	0b032f2f 	bleq	cbd50 <__v7_setup_stack+0xcbadc>
+  90:	2f2f2f9e 	svccs	0x002f2f9e
+  94:	302f2f30 	eorcc	r2, pc, r0, lsr pc	; <UNPREDICTABLE>
+  98:	2f2f2f2f 	svccs	0x002f2f2f
+  9c:	2f2f2f32 	svccs	0x002f2f32
+  a0:	302f2f2f 	eorcc	r2, pc, pc, lsr #30
+  a4:	2f31302f 	svccs	0x0031302f
+  a8:	2f2f2f2f 	svccs	0x002f2f2f
+  ac:	2f2f302f 	svccs	0x002f302f
+  b0:	2f2f2f2f 	svccs	0x002f2f2f
+  b4:	2e29032f 	cdpcs	3, 2, cr0, cr9, cr15, {1}
+  b8:	3031312f 	eorscc	r3, r1, pc, lsr #2
+  bc:	302f2f2f 	eorcc	r2, pc, pc, lsr #30
+  c0:	2f2e3b03 	svccs	0x002e3b03
+  c4:	2f302f2f 	svccs	0x00302f2f
+  c8:	2f2f2f2f 	svccs	0x002f2f2f
+  cc:	2f312f2f 	svccs	0x00312f2f
+  d0:	2e16032f 	cdpcs	3, 1, cr0, cr6, cr15, {1}
+  d4:	032f2f31 	teqeq	pc, #49, 30	; 0xc4
+  d8:	2f2f2e20 	svccs	0x002f2e20
+  dc:	2f2e0903 	svccs	0x002e0903
+  e0:	2f832f30 	svccs	0x00832f30
+  e4:	30302f2f 	eorscc	r2, r0, pc, lsr #30
+  e8:	2f2f2f2f 	svccs	0x002f2f2f
+  ec:	2f2f2f2f 	svccs	0x002f2f2f
+  f0:	2f332f31 	svccs	0x00332f31
+  f4:	302f2f30 	eorcc	r2, pc, r0, lsr pc	; <UNPREDICTABLE>
+  f8:	01002202 	tsteq	r0, r2, lsl #4
+  fc:	02050001 	andeq	r0, r5, #1
+ 100:	00000004 	andeq	r0, r0, r4
+ 104:	03012c03 	movweq	r2, #7171	; 0x1c03
+ 108:	02044a3e 	andeq	r4, r4, #253952	; 0x3e000
+ 10c:	034a6403 	movteq	r6, #41987	; 0xa403
+ 110:	c2034a30 	andgt	r4, r3, #48, 20	; 0x30000
+ 114:	26024a00 	strcs	r4, [r2], -r0, lsl #20
+ 118:	04010100 	streq	r0, [r1], #-256	; 0xffffff00
+ 11c:	02050002 	andeq	r0, r5, #2
+ 120:	00000000 	andeq	r0, r0, r0
+ 124:	2f013603 	svccs	0x00013603
+ 128:	022f2f30 	eoreq	r2, pc, #48, 30	; 0xc0
+ 12c:	01010002 	tsteq	r1, r2
+ 130:	05000204 	streq	r0, [r0, #-516]	; 0xfffffdfc
+ 134:	00001002 	andeq	r1, r0, r2
+ 138:	03b10300 			; <UNDEFINED> instruction: 0x03b10300
+ 13c:	080a0301 	stmdaeq	sl, {r0, r8, r9}
+ 140:	08180390 	ldmdaeq	r8, {r4, r7, r8, r9}
+ 144:	080a0390 	stmdaeq	sl, {r4, r7, r8, r9}
+ 148:	080a0390 	stmdaeq	sl, {r4, r7, r8, r9}
+ 14c:	080f0390 	stmdaeq	pc, {r4, r7, r8, r9}	; <UNPREDICTABLE>
+ 150:	080a0390 	stmdaeq	sl, {r4, r7, r8, r9}
+ 154:	00120290 	mulseq	r2, r0, r2
+ 158:	Address 0x00000158 is out of bounds.
+
+
+Disassembly of section .debug_info:
+
+00000000 <.debug_info>:
+   0:	00000052 	andeq	r0, r0, r2, asr r0
+   4:	00000002 	andeq	r0, r0, r2
+   8:	01040000 	mrseq	r0, (UNDEF: 4)
+	...
+  14:	68637261 	stmdavs	r3!, {r0, r5, r6, r9, ip, sp, lr}^
+  18:	6d72612f 	ldfvse	f6, [r2, #-188]!	; 0xffffff44
+  1c:	2f6d6d2f 	svccs	0x006d6d2f
+  20:	636f7270 	cmnvs	pc, #112, 4
+  24:	2d37762d 	ldccs	6, cr7, [r7, #-180]!	; 0xffffff4c
+  28:	76656c32 			; <UNDEFINED> instruction: 0x76656c32
+  2c:	532e6c65 	teqpl	lr, #25856	; 0x6500
+  30:	6f682f00 	svcvs	0x00682f00
+  34:	642f656d 	strtvs	r6, [pc], #-1389	; 3c <.debug_info+0x3c>
+  38:	65696e61 	strbvs	r6, [r9, #-3681]!	; 0xfffff19f
+  3c:	656b2f6c 	strbvs	r2, [fp, #-3948]!	; 0xfffff094
+  40:	6c656e72 	stclvs	14, cr6, [r5], #-456	; 0xfffffe38
+  44:	554e4700 	strbpl	r4, [lr, #-1792]	; 0xfffff900
+  48:	20534120 	subscs	r4, r3, r0, lsr #2
+  4c:	30322e32 	eorscc	r2, r2, r2, lsr lr
+  50:	0031352e 	eorseq	r3, r1, lr, lsr #10
+  54:	Address 0x00000054 is out of bounds.
+
+
+Disassembly of section .debug_abbrev:
+
+00000000 <.debug_abbrev>:
+   0:	10001101 	andne	r1, r0, r1, lsl #2
+   4:	03065506 	movweq	r5, #25862	; 0x6506
+   8:	25081b08 	strcs	r1, [r8, #-2824]	; 0xfffff4f8
+   c:	00051308 	andeq	r1, r5, r8, lsl #6
+	...
+
+Disassembly of section .debug_aranges:
+
+00000000 <.debug_aranges>:
+   0:	00000034 	andeq	r0, r0, r4, lsr r0
+   4:	00000002 	andeq	r0, r0, r2
+   8:	00040000 	andeq	r0, r4, r0
+	...
+  14:	000002b4 			; <UNDEFINED> instruction: 0x000002b4
+  18:	00000000 	andeq	r0, r0, r0
+  1c:	00000070 	andeq	r0, r0, r0, ror r0
+  20:	00000000 	andeq	r0, r0, r0
+  24:	00000014 	andeq	r0, r0, r4, lsl r0
+  28:	00000000 	andeq	r0, r0, r0
+  2c:	0000016c 	andeq	r0, r0, ip, ror #2
+	...
+
+Disassembly of section .debug_ranges:
+
+00000000 <.debug_ranges>:
+   0:	ffffffff 			; <UNDEFINED> instruction: 0xffffffff
+	...
+   c:	000002b4 			; <UNDEFINED> instruction: 0x000002b4
+  10:	00000000 	andeq	r0, r0, r0
+  14:	00000070 	andeq	r0, r0, r0, ror r0
+  18:	00000000 	andeq	r0, r0, r0
+  1c:	00000014 	andeq	r0, r0, r4, lsl r0
+  20:	00000000 	andeq	r0, r0, r0
+  24:	0000016c 	andeq	r0, r0, ip, ror #2
+	...
+
+proc-v7.o:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <cpu_v7_switch_mm>:
+ *	It is assumed that:
+ *	- we are not using split page tables
+ */
+ENTRY(cpu_v7_switch_mm)
+#ifdef CONFIG_MMU
+	mov	r2, #0
+   0:	e3a02000 	mov	r2, #0
+	mmid	r1, r1				@ get mm->context.id
+   4:	e5911178 	ldr	r1, [r1, #376]	; 0x178
+	ALT_SMP(orr	r0, r0, #TTB_FLAGS_SMP)
+   8:	e380006a 	orr	r0, r0, #106	; 0x6a
+	bfi	r1, r2, #8, #24			@ insert into new context ID
+#endif
+#ifdef CONFIG_ARM_ERRATA_754322
+	dsb
+#endif
+	mcr	p15, 0, r1, c13, c0, 1		@ set context ID
+   c:	ee0d1f30 	mcr	15, 0, r1, cr13, cr0, {1}
+	isb
+  10:	f57ff06f 	isb	sy
+	mcr	p15, 0, r0, c2, c0, 0		@ set TTB 0
+  14:	ee020f10 	mcr	15, 0, r0, cr2, cr0, {0}
+	isb
+  18:	f57ff06f 	isb	sy
+#endif
+	mov	pc, lr
+  1c:	e1a0f00e 	mov	pc, lr
+
+00000020 <cpu_v7_set_pte_ext>:
+ *	- pte   - PTE value to store
+ *	- ext	- value for extended PTE bits
+ */
+ENTRY(cpu_v7_set_pte_ext)
+#ifdef CONFIG_MMU
+	str	r1, [r0]			@ linux version
+  20:	e5801000 	str	r1, [r0]
+
+	bic	r3, r1, #0x000003f0
+  24:	e3c13e3f 	bic	r3, r1, #1008	; 0x3f0
+	bic	r3, r3, #PTE_TYPE_MASK
+  28:	e3c33003 	bic	r3, r3, #3
+	orr	r3, r3, r2
+  2c:	e1833002 	orr	r3, r3, r2
+	orr	r3, r3, #PTE_EXT_AP0 | 2
+  30:	e3833012 	orr	r3, r3, #18
+
+	tst	r1, #1 << 4
+  34:	e3110010 	tst	r1, #16
+	orrne	r3, r3, #PTE_EXT_TEX(1)
+  38:	13833040 	orrne	r3, r3, #64	; 0x40
+
+	eor	r1, r1, #L_PTE_DIRTY
+  3c:	e2211040 	eor	r1, r1, #64	; 0x40
+	tst	r1, #L_PTE_RDONLY | L_PTE_DIRTY
+  40:	e31100c0 	tst	r1, #192	; 0xc0
+	orrne	r3, r3, #PTE_EXT_APX
+  44:	13833c02 	orrne	r3, r3, #512	; 0x200
+
+	tst	r1, #L_PTE_USER
+  48:	e3110c01 	tst	r1, #256	; 0x100
+	orrne	r3, r3, #PTE_EXT_AP1
+  4c:	13833020 	orrne	r3, r3, #32
+
+	tst	r1, #L_PTE_XN
+  50:	e3110c02 	tst	r1, #512	; 0x200
+	orrne	r3, r3, #PTE_EXT_XN
+  54:	13833001 	orrne	r3, r3, #1
+
+	tst	r1, #L_PTE_YOUNG
+  58:	e3110002 	tst	r1, #2
+	tstne	r1, #L_PTE_VALID
+  5c:	13110001 	tstne	r1, #1
+	eorne	r1, r1, #L_PTE_NONE
+  60:	12211b02 	eorne	r1, r1, #2048	; 0x800
+	tstne	r1, #L_PTE_NONE
+  64:	13110b02 	tstne	r1, #2048	; 0x800
+	moveq	r3, #0
+  68:	03a03000 	moveq	r3, #0
+
+ ARM(	str	r3, [r0, #2048]! )
+  6c:	e5a03800 	str	r3, [r0, #2048]!	; 0x800
+ THUMB(	add	r0, r0, #2048 )
+ THUMB(	str	r3, [r0] )
+	ALT_SMP(W(nop))
+  70:	e320f000 	nop	{0}
+	ALT_UP (mcr	p15, 0, r0, c7, c10, 1)		@ flush_pte
+#endif
+	mov	pc, lr
+  74:	e1a0f00e 	mov	pc, lr
+
+00000078 <v7_crval>:
+  78:	2120c302 	teqcs	r0, r2, lsl #6
+  7c:	10c03c7d 	sbcne	r3, r0, sp, ror ip
+
+00000080 <cpu_v7_proc_init>:
+#else
+#include "proc-v7-2level.S"
+#endif
+
+ENTRY(cpu_v7_proc_init)
+	mov	pc, lr
+  80:	e1a0f00e 	mov	pc, lr
+
+00000084 <cpu_v7_proc_fin>:
+ENDPROC(cpu_v7_proc_init)
+
+ENTRY(cpu_v7_proc_fin)
+	mrc	p15, 0, r0, c1, c0, 0		@ ctrl register
+  84:	ee110f10 	mrc	15, 0, r0, cr1, cr0, {0}
+	bic	r0, r0, #0x1000			@ ...i............
+  88:	e3c00a01 	bic	r0, r0, #4096	; 0x1000
+	bic	r0, r0, #0x0006			@ .............ca.
+  8c:	e3c00006 	bic	r0, r0, #6
+	mcr	p15, 0, r0, c1, c0, 0		@ disable caches
+  90:	ee010f10 	mcr	15, 0, r0, cr1, cr0, {0}
+	mov	pc, lr
+  94:	e1a0f00e 	mov	pc, lr
+  98:	e320f000 	nop	{0}
+  9c:	e320f000 	nop	{0}
+
+000000a0 <cpu_v7_do_idle>:
+ *	Idle the processor (eg, wait for interrupt).
+ *
+ *	IRQs are already disabled.
+ */
+ENTRY(cpu_v7_do_idle)
+	dsb					@ WFI may enter a low-power mode
+  a0:	f57ff04f 	dsb	sy
+	wfi
+  a4:	e320f003 	wfi
+	mov	pc, lr
+  a8:	e1a0f00e 	mov	pc, lr
+
+000000ac <cpu_v7_dcache_clean_area>:
+ENDPROC(cpu_v7_do_idle)
+
+ENTRY(cpu_v7_dcache_clean_area)
+	ALT_SMP(W(nop))			@ MP extensions imply L1 PTW
+  ac:	e320f000 	nop	{0}
+	ALT_UP_B(1f)
+	mov	pc, lr
+  b0:	e1a0f00e 	mov	pc, lr
+1:	dcache_line_size r2, r3
+  b4:	ee103f30 	mrc	15, 0, r3, cr0, cr0, {1}
+  b8:	e1a03823 	lsr	r3, r3, #16
+  bc:	e203300f 	and	r3, r3, #15
+  c0:	e3a02004 	mov	r2, #4
+  c4:	e1a02312 	lsl	r2, r2, r3
+2:	mcr	p15, 0, r0, c7, c10, 1		@ clean D entry
+  c8:	ee070f3a 	mcr	15, 0, r0, cr7, cr10, {1}
+	add	r0, r0, r2
+  cc:	e0800002 	add	r0, r0, r2
+	subs	r1, r1, r2
+  d0:	e0511002 	subs	r1, r1, r2
+	bhi	2b
+  d4:	8afffffb 	bhi	c8 <cpu_v7_dcache_clean_area+0x1c>
+	dsb	ishst
+  d8:	f57ff04a 	dsb	ishst
+	mov	pc, lr
+  dc:	e1a0f00e 	mov	pc, lr
+
+000000e0 <cpu_v7_name>:
+  e0:	764d5241 	strbvc	r5, [sp], -r1, asr #4
+  e4:	72502037 	subsvc	r2, r0, #55	; 0x37
+  e8:	7365636f 	cmnvc	r5, #-1140850687	; 0xbc000001
+  ec:	00726f73 	rsbseq	r6, r2, r3, ror pc
+
+000000f0 <cpu_v7_do_suspend>:
+/* Suspend/resume support: derived from arch/arm/mach-s5pv210/sleep.S */
+.globl	cpu_v7_suspend_size
+.equ	cpu_v7_suspend_size, 4 * 8
+#ifdef CONFIG_ARM_CPU_SUSPEND
+ENTRY(cpu_v7_do_suspend)
+	stmfd	sp!, {r4 - r10, lr}
+  f0:	e92d47f0 	push	{r4, r5, r6, r7, r8, r9, sl, lr}
+	mrc	p15, 0, r4, c13, c0, 0	@ FCSE/PID
+  f4:	ee1d4f10 	mrc	15, 0, r4, cr13, cr0, {0}
+	mrc	p15, 0, r5, c13, c0, 3	@ User r/o thread ID
+  f8:	ee1d5f70 	mrc	15, 0, r5, cr13, cr0, {3}
+	stmia	r0!, {r4 - r5}
+  fc:	e8a00030 	stmia	r0!, {r4, r5}
+#ifdef CONFIG_MMU
+	mrc	p15, 0, r6, c3, c0, 0	@ Domain ID
+ 100:	ee136f10 	mrc	15, 0, r6, cr3, cr0, {0}
+	mrc	p15, 0, r7, c2, c0, 1	@ TTB 1
+ 104:	ee127f30 	mrc	15, 0, r7, cr2, cr0, {1}
+	mrc	p15, 0, r11, c2, c0, 2	@ TTB control register
+ 108:	ee12bf50 	mrc	15, 0, fp, cr2, cr0, {2}
+#endif
+	mrc	p15, 0, r8, c1, c0, 0	@ Control register
+ 10c:	ee118f10 	mrc	15, 0, r8, cr1, cr0, {0}
+	mrc	p15, 0, r9, c1, c0, 1	@ Auxiliary control register
+ 110:	ee119f30 	mrc	15, 0, r9, cr1, cr0, {1}
+	mrc	p15, 0, r10, c1, c0, 2	@ Co-processor access control
+ 114:	ee11af50 	mrc	15, 0, sl, cr1, cr0, {2}
+	stmia	r0, {r6 - r11}
+ 118:	e8800fc0 	stm	r0, {r6, r7, r8, r9, sl, fp}
+	ldmfd	sp!, {r4 - r10, pc}
+ 11c:	e8bd87f0 	pop	{r4, r5, r6, r7, r8, r9, sl, pc}
+
+00000120 <cpu_v7_do_resume>:
+ENDPROC(cpu_v7_do_suspend)
+
+ENTRY(cpu_v7_do_resume)
+	mov	ip, #0
+ 120:	e3a0c000 	mov	ip, #0
+	mcr	p15, 0, ip, c7, c5, 0	@ invalidate I cache
+ 124:	ee07cf15 	mcr	15, 0, ip, cr7, cr5, {0}
+	mcr	p15, 0, ip, c13, c0, 1	@ set reserved context ID
+ 128:	ee0dcf30 	mcr	15, 0, ip, cr13, cr0, {1}
+	ldmia	r0!, {r4 - r5}
+ 12c:	e8b00030 	ldm	r0!, {r4, r5}
+	mcr	p15, 0, r4, c13, c0, 0	@ FCSE/PID
+ 130:	ee0d4f10 	mcr	15, 0, r4, cr13, cr0, {0}
+	mcr	p15, 0, r5, c13, c0, 3	@ User r/o thread ID
+ 134:	ee0d5f70 	mcr	15, 0, r5, cr13, cr0, {3}
+	ldmia	r0, {r6 - r11}
+ 138:	e8900fc0 	ldm	r0, {r6, r7, r8, r9, sl, fp}
+#ifdef CONFIG_MMU
+	mcr	p15, 0, ip, c8, c7, 0	@ invalidate TLBs
+ 13c:	ee08cf17 	mcr	15, 0, ip, cr8, cr7, {0}
+	mcr	p15, 0, r6, c3, c0, 0	@ Domain ID
+ 140:	ee036f10 	mcr	15, 0, r6, cr3, cr0, {0}
+#ifndef CONFIG_ARM_LPAE
+	ALT_SMP(orr	r1, r1, #TTB_FLAGS_SMP)
+ 144:	e381106a 	orr	r1, r1, #106	; 0x6a
+	ALT_UP(orr	r1, r1, #TTB_FLAGS_UP)
+#endif
+	mcr	p15, 0, r1, c2, c0, 0	@ TTB 0
+ 148:	ee021f10 	mcr	15, 0, r1, cr2, cr0, {0}
+	mcr	p15, 0, r7, c2, c0, 1	@ TTB 1
+ 14c:	ee027f30 	mcr	15, 0, r7, cr2, cr0, {1}
+	mcr	p15, 0, r11, c2, c0, 2	@ TTB control register
+ 150:	ee02bf50 	mcr	15, 0, fp, cr2, cr0, {2}
+	ldr	r4, =PRRR		@ PRRR
+ 154:	e59f4144 	ldr	r4, [pc, #324]	; 2a0 <__v7_setup_stack+0x2c>
+	ldr	r5, =NMRR		@ NMRR
+ 158:	e59f5144 	ldr	r5, [pc, #324]	; 2a4 <__v7_setup_stack+0x30>
+	mcr	p15, 0, r4, c10, c2, 0	@ write PRRR
+ 15c:	ee0a4f12 	mcr	15, 0, r4, cr10, cr2, {0}
+	mcr	p15, 0, r5, c10, c2, 1	@ write NMRR
+ 160:	ee0a5f32 	mcr	15, 0, r5, cr10, cr2, {1}
+#endif	/* CONFIG_MMU */
+	mrc	p15, 0, r4, c1, c0, 1	@ Read Auxiliary control register
+ 164:	ee114f30 	mrc	15, 0, r4, cr1, cr0, {1}
+	teq	r4, r9			@ Is it already set?
+ 168:	e1340009 	teq	r4, r9
+	mcrne	p15, 0, r9, c1, c0, 1	@ No, so write it
+ 16c:	1e019f30 	mcrne	15, 0, r9, cr1, cr0, {1}
+	mcr	p15, 0, r10, c1, c0, 2	@ Co-processor access control
+ 170:	ee01af50 	mcr	15, 0, sl, cr1, cr0, {2}
+	isb
+ 174:	f57ff06f 	isb	sy
+	dsb
+ 178:	f57ff04f 	dsb	sy
+	mov	r0, r8			@ control register
+ 17c:	e1a00008 	mov	r0, r8
+	b	cpu_resume_mmu
+ 180:	eafffffe 	b	0 <cpu_resume_mmu>
+
+00000184 <__v7_ca5mp_setup>:
+ *	- cache type register is implemented
+ */
+__v7_ca5mp_setup:
+__v7_ca9mp_setup:
+__v7_cr7mp_setup:
+	mov	r10, #(1 << 0)			@ Cache/TLB ops broadcasting
+ 184:	e3a0a001 	mov	sl, #1
+	b	1f
+ 188:	ea000000 	b	190 <__v7_ca15mp_setup+0x4>
+
+0000018c <__v7_ca15mp_setup>:
+__v7_ca7mp_setup:
+__v7_ca15mp_setup:
+	mov	r10, #0
+ 18c:	e3a0a000 	mov	sl, #0
+1:
+#ifdef CONFIG_SMP
+	ALT_SMP(mrc	p15, 0, r0, c1, c0, 1)		// Read - ACTLR, TRM p127
+ 190:	ee110f30 	mrc	15, 0, r0, cr1, cr0, {1}
+	ALT_UP(mov	r0, #(1 << 6))		@ fake it for UP
+	tst	r0, #(1 << 6)				@ SMP/nAMP mode enabled?
+ 194:	e3100040 	tst	r0, #64	; 0x40
+									// r0 & #(1<<6)   6번 비트 : SMP
+ 198:	03800040 	orreq	r0, r0, #64	; 0x40
+	orreq	r0, r0, #(1 << 6)		@ Enable SMP/nAMP mode
+ 19c:	0180000a 	orreq	r0, r0, sl
+	orreq	r0, r0, r10				@ Enable CPU-specific SMP bits
+ 1a0:	0e010f30 	mcreq	15, 0, r0, cr1, cr0, {1}
+	mcreq	p15, 0, r0, c1, c0, 1	// Write - ACTLR SMP
+#endif
+ 1a4:	eaffffff 	b	1a8 <__v7_setup>
+
+000001a8 <__v7_setup>:
+	orr	r0, r0, #PJ4B_WFI_WFE
+	mcr	p15, 1,	r0, c15, c1, 0
+
+#endif /* CONFIG_CPU_PJ4B */
+
+// 20140621, 여기까지 진행
+ 1a8:	e28fc0c4 	add	ip, pc, #196	; 0xc4
+__v7_setup:
+ 1ac:	e88c4abf 	stm	ip, {r0, r1, r2, r3, r4, r5, r7, r9, fp, lr}
+	adr	r12, __v7_setup_stack		@ the local stack
+ 1b0:	ebfffffe 	bl	0 <v7_flush_dcache_louis>
+	stmia	r12, {r0-r5, r7, r9, r11, lr}
+ 1b4:	e89c4abf 	ldm	ip, {r0, r1, r2, r3, r4, r5, r7, r9, fp, lr}
+	bl      v7_flush_dcache_louis
+	ldmia	r12, {r0-r5, r7, r9, r11, lr}
+ 1b8:	ee100f10 	mrc	15, 0, r0, cr0, cr0, {0}
+
+ 1bc:	e200a4ff 	and	sl, r0, #-16777216	; 0xff000000
+	mrc	p15, 0, r0, c0, c0, 0		@ read main ID register
+ 1c0:	e33a0441 	teq	sl, #1090519040	; 0x41000000
+	and	r10, r0, #0xff000000		@ ARM?
+ 1c4:	1a00000a 	bne	1f4 <__v7_setup+0x4c>
+	teq	r10, #0x41000000
+ 1c8:	e200560f 	and	r5, r0, #15728640	; 0xf00000
+	//우리꺼는 0x41이다.
+ 1cc:	e200600f 	and	r6, r0, #15
+	bne	3f
+ 1d0:	e1866825 	orr	r6, r6, r5, lsr #16
+	and	r5, r0, #0x00f00000		@ variant
+ 1d4:	e7eb0250 	ubfx	r0, r0, #4, #12
+	and	r6, r0, #0x0000000f		@ revision
+	orr	r6, r6, r5, lsr #20-4		@ combine variant and revision
+	ubfx	r0, r0, #4, #12			@ primary part number
+ 1d8:	e59fa0c8 	ldr	sl, [pc, #200]	; 2a8 <__v7_setup_stack+0x34>
+//ubfs 부호없는 비트필드 추출. 
+ 1dc:	e130000a 	teq	r0, sl
+	/* Cortex-A8 Errata */
+ 1e0:	1a000000 	bne	1e8 <__v7_setup+0x40>
+	mcreq	p15, 0, r10, c1, c0, 1		@ write aux control register
+#endif
+#ifdef CONFIG_ARM_ERRATA_460075
+	teq	r6, #0x20			@ only present in r2p0
+	mrceq	p15, 1, r10, c9, c0, 2		@ read L2 cache aux ctrl register
+	tsteq	r10, #1 << 22
+ 1e4:	ea000002 	b	1f4 <__v7_setup+0x4c>
+	orreq	r10, r10, #(1 << 22)		@ set the Write Allocate disable bit
+	mcreq	p15, 1, r10, c9, c0, 2		@ write the L2 cache aux ctrl register
+#endif
+ 1e8:	e59fa0bc 	ldr	sl, [pc, #188]	; 2ac <__v7_setup_stack+0x38>
+	b	3f
+ 1ec:	e130000a 	teq	r0, sl
+
+ 1f0:	1affffff 	bne	1f4 <__v7_setup+0x4c>
+#if defined(CONFIG_ARM_ERRATA_751472) && defined(CONFIG_SMP)
+	ALT_SMP(cmp r6, #0x30)			@ present prior to r3p0
+	ALT_UP_B(1f)
+	mrclt	p15, 0, r10, c15, c0, 1		@ read diagnostic register
+	orrlt	r10, r10, #1 << 11		@ set bit #11
+	mcrlt	p15, 0, r10, c15, c0, 1		@ write diagnostic register
+ 1f4:	e59fa0b4 	ldr	sl, [pc, #180]	; 2b0 <__v7_setup_stack+0x3c>
+1:
+ 1f8:	e130000a 	teq	r0, sl
+#endif
+ 1fc:	1affffff 	bne	200 <__v7_setup+0x58>
+	teq	r0, r10
+	bne	4f
+//a15아니면 점프, 우리껀 a15이므로 무시.
+#ifdef CONFIG_ARM_ERRATA_773022 //not set
+	cmp	r6, #0x4			@ only present up to r0p4
+	mrcle	p15, 0, r10, c1, c0, 1		@ read aux control register
+ 200:	e3a0a000 	mov	sl, #0
+	orrle	r10, r10, #1 << 1		@ disable loop buffer
+ 204:	ee07af15 	mcr	15, 0, sl, cr7, cr5, {0}
+	mcrle	p15, 0, r10, c1, c0, 1		@ write aux control register
+#endif
+ 208:	ee08af17 	mcr	15, 0, sl, cr8, cr7, {0}
+
+ 20c:	ee02af50 	mcr	15, 0, sl, cr2, cr0, {2}
+ 210:	e384406a 	orr	r4, r4, #106	; 0x6a
+ 214:	e388806a 	orr	r8, r8, #106	; 0x6a
+ 218:	ee028f30 	mcr	15, 0, r8, cr2, cr0, {1}
+4:	mov	r10, #0
+ 21c:	e59f507c 	ldr	r5, [pc, #124]	; 2a0 <__v7_setup_stack+0x2c>
+	mcr	p15, 0, r10, c7, c5, 0		@ I+BTB cache invalidate
+ 220:	e59f607c 	ldr	r6, [pc, #124]	; 2a4 <__v7_setup_stack+0x30>
+	//i+BTB cache의 dirty bit를 무효화한다.
+ 224:	ee0a5f12 	mcr	15, 0, r5, cr10, cr2, {0}
+	//BTB: branch target buffer . branch prediction 을 위해 최근 pc값을 저장하고 있는 버퍼
+ 228:	ee0a6f32 	mcr	15, 0, r6, cr10, cr2, {1}
+	//Instruction Cache Invalidate All to PoU, VMSA
+	//PoU : For a particular processor, the point by which the instruction and data caches and the translation table walks of that 
+ 22c:	f57ff04f 	dsb	sy
+	processor are guaranteed to see the same copy of a memory location.
+	//VMSA : Virtual Memory System Architecture
+ 230:	ee100f11 	mrc	15, 0, r0, cr0, cr1, {0}
+#ifdef CONFIG_MMU
+ 234:	e2000a0f 	and	r0, r0, #61440	; 0xf000
+	mcr	p15, 0, r10, c8, c7, 0		@ invalidate I + D TLBs
+ 238:	e3300a01 	teq	r0, #4096	; 0x1000
+	//TLB Invalidate All, VMSA only
+ 23c:	1a000004 	bne	254 <__v7_setup+0xac>
+	//I + D TLBs의 dirty bit를 무효화한다.
+ 240:	e3a05000 	mov	r5, #0
+	v7_ttb_setup r10, r4, r8, r5		@ TTBCR, TTBRx setup
+ 244:	eec15e10 	mcr	14, 6, r5, cr1, cr0, {0}
+	//2단계로 가정. mm/proc-v7-2level.S 147
+ 248:	eed00e10 	mrc	14, 6, r0, cr0, cr0, {0}
+	/*
+ 24c:	e3800001 	orr	r0, r0, #1
+	r4: ttbr0, r8: ttbr1
+ 250:	eec00e10 	mcr	14, 6, r0, cr0, cr0, {0}
+	1. Translation Table Base Control Register
+	ttbcr을 0으로 쓰고, r4와 r8를 TTB_FLAGS_SMP와 OR한다. 
+	페이지테이블이 메모리의 어디에 위치에있는지 mmu에 알려주기위한 준비
+ 254:	e24f5f79 	sub	r5, pc, #484	; 0x1e4
+	2. Translation Table Base Register 0 and Register 1
+ 258:	e8950060 	ldm	r5, {r5, r6}
+	ttbr1을 로드??
+	http://webcache.googleusercontent.com/search?q=cache:PttqpxNUKfIJ:www.iamroot.org/xe/176798+&cd=1&hl=ko&ct=clnk&gl=kr&lr=lang_ko
+	*/
+	ldr	r5, =PRRR			@ PRRR
+	ldr	r6, =NMRR			@ NMRR
+ 25c:	e3855b01 	orr	r5, r5, #1024	; 0x400
+	mcr	p15, 0, r5, c10, c2, 0		@ write PRRR
+ 260:	e3c66b01 	bic	r6, r6, #1024	; 0x400
+	mcr	p15, 0, r6, c10, c2, 1		@ write NMRR
+#endif
+ 264:	ee110f10 	mrc	15, 0, r0, cr1, cr0, {0}
+	dsb					@ Complete invalidations
+ 268:	e1c00005 	bic	r0, r0, r5
+#ifndef CONFIG_ARM_THUMBEE
+ 26c:	e1800006 	orr	r0, r0, r6
+	mrc	p15, 0, r0, c0, c1, 0		@ read ID_PFR0 for ThumbEE
+	and	r0, r0, #(0xf << 12)		@ ThumbEE enabled field
+ 270:	e1a0f00e 	mov	pc, lr
+
+00000274 <__v7_setup_stack>:
+	...
+ 2a0:	ff0a81a8 			; <UNDEFINED> instruction: 0xff0a81a8
+ 2a4:	40e040e0 	rscmi	r4, r0, r0, ror #1
+ 2a8:	00000c08 	andeq	r0, r0, r8, lsl #24
+ 2ac:	00000c09 	andeq	r0, r0, r9, lsl #24
+ 2b0:	00000c0f 	andeq	r0, r0, pc, lsl #24
+ 2b4:	e320f000 	nop	{0}
+ 2b8:	e320f000 	nop	{0}
+ 2bc:	e320f000 	nop	{0}
+
+Disassembly of section .alt.smp.init:
+
+00000000 <.alt.smp.init>:
+   0:	00000008 	andeq	r0, r0, r8
+ENTRY(cpu_v7_switch_mm)
+#ifdef CONFIG_MMU
+	mov	r2, #0
+	mmid	r1, r1				@ get mm->context.id
+	ALT_SMP(orr	r0, r0, #TTB_FLAGS_SMP)
+	ALT_UP(orr	r0, r0, #TTB_FLAGS_UP)
+   4:	e3800059 	orr	r0, r0, #89	; 0x59
+   8:	00000070 	andeq	r0, r0, r0, ror r0
+
+ ARM(	str	r3, [r0, #2048]! )
+ THUMB(	add	r0, r0, #2048 )
+ THUMB(	str	r3, [r0] )
+	ALT_SMP(W(nop))
+	ALT_UP (mcr	p15, 0, r0, c7, c10, 1)		@ flush_pte
+   c:	ee070f3a 	mcr	15, 0, r0, cr7, cr10, {1}
+  10:	000000ac 	andeq	r0, r0, ip, lsr #1
+	mov	pc, lr
+ENDPROC(cpu_v7_do_idle)
+
+ENTRY(cpu_v7_dcache_clean_area)
+	ALT_SMP(W(nop))			@ MP extensions imply L1 PTW
+	ALT_UP_B(1f)
+  14:	ea000000 	b	1c <.alt.smp.init+0x1c>
+  18:	00000144 	andeq	r0, r0, r4, asr #2
+#ifdef CONFIG_MMU
+	mcr	p15, 0, ip, c8, c7, 0	@ invalidate TLBs
+	mcr	p15, 0, r6, c3, c0, 0	@ Domain ID
+#ifndef CONFIG_ARM_LPAE
+	ALT_SMP(orr	r1, r1, #TTB_FLAGS_SMP)
+	ALT_UP(orr	r1, r1, #TTB_FLAGS_UP)
+  1c:	e3811059 	orr	r1, r1, #89	; 0x59
+  20:	00000190 	muleq	r0, r0, r1
+__v7_ca15mp_setup:
+	mov	r10, #0
+1:
+#ifdef CONFIG_SMP
+	ALT_SMP(mrc	p15, 0, r0, c1, c0, 1)		// Read - ACTLR, TRM p127
+	ALT_UP(mov	r0, #(1 << 6))		@ fake it for UP
+  24:	e3a00040 	mov	r0, #64	; 0x40
+  28:	00000210 	andeq	r0, r0, r0, lsl r2
+  2c:	e3844059 	orr	r4, r4, #89	; 0x59
+  30:	00000214 	andeq	r0, r0, r4, lsl r2
+  34:	e3888059 	orr	r8, r8, #89	; 0x59
+  38:	00000008 	andeq	r0, r0, r8
+  3c:	00000c0e 	andeq	r0, r0, lr, lsl #24
+  40:	0000003c 	andeq	r0, r0, ip, lsr r0
+  44:	00000c0e 	andeq	r0, r0, lr, lsl #24
+  48:	00000070 	andeq	r0, r0, r0, ror r0
+  4c:	00000c0e 	andeq	r0, r0, lr, lsl #24
+  50:	000000a4 	andeq	r0, r0, r4, lsr #1
+  54:	00000c0e 	andeq	r0, r0, lr, lsl #24
+  58:	000000d8 	ldrdeq	r0, [r0], -r8
+  5c:	00000c0e 	andeq	r0, r0, lr, lsl #24
+  60:	0000010c 	andeq	r0, r0, ip, lsl #2
+  64:	00000c0e 	andeq	r0, r0, lr, lsl #24
+  68:	00000140 	andeq	r0, r0, r0, asr #2
+  6c:	00000c0e 	andeq	r0, r0, lr, lsl #24
+
+Disassembly of section .idmap.text:
+
+00000000 <cpu_v7_reset>:
+ *      caches disabled.
+ */
+	.align	5
+	.pushsection	.idmap.text, "ax"
+ENTRY(cpu_v7_reset)
+	mrc	p15, 0, r1, c1, c0, 0		@ ctrl register
+   0:	ee111f10 	mrc	15, 0, r1, cr1, cr0, {0}
+	bic	r1, r1, #0x1			@ ...............m
+   4:	e3c11001 	bic	r1, r1, #1
+ THUMB(	bic	r1, r1, #1 << 30 )		@ SCTLR.TE (Thumb exceptions)
+	mcr	p15, 0, r1, c1, c0, 0		@ disable MMU
+   8:	ee011f10 	mcr	15, 0, r1, cr1, cr0, {0}
+	isb
+   c:	f57ff06f 	isb	sy
+	bx	r0
+  10:	e12fff10 	bx	r0
+
+Disassembly of section .init.data:
+
+00000000 <v7_processor_functions>:
+	...
+  24:	00000020 	andeq	r0, r0, r0, lsr #32
+	...
+
+Disassembly of section .rodata:
+
+00000000 <cpu_arch_name>:
+   0:	766d7261 	strbtvc	r7, [sp], -r1, ror #4
+   4:	37760037 			; <UNDEFINED> instruction: 0x37760037
+
+00000006 <cpu_elf_name>:
+   6:	00003776 	andeq	r3, r0, r6, ror r7
+	...
+
+Disassembly of section .proc.info.init:
+
+00000000 <__v7_ca5mp_proc_info>:
+   0:	410fc050 	qaddmi	ip, r0, pc	; <UNPREDICTABLE>
+   4:	ff0ffff0 			; <UNDEFINED> instruction: 0xff0ffff0
+   8:	00011c0e 	andeq	r1, r1, lr, lsl #24
+   c:	00000c02 	andeq	r0, r0, r2, lsl #24
+	 */
+.macro __v7_proc initfunc, mm_mmuflags = 0, io_mmuflags = 0, hwcaps = 0, proc_fns = v7_processor_functions
+	ALT_SMP(.long	PMD_TYPE_SECT | PMD_SECT_AP_WRITE | PMD_SECT_AP_READ | \
+			PMD_SECT_AF | PMD_FLAGS_SMP | \mm_mmuflags)
+																// mmuflags
+	ALT_UP(.long	PMD_TYPE_SECT | PMD_SECT_AP_WRITE | PMD_SECT_AP_READ | \
+  10:	ea00005f 	b	184 <__v7_ca5mp_setup>
+  14:	00000000 	andeq	r0, r0, r0
+  18:	00000006 	andeq	r0, r0, r6
+  1c:	00008097 	muleq	r0, r7, r0
+  20:	000000e0 	andeq	r0, r0, r0, ror #1
+	...
+
+00000034 <__v7_ca9mp_proc_info>:
+  34:	410fc090 	swpmi	ip, r0, [pc]	; <UNPREDICTABLE>
+  38:	ff0ffff0 			; <UNDEFINED> instruction: 0xff0ffff0
+  3c:	00011c0e 	andeq	r1, r1, lr, lsl #24
+  40:	00000c02 	andeq	r0, r0, r2, lsl #24
+	.long	cpu_arch_name
+	.long	cpu_elf_name
+	.long	HWCAP_SWP | HWCAP_HALF | HWCAP_THUMB | HWCAP_FAST_MULT | \
+		HWCAP_EDSP | HWCAP_TLS | \hwcaps
+	.long	cpu_v7_name
+	.long	\proc_fns
+  44:	ea00005f 	b	184 <__v7_ca5mp_setup>
+  48:	00000000 	andeq	r0, r0, r0
+  4c:	00000006 	andeq	r0, r0, r6
+  50:	00008097 	muleq	r0, r7, r0
+  54:	000000e0 	andeq	r0, r0, r0, ror #1
+	...
+
+00000068 <__v7_cr7mp_proc_info>:
+  68:	410fc170 	tstmi	pc, r0, ror r1	; <UNPREDICTABLE>
+  6c:	ff0ffff0 			; <UNDEFINED> instruction: 0xff0ffff0
+  70:	00011c0e 	andeq	r1, r1, lr, lsl #24
+  74:	00000c02 	andeq	r0, r0, r2, lsl #24
+	 */
+	.type   __v7_ca9mp_proc_info, #object
+__v7_ca9mp_proc_info:
+	.long	0x410fc090
+	.long	0xff0ffff0
+	__v7_proc __v7_ca9mp_setup
+  78:	ea00005f 	b	184 <__v7_ca5mp_setup>
+  7c:	00000000 	andeq	r0, r0, r0
+  80:	00000006 	andeq	r0, r0, r6
+  84:	00008097 	muleq	r0, r7, r0
+  88:	000000e0 	andeq	r0, r0, r0, ror #1
+	...
+
+0000009c <__v7_ca7mp_proc_info>:
+  9c:	410fc070 	tstmi	pc, r0, ror r0	; <UNPREDICTABLE>
+  a0:	ff0ffff0 			; <UNDEFINED> instruction: 0xff0ffff0
+  a4:	00011c0e 	andeq	r1, r1, lr, lsl #24
+  a8:	00000c02 	andeq	r0, r0, r2, lsl #24
+	/*
+	 * Marvell PJ4B processor.
+	 */
+#ifdef CONFIG_CPU_PJ4B
+	.type   __v7_pj4b_proc_info, #object
+__v7_pj4b_proc_info:
+  ac:	ea000061 	b	18c <__v7_ca15mp_setup>
+  b0:	00000000 	andeq	r0, r0, r0
+  b4:	00000006 	andeq	r0, r0, r6
+  b8:	00008097 	muleq	r0, r7, r0
+  bc:	000000e0 	andeq	r0, r0, r0, ror #1
+	...
+
+000000d0 <__v7_ca15mp_proc_info>:
+  d0:	410fc0f0 	strdmi	ip, [pc, -r0]
+  d4:	ff0ffff0 			; <UNDEFINED> instruction: 0xff0ffff0
+  d8:	00011c0e 	andeq	r1, r1, lr, lsl #24
+  dc:	00000c02 	andeq	r0, r0, r2, lsl #24
+#endif
+
+	/*
+	 * ARM Ltd. Cortex R7 processor.
+	 */
+	.type	__v7_cr7mp_proc_info, #object
+  e0:	ea000061 	b	18c <__v7_ca15mp_setup>
+  e4:	00000000 	andeq	r0, r0, r0
+  e8:	00000006 	andeq	r0, r0, r6
+  ec:	00008097 	muleq	r0, r7, r0
+  f0:	000000e0 	andeq	r0, r0, r0, ror #1
+	...
+
+00000104 <__krait_proc_info>:
+ 104:	510f0400 	tstpl	pc, r0, lsl #8
+ 108:	ff0ffc00 			; <UNDEFINED> instruction: 0xff0ffc00
+ 10c:	00011c0e 	andeq	r1, r1, lr, lsl #24
+ 110:	00000c02 	andeq	r0, r0, r2, lsl #24
+	.type	__v7_ca7mp_proc_info, #object
+__v7_ca7mp_proc_info:
+	.long	0x410fc070
+	.long	0xff0ffff0
+	__v7_proc __v7_ca7mp_setup
+	.size	__v7_ca7mp_proc_info, . - __v7_ca7mp_proc_info
+ 114:	eafffffe 	b	1a8 <__v7_setup>
+ 118:	00000000 	andeq	r0, r0, r0
+ 11c:	00000006 	andeq	r0, r0, r6
+ 120:	00068097 	muleq	r6, r7, r0
+ 124:	000000e0 	andeq	r0, r0, r0, ror #1
+	...
+
+00000138 <__v7_proc_info>:
+ 138:	000f0000 	andeq	r0, pc, r0
+ 13c:	000f0000 	andeq	r0, pc, r0
+ 140:	00011c0e 	andeq	r1, r1, lr, lsl #24
+ 144:	00000c02 	andeq	r0, r0, r2, lsl #24
+	.type	__v7_ca15mp_proc_info, #object
+__v7_ca15mp_proc_info:
+	.long	0x410fc0f0
+	.long	0xff0ffff0
+	__v7_proc __v7_ca15mp_setup
+	.size	__v7_ca15mp_proc_info, . - __v7_ca15mp_proc_info
+ 148:	eafffffe 	b	1a8 <__v7_setup>
+ 14c:	00000000 	andeq	r0, r0, r0
+ 150:	00000006 	andeq	r0, r0, r6
+ 154:	00008097 	muleq	r0, r7, r0
+ 158:	000000e0 	andeq	r0, r0, r0, ror #1
+	...
+
+Disassembly of section .ARM.attributes:
+
+00000000 <.ARM.attributes>:
+ *	It is assumed that:
+ *	- we are not using split page tables
+ */
+ENTRY(cpu_v7_switch_mm)
+#ifdef CONFIG_MMU
+	mov	r2, #0
+   0:	00001e41 	andeq	r1, r0, r1, asr #28
+	mmid	r1, r1				@ get mm->context.id
+   4:	61656100 	cmnvs	r5, r0, lsl #2
+	ALT_SMP(orr	r0, r0, #TTB_FLAGS_SMP)
+   8:	01006962 	tsteq	r0, r2, ror #18
+	bfi	r1, r2, #8, #24			@ insert into new context ID
+#endif
+#ifdef CONFIG_ARM_ERRATA_754322
+	dsb
+#endif
+	mcr	p15, 0, r1, c13, c0, 1		@ set context ID
+   c:	00000014 	andeq	r0, r0, r4, lsl r0
+	isb
+  10:	412d3705 	teqmi	sp, r5, lsl #14
+	mcr	p15, 0, r0, c2, c0, 0		@ set TTB 0
+  14:	070a0600 	streq	r0, [sl, -r0, lsl #12]
+	isb
+  18:	09010841 	stmdbeq	r1, {r0, r6, fp}
+#endif
+	mov	pc, lr
+  1c:	Address 0x0000001c is out of bounds.
+
+
+Disassembly of section .debug_line:
+
+00000000 <.debug_line>:
+ *	It is assumed that:
+ *	- we are not using split page tables
+ */
+ENTRY(cpu_v7_switch_mm)
+#ifdef CONFIG_MMU
+	mov	r2, #0
+   0:	00000156 	andeq	r0, r0, r6, asr r1
+	mmid	r1, r1				@ get mm->context.id
+   4:	00400002 	subeq	r0, r0, r2
+	ALT_SMP(orr	r0, r0, #TTB_FLAGS_SMP)
+   8:	01020000 	mrseq	r0, (UNDEF: 2)
+	bfi	r1, r2, #8, #24			@ insert into new context ID
+#endif
+#ifdef CONFIG_ARM_ERRATA_754322
+	dsb
+#endif
+	mcr	p15, 0, r1, c13, c0, 1		@ set context ID
+   c:	000d0efb 	strdeq	r0, [sp], -fp
+	isb
+  10:	01010101 	tsteq	r1, r1, lsl #2
+	mcr	p15, 0, r0, c2, c0, 0		@ set TTB 0
+  14:	01000000 	mrseq	r0, (UNDEF: 0)
+	isb
+  18:	61010000 	mrsvs	r0, (UNDEF: 1)
+#endif
+	mov	pc, lr
+  1c:	2f686372 	svccs	0x00686372
+ *	- pte   - PTE value to store
+ *	- ext	- value for extended PTE bits
+ */
+ENTRY(cpu_v7_set_pte_ext)
+#ifdef CONFIG_MMU
+	str	r1, [r0]			@ linux version
+  20:	2f6d7261 	svccs	0x006d7261
+
+	bic	r3, r1, #0x000003f0
+  24:	00006d6d 	andeq	r6, r0, sp, ror #26
+	bic	r3, r3, #PTE_TYPE_MASK
+  28:	636f7270 	cmnvs	pc, #112, 4
+	orr	r3, r3, r2
+  2c:	2d37762d 	ldccs	6, cr7, [r7, #-180]!	; 0xffffff4c
+	orr	r3, r3, #PTE_EXT_AP0 | 2
+  30:	76656c32 			; <UNDEFINED> instruction: 0x76656c32
+
+	tst	r1, #1 << 4
+  34:	532e6c65 	teqpl	lr, #25856	; 0x6500
+	orrne	r3, r3, #PTE_EXT_TEX(1)
+  38:	00000100 	andeq	r0, r0, r0, lsl #2
+
+	eor	r1, r1, #L_PTE_DIRTY
+  3c:	636f7270 	cmnvs	pc, #112, 4
+	tst	r1, #L_PTE_RDONLY | L_PTE_DIRTY
+  40:	2e37762d 	cfmsuba32cs	mvax1, mvax7, mvfx7, mvfx13
+	orrne	r3, r3, #PTE_EXT_APX
+  44:	00010053 	andeq	r0, r1, r3, asr r0
+
+	tst	r1, #L_PTE_USER
+  48:	05000000 	streq	r0, [r0, #-0]
+	orrne	r3, r3, #PTE_EXT_AP1
+  4c:	00000002 	andeq	r0, r0, r2
+
+	tst	r1, #L_PTE_XN
+  50:	01290300 	teqeq	r9, r0, lsl #6
+	orrne	r3, r3, #PTE_EXT_XN
+  54:	0d032f2f 	stceq	15, cr2, [r3, #-188]	; 0xffffff44
+
+	tst	r1, #L_PTE_YOUNG
+  58:	2f2f2f2e 	svccs	0x002f2f2e
+	tstne	r1, #L_PTE_VALID
+  5c:	2e0f0330 	mcrcs	3, 0, r0, cr15, cr0, {1}
+	eorne	r1, r1, #L_PTE_NONE
+  60:	2f2f2f30 	svccs	0x002f2f30
+	tstne	r1, #L_PTE_NONE
+  64:	2f302f30 	svccs	0x00302f30
+	moveq	r3, #0
+  68:	302f302f 	eorcc	r3, pc, pc, lsr #32
+
+ ARM(	str	r3, [r0, #2048]! )
+  6c:	2f2f302f 	svccs	0x002f302f
+ THUMB(	add	r0, r0, #2048 )
+ THUMB(	str	r3, [r0] )
+	ALT_SMP(W(nop))
+  70:	31302f2f 	teqcc	r0, pc, lsr #30
+	ALT_UP (mcr	p15, 0, r0, c7, c10, 1)		@ flush_pte
+#endif
+	mov	pc, lr
+  74:	03020431 	movweq	r0, #9265	; 0x2431
+  78:	32667fb0 	rsbcc	r7, r6, #176, 30	; 0x2c0
+  7c:	2f2f2f2f 	svccs	0x002f2f2f
+#else
+#include "proc-v7-2level.S"
+#endif
+
+ENTRY(cpu_v7_proc_init)
+	mov	pc, lr
+  80:	2f662303 	svccs	0x00662303
+ENDPROC(cpu_v7_proc_init)
+
+ENTRY(cpu_v7_proc_fin)
+	mrc	p15, 0, r0, c1, c0, 0		@ ctrl register
+  84:	2f30322f 	svccs	0x0030322f
+	bic	r0, r0, #0x1000			@ ...i............
+  88:	2f2f2f9f 	svccs	0x002f2f9f
+	bic	r0, r0, #0x0006			@ .............ca.
+  8c:	0b032f2f 	bleq	cbd50 <__v7_setup_stack+0xcbadc>
+	mcr	p15, 0, r0, c1, c0, 0		@ disable caches
+  90:	2f2f2f9e 	svccs	0x002f2f9e
+	mov	pc, lr
+  94:	302f2f30 	eorcc	r2, pc, r0, lsr pc	; <UNPREDICTABLE>
+  98:	2f2f2f2f 	svccs	0x002f2f2f
+  9c:	2f2f2f32 	svccs	0x002f2f32
+ *	Idle the processor (eg, wait for interrupt).
+ *
+ *	IRQs are already disabled.
+ */
+ENTRY(cpu_v7_do_idle)
+	dsb					@ WFI may enter a low-power mode
+  a0:	302f2f2f 	eorcc	r2, pc, pc, lsr #30
+	wfi
+  a4:	2f31302f 	svccs	0x0031302f
+	mov	pc, lr
+  a8:	2f2f2f2f 	svccs	0x002f2f2f
+ENDPROC(cpu_v7_do_idle)
+
+ENTRY(cpu_v7_dcache_clean_area)
+	ALT_SMP(W(nop))			@ MP extensions imply L1 PTW
+  ac:	2f2f302f 	svccs	0x002f302f
+	ALT_UP_B(1f)
+	mov	pc, lr
+  b0:	2f2f2f2f 	svccs	0x002f2f2f
+1:	dcache_line_size r2, r3
+  b4:	2e29032f 	cdpcs	3, 2, cr0, cr9, cr15, {1}
+  b8:	3031312f 	eorscc	r3, r1, pc, lsr #2
+  bc:	302f2f2f 	eorcc	r2, pc, pc, lsr #30
+  c0:	2f2e3b03 	svccs	0x002e3b03
+  c4:	2f302f2f 	svccs	0x00302f2f
+2:	mcr	p15, 0, r0, c7, c10, 1		@ clean D entry
+  c8:	2f2f2f2f 	svccs	0x002f2f2f
+	add	r0, r0, r2
+  cc:	2f312f2f 	svccs	0x00312f2f
+	subs	r1, r1, r2
+  d0:	2e16032f 	cdpcs	3, 1, cr0, cr6, cr15, {1}
+	bhi	2b
+  d4:	032f2f31 	teqeq	pc, #49, 30	; 0xc4
+	dsb	ishst
+  d8:	2f2f2e20 	svccs	0x002f2e20
+	mov	pc, lr
+  dc:	2f2e0903 	svccs	0x002e0903
+  e0:	2f832f30 	svccs	0x00832f30
+  e4:	30302f2f 	eorscc	r2, r0, pc, lsr #30
+  e8:	2f2f2f2f 	svccs	0x002f2f2f
+  ec:	2f2f2f2f 	svccs	0x002f2f2f
+/* Suspend/resume support: derived from arch/arm/mach-s5pv210/sleep.S */
+.globl	cpu_v7_suspend_size
+.equ	cpu_v7_suspend_size, 4 * 8
+#ifdef CONFIG_ARM_CPU_SUSPEND
+ENTRY(cpu_v7_do_suspend)
+	stmfd	sp!, {r4 - r10, lr}
+  f0:	2f332f31 	svccs	0x00332f31
+	mrc	p15, 0, r4, c13, c0, 0	@ FCSE/PID
+  f4:	302f2f30 	eorcc	r2, pc, r0, lsr pc	; <UNPREDICTABLE>
+	mrc	p15, 0, r5, c13, c0, 3	@ User r/o thread ID
+  f8:	01002202 	tsteq	r0, r2, lsl #4
+	stmia	r0!, {r4 - r5}
+  fc:	02050001 	andeq	r0, r5, #1
+#ifdef CONFIG_MMU
+	mrc	p15, 0, r6, c3, c0, 0	@ Domain ID
+ 100:	00000004 	andeq	r0, r0, r4
+	mrc	p15, 0, r7, c2, c0, 1	@ TTB 1
+ 104:	03012c03 	movweq	r2, #7171	; 0x1c03
+	mrc	p15, 0, r11, c2, c0, 2	@ TTB control register
+ 108:	02044a3e 	andeq	r4, r4, #253952	; 0x3e000
+#endif
+	mrc	p15, 0, r8, c1, c0, 0	@ Control register
+ 10c:	034a6403 	movteq	r6, #41987	; 0xa403
+	mrc	p15, 0, r9, c1, c0, 1	@ Auxiliary control register
+ 110:	c2034a30 	andgt	r4, r3, #48, 20	; 0x30000
+	mrc	p15, 0, r10, c1, c0, 2	@ Co-processor access control
+ 114:	26024a00 	strcs	r4, [r2], -r0, lsl #20
+	stmia	r0, {r6 - r11}
+ 118:	04010100 	streq	r0, [r1], #-256	; 0xffffff00
+	ldmfd	sp!, {r4 - r10, pc}
+ 11c:	02050002 	andeq	r0, r5, #2
+ENDPROC(cpu_v7_do_suspend)
+
+ENTRY(cpu_v7_do_resume)
+	mov	ip, #0
+ 120:	00000000 	andeq	r0, r0, r0
+	mcr	p15, 0, ip, c7, c5, 0	@ invalidate I cache
+ 124:	2f013603 	svccs	0x00013603
+	mcr	p15, 0, ip, c13, c0, 1	@ set reserved context ID
+ 128:	022f2f30 	eoreq	r2, pc, #48, 30	; 0xc0
+	ldmia	r0!, {r4 - r5}
+ 12c:	01010002 	tsteq	r1, r2
+	mcr	p15, 0, r4, c13, c0, 0	@ FCSE/PID
+ 130:	05000204 	streq	r0, [r0, #-516]	; 0xfffffdfc
+	mcr	p15, 0, r5, c13, c0, 3	@ User r/o thread ID
+ 134:	00001002 	andeq	r1, r0, r2
+	ldmia	r0, {r6 - r11}
+ 138:	03b10300 			; <UNDEFINED> instruction: 0x03b10300
+#ifdef CONFIG_MMU
+	mcr	p15, 0, ip, c8, c7, 0	@ invalidate TLBs
+ 13c:	080a0301 	stmdaeq	sl, {r0, r8, r9}
+	mcr	p15, 0, r6, c3, c0, 0	@ Domain ID
+ 140:	08180390 	ldmdaeq	r8, {r4, r7, r8, r9}
+#ifndef CONFIG_ARM_LPAE
+	ALT_SMP(orr	r1, r1, #TTB_FLAGS_SMP)
+ 144:	080a0390 	stmdaeq	sl, {r4, r7, r8, r9}
+	ALT_UP(orr	r1, r1, #TTB_FLAGS_UP)
+#endif
+	mcr	p15, 0, r1, c2, c0, 0	@ TTB 0
+ 148:	080a0390 	stmdaeq	sl, {r4, r7, r8, r9}
+	mcr	p15, 0, r7, c2, c0, 1	@ TTB 1
+ 14c:	080f0390 	stmdaeq	pc, {r4, r7, r8, r9}	; <UNPREDICTABLE>
+	mcr	p15, 0, r11, c2, c0, 2	@ TTB control register
+ 150:	080a0390 	stmdaeq	sl, {r4, r7, r8, r9}
+	ldr	r4, =PRRR		@ PRRR
+ 154:	00120290 	mulseq	r2, r0, r2
+	ldr	r5, =NMRR		@ NMRR
+ 158:	Address 0x00000158 is out of bounds.
+
+
+Disassembly of section .debug_info:
+
+00000000 <.debug_info>:
+ *	It is assumed that:
+ *	- we are not using split page tables
+ */
+ENTRY(cpu_v7_switch_mm)
+#ifdef CONFIG_MMU
+	mov	r2, #0
+   0:	00000052 	andeq	r0, r0, r2, asr r0
+	mmid	r1, r1				@ get mm->context.id
+   4:	00000002 	andeq	r0, r0, r2
+	ALT_SMP(orr	r0, r0, #TTB_FLAGS_SMP)
+   8:	01040000 	mrseq	r0, (UNDEF: 4)
+	...
+#ifdef CONFIG_ARM_ERRATA_754322
+	dsb
+#endif
+	mcr	p15, 0, r1, c13, c0, 1		@ set context ID
+	isb
+	mcr	p15, 0, r0, c2, c0, 0		@ set TTB 0
+  14:	68637261 	stmdavs	r3!, {r0, r5, r6, r9, ip, sp, lr}^
+	isb
+  18:	6d72612f 	ldfvse	f6, [r2, #-188]!	; 0xffffff44
+#endif
+	mov	pc, lr
+  1c:	2f6d6d2f 	svccs	0x006d6d2f
+ *	- pte   - PTE value to store
+ *	- ext	- value for extended PTE bits
+ */
+ENTRY(cpu_v7_set_pte_ext)
+#ifdef CONFIG_MMU
+	str	r1, [r0]			@ linux version
+  20:	636f7270 	cmnvs	pc, #112, 4
+
+	bic	r3, r1, #0x000003f0
+  24:	2d37762d 	ldccs	6, cr7, [r7, #-180]!	; 0xffffff4c
+	bic	r3, r3, #PTE_TYPE_MASK
+  28:	76656c32 			; <UNDEFINED> instruction: 0x76656c32
+	orr	r3, r3, r2
+  2c:	532e6c65 	teqpl	lr, #25856	; 0x6500
+	orr	r3, r3, #PTE_EXT_AP0 | 2
+  30:	6f682f00 	svcvs	0x00682f00
+
+	tst	r1, #1 << 4
+  34:	642f656d 	strtvs	r6, [pc], #-1389	; 3c <.debug_info+0x3c>
+	orrne	r3, r3, #PTE_EXT_TEX(1)
+  38:	65696e61 	strbvs	r6, [r9, #-3681]!	; 0xfffff19f
+
+	eor	r1, r1, #L_PTE_DIRTY
+  3c:	656b2f6c 	strbvs	r2, [fp, #-3948]!	; 0xfffff094
+	tst	r1, #L_PTE_RDONLY | L_PTE_DIRTY
+  40:	6c656e72 	stclvs	14, cr6, [r5], #-456	; 0xfffffe38
+	orrne	r3, r3, #PTE_EXT_APX
+  44:	554e4700 	strbpl	r4, [lr, #-1792]	; 0xfffff900
+
+	tst	r1, #L_PTE_USER
+  48:	20534120 	subscs	r4, r3, r0, lsr #2
+	orrne	r3, r3, #PTE_EXT_AP1
+  4c:	30322e32 	eorscc	r2, r2, r2, lsr lr
+
+	tst	r1, #L_PTE_XN
+  50:	0031352e 	eorseq	r3, r1, lr, lsr #10
+	orrne	r3, r3, #PTE_EXT_XN
+  54:	Address 0x00000054 is out of bounds.
+
+
+Disassembly of section .debug_abbrev:
+
+00000000 <.debug_abbrev>:
+ *	It is assumed that:
+ *	- we are not using split page tables
+ */
+ENTRY(cpu_v7_switch_mm)
+#ifdef CONFIG_MMU
+	mov	r2, #0
+   0:	10001101 	andne	r1, r0, r1, lsl #2
+	mmid	r1, r1				@ get mm->context.id
+   4:	03065506 	movweq	r5, #25862	; 0x6506
+	ALT_SMP(orr	r0, r0, #TTB_FLAGS_SMP)
+   8:	25081b08 	strcs	r1, [r8, #-2824]	; 0xfffff4f8
+	bfi	r1, r2, #8, #24			@ insert into new context ID
+#endif
+#ifdef CONFIG_ARM_ERRATA_754322
+	dsb
+#endif
+	mcr	p15, 0, r1, c13, c0, 1		@ set context ID
+   c:	00051308 	andeq	r1, r5, r8, lsl #6
+	...
+
+Disassembly of section .debug_aranges:
+
+00000000 <.debug_aranges>:
+ *	It is assumed that:
+ *	- we are not using split page tables
+ */
+ENTRY(cpu_v7_switch_mm)
+#ifdef CONFIG_MMU
+	mov	r2, #0
+   0:	00000034 	andeq	r0, r0, r4, lsr r0
+	mmid	r1, r1				@ get mm->context.id
+   4:	00000002 	andeq	r0, r0, r2
+	ALT_SMP(orr	r0, r0, #TTB_FLAGS_SMP)
+   8:	00040000 	andeq	r0, r4, r0
+	...
+#ifdef CONFIG_ARM_ERRATA_754322
+	dsb
+#endif
+	mcr	p15, 0, r1, c13, c0, 1		@ set context ID
+	isb
+	mcr	p15, 0, r0, c2, c0, 0		@ set TTB 0
+  14:	000002b4 			; <UNDEFINED> instruction: 0x000002b4
+	isb
+  18:	00000000 	andeq	r0, r0, r0
+#endif
+	mov	pc, lr
+  1c:	00000070 	andeq	r0, r0, r0, ror r0
+ *	- pte   - PTE value to store
+ *	- ext	- value for extended PTE bits
+ */
+ENTRY(cpu_v7_set_pte_ext)
+#ifdef CONFIG_MMU
+	str	r1, [r0]			@ linux version
+  20:	00000000 	andeq	r0, r0, r0
+
+	bic	r3, r1, #0x000003f0
+  24:	00000014 	andeq	r0, r0, r4, lsl r0
+	bic	r3, r3, #PTE_TYPE_MASK
+  28:	00000000 	andeq	r0, r0, r0
+	orr	r3, r3, r2
+  2c:	0000016c 	andeq	r0, r0, ip, ror #2
+	...
+
+Disassembly of section .debug_ranges:
+
+00000000 <.debug_ranges>:
+ *	It is assumed that:
+ *	- we are not using split page tables
+ */
+ENTRY(cpu_v7_switch_mm)
+#ifdef CONFIG_MMU
+	mov	r2, #0
+   0:	ffffffff 			; <UNDEFINED> instruction: 0xffffffff
+	...
+	bfi	r1, r2, #8, #24			@ insert into new context ID
+#endif
+#ifdef CONFIG_ARM_ERRATA_754322
+	dsb
+#endif
+	mcr	p15, 0, r1, c13, c0, 1		@ set context ID
+   c:	000002b4 			; <UNDEFINED> instruction: 0x000002b4
+	isb
+  10:	00000000 	andeq	r0, r0, r0
+	mcr	p15, 0, r0, c2, c0, 0		@ set TTB 0
+  14:	00000070 	andeq	r0, r0, r0, ror r0
+	isb
+  18:	00000000 	andeq	r0, r0, r0
+#endif
+	mov	pc, lr
+  1c:	00000014 	andeq	r0, r0, r4, lsl r0
+ *	- pte   - PTE value to store
+ *	- ext	- value for extended PTE bits
+ */
+ENTRY(cpu_v7_set_pte_ext)
+#ifdef CONFIG_MMU
+	str	r1, [r0]			@ linux version
+  20:	00000000 	andeq	r0, r0, r0
+
+	bic	r3, r1, #0x000003f0
+  24:	0000016c 	andeq	r0, r0, ip, ror #2
+	...
+
+proc-v7.o:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <cpu_v7_switch_mm>:
+ *	It is assumed that:
+ *	- we are not using split page tables
+ */
+ENTRY(cpu_v7_switch_mm)
+#ifdef CONFIG_MMU
+	mov	r2, #0
+   0:	e3a02000 	mov	r2, #0
+	mmid	r1, r1				@ get mm->context.id
+   4:	e5911178 	ldr	r1, [r1, #376]	; 0x178
+	ALT_SMP(orr	r0, r0, #TTB_FLAGS_SMP)
+   8:	e380006a 	orr	r0, r0, #106	; 0x6a
+	bfi	r1, r2, #8, #24			@ insert into new context ID
+#endif
+#ifdef CONFIG_ARM_ERRATA_754322
+	dsb
+#endif
+	mcr	p15, 0, r1, c13, c0, 1		@ set context ID
+   c:	ee0d1f30 	mcr	15, 0, r1, cr13, cr0, {1}
+	isb
+  10:	f57ff06f 	isb	sy
+	mcr	p15, 0, r0, c2, c0, 0		@ set TTB 0
+  14:	ee020f10 	mcr	15, 0, r0, cr2, cr0, {0}
+	isb
+  18:	f57ff06f 	isb	sy
+#endif
+	mov	pc, lr
+  1c:	e1a0f00e 	mov	pc, lr
+
+00000020 <cpu_v7_set_pte_ext>:
+ *	- pte   - PTE value to store
+ *	- ext	- value for extended PTE bits
+ */
+ENTRY(cpu_v7_set_pte_ext)
+#ifdef CONFIG_MMU
+	str	r1, [r0]			@ linux version
+  20:	e5801000 	str	r1, [r0]
+
+	bic	r3, r1, #0x000003f0
+  24:	e3c13e3f 	bic	r3, r1, #1008	; 0x3f0
+	bic	r3, r3, #PTE_TYPE_MASK
+  28:	e3c33003 	bic	r3, r3, #3
+	orr	r3, r3, r2
+  2c:	e1833002 	orr	r3, r3, r2
+	orr	r3, r3, #PTE_EXT_AP0 | 2
+  30:	e3833012 	orr	r3, r3, #18
+
+	tst	r1, #1 << 4
+  34:	e3110010 	tst	r1, #16
+	orrne	r3, r3, #PTE_EXT_TEX(1)
+  38:	13833040 	orrne	r3, r3, #64	; 0x40
+
+	eor	r1, r1, #L_PTE_DIRTY
+  3c:	e2211040 	eor	r1, r1, #64	; 0x40
+	tst	r1, #L_PTE_RDONLY | L_PTE_DIRTY
+  40:	e31100c0 	tst	r1, #192	; 0xc0
+	orrne	r3, r3, #PTE_EXT_APX
+  44:	13833c02 	orrne	r3, r3, #512	; 0x200
+
+	tst	r1, #L_PTE_USER
+  48:	e3110c01 	tst	r1, #256	; 0x100
+	orrne	r3, r3, #PTE_EXT_AP1
+  4c:	13833020 	orrne	r3, r3, #32
+
+	tst	r1, #L_PTE_XN
+  50:	e3110c02 	tst	r1, #512	; 0x200
+	orrne	r3, r3, #PTE_EXT_XN
+  54:	13833001 	orrne	r3, r3, #1
+
+	tst	r1, #L_PTE_YOUNG
+  58:	e3110002 	tst	r1, #2
+	tstne	r1, #L_PTE_VALID
+  5c:	13110001 	tstne	r1, #1
+	eorne	r1, r1, #L_PTE_NONE
+  60:	12211b02 	eorne	r1, r1, #2048	; 0x800
+	tstne	r1, #L_PTE_NONE
+  64:	13110b02 	tstne	r1, #2048	; 0x800
+	moveq	r3, #0
+  68:	03a03000 	moveq	r3, #0
+
+ ARM(	str	r3, [r0, #2048]! )
+  6c:	e5a03800 	str	r3, [r0, #2048]!	; 0x800
+ THUMB(	add	r0, r0, #2048 )
+ THUMB(	str	r3, [r0] )
+	ALT_SMP(W(nop))
+  70:	e320f000 	nop	{0}
+	ALT_UP (mcr	p15, 0, r0, c7, c10, 1)		@ flush_pte
+#endif
+	mov	pc, lr
+  74:	e1a0f00e 	mov	pc, lr
+
+00000078 <v7_crval>:
+  78:	2120c302 10c03c7d                       .. !}<..
+
+00000080 <cpu_v7_proc_init>:
+#else
+#include "proc-v7-2level.S"
+#endif
+
+ENTRY(cpu_v7_proc_init)
+	mov	pc, lr
+  80:	e1a0f00e 	mov	pc, lr
+
+00000084 <cpu_v7_proc_fin>:
+ENDPROC(cpu_v7_proc_init)
+
+ENTRY(cpu_v7_proc_fin)
+	mrc	p15, 0, r0, c1, c0, 0		@ ctrl register
+  84:	ee110f10 	mrc	15, 0, r0, cr1, cr0, {0}
+	bic	r0, r0, #0x1000			@ ...i............
+  88:	e3c00a01 	bic	r0, r0, #4096	; 0x1000
+	bic	r0, r0, #0x0006			@ .............ca.
+  8c:	e3c00006 	bic	r0, r0, #6
+	mcr	p15, 0, r0, c1, c0, 0		@ disable caches
+  90:	ee010f10 	mcr	15, 0, r0, cr1, cr0, {0}
+	mov	pc, lr
+  94:	e1a0f00e 	mov	pc, lr
+  98:	e320f000 	nop	{0}
+  9c:	e320f000 	nop	{0}
+
+000000a0 <cpu_v7_do_idle>:
+ *	Idle the processor (eg, wait for interrupt).
+ *
+ *	IRQs are already disabled.
+ */
+ENTRY(cpu_v7_do_idle)
+	dsb					@ WFI may enter a low-power mode
+  a0:	f57ff04f 	dsb	sy
+	wfi
+  a4:	e320f003 	wfi
+	mov	pc, lr
+  a8:	e1a0f00e 	mov	pc, lr
+
+000000ac <cpu_v7_dcache_clean_area>:
+ENDPROC(cpu_v7_do_idle)
+
+ENTRY(cpu_v7_dcache_clean_area)
+	ALT_SMP(W(nop))			@ MP extensions imply L1 PTW
+  ac:	e320f000 	nop	{0}
+	ALT_UP_B(1f)
+	mov	pc, lr
+  b0:	e1a0f00e 	mov	pc, lr
+1:	dcache_line_size r2, r3
+  b4:	ee103f30 	mrc	15, 0, r3, cr0, cr0, {1}
+  b8:	e1a03823 	lsr	r3, r3, #16
+  bc:	e203300f 	and	r3, r3, #15
+  c0:	e3a02004 	mov	r2, #4
+  c4:	e1a02312 	lsl	r2, r2, r3
+2:	mcr	p15, 0, r0, c7, c10, 1		@ clean D entry
+  c8:	ee070f3a 	mcr	15, 0, r0, cr7, cr10, {1}
+	add	r0, r0, r2
+  cc:	e0800002 	add	r0, r0, r2
+	subs	r1, r1, r2
+  d0:	e0511002 	subs	r1, r1, r2
+	bhi	2b
+  d4:	8afffffb 	bhi	c8 <cpu_v7_dcache_clean_area+0x1c>
+	dsb	ishst
+  d8:	f57ff04a 	dsb	ishst
+	mov	pc, lr
+  dc:	e1a0f00e 	mov	pc, lr
+
+000000e0 <cpu_v7_name>:
+  e0:	764d5241 72502037 7365636f 00726f73     ARMv7 Processor.
+
+000000f0 <cpu_v7_do_suspend>:
+/* Suspend/resume support: derived from arch/arm/mach-s5pv210/sleep.S */
+.globl	cpu_v7_suspend_size
+.equ	cpu_v7_suspend_size, 4 * 8
+#ifdef CONFIG_ARM_CPU_SUSPEND
+ENTRY(cpu_v7_do_suspend)
+	stmfd	sp!, {r4 - r10, lr}
+  f0:	e92d47f0 	push	{r4, r5, r6, r7, r8, r9, sl, lr}
+	mrc	p15, 0, r4, c13, c0, 0	@ FCSE/PID
+  f4:	ee1d4f10 	mrc	15, 0, r4, cr13, cr0, {0}
+	mrc	p15, 0, r5, c13, c0, 3	@ User r/o thread ID
+  f8:	ee1d5f70 	mrc	15, 0, r5, cr13, cr0, {3}
+	stmia	r0!, {r4 - r5}
+  fc:	e8a00030 	stmia	r0!, {r4, r5}
+#ifdef CONFIG_MMU
+	mrc	p15, 0, r6, c3, c0, 0	@ Domain ID
+ 100:	ee136f10 	mrc	15, 0, r6, cr3, cr0, {0}
+	mrc	p15, 0, r7, c2, c0, 1	@ TTB 1
+ 104:	ee127f30 	mrc	15, 0, r7, cr2, cr0, {1}
+	mrc	p15, 0, r11, c2, c0, 2	@ TTB control register
+ 108:	ee12bf50 	mrc	15, 0, fp, cr2, cr0, {2}
+#endif
+	mrc	p15, 0, r8, c1, c0, 0	@ Control register
+ 10c:	ee118f10 	mrc	15, 0, r8, cr1, cr0, {0}
+	mrc	p15, 0, r9, c1, c0, 1	@ Auxiliary control register
+ 110:	ee119f30 	mrc	15, 0, r9, cr1, cr0, {1}
+	mrc	p15, 0, r10, c1, c0, 2	@ Co-processor access control
+ 114:	ee11af50 	mrc	15, 0, sl, cr1, cr0, {2}
+	stmia	r0, {r6 - r11}
+ 118:	e8800fc0 	stm	r0, {r6, r7, r8, r9, sl, fp}
+	ldmfd	sp!, {r4 - r10, pc}
+ 11c:	e8bd87f0 	pop	{r4, r5, r6, r7, r8, r9, sl, pc}
+
+00000120 <cpu_v7_do_resume>:
+ENDPROC(cpu_v7_do_suspend)
+
+ENTRY(cpu_v7_do_resume)
+	mov	ip, #0
+ 120:	e3a0c000 	mov	ip, #0
+	mcr	p15, 0, ip, c7, c5, 0	@ invalidate I cache
+ 124:	ee07cf15 	mcr	15, 0, ip, cr7, cr5, {0}
+	mcr	p15, 0, ip, c13, c0, 1	@ set reserved context ID
+ 128:	ee0dcf30 	mcr	15, 0, ip, cr13, cr0, {1}
+	ldmia	r0!, {r4 - r5}
+ 12c:	e8b00030 	ldm	r0!, {r4, r5}
+	mcr	p15, 0, r4, c13, c0, 0	@ FCSE/PID
+ 130:	ee0d4f10 	mcr	15, 0, r4, cr13, cr0, {0}
+	mcr	p15, 0, r5, c13, c0, 3	@ User r/o thread ID
+ 134:	ee0d5f70 	mcr	15, 0, r5, cr13, cr0, {3}
+	ldmia	r0, {r6 - r11}
+ 138:	e8900fc0 	ldm	r0, {r6, r7, r8, r9, sl, fp}
+#ifdef CONFIG_MMU
+	mcr	p15, 0, ip, c8, c7, 0	@ invalidate TLBs
+ 13c:	ee08cf17 	mcr	15, 0, ip, cr8, cr7, {0}
+	mcr	p15, 0, r6, c3, c0, 0	@ Domain ID
+ 140:	ee036f10 	mcr	15, 0, r6, cr3, cr0, {0}
+#ifndef CONFIG_ARM_LPAE
+	ALT_SMP(orr	r1, r1, #TTB_FLAGS_SMP)
+ 144:	e381106a 	orr	r1, r1, #106	; 0x6a
+	ALT_UP(orr	r1, r1, #TTB_FLAGS_UP)
+#endif
+	mcr	p15, 0, r1, c2, c0, 0	@ TTB 0
+ 148:	ee021f10 	mcr	15, 0, r1, cr2, cr0, {0}
+	mcr	p15, 0, r7, c2, c0, 1	@ TTB 1
+ 14c:	ee027f30 	mcr	15, 0, r7, cr2, cr0, {1}
+	mcr	p15, 0, r11, c2, c0, 2	@ TTB control register
+ 150:	ee02bf50 	mcr	15, 0, fp, cr2, cr0, {2}
+	ldr	r4, =PRRR		@ PRRR
+ 154:	e59f4144 	ldr	r4, [pc, #324]	; 2a0 <__v7_setup_stack+0x2c>
+	ldr	r5, =NMRR		@ NMRR
+ 158:	e59f5144 	ldr	r5, [pc, #324]	; 2a4 <__v7_setup_stack+0x30>
+	mcr	p15, 0, r4, c10, c2, 0	@ write PRRR
+ 15c:	ee0a4f12 	mcr	15, 0, r4, cr10, cr2, {0}
+	mcr	p15, 0, r5, c10, c2, 1	@ write NMRR
+ 160:	ee0a5f32 	mcr	15, 0, r5, cr10, cr2, {1}
+#endif	/* CONFIG_MMU */
+	mrc	p15, 0, r4, c1, c0, 1	@ Read Auxiliary control register
+ 164:	ee114f30 	mrc	15, 0, r4, cr1, cr0, {1}
+	teq	r4, r9			@ Is it already set?
+ 168:	e1340009 	teq	r4, r9
+	mcrne	p15, 0, r9, c1, c0, 1	@ No, so write it
+ 16c:	1e019f30 	mcrne	15, 0, r9, cr1, cr0, {1}
+	mcr	p15, 0, r10, c1, c0, 2	@ Co-processor access control
+ 170:	ee01af50 	mcr	15, 0, sl, cr1, cr0, {2}
+	isb
+ 174:	f57ff06f 	isb	sy
+	dsb
+ 178:	f57ff04f 	dsb	sy
+	mov	r0, r8			@ control register
+ 17c:	e1a00008 	mov	r0, r8
+	b	cpu_resume_mmu
+ 180:	eafffffe 	b	0 <cpu_resume_mmu>
+
+00000184 <__v7_ca5mp_setup>:
+ *	- cache type register is implemented
+ */
+__v7_ca5mp_setup:
+__v7_ca9mp_setup:
+__v7_cr7mp_setup:
+	mov	r10, #(1 << 0)			@ Cache/TLB ops broadcasting
+ 184:	e3a0a001 	mov	sl, #1
+	b	1f
+ 188:	ea000000 	b	190 <__v7_ca15mp_setup+0x4>
+
+0000018c <__v7_ca15mp_setup>:
+__v7_ca7mp_setup:
+__v7_ca15mp_setup:
+	mov	r10, #0
+ 18c:	e3a0a000 	mov	sl, #0
+1:
+#ifdef CONFIG_SMP
+	ALT_SMP(mrc	p15, 0, r0, c1, c0, 1)		// Read - ACTLR, TRM p127
+ 190:	ee110f30 	mrc	15, 0, r0, cr1, cr0, {1}
+	ALT_UP(mov	r0, #(1 << 6))		@ fake it for UP
+	tst	r0, #(1 << 6)				@ SMP/nAMP mode enabled?
+ 194:	e3100040 	tst	r0, #64	; 0x40
+									// r0 & #(1<<6)   6번 비트 : SMP
+ 198:	03800040 	orreq	r0, r0, #64	; 0x40
+	orreq	r0, r0, #(1 << 6)		@ Enable SMP/nAMP mode
+ 19c:	0180000a 	orreq	r0, r0, sl
+	orreq	r0, r0, r10				@ Enable CPU-specific SMP bits
+ 1a0:	0e010f30 	mcreq	15, 0, r0, cr1, cr0, {1}
+	mcreq	p15, 0, r0, c1, c0, 1	// Write - ACTLR SMP
+#endif
+ 1a4:	eaffffff 	b	1a8 <__v7_setup>
+
+000001a8 <__v7_setup>:
+	orr	r0, r0, #PJ4B_WFI_WFE
+	mcr	p15, 1,	r0, c15, c1, 0
+
+#endif /* CONFIG_CPU_PJ4B */
+
+// 20140621, 여기까지 진행
+ 1a8:	e28fc0c4 	add	ip, pc, #196	; 0xc4
+__v7_setup:
+ 1ac:	e88c4abf 	stm	ip, {r0, r1, r2, r3, r4, r5, r7, r9, fp, lr}
+	adr	r12, __v7_setup_stack		@ the local stack
+ 1b0:	ebfffffe 	bl	0 <v7_flush_dcache_louis>
+	stmia	r12, {r0-r5, r7, r9, r11, lr}
+ 1b4:	e89c4abf 	ldm	ip, {r0, r1, r2, r3, r4, r5, r7, r9, fp, lr}
+	bl      v7_flush_dcache_louis
+	ldmia	r12, {r0-r5, r7, r9, r11, lr}
+ 1b8:	ee100f10 	mrc	15, 0, r0, cr0, cr0, {0}
+
+ 1bc:	e200a4ff 	and	sl, r0, #-16777216	; 0xff000000
+	mrc	p15, 0, r0, c0, c0, 0		@ read main ID register
+ 1c0:	e33a0441 	teq	sl, #1090519040	; 0x41000000
+	and	r10, r0, #0xff000000		@ ARM?
+ 1c4:	1a00000a 	bne	1f4 <__v7_setup+0x4c>
+	teq	r10, #0x41000000
+ 1c8:	e200560f 	and	r5, r0, #15728640	; 0xf00000
+	//우리꺼는 0x41이다.
+ 1cc:	e200600f 	and	r6, r0, #15
+	bne	3f
+ 1d0:	e1866825 	orr	r6, r6, r5, lsr #16
+	and	r5, r0, #0x00f00000		@ variant
+ 1d4:	e7eb0250 	ubfx	r0, r0, #4, #12
+	and	r6, r0, #0x0000000f		@ revision
+	orr	r6, r6, r5, lsr #20-4		@ combine variant and revision
+	ubfx	r0, r0, #4, #12			@ primary part number
+ 1d8:	e59fa0c8 	ldr	sl, [pc, #200]	; 2a8 <__v7_setup_stack+0x34>
+//ubfs 부호없는 비트필드 추출. 
+ 1dc:	e130000a 	teq	r0, sl
+	/* Cortex-A8 Errata */
+ 1e0:	1a000000 	bne	1e8 <__v7_setup+0x40>
+	mcreq	p15, 0, r10, c1, c0, 1		@ write aux control register
+#endif
+#ifdef CONFIG_ARM_ERRATA_460075
+	teq	r6, #0x20			@ only present in r2p0
+	mrceq	p15, 1, r10, c9, c0, 2		@ read L2 cache aux ctrl register
+	tsteq	r10, #1 << 22
+ 1e4:	ea000002 	b	1f4 <__v7_setup+0x4c>
+	orreq	r10, r10, #(1 << 22)		@ set the Write Allocate disable bit
+	mcreq	p15, 1, r10, c9, c0, 2		@ write the L2 cache aux ctrl register
+#endif
+ 1e8:	e59fa0bc 	ldr	sl, [pc, #188]	; 2ac <__v7_setup_stack+0x38>
+	b	3f
+ 1ec:	e130000a 	teq	r0, sl
+
+ 1f0:	1affffff 	bne	1f4 <__v7_setup+0x4c>
+#if defined(CONFIG_ARM_ERRATA_751472) && defined(CONFIG_SMP)
+	ALT_SMP(cmp r6, #0x30)			@ present prior to r3p0
+	ALT_UP_B(1f)
+	mrclt	p15, 0, r10, c15, c0, 1		@ read diagnostic register
+	orrlt	r10, r10, #1 << 11		@ set bit #11
+	mcrlt	p15, 0, r10, c15, c0, 1		@ write diagnostic register
+ 1f4:	e59fa0b4 	ldr	sl, [pc, #180]	; 2b0 <__v7_setup_stack+0x3c>
+1:
+ 1f8:	e130000a 	teq	r0, sl
+#endif
+ 1fc:	1affffff 	bne	200 <__v7_setup+0x58>
+	teq	r0, r10
+	bne	4f
+//a15아니면 점프, 우리껀 a15이므로 무시.
+#ifdef CONFIG_ARM_ERRATA_773022 //not set
+	cmp	r6, #0x4			@ only present up to r0p4
+	mrcle	p15, 0, r10, c1, c0, 1		@ read aux control register
+ 200:	e3a0a000 	mov	sl, #0
+	orrle	r10, r10, #1 << 1		@ disable loop buffer
+ 204:	ee07af15 	mcr	15, 0, sl, cr7, cr5, {0}
+	mcrle	p15, 0, r10, c1, c0, 1		@ write aux control register
+#endif
+ 208:	ee08af17 	mcr	15, 0, sl, cr8, cr7, {0}
+
+ 20c:	ee02af50 	mcr	15, 0, sl, cr2, cr0, {2}
+ 210:	e384406a 	orr	r4, r4, #106	; 0x6a
+ 214:	e388806a 	orr	r8, r8, #106	; 0x6a
+ 218:	ee028f30 	mcr	15, 0, r8, cr2, cr0, {1}
+4:	mov	r10, #0
+ 21c:	e59f507c 	ldr	r5, [pc, #124]	; 2a0 <__v7_setup_stack+0x2c>
+	mcr	p15, 0, r10, c7, c5, 0		@ I+BTB cache invalidate
+ 220:	e59f607c 	ldr	r6, [pc, #124]	; 2a4 <__v7_setup_stack+0x30>
+	//i+BTB cache의 dirty bit를 무효화한다.
+ 224:	ee0a5f12 	mcr	15, 0, r5, cr10, cr2, {0}
+	//BTB: branch target buffer . branch prediction 을 위해 최근 pc값을 저장하고 있는 버퍼
+ 228:	ee0a6f32 	mcr	15, 0, r6, cr10, cr2, {1}
+	//Instruction Cache Invalidate All to PoU, VMSA
+	//PoU : For a particular processor, the point by which the instruction and data caches and the translation table walks of that 
+ 22c:	f57ff04f 	dsb	sy
+	processor are guaranteed to see the same copy of a memory location.
+	//VMSA : Virtual Memory System Architecture
+ 230:	ee100f11 	mrc	15, 0, r0, cr0, cr1, {0}
+#ifdef CONFIG_MMU
+ 234:	e2000a0f 	and	r0, r0, #61440	; 0xf000
+	mcr	p15, 0, r10, c8, c7, 0		@ invalidate I + D TLBs
+ 238:	e3300a01 	teq	r0, #4096	; 0x1000
+	//TLB Invalidate All, VMSA only
+ 23c:	1a000004 	bne	254 <__v7_setup+0xac>
+	//I + D TLBs의 dirty bit를 무효화한다.
+ 240:	e3a05000 	mov	r5, #0
+	v7_ttb_setup r10, r4, r8, r5		@ TTBCR, TTBRx setup
+ 244:	eec15e10 	mcr	14, 6, r5, cr1, cr0, {0}
+	//2단계로 가정. mm/proc-v7-2level.S 147
+ 248:	eed00e10 	mrc	14, 6, r0, cr0, cr0, {0}
+	/*
+ 24c:	e3800001 	orr	r0, r0, #1
+	r4: ttbr0, r8: ttbr1
+ 250:	eec00e10 	mcr	14, 6, r0, cr0, cr0, {0}
+	1. Translation Table Base Control Register
+	ttbcr을 0으로 쓰고, r4와 r8를 TTB_FLAGS_SMP와 OR한다. 
+	페이지테이블이 메모리의 어디에 위치에있는지 mmu에 알려주기위한 준비
+ 254:	e24f5f79 	sub	r5, pc, #484	; 0x1e4
+	2. Translation Table Base Register 0 and Register 1
+ 258:	e8950060 	ldm	r5, {r5, r6}
+	ttbr1을 로드??
+	http://webcache.googleusercontent.com/search?q=cache:PttqpxNUKfIJ:www.iamroot.org/xe/176798+&cd=1&hl=ko&ct=clnk&gl=kr&lr=lang_ko
+	*/
+	ldr	r5, =PRRR			@ PRRR
+	ldr	r6, =NMRR			@ NMRR
+ 25c:	e3855b01 	orr	r5, r5, #1024	; 0x400
+	mcr	p15, 0, r5, c10, c2, 0		@ write PRRR
+ 260:	e3c66b01 	bic	r6, r6, #1024	; 0x400
+	mcr	p15, 0, r6, c10, c2, 1		@ write NMRR
+#endif
+ 264:	ee110f10 	mrc	15, 0, r0, cr1, cr0, {0}
+	dsb					@ Complete invalidations
+ 268:	e1c00005 	bic	r0, r0, r5
+#ifndef CONFIG_ARM_THUMBEE
+ 26c:	e1800006 	orr	r0, r0, r6
+	mrc	p15, 0, r0, c0, c1, 0		@ read ID_PFR0 for ThumbEE
+	and	r0, r0, #(0xf << 12)		@ ThumbEE enabled field
+ 270:	e1a0f00e 	mov	pc, lr
+
+00000274 <__v7_setup_stack>:
+	...
+ 2a0:	ff0a81a8 	.word	0xff0a81a8
+ 2a4:	40e040e0 	.word	0x40e040e0
+ 2a8:	00000c08 	.word	0x00000c08
+ 2ac:	00000c09 	.word	0x00000c09
+ 2b0:	00000c0f 	.word	0x00000c0f
+ 2b4:	e320f000 	nop	{0}
+ 2b8:	e320f000 	nop	{0}
+ 2bc:	e320f000 	nop	{0}
+
+Disassembly of section .idmap.text:
+
+00000000 <cpu_v7_reset>:
+ *      caches disabled.
+ */
+	.align	5
+	.pushsection	.idmap.text, "ax"
+ENTRY(cpu_v7_reset)
+	mrc	p15, 0, r1, c1, c0, 0		@ ctrl register
+   0:	ee111f10 	mrc	15, 0, r1, cr1, cr0, {0}
+	bic	r1, r1, #0x1			@ ...............m
+   4:	e3c11001 	bic	r1, r1, #1
+ THUMB(	bic	r1, r1, #1 << 30 )		@ SCTLR.TE (Thumb exceptions)
+	mcr	p15, 0, r1, c1, c0, 0		@ disable MMU
+   8:	ee011f10 	mcr	15, 0, r1, cr1, cr0, {0}
+	isb
+   c:	f57ff06f 	isb	sy
+	bx	r0
+  10:	e12fff10 	bx	r0
+
+Disassembly of section .proc.info.init:
+
+00000000 <__v7_ca5mp_proc_info>:
+   0:	410fc050 ff0ffff0 00011c0e 00000c02     P..A............
+	 */
+.macro __v7_proc initfunc, mm_mmuflags = 0, io_mmuflags = 0, hwcaps = 0, proc_fns = v7_processor_functions
+	ALT_SMP(.long	PMD_TYPE_SECT | PMD_SECT_AP_WRITE | PMD_SECT_AP_READ | \
+			PMD_SECT_AF | PMD_FLAGS_SMP | \mm_mmuflags)
+																// mmuflags
+	ALT_UP(.long	PMD_TYPE_SECT | PMD_SECT_AP_WRITE | PMD_SECT_AP_READ | \
+  10:	ea00005f 00000000 00000006 00008097     _...............
+  20:	000000e0 00000000 00000000 00000000     ................
+  30:	00000000                                ....
+
+00000034 <__v7_ca9mp_proc_info>:
+  34:	410fc090 ff0ffff0 00011c0e 00000c02     ...A............
+	.long	cpu_arch_name
+	.long	cpu_elf_name
+	.long	HWCAP_SWP | HWCAP_HALF | HWCAP_THUMB | HWCAP_FAST_MULT | \
+		HWCAP_EDSP | HWCAP_TLS | \hwcaps
+	.long	cpu_v7_name
+	.long	\proc_fns
+  44:	ea00005f 00000000 00000006 00008097     _...............
+  54:	000000e0 00000000 00000000 00000000     ................
+  64:	00000000                                ....
+
+00000068 <__v7_cr7mp_proc_info>:
+  68:	410fc170 ff0ffff0 00011c0e 00000c02     p..A............
+	 */
+	.type   __v7_ca9mp_proc_info, #object
+__v7_ca9mp_proc_info:
+	.long	0x410fc090
+	.long	0xff0ffff0
+	__v7_proc __v7_ca9mp_setup
+  78:	ea00005f 00000000 00000006 00008097     _...............
+  88:	000000e0 00000000 00000000 00000000     ................
+  98:	00000000                                ....
+
+0000009c <__v7_ca7mp_proc_info>:
+  9c:	410fc070 ff0ffff0 00011c0e 00000c02     p..A............
+	/*
+	 * Marvell PJ4B processor.
+	 */
+#ifdef CONFIG_CPU_PJ4B
+	.type   __v7_pj4b_proc_info, #object
+__v7_pj4b_proc_info:
+  ac:	ea000061 00000000 00000006 00008097     a...............
+  bc:	000000e0 00000000 00000000 00000000     ................
+  cc:	00000000                                ....
+
+000000d0 <__v7_ca15mp_proc_info>:
+  d0:	410fc0f0 ff0ffff0 00011c0e 00000c02     ...A............
+#endif
+
+	/*
+	 * ARM Ltd. Cortex R7 processor.
+	 */
+	.type	__v7_cr7mp_proc_info, #object
+  e0:	ea000061 00000000 00000006 00008097     a...............
+  f0:	000000e0 00000000 00000000 00000000     ................
+ 100:	00000000                                ....
+
+00000104 <__krait_proc_info>:
+ 104:	510f0400 ff0ffc00 00011c0e 00000c02     ...Q............
+	.type	__v7_ca7mp_proc_info, #object
+__v7_ca7mp_proc_info:
+	.long	0x410fc070
+	.long	0xff0ffff0
+	__v7_proc __v7_ca7mp_setup
+	.size	__v7_ca7mp_proc_info, . - __v7_ca7mp_proc_info
+ 114:	eafffffe 00000000 00000006 00068097     ................
+ 124:	000000e0 00000000 00000000 00000000     ................
+ 134:	00000000                                ....
+
+00000138 <__v7_proc_info>:
+ 138:	000f0000 000f0000 00011c0e 00000c02     ................
+	.type	__v7_ca15mp_proc_info, #object
+__v7_ca15mp_proc_info:
+	.long	0x410fc0f0
+	.long	0xff0ffff0
+	__v7_proc __v7_ca15mp_setup
+	.size	__v7_ca15mp_proc_info, . - __v7_ca15mp_proc_info
+ 148:	eafffffe 00000000 00000006 00008097     ................
+ 158:	000000e0 00000000 00000000 00000000     ................
+ 168:	00000000                                ....
