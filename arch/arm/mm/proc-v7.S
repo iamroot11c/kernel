@@ -353,7 +353,7 @@ __v7_setup:
 	//BTB: branch target buffer . branch prediction 을 위해 최근 pc값을 저장하고 있는 버퍼
 	//Instruction Cache Invalidate All to PoU, VMSA
 	//PoU : For a particular processor, the point by which the instruction and data caches and the translation table walks of that 
-	processor are guaranteed to see the same copy of a memory location.
+//	processor are guaranteed to see the same copy of a memory location.
 	//VMSA : Virtual Memory System Architecture
 #ifdef CONFIG_MMU
 	mcr	p15, 0, r10, c8, c7, 0		@ invalidate I + D TLBs
@@ -388,29 +388,35 @@ __v7_setup:
 #endif
 	dsb					@ Complete invalidations
 #ifndef CONFIG_ARM_THUMBEE
-	mrc	p15, 0, r0, c0, c1, 0		@ read ID_PFR0 for ThumbEE
+	mrc	p15, 0, r0, c0, c1, 0		@ read ID_PFR0 for ThumbEE 	//processor feature register 0 참조 page102
 	and	r0, r0, #(0xf << 12)		@ ThumbEE enabled field
-	teq	r0, #(1 << 12)			@ check if ThumbEE is present
-	bne	1f
+	teq	r0, #(1 << 12)			@ check if ThumbEE is present 	// 코프로세서에서 읽은 값을 비교 
+	                                                          	// 0x1이면 Thumbee지원
+	bne	1f 														// Thumbee를 지원하기에 아래 코드 설정 
 	mov	r5, #0
-	mcr	p14, 6, r5, c1, c0, 0		@ Initialize TEEHBR to 0
-	mrc	p14, 6, r0, c0, c0, 0		@ load TEECR
+	mcr	p14, 6, r5, c1, c0, 0		@ Initialize TEEHBR to 0  	// cp14 : debug 관련 레지스터
+															  	// TEEHBR : Thumbee Handler Base register
+	mrc	p14, 6, r0, c0, c0, 0		@ load TEECR  			  	// TEECR : Thumbee Configuration regitser
 	orr	r0, r0, #1			@ set the 1st bit in order to
 	mcr	p14, 6, r0, c0, c0, 0		@ stop userspace TEEHBR access
 1:
 #endif
-	adr	r5, v7_crval
-	ldmia	r5, {r5, r6}
+	adr	r5, v7_crval 		//v7_crval 물리 주소를 r5 
+							// crval clear=0x2120c302, mmuset=0x10c03c7d, ucset=0x00c01c7c
+	
+	ldmia 	r5, {r5, r6}	// r5=celar=0x2120c302
+							// r6=mmuset=0x10c03c7d
 #ifdef CONFIG_CPU_ENDIAN_BE8
 	orr	r6, r6, #1 << 25		@ big-endian page tables
 #endif
-#ifdef CONFIG_SWP_EMULATE
+#ifdef CONFIG_SWP_EMULATE 					// SWP가 세마포어를 구현하기위해 있었는데 ldrex/strex로 대체 됨
 	orr     r5, r5, #(1 << 10)              @ set SW bit in "clear"
 	bic     r6, r6, #(1 << 10)              @ clear it in "mmuset"
 #endif
    	mrc	p15, 0, r0, c1, c0, 0		@ read control register
-	bic	r0, r0, r5			@ clear bits them
-	orr	r0, r0, r6			@ set them
+	bic	r0, r0, r5					@ clear bits them 
+	orr	r0, r0, r6					@ set themi 
+									// r0=mmuset의 10bit가clear된 값
  THUMB(	orr	r0, r0, #1 << 30	)	@ Thumb exceptions
 	mov	pc, lr				@ return to head.S:__ret
 ENDPROC(__v7_setup)

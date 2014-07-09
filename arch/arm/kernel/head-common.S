@@ -45,13 +45,13 @@
  */
 __vet_atags:
 	tst	r2, #0x3			@ aligned?
-						//r2의 하위 2bit &연산
+								//r2의 하위 2bit &연산
 	bne	1f
 
 	ldr	r5, [r2, #0]			//r5= *r2 (r2:atag list address)
 #ifdef CONFIG_OF_FLATTREE		
 	ldr	r6, =OF_DT_MAGIC		@ is it a DTB?
-	cmp	r5, r6				//devices tree인지 검사
+	cmp	r5, r6					//devices tree인지 검사
 	beq	2f					
 #endif
 	cmp	r5, #ATAG_CORE_SIZE		@ is first tag ATAG_CORE?
@@ -79,18 +79,24 @@ ENDPROC(__vet_atags)
  */
 	__INIT
 __mmap_switched:
-	adr	r3, __mmap_switched_data
+	adr	r3, __mmap_switched_data 
 
-	ldmia	r3!, {r4, r5, r6, r7}
+	ldmia	r3!, {r4, r5, r6, r7} 	// _data_loc : r4
+	 						      	// _sdata : r5
+								  	// _bbs_start : r6
+	  							  	// _bss_end : r7  
 	cmp	r4, r5				@ Copy data segment if needed
 1:	cmpne	r5, r6
 	ldrne	fp, [r4], #4
 	strne	fp, [r5], #4
 	bne	1b
 
-	mov	fp, #0				@ Clear BSS (and zero fp)
-1:	cmp	r6, r7
-	strcc	fp, [r6],#4
+	mov	fp, #0				@ Clear BSS (and zero fp) // bss 0으로 초기화 : 전역 변수로 선언되어 초기화되지 않은 
+	                                                  //                    데이터들이 들어가기 때문 부팅 시 해당
+													  //                    영역을 0으로 초기화 해야 함 
+													  // 모기향 109page 참	
+1:	cmp	r6, r7 
+	strcc	fp, [r6],#4  //r6<r7
 	bcc	1b
 
  ARM(	ldmia	r3, {r4, r5, r6, r7, sp})
@@ -100,9 +106,11 @@ __mmap_switched:
 	str	r1, [r5]			@ Save machine type
 	str	r2, [r6]			@ Save atags pointer
 	cmp	r7, #0
-	bicne	r4, r0, #CR_A			@ Clear 'A' bit
+	bicne	r4, r0, #CR_A			@ Clear 'A' bit 
+									//#CR_A=2 r7=0이기 때문에 동작 안 함 
 	stmneia	r7, {r0, r4}			@ Save control register values
 	b	start_kernel
+	//2014-07-05(토) 여기까지 진행
 ENDPROC(__mmap_switched)
 
 	.align	2
@@ -120,7 +128,8 @@ __mmap_switched_data:
 #else
 	.long	0				@ r7
 #endif
-	.long	init_thread_union + THREAD_START_SP @ sp
+	.long	init_thread_union + THREAD_START_SP @ sp 
+												//Thread_Start_Sp = Thread_Size-8(asm/thread_info.h) 
 	.size	__mmap_switched_data, . - __mmap_switched_data
 
 /*

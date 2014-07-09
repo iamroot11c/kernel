@@ -506,7 +506,7 @@ __enable_mmu:
 #if defined(CONFIG_ALIGNMENT_TRAP) && __LINUX_ARM_ARCH__ < 6
 	orr	r0, r0, #CR_A
 #else
-	bic	r0, r0, #CR_A
+	bic	r0, r0, #CR_A 	 //CR_A=2 r0의 2번째 bit를 0으로 set
 #endif
 #ifdef CONFIG_CPU_DCACHE_DISABLE
 	bic	r0, r0, #CR_C
@@ -518,12 +518,12 @@ __enable_mmu:
 	bic	r0, r0, #CR_I
 #endif
 #ifndef CONFIG_ARM_LPAE
-	mov	r5, #(domain_val(DOMAIN_USER, DOMAIN_MANAGER) | \
-		      domain_val(DOMAIN_KERNEL, DOMAIN_MANAGER) | \
-		      domain_val(DOMAIN_TABLE, DOMAIN_MANAGER) | \
-		      domain_val(DOMAIN_IO, DOMAIN_CLIENT))
+	mov	r5, #(domain_val(DOMAIN_USER, DOMAIN_MANAGER) | \ 		//mmu domain 설정
+		      domain_val(DOMAIN_KERNEL, DOMAIN_MANAGER) | \ 	//domain : 개별적 접근 권한을 갖도록 정의된 메모리 영역
+		      domain_val(DOMAIN_TABLE, DOMAIN_MANAGER) | \ 		//arm referenc 1558page 참조, asm/domain.h 참조
+		      domain_val(DOMAIN_IO, DOMAIN_CLIENT)) 			//r5=0b01:11:11
 	mcr	p15, 0, r5, c3, c0, 0		@ load domain access register
-	mcr	p15, 0, r4, c2, c0, 0		@ load page table pointer
+	mcr	p15, 0, r4, c2, c0, 0		@ load page table pointer 	//r4=page table
 #endif
 	b	__turn_mmu_on
 ENDPROC(__enable_mmu)
@@ -545,15 +545,17 @@ ENDPROC(__enable_mmu)
 	.align	5
 	.pushsection	.idmap.text, "ax"
 ENTRY(__turn_mmu_on)
-	mov	r0, r0
-	instr_sync
+	mov	r0, r0 						// isb를 수행하기 전에 필요(arm 10차 주석참조)
+									// nop armv7이외 지원하기위한 코드
+	instr_sync 						// isb 매크로->arm/include/assembler.h에 정의
+	 								// isb관련 arm reference 152페이지 참조
+									// isb : An ISB instruction flushes the pipeline in the processor
 	mcr	p15, 0, r0, c1, c0, 0		@ write control reg
-									// ?? r0에 어떤값이???
 	mrc	p15, 0, r3, c0, c0, 0		@ read id reg
 	instr_sync
-	mov	r3, r3
-	mov	r3, r13
-	mov	pc, r3
+	mov	r3, r3 						// manual instruction ordering(arm 10차 주석 참조)
+	mov	r3, r13 					//r13 : 161line에서 r13레지스터에 __mmap_switched주소를 로드 했음  
+	mov	pc, r3 					    // __mmap_switched를 실행 
 __turn_mmu_on_end:
 ENDPROC(__turn_mmu_on)
 	.popsection
