@@ -598,7 +598,7 @@ static void __init setup_processor(void)
 	snprintf(elf_platform, ELF_PLATFORM_SIZE, "%s%c",
 		 list->elf_name, ENDIANNESS);
 	//sprintf()의 버퍼 오버플로우 방지 버전.
-	//20140712
+	//여기까지 했음 20140712
 	elf_hwcap = list->elf_hwcap;
 
 	cpuid_init_hwcaps();
