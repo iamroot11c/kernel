@@ -37,7 +37,9 @@ static struct debug_obj		obj_static_pool[ODEBUG_POOL_SIZE] __initdata;
 static DEFINE_RAW_SPINLOCK(pool_lock);
 
 static HLIST_HEAD(obj_pool);
-
+//#define HLIST_HEAD(name)	struct hlist_head name = {  .first = NULL }
+//static struct hlist_head obj_pool  = {  .first = NULL  }    
+//20140712
 static int			obj_pool_min_free = ODEBUG_POOL_SIZE;
 static int			obj_pool_free = ODEBUG_POOL_SIZE;
 static int			obj_pool_used;

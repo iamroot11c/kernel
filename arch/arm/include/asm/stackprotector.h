@@ -23,6 +23,8 @@ extern unsigned long __stack_chk_guard;
  * NOTE: this must only be called from functions that never return,
  * and it must always be inlined.
  */
+//모기향책 p.117 참고.	stack buffer overflow 공격을 발견하기 위한 목적
+//20140712
 static __always_inline void boot_init_stack_canary(void)
 {
 	unsigned long canary;

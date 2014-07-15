@@ -373,7 +373,8 @@ static void __init cpuid_init_hwcaps(void)
 		return;
 
 	divide_instrs = (read_cpuid_ext(CPUID_EXT_ISAR0) & 0x0f000000) >> 24;
-
+	//지원하는 인스트럭션 종류.	exynos_5420은 divide_instrs==2이므로 case2,case1 둘 다 실행됨
+	//20140712
 	switch (divide_instrs) {
 	case 2:
 		elf_hwcap |= HWCAP_IDIVA;
@@ -383,6 +384,8 @@ static void __init cpuid_init_hwcaps(void)
 
 	/* LPAE implies atomic ldrd/strd instructions */
 	vmsa = (read_cpuid_ext(CPUID_EXT_MMFR0) & 0xf) >> 0;
+	//virtual memory 지원하는 부분
+	//20140712
 	if (vmsa >= 5)
 		elf_hwcap |= HWCAP_LPAE;
 }
@@ -471,8 +474,10 @@ void __init smp_setup_processor_id(void)
 	u32 mpidr = is_smp() ? read_cpuid_mpidr() & MPIDR_HWID_BITMASK : 0;
 	u32 cpu = MPIDR_AFFINITY_LEVEL(mpidr, 0);
 
-	cpu_logical_map(0) = cpu;
-	for (i = 1; i < nr_cpu_ids; ++i)
+	cpu_logical_map(0) = cpu;	//cpu변수 값을 대입
+	for (i = 1; i < nr_cpu_ids; ++i)//nr_cpu_ids값은 2,  0번 cpu에 대해서는 
+					//바로 위 라인에서 세팅함 
+					//20140712
 		cpu_logical_map(i) = i == cpu ? 0 : i;
 
 	/*
@@ -560,7 +565,8 @@ static void __init setup_processor(void)
 	 * types.  The linker builds this table for us from the
 	 * entries in arch/arm/mm/proc-*.S
 	 */
-	list = lookup_processor_type(read_cpuid_id());
+	list = lookup_processor_type(read_cpuid_id());	//head-common.S 129라인 
+							//20140712
 	if (!list) {
 		printk("CPU configuration botched (ID %08x), unable "
 		       "to continue.\n", read_cpuid_id());
@@ -591,6 +597,8 @@ static void __init setup_processor(void)
 		 list->arch_name, ENDIANNESS);
 	snprintf(elf_platform, ELF_PLATFORM_SIZE, "%s%c",
 		 list->elf_name, ENDIANNESS);
+	//sprintf()의 버퍼 오버플로우 방지 버전.
+	//20140712
 	elf_hwcap = list->elf_hwcap;
 
 	cpuid_init_hwcaps();
@@ -874,9 +882,11 @@ void __init hyp_mode_check(void)
 
 void __init setup_arch(char **cmdline_p)
 {
+//cmdline_p는 bootloader가 넘겨주는 kernel설정 값 저장
+//20140712
 	const struct machine_desc *mdesc;
 
-	setup_processor();
+	setup_processor();	//함수 내부 진행중 20140712
 	mdesc = setup_machine_fdt(__atags_pointer);
 	if (!mdesc)
 		mdesc = setup_machine_tags(__atags_pointer, __machine_arch_type);

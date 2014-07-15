@@ -56,7 +56,8 @@
 #define MPIDR_LEVEL_MASK ((1 << MPIDR_LEVEL_BITS) - 1)
 
 #define MPIDR_AFFINITY_LEVEL(mpidr, level) \
-	((mpidr >> (MPIDR_LEVEL_BITS * level)) & MPIDR_LEVEL_MASK)
+	((mpidr >> (MPIDR_LEVEL_BITS * level)) & MPIDR_LEVEL_MASK)	//하위 1byte값을 추출
+									//20140712
 
 #define ARM_CPU_IMP_ARM			0x41
 #define ARM_CPU_IMP_INTEL		0x69
@@ -78,7 +79,8 @@
 
 extern unsigned int processor_id;
 
-#ifdef CONFIG_CPU_CP15
+#ifdef CONFIG_CPU_CP15	//더 알아 봐야됨.  arm inline asm 참고
+			//20140712
 #define read_cpuid(reg)							\
 	({								\
 		unsigned int __val;					\
@@ -190,7 +192,8 @@ static inline unsigned int __attribute_const__ read_cpuid_tcmstatus(void)
 
 static inline unsigned int __attribute_const__ read_cpuid_mpidr(void)
 {
-	return read_cpuid(CPUID_MPIDR);
+	return read_cpuid(CPUID_MPIDR);	//CPUID_MPIDR 문자열로 치환됨.
+					//20140712
 }
 
 /*

@@ -516,6 +516,8 @@ early_param("maxcpus", maxcpus);
 
 /* Setup number of possible processor ids */
 int nr_cpu_ids __read_mostly = NR_CPUS;
+//__read_mostly	: 이 데이터는 자주 수정되지 않으며, 대부분 읽기 연산만 이루어진다라는 것을 
+//컴파일러에게 알려줌 	20140712
 EXPORT_SYMBOL(nr_cpu_ids);
 
 /* An arch may set nr_cpu_ids earlier if needed, so this would be redundant */

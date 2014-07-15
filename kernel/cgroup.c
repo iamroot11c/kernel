@@ -4839,7 +4839,9 @@ static void __init_or_module cgroup_init_cftsets(struct cgroup_subsys *ss)
 			cft->ss = ss;
 
 		ss->base_cftset.cfts = ss->base_cftypes;
-		list_add_tail(&ss->base_cftset.node, &ss->cftsets);
+		list_add_tail(&ss->base_cftset.node, &ss->cftsets);//헤드에 추가되고
+							           //기존의 것은 뒤로 밀려남
+								   //20140712
 	}
 }
 
@@ -4858,6 +4860,7 @@ static void __init cgroup_init_subsys(struct cgroup_subsys *ss)
 	list_add(&ss->sibling, &cgroup_dummy_root.subsys_list);
 	ss->root = &cgroup_dummy_root;
 	css = ss->css_alloc(cgroup_css(cgroup_dummy_top, ss));
+	//css_alloc이 언제 맵핑 되는지?	 20140712
 	/* We don't handle early failures gracefully */
 	BUG_ON(IS_ERR(css));
 	init_css(css, ss, cgroup_dummy_top);
@@ -5065,6 +5068,8 @@ EXPORT_SYMBOL_GPL(cgroup_unload_subsys);
  * Initialize cgroups at system boot, and initialize any
  * subsystems that request early init.
  */
+//모기향책 p.118 참고.	process를 그룹화하는 방법을 제공.
+//20140712
 int __init cgroup_init_early(void)
 {
 	struct cgroup_subsys *ss;
