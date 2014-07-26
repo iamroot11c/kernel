@@ -632,7 +632,7 @@ int __init arm_add_memory(phys_addr_t start, phys_addr_t size)
 	struct membank *bank = &meminfo.bank[meminfo.nr_banks];
 	u64 aligned_start;
 
-	if (meminfo.nr_banks >= NR_BANKS) {
+	if (meminfo.nr_banks >= NR_BANKS) { //NR_BANKS = 8 , meminfo.nr_banks는 8보다 작아야함 
 		printk(KERN_CRIT "NR_BANKS too low, "
 			"ignoring memory at 0x%08llx\n", (long long)start);
 		return -EINVAL;
@@ -664,7 +664,7 @@ int __init arm_add_memory(phys_addr_t start, phys_addr_t size)
 	}
 #endif
 
-	if (aligned_start < PHYS_OFFSET) {
+	if (aligned_start < PHYS_OFFSET) { //PHYS_OFFSET = 0x40000000
 		if (aligned_start + size <= PHYS_OFFSET) {
 			pr_info("Ignoring memory below PHYS_OFFSET: 0x%08llx-0x%08llx\n",
 				aligned_start, aligned_start + size);
@@ -893,9 +893,12 @@ void __init setup_arch(char **cmdline_p)
 	machine_desc = mdesc;
 	machine_name = mdesc->name;
 
-	setup_dma_zone(mdesc);
+	setup_dma_zone(mdesc); 
 
-	if (mdesc->reboot_mode != REBOOT_HARD)
+
+	// REBOOT_HARD(cold) : 재부팅시 CPU의 power를 물리적으로 껏다 킴 
+	// REBOOT_SOFT(warm) : 재부팅시 CPU의 Power를 끊지 않고 재부팅 
+	if (mdesc->reboot_mode != REBOOT_HARD) // default = REBOOT_COLD
 		reboot_mode = mdesc->reboot_mode;
 
 	init_mm.start_code = (unsigned long) _text;
@@ -905,7 +908,7 @@ void __init setup_arch(char **cmdline_p)
 
 	/* populate cmd_line too for later use, preserving boot_command_line */
 	strlcpy(cmd_line, boot_command_line, COMMAND_LINE_SIZE);
-	*cmdline_p = cmd_line;
+	*cmdline_p = cmd_line; //start_kernel의 다른 함수에서도 사용하기위해 cmdline_p에 boot_command_line을 복사
 
 	parse_early_param();
 

@@ -177,6 +177,7 @@ static char *next_arg(char *args, char **param, char **val)
 }
 
 /* Args looks like "foo=bar,bar2 baz=fuz wiz". */
+// "early_option, cmdline, null, 0, 0, 0, do_early_param"
 int parse_args(const char *doing,
 	       char *args,
 	       const struct kernel_param *params,
@@ -198,6 +199,7 @@ int parse_args(const char *doing,
 		int irq_was_disabled;
 
 		args = next_arg(args, &param, &val);
+		// 140726 여기까지함 
 		irq_was_disabled = irqs_disabled();
 		ret = parse_one(param, val, doing, params, num,
 				min_level, max_level, unknown);
