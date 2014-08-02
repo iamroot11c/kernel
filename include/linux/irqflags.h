@@ -117,6 +117,7 @@
 		raw_irqs_disabled_flags(flags);		\
 	})
 
+// _flags = current of cpsr;
 #define irqs_disabled()					\
 	({						\
 		unsigned long _flags;			\

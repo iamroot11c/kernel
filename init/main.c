@@ -393,10 +393,13 @@ static noinline void __init_refok rest_init(void)
 }
 
 /* Check for early params. */
+// unused = "early_option"
 static int __init do_early_param(char *param, char *val, const char *unused)
 {
 	const struct obs_kernel_param *p;
 
+    // ex) drivers/tty/serial/8250/8250_early.c
+    //     early_param("earlycon", setup_early_serial8250_console);
 	for (p = __setup_start; p < __setup_end; p++) {
 		if ((p->early && parameq(param, p->str)) ||
 		    (strcmp(param, "console") == 0 &&

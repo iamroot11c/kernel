@@ -135,6 +135,7 @@ static inline void arch_local_irq_disable(void)
 /*
  * Save the current interrupt enable state.
  */
+// CPSR의 값을 읽어 오는 기능
 static inline unsigned long arch_local_save_flags(void)
 {
 	unsigned long flags;
@@ -156,6 +157,8 @@ static inline void arch_local_irq_restore(unsigned long flags)
 		: "memory", "cc");
 }
 
+// 낚이지 말자.
+// 현재 CPSR에서 7번째, IRQ MASK BIT 값을 읽어오는 기능.
 static inline int arch_irqs_disabled_flags(unsigned long flags)
 {
 	return flags & IRQMASK_I_BIT;

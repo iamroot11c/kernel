@@ -236,6 +236,13 @@ struct obs_kernel_param {
  * Force the alignment so the compiler doesn't space elements of the
  * obs_kernel_param "array" too far apart in .init.setup.
  */
+
+ // ex) early_param("quiet", quiet_kernel);
+ // static const char __setup_str_quiet_kernel[] = "quiet";
+ // static struct obs_kernel_param __setup_quiet_kernel = {
+ //  __setup_str_quiet_kernel, quiet_kernel, 1
+ // }
+
 #define __setup_param(str, unique_id, fn, early)			\
 	static const char __setup_str_##unique_id[] __initconst	\
 		__aligned(1) = str; \

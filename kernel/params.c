@@ -27,6 +27,13 @@
 /* Protects all parameters, and incidentally kmalloced_param list. */
 static DEFINE_MUTEX(param_lock);
 
+/*
+#define DEFINE_MUTEX(mutexname) \
+    struct mutex mutexname = __MUTEX_INITIALIZER(mutexname)
+===> struct mutex param_lock = __MUTEX_INITIALIZER(param_lock)
+*/
+
+
 /* This just allows us to keep track of which parameters are kmalloced. */
 struct kmalloced_param {
 	struct list_head list;
@@ -83,6 +90,12 @@ bool parameq(const char *a, const char *b)
 	return parameqn(a, b, strlen(a)+1);
 }
 
+// param, val은 위의 next_arg에서 가져온 값.
+// doing = "early_option"
+// params = null
+// num = 0
+// min_level = 0, max_level = 0
+// unknown = do_early_param
 static int parse_one(char *param,
 		     char *val,
 		     const char *doing,
@@ -177,7 +190,7 @@ static char *next_arg(char *args, char **param, char **val)
 }
 
 /* Args looks like "foo=bar,bar2 baz=fuz wiz". */
-// "early_option, cmdline, null, 0, 0, 0, do_early_param"
+// "early option, cmdline, null, 0, 0, 0, do_early_param"
 int parse_args(const char *doing,
 	       char *args,
 	       const struct kernel_param *params,
@@ -200,7 +213,16 @@ int parse_args(const char *doing,
 
 		args = next_arg(args, &param, &val);
 		// 140726 여기까지함 
+		// 140802 시작!
 		irq_was_disabled = irqs_disabled();
+		// param, val은 위의 next_arg에서 가져온 값.
+		// doing = "early option"
+		// params = null
+		// num = 0
+		// min_level = 0, max_level = 0
+		// unknown = do_early_param
+
+		// 2014-08-02, parse_one, cmd line의 param, val을 통해서, do_early_param을 통해서 __setup_xxx관련 초기화 함수를 실행한다.
 		ret = parse_one(param, val, doing, params, num,
 				min_level, max_level, unknown);
 		if (irq_was_disabled && !irqs_disabled())

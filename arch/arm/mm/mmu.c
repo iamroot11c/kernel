@@ -969,6 +969,7 @@ void __init debug_ll_io_init(void)
 }
 #endif
 
+//#define VMALLOC_END		0xff000000UL
 static void * __initdata vmalloc_min =
 	(void *)(VMALLOC_END - (240 << 20) - VMALLOC_OFFSET);
 
@@ -1002,6 +1003,8 @@ early_param("vmalloc", early_vmalloc);
 
 phys_addr_t arm_lowmem_limit __initdata = 0;
 
+// 2014-08-02, 진행중...
+// 이 함수의 목적은 memblock의 current limit을 설정하는 것이 주된 기능이다.
 void __init sanity_check_meminfo(void)
 {
 	phys_addr_t memblock_limit = 0;
@@ -1036,6 +1039,8 @@ void __init sanity_check_meminfo(void)
 					(meminfo.nr_banks - i) * sizeof(*bank));
 				meminfo.nr_banks++;
 				i++;
+				// [1]은, 현재의 다음 것이 된다.
+				// [1]로 고정된 것이 아니다.
 				bank[1].size -= size_limit;
 				bank[1].start = vmalloc_limit;
 				bank[1].highmem = highmem = 1;
