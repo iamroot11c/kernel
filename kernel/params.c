@@ -130,6 +130,7 @@ static int parse_one(char *param,
 
 	if (handle_unknown) {
 		pr_debug("doing %s: %s='%s'\n", doing, param, val);
+		// 2014-08-02, Call "do_early_param()"
 		return handle_unknown(param, val, doing);
 	}
 
