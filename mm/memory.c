@@ -88,6 +88,9 @@ EXPORT_SYMBOL(mem_map);
  * of ZONE_NORMAL.  Under CONFIG_DISCONTIG this means that max_low_pfn and
  * highstart_pfn must be the same; there must be no gap between ZONE_NORMAL
  * and ZONE_HIGHMEM.
+ *
+ * 2014.08.09
+ *  - x86를 예로하면 직접 메핑되는 메모리 영역에서 상위(최대) 주소(경계)를 정의
  */
 void * high_memory;
 

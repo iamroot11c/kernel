@@ -335,6 +335,10 @@ phys_addr_t __init arm_memblock_steal(phys_addr_t size, phys_addr_t align)
 	return phys;
 }
 
+// 2014.08.09 - 함수 분석해야 됨
+// initrd_start, initrd_end,
+// phys_initrd_start, phys_initrd_size 조사
+// 메모리 추가 및 예약(reserve) 확인
 void __init arm_memblock_init(struct meminfo *mi,
 	const struct machine_desc *mdesc)
 {
@@ -344,7 +348,8 @@ void __init arm_memblock_init(struct meminfo *mi,
 		memblock_add(mi->bank[i].start, mi->bank[i].size);
 
 	/* Register the kernel text, kernel data and initrd with memblock. */
-#ifdef CONFIG_XIP_KERNEL
+#ifdef CONFIG_XIP_KERNEL // 비 메핑되어 있지 않은 영역을 reserve로 부르며
+	                 // 메핑되는 영역을 region으로 부름
 	memblock_reserve(__pa(_sdata), _end - _sdata);
 #else
 	memblock_reserve(__pa(_stext), _end - _stext);

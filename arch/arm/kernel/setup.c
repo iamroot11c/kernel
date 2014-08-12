@@ -913,7 +913,7 @@ void __init setup_arch(char **cmdline_p)
 	parse_early_param();
 
 	sort(&meminfo.bank, meminfo.nr_banks, sizeof(meminfo.bank[0]), meminfo_cmp, NULL);
-	sanity_check_meminfo();
+	sanity_check_meminfo(); // 2014년 08월 09일 완료
 	arm_memblock_init(&meminfo, mdesc);
 
 	paging_init(mdesc);

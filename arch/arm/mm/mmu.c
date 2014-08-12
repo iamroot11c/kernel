@@ -969,9 +969,13 @@ void __init debug_ll_io_init(void)
 }
 #endif
 
-//#define VMALLOC_END		0xff000000UL
 static void * __initdata vmalloc_min =
 	(void *)(VMALLOC_END - (240 << 20) - VMALLOC_OFFSET);
+//      (void *)(0xff000000UL - (240 << 20) - (8*1024*1024));
+//               4080MB       -  240MB      - 8MB
+//             = 3832MB
+//      (void *)0xEF80_0000
+// 8MB는 high memory와 normal memory사이의 보호를 위한 완충지대
 
 /*
  * vmalloc=size forces the vmalloc area to be exactly 'size'
@@ -1003,38 +1007,53 @@ early_param("vmalloc", early_vmalloc);
 
 phys_addr_t arm_lowmem_limit __initdata = 0;
 
-// 2014-08-02, 진행중...
-// 이 함수의 목적은 memblock의 current limit을 설정하는 것이 주된 기능이다.
+// memblock 구조체의 current limit 멤버 변수와
+// high_memory,
+// meminfo 구조체의 nr_banks 멤버 변수 설정
 void __init sanity_check_meminfo(void)
 {
 	phys_addr_t memblock_limit = 0;
 	int i, j, highmem = 0;
-	phys_addr_t vmalloc_limit = __pa(vmalloc_min - 1) + 1;
+	phys_addr_t vmalloc_limit = __pa(vmalloc_min - 1) + 1; // __pa(0xEF80_0000 - 1) + 1;
+	                                                       // __virt_to_phys((unsigned long)0xEF80_0000)
+	                                                       // 가상 주소를 물리 주소로 변환
+							       // 10차 26추차(2013.10.19) 후기
+							       //  __va, __pa 사용 전에 -1을 하는 이유는 
+							       // 이 값이 상한값(limit)이기 때문이다.
+							       // 즉 배열의 범위(0 ~ (배열의 크기 - 1))와
+							       // 같이 끝은 길이보다 하나가 적어야 하기 때문이다 
 
-	for (i = 0, j = 0; i < meminfo.nr_banks; i++) {
-		struct membank *bank = &meminfo.bank[j];
+	for (i = 0, j = 0; i < meminfo.nr_banks; i++) {        // 뱅크 개수만큼 반복(1회만 실행)
+		struct membank *bank = &meminfo.bank[j];       // 뱅크 주소를 구함, j는 meminfo.nr_banks 개수
 		phys_addr_t size_limit;
 
-		*bank = meminfo.bank[i];
-		size_limit = bank->size;
+		*bank = meminfo.bank[i];                       // 뱅크 j에 뱅크 i를 복사(덮어쓰기)
+		size_limit = bank->size;                       // 크기를 구함
 
-		if (bank->start >= vmalloc_limit)
-			highmem = 1;
+		if (bank->start >= vmalloc_limit)              // 뱅크 시작 주소가 범위 보다 크거나 같으면
+			highmem = 1;                           // 하이 메모리로 설정
 		else
-			size_limit = vmalloc_limit - bank->start;
+			size_limit = vmalloc_limit - bank->start; // 범위 보다 작으면 
+		                                                  // 크기를 다시 계산
 
-		bank->highmem = highmem;
+		bank->highmem = highmem;  // 메모리 상태 표시
 
 #ifdef CONFIG_HIGHMEM
 		/*
 		 * Split those memory banks which are partially overlapping
 		 * the vmalloc area greatly simplifying things later.
 		 */
-		if (!highmem && bank->size > size_limit) {
-			if (meminfo.nr_banks >= NR_BANKS) {
+		if (!highmem && bank->size > size_limit) {    // 하이메모리가 아니며 뱅크 크기가 
+			                                      // 최대 메모리 크기보다 크다
+			if (meminfo.nr_banks >= NR_BANKS) {   
+				// NR_BANKS default 16 if ARCH_EP93XX
+				//          default 8
+				// 뱅크를 생성할 수 없음
 				printk(KERN_CRIT "NR_BANKS too low, "
 						 "ignoring high memory\n");
-			} else {
+			} 
+			else {
+				// 새로운 뱅크를 생성
 				memmove(bank + 1, bank,
 					(meminfo.nr_banks - i) * sizeof(*bank));
 				meminfo.nr_banks++;
@@ -1046,7 +1065,7 @@ void __init sanity_check_meminfo(void)
 				bank[1].highmem = highmem = 1;
 				j++;
 			}
-			bank->size = size_limit;
+			bank->size = size_limit; // 뱅크 크기를 줄임
 		}
 #else
 		/*
@@ -1073,11 +1092,11 @@ void __init sanity_check_meminfo(void)
 			bank->size = size_limit;
 		}
 #endif
-		if (!bank->highmem) {
+		if (!bank->highmem) { // 하이 메모리(zone_highmem)가 아님
 			phys_addr_t bank_end = bank->start + bank->size;
 
-			if (bank_end > arm_lowmem_limit)
-				arm_lowmem_limit = bank_end;
+			if (bank_end > arm_lowmem_limit)     // bank_end > 0
+				arm_lowmem_limit = bank_end; // 뱅크의 끝 주소로 하위 메모리의 최대를 변경
 
 			/*
 			 * Find the first non-section-aligned page, and point
@@ -1092,20 +1111,29 @@ void __init sanity_check_meminfo(void)
 			 * allocated when mapping the start of bank 0, which
 			 * occurs before any free memory is mapped.
 			 */
-			if (!memblock_limit) {
-				if (!IS_ALIGNED(bank->start, SECTION_SIZE))
-					memblock_limit = bank->start;
-				else if (!IS_ALIGNED(bank_end, SECTION_SIZE))
+			if (!memblock_limit) {     // 하이 메모리가 아니며 aligne 이 안되어
+				                   // 있는 뱅크에서 실행
+				if (!IS_ALIGNED(bank->start, SECTION_SIZE)) {
+//                              if (!(((bank->start) & ((typeof(bank->start))(1<<20) - 1)) == 0))
+//                                                                             1MB
+					memblock_limit = bank->start; 
+				}
+				else if (!IS_ALIGNED(bank_end, SECTION_SIZE)) {
 					memblock_limit = bank_end;
+				}
 			}
 		}
 		j++;
-	}
+	} // for
 #ifdef CONFIG_HIGHMEM
-	if (highmem) {
+	if (highmem) { 
+	// 하이 메모리이지만 Cortex A15는 PIPT로 아래의 조건에 맞지 않아 실행 되지 않음
+	// PIPT(Physically Indexed, Physically Tagged)
+	// VIPT(Virtually Indexed, Physically Tagged)
+		     
 		const char *reason = NULL;
 
-		if (cache_is_vipt_aliasing()) {
+		if (cache_is_vipt_aliasing()) { 
 			/*
 			 * Interactions between kmap and other mappings
 			 * make highmem support with aliasing VIPT caches
@@ -1122,14 +1150,14 @@ void __init sanity_check_meminfo(void)
 	}
 #endif
 	meminfo.nr_banks = j;
-	high_memory = __va(arm_lowmem_limit - 1) + 1;
+	high_memory = __va(arm_lowmem_limit - 1) + 1; // 물리 주소를 가상 주소로 변환
 
 	/*
 	 * Round the memblock limit down to a section size.  This
 	 * helps to ensure that we will allocate memory from the
 	 * last full section, which should be mapped.
 	 */
-	if (memblock_limit)
+	if (memblock_limit) // 
 		memblock_limit = round_down(memblock_limit, SECTION_SIZE);
 	if (!memblock_limit)
 		memblock_limit = arm_lowmem_limit;
