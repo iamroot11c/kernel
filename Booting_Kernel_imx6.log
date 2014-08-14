@@ -1,0 +1,544 @@
+U-Boot 2009.08-svn21972 (Aug 14 2014 - 10:58:21)
+
+DRAM:   1 GB
+MMC:   FSL_USDHC: 0,FSL_USDHC: 1,FSL_USDHC: 2,FSL_USDHC: 3
+*** Warning - bad CRC or MMC, using default environment
+
+invalid signature for snapshot.
+esdhc_send_cmd: error irqs: 0x00600000
+In:    serial
+Out:   serial
+Err:   serial
+lge_check_recovery_mode start
+Go to android mode
+Dual booting partition with [1]
+lge_check_recovery_mode complete
+HW revision : rev[0x9], gen[0x3], dab[0x1], hm[0x1]
+Hit any key to stop autoboot:  0
+mmc0(part 0) is current device
+
+MMC read: dev # 0, block # 2048, count 8192 ... 8192 blocks read: OK
+
+MMC read: dev # 0, block # 10240, count 768 ... 768 blocks read: OK
+
+HAB Configuration: 0xf0, HAB State: 0x66
+No HAB Events Found!
+
+## Booting kernel from Legacy Image at 10800000 ...
+   Image Name:   Android Linux Kernel
+   Image Type:   ARM Linux Kernel Image (uncompressed)
+   Data Size:    3176048 Bytes =  3 MB
+   Load Address: 10008000
+   Entry Point:  10008000
+   Verifying Checksum ... OK
+## Loading init Ramdisk from Legacy Image at 11000000 ...
+   Image Name:   Android Root Filesystem
+   Image Type:   ARM Linux RAMDisk Image (uncompressed)
+   Data Size:    179871 Bytes = 175.7 kB
+   Load Address: 10308000
+   Entry Point:  10308000
+   Verifying Checksum ... OK
+   Loading Kernel Image ... OK
+OK
+READVAL(MX6Q_HW_GEN) = 1
+READVAL(MX6Q_HW_VAR_C_2) = 1
+READVAL(MX6Q_HW_SUB_0) = 1
+tempHWID = 0x73
+ in property_service.c  name=misc.generalreset
+:start in libbtsi//1===========================
+:pa->count=0x00000004
+:pa->magic=0x4353494d
+:pa->version=0x00000000
+:pa->serial=0x0000001b
+:already proper data in misc area
+ //4 ***************START
+
+ // ***************START
+ n=0, pa->count=4
+: misc.generalreset=none
+ n=1, pa->count=4
+: misc.displayparameters=032802131303003c000004500014001e001e040014e8002c006967
+ n=2, pa->count=4
+: misc.kernel.halt=no
+ n=3, pa->count=4
+: misc.upgrade.result=
+ n=4, pa->count=4
+ // ***************START
+ //4 ***************END
+:end in libbtsi//1===========================
+Original booting partition running
+Data flash booting
+ in property_service.c  name=misc.displayparameters
+lge_hfe_displayconfiguration : misc.displayparameters = 032802131303003c000004500014001e001e040014e8002c006967
+
+Starting kernel ...
+
+Uncompressing Linux... done, booting the kernel.
+[    0.000000 / 01-01 00:00:00.000] Initializing cgroup subsys cpuset
+[    0.000000 / 01-01 00:00:00.000] Initializing cgroup subsys cpu
+[    0.000000 / 01-01 00:00:00.000] Linux version 3.0.35-svn21789 (sunghun1.jung@ivi00) (gcc version 4.4.3 (GCC) ) #19 SMP PREEMPT Thu Aug 14 10:14:46 KST 2014
+[    0.000000 / 01-01 00:00:00.000] CPU: ARMv7 Processor [412fc09a] revision 10 (ARMv7), cr=10c53c7d
+[    0.000000 / 01-01 00:00:00.000] CPU: VIPT nonaliasing data cache, VIPT aliasing instruction cache
+[    0.000000 / 01-01 00:00:00.000] Machine: Freescale  i.MX 6Quad/Solo/DualLite Armadillo2     Board
+[    0.000000 / 01-01 00:00:00.000] GPU reserved memory by fixed size= 0xc000000 at 0x24000000 on upper code
+[    0.000000 / 01-01 00:00:00.000] Memory policy: ECC disabled, Data cache writealloc
+[    0.000000 / 01-01 00:00:00.000] CPU identified as i.MX6Q, unknown revision
+[    0.000000 / 01-01 00:00:00.000] PERCPU: Embedded 7 pages/cpu @c0e2d000 s5344 r8192 d15136 u32768
+[    0.000000 / 01-01 00:00:00.000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 210688
+[    0.000000 / 01-01 00:00:00.000] Kernel command line: console=ttymxc3,115200 init=/init rw vmalloc=400M HWREV=0x00f9 dualbooting=none ramdiskboot=disable HWver=high DispDiag=032802131303003c000004500014001e001e040014e8002c006967
+[    0.000000 / 01-01 00:00:00.000] PID hash table entries: 2048 (order: 1, 8192 bytes)
+[    0.000000 / 01-01 00:00:00.000] Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
+[    0.000000 / 01-01 00:00:00.000] Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
+[    0.000000 / 01-01 00:00:00.000] Memory: 320MB 511MB = 831MB total
+[    0.000000 / 01-01 00:00:00.000] Memory: 835792k/835792k available, 212784k reserved, 523264K highmem
+[    0.000000 / 01-01 00:00:00.000] Virtual kernel memory layout:
+[    0.000000 / 01-01 00:00:00.000]     vector  : 0xffff0000 - 0xffff1000   (   4 kB)
+[    0.000000 / 01-01 00:00:00.000]     fixmap  : 0xfff00000 - 0xfffe0000   ( 896 kB)
+[    0.000000 / 01-01 00:00:00.000]     DMA     : 0xfbe00000 - 0xffe00000   (  64 MB)
+[    0.000000 / 01-01 00:00:00.000]     vmalloc : 0xd9800000 - 0xf2000000   ( 392 MB)
+[    0.000000 / 01-01 00:00:00.000]     lowmem  : 0xc0000000 - 0xd9000000   ( 400 MB)
+[    0.000000 / 01-01 00:00:00.000]     pkmap   : 0xbfe00000 - 0xc0000000   (   2 MB)
+[    0.000000 / 01-01 00:00:00.000]     modules : 0xbf000000 - 0xbfe00000   (  14 MB)
+[    0.000000 / 01-01 00:00:00.000]       .init : 0xc0008000 - 0xc0035000   ( 180 kB)
+[    0.000000 / 01-01 00:00:00.000]       .text : 0xc0035000 - 0xc05be4dc   (5670 kB)
+[    0.000000 / 01-01 00:00:00.000]       .data : 0xc05c0000 - 0xc06042a0   ( 273 kB)
+[    0.000000 / 01-01 00:00:00.000]        .bss : 0xc06042c4 - 0xc0623548   ( 125 kB)
+[    0.000000 / 01-01 00:00:00.000] Preemptible hierarchical RCU implementation.
+[    0.000000 / 01-01 00:00:00.000] NR_IRQS:496
+[    0.000000 / 01-01 00:00:00.000] MXC GPIO hardware
+[    0.000000 / 01-01 00:00:00.000] sched_clock: 32 bits at 3000kHz, resolution 333ns, wraps every 1431655ms
+[    0.000000 / 01-01 00:00:00.000] MXC_Early serial console at MMIO 0x21f0000 (options '115200')
+[    0.000000 / 01-01 00:00:00.000] bootconsole [ttymxc3] enabled
+[    0.286331 / 01-01 00:00:00.010] Calibrating delay loop... 1987.37 BogoMIPS (lpj=9936896)
+[    0.349090 / 01-01 00:00:00.070] pid_max: default: 32768 minimum: 301
+[    0.355697 / 01-01 00:00:00.070] Security Framework initialized
+[    0.361748 / 01-01 00:00:00.080] Mount-cache hash table entries: 512
+[    0.368769 / 01-01 00:00:00.080] Initializing cgroup subsys cpuacct
+[    0.375209 / 01-01 00:00:00.090] CPU: Testing write buffer coherency: ok
+[    0.382195 / 01-01 00:00:00.090] hw perfevents: enabled with ARMv7 Cortex-A9 PMU driver, 7 counters available
+[    0.492785 / 01-01 00:00:00.200] CPU1: Booted secondary processor
+[    0.552258 / 01-01 00:00:00.260] Brought up 2 CPUs
+[    0.563195 / 01-01 00:00:00.270] SMP: Total of 2 processors activated (3974.75 BogoMIPS).
+[    0.593964 / 01-01 00:00:00.300] print_constraints: dummy:
+[    0.599815 / 01-01 00:00:00.300] NET: Registered protocol family 16
+[    0.610312 / 01-01 00:00:00.310] print_constraints: vddpu: 725 <--> 1300 mV at 700 mV fast normal
+[    0.619651 / 01-01 00:00:00.320] print_constraints: vddcore: 725 <--> 1300 mV at 1250 mV fast normal
+[    0.629263 / 01-01 00:00:00.330] print_constraints: vddsoc: 725 <--> 1300 mV at 1200 mV fast normal
+[    0.638806 / 01-01 00:00:00.340] print_constraints: vdd2p5: 2000 <--> 2775 mV at 2400 mV fast normal
+[    0.648402 / 01-01 00:00:00.350] print_constraints: vdd1p1: 800 <--> 1400 mV at 1100 mV fast normal
+[    0.657934 / 01-01 00:00:00.360] print_constraints: vdd3p0: 2625 <--> 3400 mV at 3000 mV fast normal
+[    0.668762 / 01-01 00:00:00.370] mx6_arm2_init : HWver([HM[7]:0x1][DAB[6]:0x1][GEN[5:4]:0x3][REV[3:0]:0x9]) = 0xf9, HWrev = 0x9
+[    0.684107 / 01-01 00:00:00.390] mx6_arm2_init       i2c_register_board_info
+[    0.692450 / 01-01 00:00:00.400] ram_console: got buffer at 4ff00000, size 100000
+[    0.700036 / 01-01 00:00:00.400] ram_console: found existing buffer, size 40427, start 40427
+[    0.708955 / 01-01 00:00:00.410] console [ram-1] enabled
+[    0.715968 / 01-01 00:00:00.420] [HENRY] set_voltage: uv 1250000, min 725000, max 1300000
+[    0.724206 / 01-01 00:00:00.430] [HENRY] set_voltage: calculated val 22
+[    0.730846 / 01-01 00:00:00.430] [HENRY] Read register = 0x00580016
+[    0.737169 / 01-01 00:00:00.440] [HENRY] set_voltage: uv 1250000, min 725000, max 1300000
+[    0.745393 / 01-01 00:00:00.450] [HENRY] set_voltage: calculated val 22
+[    0.752031 / 01-01 00:00:00.450] [HENRY] Read register = 0x00582c16
+[    0.758404 / 01-01 00:00:00.460] [HENRY] set_voltage: uv 1250000, min 725000, max 1300000
+[    0.766621 / 01-01 00:00:00.470] [HENRY] set_voltage: calculated val 22
+[    0.773270 / 01-01 00:00:00.480] [HENRY] Read register = 0x00582c16
+[    0.781706 / 01-01 00:00:00.480] mx6_arm2_init : touch p_data - cyttsp4_abs xMin:0 yMin:0 xMax:1024 yMax:768
+[    0.791620 / 01-01 00:00:00.490] mx6_arm2_init : Is Used?(1:YES,0:NO) 'Video=' 0, 'Touch=' 0, 'Diag Display parameters' 1
+[    0.803152 / 01-01 00:00:00.500] in mx6_board_init() NOT     ERROR
+[    0.809111 / 01-01 00:00:00.500] hw-breakpoint: found 6 breakpoint and 1 watchpoint registers.
+[    0.817968 / 01-01 00:00:00.510] hw-breakpoint: 1 breakpoint(s) reserved for watchpoint single-step.
+[    0.827161 / 01-01 00:00:00.520] hw-breakpoint: maximum watchpoint size is 4 bytes.
+[    0.834895 / 01-01 00:00:00.530] L310 cache controller enabled
+[    0.840756 / 01-01 00:00:00.530] l2x0: 16 ways, CACHE_ID 0x410000c7, AUX_CTRL 0x32070000, Cache size: 1048576 B
+[    0.871795 / 01-01 00:00:00.560] bio: create slab <bio-0> at 0
+[    0.878314 / 01-01 00:00:00.570] print_constraints: vmmc: 3300 mV
+[    0.885601 / 01-01 00:00:00.580] SCSI subsystem initialized
+[    0.891644 / 01-01 00:00:00.580] spi_imx imx6q-ecspi.1: probed
+[    0.897934 / 01-01 00:00:00.590] usbcore: registered new interface driver usbfs
+[    0.905537 / 01-01 00:00:00.600] usbcore: registered new interface driver hub
+[    0.912889 / 01-01 00:00:00.610] usbcore: registered new device driver usb
+[    0.921236 / 01-01 00:00:00.610] pps_core: LinuxPPS API ver. 1 registered
+[    0.928064 / 01-01 00:00:00.620] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    0.952254 / 01-01 00:00:00.650] imx-ipuv3 imx-ipuv3.0: IPU DMFC NORMAL mode: 1(0~1), 5B(4,5), 5F(6,7)
+[    0.972245 / 01-01 00:00:00.670] imx-ipuv3 imx-ipuv3.1: IPU DMFC NORMAL mode: 1(0~1), 5B(4,5), 5F(6,7)
+[    0.982060 / 01-01 00:00:00.670] Advanced Linux Sound Architecture Driver Version 1.0.24.
+[    0.991381 / 01-01 00:00:00.680] Switching to clocksource mxc_timer1
+[    0.999613 / 01-01 00:00:00.690] NET: Registered protocol family 2
+[    1.006065 / 01-01 00:00:00.690] IP route cache hash table entries: 16384 (order: 4, 65536 bytes)
+[    1.015798 / 01-01 00:00:00.700] TCP established hash table entries: 65536 (order: 7, 524288 bytes)
+[    1.025756 / 01-01 00:00:00.710] TCP bind hash table entries: 65536 (order: 7, 786432 bytes)
+[    1.035458 / 01-01 00:00:00.720] TCP: Hash tables configured (established 65536 bind 65536)
+[    1.043872 / 01-01 00:00:00.730] TCP reno registered
+[    1.048884 / 01-01 00:00:00.740] UDP hash table entries: 256 (order: 1, 8192 bytes)
+[    1.056581 / 01-01 00:00:00.740] UDP-Lite hash table entries: 256 (order: 1, 8192 bytes)
+[    1.065116 / 01-01 00:00:00.750] NET: Registered protocol family 1
+[    1.071530 / 01-01 00:00:00.760] Unpacking initramfs...
+[    1.087315 / 01-01 00:00:00.770] Freeing initrd memory: 172K
+[    1.093543 / 01-01 00:00:00.780] Static Power Management for Freescale i.MX6
+[    1.100639 / 01-01 00:00:00.790] wait mode is enabled for i.MX6
+[    1.106761 / 01-01 00:00:00.790] cpaddr = d9880000 suspend_iram_base=d9874000
+[    1.114025 / 01-01 00:00:00.800] [HENRY] set_voltage: uv 3200000, min 2625000, max 3400000
+[    1.122343 / 01-01 00:00:00.810] [HENRY] set_voltage: calculated val 23
+[    1.128992 / 01-01 00:00:00.820] [HENRY] Read register = 0x00011774
+[    1.135284 / 01-01 00:00:00.820] PM driver module loaded
+[    1.140838 / 01-01 00:00:00.830] IMX usb wakeup probe
+[    1.145999 / 01-01 00:00:00.830] the wakeup pdata is 0xd033e920
+[    1.152313 / 01-01 00:00:00.840] IMX usb wakeup probe
+[    1.157457 / 01-01 00:00:00.840] the wakeup pdata is 0xd033e720
+[    1.163909 / 01-01 00:00:00.850] i.MXC CPU frequency driver
+[    1.169724 / 01-01 00:00:00.860] [HENRY] set_voltage: uv 1150000, min 725000, max 1300000
+[    1.177936 / 01-01 00:00:00.860] [HENRY] set_voltage: calculated val 18
+[    1.184592 / 01-01 00:00:00.870] [HENRY] Read register = 0x00582c12
+[    1.190902 / 01-01 00:00:00.880] [HENRY] set_voltage: uv 1175000, min 725000, max 1300000
+[    1.199112 / 01-01 00:00:00.880] [HENRY] set_voltage: calculated val 19
+[    1.205762 / 01-01 00:00:00.890] [HENRY] Read register = 0x004c2c12
+[    1.226101 / 01-01 00:00:00.910] highmem bounce pool size: 64 pages
+[    1.232753 / 01-01 00:00:00.920] ashmem: initialized
+[    1.238734 / 01-01 00:00:00.930] msgmni has been set to 610
+[    1.245914 / 01-01 00:00:00.930] cryptodev: driver loaded.
+[    1.251468 / 01-01 00:00:00.940] io scheduler noop registered
+[    1.257240 / 01-01 00:00:00.940] io scheduler deadline registered
+[    1.263447 / 01-01 00:00:00.950] io scheduler cfq registered (default)
+[    1.270311 / 01-01 00:00:00.960] mxc_sdc_fb mxc_sdc_fb.0: register mxc display driver lcd
+[    1.278546 / 01-01 00:00:00.970] lcdif_init : LCD driver configuration name string(setting->dft_mode_str) = USER_DEFINED
+[    1.289470 / 01-01 00:00:00.980] lcdif_init : [HFE] LCD Diag. configuration Parsing result = Parsed GOOD
+[    1.298998 / 01-01 00:00:00.990] lcdif_init : diag_disp_configuration -----
+[    1.305985 / 01-01 00:00:00.990]   808 :     Vertical Period
+[    1.311331 / 01-01 00:00:00.990]     2 :     Vertical sync 'L' pulse width
+[    1.317896 / 01-01 00:00:01.010]    19 :     Vertical back porch
+[    1.323577 / 01-01 00:00:01.010]    19 :     Vertical front porch
+[    1.329361 / 01-01 00:00:01.020]   768 :     Vertical active area
+[    1.335131 / 01-01 00:00:01.020]    60 :     Frame Rate
+[    1.340043 / 01-01 00:00:01.030]     0 :     Phase difference VSYNC-HSYNC
+[    1.346507 / 01-01 00:00:01.030]  1104 :     Horizontal period
+[    1.352027 / 01-01 00:00:01.040]    20 :     Horizontal sync 'L' pulse width
+[    1.358765 / 01-01 00:00:01.050]    30 :     Horizontal back porch
+[    1.364621 / 01-01 00:00:01.050]    30 :     Horizontal front porch
+[    1.370575 / 01-01 00:00:01.060]  1024 :     Horizontal active area
+[    1.376517 / 01-01 00:00:01.060]  5352 :     Pixel Clock Frequency
+[    1.382383 / 01-01 00:00:01.060] lcdif_init : --------------------------------------
+[    1.390169 / 01-01 00:00:01.080] lcdif_init : Parsed GOOD
+[    1.395590 / 01-01 00:00:01.080] lcdif_init : OKAY TO CHECKING THE RANGE OF INPUT DIAG
+[    1.416382 / 01-01 00:00:01.100] _ipu_pixel_clk_round_rate : calculated Pixel clock - final rate : 52800000
+[    1.416414 / 01-01 00:00:01.100] _ipu_pixel_clk_round_rate : calculated Pixel clock - final rate : 53520999
+[    1.437884 / 01-01 00:00:01.130] imx-ipuv3 imx-ipuv3.0: IPU DMFC DP HIGH RESOLUTION: 1(0,1), 5B(2~5), 5F(6,7)
+[    1.471847 / 01-01 00:00:01.160] imx-sdma imx-sdma: loaded firmware 1.1
+[    1.484359 / 01-01 00:00:01.170] imx-sdma imx-sdma: initialized
+[    1.640862 / 01-01 00:00:01.330] Serial: IMX driver
+[    1.645892 / 01-01 00:00:01.330] imx-uart.0: ttymxc0 at MMIO 0x2020000 (irq = 58) is a IMX
+[    1.654972 / 01-01 00:00:01.340] imx-uart.1: ttymxc1 at MMIO 0x21e8000 (irq = 59) is a IMX
+[    1.663761 / 01-01 00:00:01.350] imx-uart.2: ttymxc2 at MMIO 0x21ec000 (irq = 60) is a IMX
+[    1.672655 / 01-01 00:00:01.360] imx-uart.3: ttymxc3 at MMIO 0x21f0000 (irq = 61) is a IMX
+[    1.680998 / 01-01 00:00:01.370] console [ttymxc3] enabled, bootconsole disabled
+[    1.680998 / 01-01 00:00:01.370] console [ttymxc3] enabled, bootconsole disabled
+[    1.696263 / 01-01 00:00:01.380] imx-uart.4: ttymxc4 at MMIO 0x21f4000 (irq = 62) is a IMX
+[    1.711871 / 01-01 00:00:01.400] loop: module loaded
+[    1.716850 / 01-01 00:00:01.400] =======[signedloop_mod_init]: start module init
+[    1.724279 / 01-01 00:00:01.400] register_security(): start
+[    1.729884 / 01-01 00:00:01.420] =======[signedloop_mod_init] : success
+[    1.737071 / 01-01 00:00:01.420]
+[    1.740418 / 01-01 00:00:01.430] TI925q_hwreset : serializer H/W reset is being tried...
+[    1.800362 / 01-01 00:00:01.490] TI925q_dispdiagConfiguration : TI925Q diag_disp_configuration -----
+[    1.809526 / 01-01 00:00:01.500]  0x2c :     Deserializer I2C address
+[    1.815628 / 01-01 00:00:01.500]  0x69 :     Touch Controller I2C Address(Bootloader)
+[    1.823133 / 01-01 00:00:01.510]  0x67 :     Touch Controller I2C Address(Operation)
+[    1.830552 / 01-01 00:00:01.520] TI925q_dispdiagConfiguration : --------------------------------------
+[    1.839880 / 01-01 00:00:01.530] TI925q_probe : TI925Q serializer device driver is loaded - PclkEdge:Falling
+[    1.849906 / 01-01 00:00:01.540] i2c-core: driver [ti925q] using legacy suspend method
+[    1.857853 / 01-01 00:00:01.540] i2c-core: driver [ti925q] using legacy resume method
+[    1.887017 / 01-01 00:00:01.570] TI926q_dispdiagConfiguration : TI926Q diag_disp_configuration -----
+[    1.896177 / 01-01 00:00:01.580]   0x0 :     Deserializer Configuration
+[    1.902468 / 01-01 00:00:01.590]   0x0 :     Deserializer SCG Control(Spread Spectrum Clock)
+[    1.910581 / 01-01 00:00:01.600] TI926q_dispdiagConfiguration : --------------------------------------
+[    1.919909 / 01-01 00:00:01.610] TI926q_probe : TI926q deSerializer device driver is loaded - SSCG:0x0, PclkEdge:Falling
+[    1.930996 / 01-01 00:00:01.620] i2c-core: driver [ti926q] using legacy suspend method
+[    1.938942 / 01-01 00:00:01.620] i2c-core: driver [ti926q] using legacy resume method
+[    1.946826 / 01-01 00:00:01.630] dabdrv_probe
+[    2.067816 / 01-01 00:00:01.760] dabdrv_resetdab_onInit : dab reset on init/resume is successfully done...
+[    2.077702 / 01-01 00:00:01.760] ubloxdrv_probe
+[    2.082457 / 01-01 00:00:01.770] swrcdrv_probe
+[    2.086929 / 01-01 00:00:01.770] swrcdrv_probe - [pswrcdrv->gpiopulldn]:1
+[    2.094154 / 01-01 00:00:01.780] input: swrc-gpio as /devices/platform/swrc-gpio.0/input/input0
+[    2.104551 / 01-01 00:00:01.790] PPP generic driver version 2.4.2
+[    2.111087 / 01-01 00:00:01.800] PPP Deflate Compression module registered
+[    2.117998 / 01-01 00:00:01.810] PPP BSD Compression module registered
+[    2.125088 / 01-01 00:00:01.810] PPP MPPE Compression module registered
+[    2.131738 / 01-01 00:00:01.820] NET: Registered protocol family 24
+[    2.138058 / 01-01 00:00:01.830] tun: Universal TUN/TAP device driver, 1.6
+[    2.144943 / 01-01 00:00:01.830] tun: (C) 1999-2004 Max Krasnyansky <maxk@qualcomm.com>
+[    2.153424 / 01-01 00:00:01.840] usbcore: registered new interface driver asix
+[    2.160852 / 01-01 00:00:01.850] usbcore: registered new interface driver cdc_ether
+[    2.168540 / 01-01 00:00:01.860] client binding available
+[    2.174096 / 01-01 00:00:01.860] usbcore: registered new interface driver cdc_eem
+[    2.181755 / 01-01 00:00:01.870] usbcore: registered new interface driver net1080
+[    2.189431 / 01-01 00:00:01.880] usbcore: registered new interface driver cdc_subset
+[    2.197334 / 01-01 00:00:01.880] usbcore: registered new interface driver zaurus
+[    2.204943 / 01-01 00:00:01.890] usbcore: registered new interface driver sierra_net
+[    2.212718 / 01-01 00:00:01.900] cdc_ncm: 04-Aug-2011
+[    2.217949 / 01-01 00:00:01.910] usbcore: registered new interface driver cdc_ncm
+[    2.225598 / 01-01 00:00:01.910] usbcore: registered new interface driver cdc_acm
+[    2.233113 / 01-01 00:00:01.920] cdc_acm: USB Abstract Control Model driver for USB modems and ISDN adapters
+[    2.242967 / 01-01 00:00:01.920] Initializing USB Mass Storage driver...
+[    2.249853 / 01-01 00:00:01.940] usbcore: registered new interface driver usb-storage
+[    2.257694 / 01-01 00:00:01.940] USB Mass Storage support registered.
+[    2.264325 / 01-01 00:00:01.950] usbcore: registered new interface driver libusual
+[    2.272272 / 01-01 00:00:01.960] usbcore: registered new interface driver usbserial
+[    2.279961 / 01-01 00:00:01.960] usbserial: USB Serial Driver core
+[    2.286153 / 01-01 00:00:01.970] option_init MCCILDK_option_Init success
+[    2.293110 / 01-01 00:00:01.980] USB Serial support registered for GSM modem (1-port)
+[    2.301131 / 01-01 00:00:01.990] usbcore: registered new interface driver option
+[    2.308557 / 01-01 00:00:02.990] option: v0.7.2:USB Driver for GSM modems
+[    2.315492 / 01-01 00:00:02.000] USB Serial support registered for Sierra USB modem
+[    2.323394 / 01-01 00:00:02.010] usbcore: registered new interface driver sierra
+[    2.330821 / 01-01 00:00:02.020] sierra: v.1.7.16:USB Driver for Sierra Wireless USB modems
+[    2.339499 / 01-01 00:00:02.030] mousedev: PS/2 mouse device common for all mice
+[    2.347197 / 01-01 00:00:02.030] cyttsp4_i2c_probe: Starting cyttsp4-i2c probe...
+[    2.354715 / 01-01 00:00:02.030] cyttsp4_i2c_probe: cyttsp4 Starting cyttsp4-i2c probe...
+[    2.363487 / 01-01 00:00:02.050] input: cyttsp4-i2c as /devices/platform/imx-i2c.0/i2c-0/0-0067/input/input1
+[    2.373687 / 01-01 00:00:02.060] cyttsp4-i2c 0-0067: cyttsp4_i2c_probe: Registration complete
+[    2.382379 / 01-01 00:00:02.070] i2c-core: driver [cyttsp4-i2c] using legacy suspend method
+[    2.390762 / 01-01 00:00:02.080] i2c-core: driver [cyttsp4-i2c] using legacy resume method
+[    2.400688 / 01-01 00:00:02.090] using rtc device, snvs_rtc, for alarms
+[    2.407165 / 01-01 00:00:02.090] snvs_rtc snvs_rtc.0: rtc core: registered snvs_rtc as rtc0
+[    2.415922 / 01-01 00:00:02.100] i2c /dev entries driver
+[    2.421989 / 01-01 00:00:02.110] Linux video capture interface: v2.00
+[    2.458532 / 01-01 00:00:02.150] tw9900_init() ...............begin
+[    2.464852 / 01-01 00:00:02.150] tw9900_probe : plat_data->io_init
+[    2.471067 / 01-01 00:00:02.160] mx6_csi0_io_init............
+[    2.476823 / 01-01 00:00:02.160] hwver_get_rev()=[0x9]............
+[    2.577813 / 01-01 00:00:02.270] tw9900_probe : plat_data->pwdn
+[    2.583744 / 01-01 00:00:02.270] mx6_cam_powerdown()............pwdn=0
+[    2.590296 / 01-01 00:00:02.280] mx6_cam_powerdown() hwver_get_rev()=[0x9]............
+[    2.598238 / 01-01 00:00:02.290] mx6_cam_powerdown()/err(0)=timer_pending(NO)-for-RVC power ON
+[    2.606860 / 01-01 00:00:02.290] mx6_cam_powerdown()............pwdn=1
+[    2.613408 / 01-01 00:00:02.300] mx6_cam_powerdown() hwver_get_rev()=[0x9]............
+[    2.621348 / 01-01 00:00:02.310] mx6_cam_powerdown()/timer_init............... -for-RVC power OFF begin
+[    2.630763 / 01-01 00:00:02.320] mx6_cam_powerdown()/err(0)=timer_pending(NO)-for-RVC power OFF
+[    2.639485 / 01-01 00:00:02.330] mx6_cam_powerdown()/call add_timer()
+[    2.645935 / 01-01 00:00:02.330] mx6_cam_powerdown()/timer_init............... -for-RVC power OFF end
+[    2.656163 / 01-01 00:00:02.340] tw9900_probe : Product ID 0x0:0x0
+[    2.662367 / 01-01 00:00:02.350] tw9900_probe : call v4l2_int_device_register (&tw9900_int_device);
+[    2.671446 / 01-01 00:00:02.360] tw9900_probe : retval 0
+[    2.676912 / 01-01 00:00:02.360] i2c-core: driver [tw9900] using legacy suspend method
+[    2.684857 / 01-01 00:00:02.370] i2c-core: driver [tw9900] using legacy resume method
+[    2.692720 / 01-01 00:00:02.380] tw9900_init() ...............end
+[    2.699178 / 01-01 00:00:02.390] mxc_v4l2_output mxc_v4l2_output.0: V4L2 device registered as video16
+[    2.708704 / 01-01 00:00:02.400] mxc_v4l2_output mxc_v4l2_output.0: V4L2 device registered as video17
+[    2.718443 / 01-01 00:00:02.410] pps pps0: new PPS source pps-gpio.0
+[    2.724828 / 01-01 00:00:02.410] pps pps0: Registered IRQ 294 as PPS source
+[    2.732142 / 01-01 00:00:02.420] device-mapper: uevent: version 1.0.3
+[    2.738963 / 01-01 00:00:02.430] device-mapper: ioctl: 4.20.0-ioctl (2011-02-02) initialised: dm-devel@redhat.com
+[    2.749520 / 01-01 00:00:02.440] sdhci: Secure Digital Host Controller Interface driver
+[    2.757535 / 01-01 00:00:02.440] sdhci: Copyright(c) Pierre Ossman
+[    2.763879 / 01-01 00:00:02.450] mmc0: no vmmc regulator found
+[    2.770059 / 01-01 00:00:02.460] mmc0: SDHCI controller on platform [sdhci-esdhc-imx.0] using DMA
+[    2.779298 / 01-01 00:00:02.470] mxc_vdoa mxc_vdoa: i.MX Video Data Order Adapter(VDOA) driver probed
+[    2.789319 / 01-01 00:00:02.480] VPU initialized
+[    2.795048 / 01-01 00:00:02.480] mxc_asrc registered
+[    2.804279 / 01-01 00:00:02.490] Galcore version 4.6.9.9754
+[    2.810237 / 01-01 00:00:02.500] GPU power on !!!, Core=0
+[    2.841470 / 01-01 00:00:02.530] GPU power on !!!, Core=1
+[    2.851397 / 01-01 00:00:02.540] GPU power on !!!, Core=2
+[    2.860475 / 01-01 00:00:02.550] GPU power off !!!, Core=0
+[    2.867256 / 01-01 00:00:02.550] GPU power off !!!, Core=1
+[    2.873016 / 01-01 00:00:02.560] _ProcessInterrupt, 120, triggered = 0x40002000 ***********************
+[    2.882470 / 01-01 00:00:02.570] GPU power off !!!, Core=2
+[    2.888823 / 01-01 00:00:02.580] Thermal calibration data is 0x5864d67d
+[    2.895449 / 01-01 00:00:02.580] Thermal sensor with ratio = 183
+[    2.917834 / 01-01 00:00:02.610] Anatop Thermal registered as thermal_zone0
+[    2.925021 / 01-01 00:00:02.610] anatop_thermal_probe: default cooling device is cpufreq!
+[    2.934381 / 01-01 00:00:02.620] usbcore: registered new interface driver usbhid
+[    2.941837 / 01-01 00:00:02.630] usbhid: USB HID core driver
+[    2.944682 / 01-01 00:00:02.630] mmc0: new high speed DDR MMC card at address 0001
+[    2.955615 / 01-01 00:00:02.640] mmcblk0: mmc0:0001 MMC32G 29.5 GiB
+[    2.955817 / 01-01 00:00:02.640] logger: created 512K log 'log_main'
+[    2.956099 / 01-01 00:00:02.640] logger: created 512K log 'log_events'
+[    2.956376 / 01-01 00:00:02.640] logger: created 512K log 'log_radio'
+[    2.956656 / 01-01 00:00:02.640] logger: created 512K log 'log_system'
+[    2.957012 / 01-01 00:00:02.640] zram: num_devices not specified. Using default: 1
+[    2.957026 / 01-01 00:00:02.640] zram: Creating 1 devices ...
+[    3.001425 / 01-01 00:00:02.690] mmcblk0boot0: mmc0:0001 MMC32G partition 1 16.0 MiB
+[    3.001699 / 01-01 00:00:02.690] usbcore: registered new interface driver snd-usb-audio
+[    3.013182 / 01-01 00:00:02.700] asoc: dummy <-> imx-ssi.1 mapping ok
+[    3.021115 / 01-01 00:00:02.710] asoc: dummy <-> imx-ssi.0 mapping ok
+[    3.029420 / 01-01 00:00:02.720] asoc: dummy <-> imx-ssi.2 mapping ok
+[    3.037286 / 01-01 00:00:02.720] mmcblk0boot1: mmc0:0001 MMC32G partition 2 16.0 MiB
+[    3.037760 / 01-01 00:00:02.720] asoc: dummy <-> imx-esai.0 mapping ok
+[    3.039350 / 01-01 00:00:02.730] mxc_spdif mxc_spdif.0: MXC SPDIF Audio
+[    3.044099 / 01-01 00:00:02.730] asoc: mxc-spdif <-> imx-spdif-dai.0 mapping ok
+[    3.044972 / 01-01 00:00:02.730] ALSA device list:
+[    3.044985 / 01-01 00:00:02.730]   #0: media ssi
+[    3.044996 / 01-01 00:00:02.730]   #1: mic ssi
+[    3.045005 / 01-01 00:00:02.730]   #2: navi ssi
+[    3.045013 / 01-01 00:00:02.730]   #3: bt esai
+[    3.045022 / 01-01 00:00:02.730]   #4: imx-spdif
+[    3.093022 / 01-01 00:00:02.780] Netfilter messages via NETLINK v0.30.
+[    3.100121 / 01-01 00:00:02.790] nf_conntrack version 0.5.0 (13061 buckets, 52244 max)
+[    3.108550 / 01-01 00:00:02.800] NF_TPROXY: Transparent proxy support initialized, version 4.1.0
+[    3.113497 / 01-01 00:00:02.800]  mmcblk0: p1 p2 p3 < p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 > p4
+[    3.125921 / 01-01 00:00:02.810] NF_TPROXY: Copyright (c) 2006-2007 BalaBit IT Ltd.
+[    3.130609 / 01-01 00:00:02.810]  mmcblk0boot1: unknown partition table
+[    3.140731 / 01-01 00:00:02.830] xt_time: kernel timezone is -0000
+[    3.148687 / 01-01 00:00:02.840] ip_tables: (C) 2000-2006 Netfilter Core Team
+[    3.149878 / 01-01 00:00:02.840]  mmcblk0boot0: unknown partition table
+[    3.162786 / 01-01 00:00:02.850] TCP cubic registered
+[    3.168078 / 01-01 00:00:02.860] NET: Registered protocol family 10
+[    3.176982 / 01-01 00:00:02.860] ip6_tables: (C) 2000-2006 Netfilter Core Team
+[    3.184329 / 01-01 00:00:02.870] NET: Registered protocol family 17
+[    3.190645 / 01-01 00:00:02.880] NET: Registered protocol family 15
+[    3.196930 / 01-01 00:00:02.880] VFP support v0.3: implementor 41 architecture 3 part 30 variant 9 rev 4
+[    3.206936 / 01-01 00:00:02.890] Bus freq driver module loaded
+[    3.212802 / 01-01 00:00:02.900] Bus freq driver Enabled
+[    3.221578 / 01-01 00:00:02.910] mxc_dvfs_core_probe
+[    3.226827 / 01-01 00:00:02.910] DVFS driver module loaded
+[    3.233298 / 01-01 00:00:02.920] PM: Hibernation image not present or could not be loaded.
+[    3.241631 / 01-01 00:00:02.930] registered taskstats version 1
+[    3.247596 / 01-01 00:00:02.930] regulator_init_complete: vmmc: incomplete constraints, leaving on
+[    3.256672 / 01-03 05:00:15.500] snvs_rtc snvs_rtc.0: setting system clock to 1970-01-03 05:00:15 UTC (190815)
+[    3.267342 / 01-03 05:00:15.510] Freeing init memory: 180K
+/system/bin/sh: No controlling tty (open /dev/tty: No such device[    8.496774 / 01-03 05:00:20.720] init: cannot find '/system/xbin/onofftestd', disabling 'onofftestd'
+ or address)
+/system/bin/sh: warning: won't have full job control
+[    8.513119 / 01-03 05:00:20.740] init: cannot find '/system/bin/dbus-daemon', disabling 'dbus'
+[    8.623114 / 01-03 05:00:20.850] Freescale USB OTG Driver loaded, $Revision: 1.55 $
+[    8.632921 / 01-03 05:00:20.860] add wake up source irq 75
+root@android:/ # [    8.751510 / 01-03 05:00:20.980] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+[    8.760482 / 01-03 05:00:20.990] add wake up source irq 72
+[    8.769165 / 01-03 05:00:21.000] fsl-ehci fsl-ehci.1: Freescale On-Chip EHCI Host Controller
+[    8.777715 / 01-03 05:00:21.000] fsl-ehci fsl-ehci.1: new USB bus registered, assigned bus number 1
+[    8.817930 / 01-03 05:00:21.050] fsl-ehci fsl-ehci.1: irq 72, io base 0x02184200
+[    8.837913 / 01-03 05:00:21.070] fsl-ehci fsl-ehci.1: USB 2.0 started, EHCI 1.00
+[    8.846899 / 01-03 05:00:21.070] hub 1-0:1.0: USB hub found
+[    8.852555 / 01-03 05:00:21.080] hub 1-0:1.0: 1 port detected
+[    8.859176 / 01-03 05:00:21.090] fsl-ehci fsl-ehci.0: Freescale On-Chip EHCI Host Controller
+[    8.867669 / 01-03 05:00:21.090] fsl-ehci fsl-ehci.0: new USB bus registered, assigned bus number 2
+[    8.897899 / 01-03 05:00:21.130] fsl-ehci fsl-ehci.0: irq 75, io base 0x02184000
+[    8.917861 / 01-03 05:00:21.150] fsl-ehci fsl-ehci.0: USB 2.0 started, EHCI 1.00
+[    8.922283 / 01-03 05:00:21.150] cp_reset_power_off(): cp power-off
+[    8.922368 / 01-03 05:00:21.150] cp_reset_power_on(): cp power-on
+[    8.939197 / 01-03 05:00:21.170] hub 2-0:1.0: USB hub found
+[    8.944796 / 01-03 05:00:21.170] hub 2-0:1.0: 1 port detected
+[    8.965660 / 01-03 05:00:21.190] ARC USBOTG Device Controller driver (1 August 2005)
+[    9.019998 / 01-03 05:00:21.250] android_usb gadget: Mass Storage Function, version: 2009/09/11
+[    9.028786 / 01-03 05:00:21.260] android_usb gadget: Number of LUNs=1
+[    9.035253 / 01-03 05:00:21.260]  lun0: LUN: removable file: (no medium)
+[    9.043150 / 01-03 05:00:21.270] Gadget Android: controller 'fsl-usb2-udc' not recognized
+[    9.053424 / 01-03 05:00:21.280] android_usb gadget: android_usb ready
+[    9.060001 / 01-03 05:00:21.290] Suspend udc for OTG auto detect
+[    9.066038 / 01-03 05:00:21.290] USB Host suspend begins
+[    9.071631 / 01-03 05:00:21.300] will suspend roothub and its children
+[    9.078234 / 01-03 05:00:21.310] ehci_fsl_bus_suspend begins, DR
+[    9.084485 / 01-03 05:00:21.310] ehci_fsl_bus_suspend ends, DR
+[    9.090394 / 01-03 05:00:21.320] host suspend ends
+[    9.095209 / 01-03 05:00:21.320] USB Gadget resume begins
+[    9.100649 / 01-03 05:00:21.330] fsl_udc_resume, Wait for wakeup thread finishes
+[    9.111743 / 01-03 05:00:21.340] dr_controller_run: udc out low power mode
+[    9.118675 / 01-03 05:00:21.350] USB Gadget resume ends
+[    9.125656 / 01-03 05:00:21.350] fsl-usb2-udc: bind to driver android_usb
+[    9.179419 / 01-03 05:00:21.410] (stk) :st_kim_init
+[    9.187922 / 01-03 05:00:21.420] usb 1-1: new high speed USB device number 2 using fsl-ehci
+[    9.198279 / 01-03 05:00:21.430] (stk) :sysfs entries created
+[    9.219172 / 01-03 05:00:21.450] (stk) : debugfs entries created
+[    9.225436 / 01-03 05:00:21.450] android_work: did not send uevent (0 0   (null))
+[    9.268852 / 01-03 05:00:21.500] android_work: did not send uevent (0 0   (null))
+[    9.307974 / 01-03 05:00:21.540] (hci_tty): inside hci_tty_init
+[    9.331991 / 01-03 05:00:21.560] android_work: sent uevent USB_STATE=CONNECTED
+[    9.339320 / 01-03 05:00:21.570] (hci_tty): allocated 248, 0
+[    9.367964 / 01-03 05:00:21.600] android_work: sent uevent USB_STATE=DISCONNECTED
+[    9.387912 / 01-03 05:00:21.620] hub 1-1:1.0: USB hub found
+[    9.396072 / 01-03 05:00:21.620] android_work: sent uevent USB_STATE=CONNECTED
+[    9.403373 / 01-03 05:00:21.630] hub 1-1:1.0: 2 ports detected
+[    9.409648 / 01-03 05:00:21.640] android_work: sent uevent USB_STATE=DISCONNECTED
+[    9.549219 / 01-03 05:00:21.780] android_work: sent uevent USB_STATE=CONNECTED
+[    9.572708 / 01-03 05:00:21.800] android_work: sent uevent USB_STATE=DISCONNECTED
+[    9.614360 / 01-03 05:00:21.840] android_work: sent uevent USB_STATE=CONNECTED
+[    9.622081 / 01-03 05:00:21.850] android_work: sent uevent USB_STATE=DISCONNECTED
+[    9.728053 / 01-03 05:00:21.960] usb 1-1.1: new high speed USB device number 3 using fsl-ehci
+[    9.773241 / 01-03 05:00:22.000] android_work: sent uevent USB_STATE=CONNECTED
+[    9.797579 / 01-03 05:00:22.020] android_work: sent uevent USB_STATE=DISCONNECTED
+[    9.837435 / 01-03 05:00:22.060] android_work: sent uevent USB_STATE=CONNECTED
+[    9.845111 / 01-03 05:00:22.080] android_work: sent uevent USB_STATE=DISCONNECTED
+[    9.858053 / 01-03 05:00:22.090] USB Gadget resume begins
+[    9.863464 / 01-03 05:00:22.090] fsl_udc_resume, Wait for wakeup thread finishes
+[    9.872898 / 01-03 05:00:22.100] hub 1-1.1:1.0: USB hub found
+[    9.878877 / 01-03 05:00:22.110] hub 1-1.1:1.0: 7 ports detected
+[    9.981870 / 01-03 05:00:22.210] android_usb: already disabled
+[    9.988091 / 01-03 05:00:22.220] mtp_bind_config
+[    9.993405 / 01-03 05:00:22.220] android_work: sent uevent USB_STATE=CONNECTED
+[   10.198040 / 01-03 05:00:22.430] usb 1-1.1.4: new low speed USB device number 4 using fsl-ehci
+[   10.210712 / 01-03 05:00:22.440] android_usb gadget: high speed config #1: android
+[   10.218603 / 01-03 05:00:22.450] android_work: sent uevent USB_STATE=CONFIGURED
+[   10.359442 / 01-03 05:00:22.590] input: Logitech USB Optical Mouse as /devices/platform/fsl-ehci.1/usb1/1-1/1-1.1/1-1.1.4/1-1.1.4:1.0/input/input2
+[   10.373857 / 01-03 05:00:22.600] generic-usb 0003:046D:C01F.0001: input: USB HID v1.10 Mouse [Logitech USB Optical Mouse] on usb-fsl-ehci.1-1.1.4/input0
+[   10.488041 / 01-03 05:00:22.720] usb 1-1.1.5: new high speed USB device number 5 using fsl-ehci
+[   10.693214 / 01-03 05:00:22.920] scsi0 : usb-storage 1-1.1.5:1.0
+[   11.054970 / 01-03 05:00:23.280] _ipu_pixel_clk_round_rate : calculated Pixel clock - final rate : 52800000
+[   11.055000 / 01-03 05:00:23.280] _ipu_pixel_clk_round_rate : calculated Pixel clock - final rate : 53520999
+[   11.144031 / 01-03 05:00:23.370] _ipu_pixel_clk_round_rate : calculated Pixel clock - final rate : 52800000
+[   11.144061 / 01-03 05:00:23.370] _ipu_pixel_clk_round_rate : calculated Pixel clock - final rate : 53520999
+[   11.187669 / 01-03 05:00:23.420] ioctl_s_power for tw9900: on=1 : camera_plat->pwdn( 0 )
+[   11.187687 / 01-03 05:00:23.420] mx6_cam_powerdown()............pwdn=0
+[   11.187700 / 01-03 05:00:23.420] mx6_cam_powerdown() hwver_get_rev()=[0x9]............
+[   11.187714 / 01-03 05:00:23.420] mx6_cam_powerdown()/err(1)=timer_pending(YES)-for-RVC power ON
+[   11.187728 / 01-03 05:00:23.420] mx6_cam_powerdown()/call del_timer()
+[   11.229428 / 01-03 05:00:23.460] ioctl_s_power for tw9900: on=0 : camera_plat->pwdn( 1 )
+[   11.238133 / 01-03 05:00:23.470] mx6_cam_powerdown()............pwdn=1
+[   11.244910 / 01-03 05:00:23.470] mx6_cam_powerdown() hwver_get_rev()=[0x9]............
+[   11.253278 / 01-03 05:00:23.480] mx6_cam_powerdown()/timer_init............... -for-RVC power OFF begin
+[   11.263854 / 01-03 05:00:23.490] mx6_cam_powerdown()/err(0)=timer_pending(NO)-for-RVC power OFF
+[   11.272834 / 01-03 05:00:23.500] mx6_cam_powerdown()/call add_timer()
+[   11.279627 / 01-03 05:00:23.510] mx6_cam_powerdown()/timer_init............... -for-RVC power OFF end
+[   11.307863 / 01-03 05:00:23.540] ioctl_s_power for tw9900: on=1 : camera_plat->pwdn( 0 )
+[   11.318596 / 01-03 05:00:23.550] mx6_cam_powerdown()............pwdn=0
+[   11.325146 / 01-03 05:00:23.550] mx6_cam_powerdown() hwver_get_rev()=[0x9]............
+[   11.333290 / 01-03 05:00:23.560] mx6_cam_powerdown()/err(1)=timer_pending(YES)-for-RVC power ON
+[   11.342096 / 01-03 05:00:23.570] mx6_cam_powerdown()/call del_timer()
+[   11.348865 / 01-03 05:00:23.580] ioctl_s_power for tw9900: on=0 : camera_plat->pwdn( 1 )
+[   11.357254 / 01-03 05:00:23.580] mx6_cam_powerdown()............pwdn=1
+[   11.364012 / 01-03 05:00:23.590] mx6_cam_powerdown() hwver_get_rev()=[0x9]............
+[   11.371971 / 01-03 05:00:23.600] mx6_cam_powerdown()/timer_init............... -for-RVC power OFF begin
+[   11.381477 / 01-03 05:00:23.610] mx6_cam_powerdown()/err(0)=timer_pending(NO)-for-RVC power OFF
+[   11.390492 / 01-03 05:00:23.620] mx6_cam_powerdown()/call add_timer()
+[   11.396996 / 01-03 05:00:23.620] mx6_cam_powerdown()/timer_init............... -for-RVC power OFF end
+[   11.501682 / 01-03 05:00:23.730] GPU power on !!!, Core=0
+[   11.698716 / 01-03 05:00:23.930] scsi 0:0:0:0: Direct-Access     SanDisk  SanDisk Ultra    PMAP PQ: 0 ANSI: 6
+[   11.711633 / 01-03 05:00:23.940] sd 0:0:0:0: [sda] 61767680 512-byte logical blocks: (31.6 GB/29.4 GiB)
+[   11.721170 / 01-03 05:00:23.950] sd 0:0:0:0: Attached scsi generic sg0 type 0
+[   11.723519 / 01-03 05:00:23.950] sd 0:0:0:0: [sda] Write Protect is off
+[   11.723535 / 01-03 05:00:23.950] sd 0:0:0:0: [sda] Mode Sense: 2b 00 00 08
+[   11.724644 / 01-03 05:00:23.950] sd 0:0:0:0: [sda] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+[   11.856850 / 01-03 05:00:24.080]  sda: sda1
+[   11.871292 / 01-03 05:00:24.100] sd 0:0:0:0: [sda] Attached SCSI removable disk
+[   16.313075 / 01-03 05:00:28.540] warning: `zygote' uses 32-bit capabilities (legacy support in use)
+[   19.896416 / 01-03 05:00:32.120] GPU power on !!!, Core=1
+[   20.210408 / 01-03 05:00:32.440] request_suspend_state: wakeup (3->0) at 19902598338 (1970-01-03 05:00:32.446377670 UTC)
+[   20.618045 / 01-03 05:00:32.850] swrcdrv_open
+[   20.633768 / 01-03 05:00:32.860] cyttsp4_open : open called...
+[   20.640189 / 01-03 05:00:32.870] cyttsp4-i2c 0-0067: cyttsp4_open: Powered ON(0) r=0
+[   20.738630 / 01-03 05:00:32.970] acc_open
+[   20.743928 / 01-03 05:00:32.970] acc_release
+[   22.049855 / 01-03 05:00:34.280] mtp_open
+[   23.517029 / 01-03 05:00:35.740] (hci_tty): inside hci_tty_open (d1f3c718, d09ff480)
+[   23.525654 / 01-03 05:00:35.750] (stc):  chnl_id list empty :4
+[   23.533316 / 01-03 05:00:35.760] (stk) : st_kim_start
+[   23.777271 / 01-03 05:00:36.000] (stk) :ldisc_install = 1
+[   23.850836 / 01-03 05:00:36.080] (stc): st_tty_open
+[   23.864415 / 01-03 05:00:36.090] (stk) :line discipline installed
+[   23.871706 / 01-03 05:00:36.100] (stk) :TIInit_6.6.15.bts
+[   24.508988 / 01-03 05:00:36.740] (stc): add_channel_to_table: id 4
+[   24.540063 / 01-03 05:00:36.770] (stc): add_channel_to_table: id 2
+[   24.546592 / 01-03 05:00:36.770] (stc): add_channel_to_table: id 3
+[   26.120722 / 01-03 05:00:38.350] SPI master big bursts on
+[   26.146609 / 01-03 05:00:38.370] SPI master TX FIFO data request IRQ on with threshold=32
+[   26.247871 / 01-03 05:00:38.480] dabdrv_resetdab : dab reset is successfully done...
+[   26.318041 / 01-03 05:00:38.550] dabdrv_resetdab : dab reset is successfully done...
+[   29.477015 / 01-03 05:00:41.700] init: Calling kill(bootanim(-1963), SIGKILL)
+[   29.585597 / 01-03 05:00:41.810] init: Calling waitpid(1963, 0, WNOHANG)
+[   29.695569 / 01-03 05:00:41.920] init: Kill(-1963) waitcnt is 49. Process seems completely dead.
+[   37.890274 / 01-03 05:00:50.120] init: Calling kill(io_monitor(-2779), SIGKILL)
+[   37.999704 / 01-03 05:00:50.230] init: Calling waitpid(2779, 0, WNOHANG)
+[   38.106686 / 01-03 05:00:50.330] init: Kill(-2779) waitcnt is 49. Process seems completely dead.
+[   39.900679 / 01-03 05:00:52.130] init: Calling kill(io_monitor(-2816), SIGKILL)
+[   40.011455 / 01-03 05:00:52.240] init: Calling waitpid(2816, 0, WNOHANG)
+[   40.118543 / 01-03 05:00:52.350] init: Kill(-2816) waitcnt is 49. Process seems completely dead.
+[   71.507826 / 01-03 05:01:23.740] mx6_timer_rvc_pwr_off(0x1)....pwdn(1) should be 1...........begin
+[   71.516817 / 01-03 05:01:23.740] mx6_timer_rvc_pwr_off(0x1)....pwdn(1) should be 1...........end

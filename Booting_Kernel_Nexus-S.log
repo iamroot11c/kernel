@@ -1,0 +1,1601 @@
+<6>[    0.000000] Initializing cgroup subsys cpu
+<5>[    0.000000] Linux version 3.0.31-g5894150 (android-build@vpbs1.mtv.corp.google.com) (gcc version 4.6.x-google 20120106 (prerelease) (GCC) ) #1 PREEMPT Mon Sep 10 14:10:13 PDT 2012
+<4>[    0.000000] CPU: ARMv7 Processor [412fc082] revision 2 (ARMv7), cr=10c53c7d
+<4>[    0.000000] CPU: VIPT nonaliasing data cache, VIPT aliasing instruction cache
+<4>[    0.000000] Machine: herring
+<6>[    0.000000] Partition (from atag)      bootloader -- Offset:0x00000000 Size:0x00200000
+<6>[    0.000000] Partition (from atag)            misc -- Offset:0x004c0000 Size:0x00140000
+<6>[    0.000000] Partition (from atag)            boot -- Offset:0x00600000 Size:0x00800000
+<6>[    0.000000] Partition (from atag)        recovery -- Offset:0x00e00000 Size:0x00800000
+<6>[    0.000000] Partition (from atag)           cache -- Offset:0x01600000 Size:0x1d580000
+<6>[    0.000000] Partition (from atag)           radio -- Offset:0x1eb80000 Size:0x00d80000
+<6>[    0.000000] Partition (from atag)             efs -- Offset:0x1f900000 Size:0x006c0000
+<4>[    0.000000] Memory policy: ECC disabled, Data cache writeback
+<4>[    0.000000] CPU S5PV210/S5PC110 (id 0x43110222)
+<7>[    0.000000] s5pv210_init_clocks: initializing clocks
+<6>[    0.000000] S3C24XX Clocks, Copyright 2004 Simtec Electronics
+<4>[    0.000000] s3c24xx_register_clock: new clock sclk_csis, id -1, dev   (null) uses same enable bit as mout_csis, id -1, dev   (null)
+<4>[    0.000000] s3c24xx_register_clock: new clock lcd, id -1, dev   (null) uses same enable bit as sclk_fimd, id -1, dev   (null)
+<4>[    0.000000] s3c24xx_register_clock: new clock mfc, id -1, dev   (null) uses same enable bit as sclk_mfc, id -1, dev   (null)
+<4>[    0.000000] s3c24xx_register_clock: new clock iis, id 0, dev   (null) uses same enable bit as i2s_v50, id 0, dev   (null)
+<7>[    0.000000] s5pv210_setup_clocks: registering clocks
+<7>[    0.000000] s5pv210_setup_clocks: clkdiv0 = 14131330, clkdiv1 = 00300400
+<7>[    0.000000] s5pv210_setup_clocks: xtal is 24000000
+<6>[    0.000000] S5PV210: PLL settings, A=800000000, M=667000000, E=96000000 V=54000000
+<6>[    0.000000] S5PV210: ARMCLK=800000000, HCLKM=200000000, HCLKD=166750000
+<6>[    0.000000] HCLKP=133400000, PCLKM=100000000, PCLKD=83375000, PCLKP=66700000
+<6>[    0.000000] sclk_dmc: source is mout_mpll (1), rate is 166750000
+<6>[    0.000000] sclk_onenand: source is hclk_dsys (1), rate is 166750000
+<6>[    0.000000] sclk: source is mout_mpll (6), rate is 133400000
+<6>[    0.000000] sclk: source is mout_mpll (6), rate is 66700000
+<6>[    0.000000] sclk: source is mout_mpll (6), rate is 66700000
+<6>[    0.000000] sclk: source is mout_mpll (6), rate is 66700000
+<6>[    0.000000] sclk_mixer: source is sclk_dac (0), rate is 54000000
+<6>[    0.000000] sclk_fimc: source is ext_xtal (0), rate is 24000000
+<6>[    0.000000] sclk_fimc: source is ext_xtal (0), rate is 24000000
+<6>[    0.000000] sclk_fimc: source is ext_xtal (0), rate is 24000000
+<6>[    0.000000] sclk_cam: source is xusbxti (1), rate is 24000000
+<6>[    0.000000] sclk_cam: source is ext_xtal (0), rate is 24000000
+<6>[    0.000000] sclk_fimd: source is mout_mpll (6), rate is 166750000
+<6>[    0.000000] sclk_mmc: source is mout_mpll (6), rate is 51307692
+<6>[    0.000000] sclk_mmc: source is mout_mpll (6), rate is 47642857
+<6>[    0.000000] sclk_mmc: source is mout_mpll (6), rate is 47642857
+<6>[    0.000000] sclk_mmc: source is mout_mpll (6), rate is 47642857
+<6>[    0.000000] sclk_mfc: source is sclk_a2m (0), rate is 200000000
+<6>[    0.000000] sclk_fimg2d: source is sclk_a2m (0), rate is 200000000
+<6>[    0.000000] sclk: source is mout_mpll (1), rate is 66700000
+<6>[    0.000000] sclk_csis: source is ext_xtal (0), rate is 24000000
+<6>[    0.000000] sclk_spi: source is mout_epll (7), rate is 96000000
+<6>[    0.000000] sclk_spi: source is mout_epll (7), rate is 96000000
+<6>[    0.000000] sclk_pwi: source is ext_xtal (0), rate is 24000000
+<6>[    0.000000] sclk_pwm: source is ext_xtal (0), rate is 24000000
+<6>[    0.000000] sclk_mdnie: source is mout_mpll (6), rate is 166750000
+<6>[    0.000000] sclk_mdnie_pwm: source is ext_xtal (0), rate is 24000000
+<6>[    0.000000] s5p: 37748736 bytes system memory reserved for mfc at 0x32c00000, 0-bank base(0x32c00000)
+<6>[    0.000000] s5p: 37748736 bytes system memory reserved for mfc at 0x4dc00000, 1-bank base(0x4dc00000)
+<6>[    0.000000] s5p: 6291456 bytes system memory reserved for fimc0 at 0x4d600000, 1-bank base(0x4d600000)
+<6>[    0.000000] s5p: 4096 bytes system memory reserved for fimc1 at 0x4d5ff000, 1-bank base(0x4d5ff000)
+<6>[    0.000000] s5p: 6291456 bytes system memory reserved for fimc2 at 0x4cfff000, 1-bank base(0x4cfff000)
+<6>[    0.000000] s5p: 8388608 bytes system memory reserved for jpeg at 0x32400000, 0-bank base(0x32400000)
+<6>[    0.000000] s5p: 15360000 bytes system memory reserved for fimd at 0x4c159000, 1-bank base(0x4c159000)
+<7>[    0.000000] On node 0 totalpages: 91225
+<7>[    0.000000]   Normal zone: 1278 pages used for memmap
+<7>[    0.000000]   Normal zone: 0 pages reserved
+<7>[    0.000000]   Normal zone: 89947 pages, LIFO batch:15
+<7>[    0.000000] pcpu-alloc: s0 r0 d32768 u32768 alloc=1*32768
+<7>[    0.000000] pcpu-alloc: [0] 0 
+<4>[    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 89947
+<5>[    0.000000] Kernel command line: console=ttyFIQ0 no_console_suspend androidboot.serialno=36353FDDD42300EC androidboot.bootloader=I9020XXLC2 androidboot.baseband=I9020XXKI1 androidboot.info=0x1,0x0,0 androidboot.carrier=SKT gain_code=0 s3cfb.bootloaderfb=0x34a00000 mach-herring.lcd_type=0x00000000 oem_state=unlocked
+<6>[    0.000000] PID hash table entries: 2048 (order: 1, 8192 bytes)
+<6>[    0.000000] Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
+<6>[    0.000000] Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
+<6>[    0.000000] Memory: 36MB 193MB 127MB = 356MB total
+<5>[    0.000000] Memory: 351080k/460292k available, 13820k reserved, 0K highmem
+<5>[    0.000000] Virtual kernel memory layout:
+<5>[    0.000000]     vector  : 0xffff0000 - 0xffff1000   (   4 kB)
+<5>[    0.000000]     fixmap  : 0xfff00000 - 0xfffe0000   ( 896 kB)
+<5>[    0.000000]     DMA     : 0xff000000 - 0xffe00000   (  14 MB)
+<5>[    0.000000]     vmalloc : 0xe8000000 - 0xfc000000   ( 320 MB)
+<5>[    0.000000]     lowmem  : 0xc0000000 - 0xe7f00000   ( 639 MB)
+<5>[    0.000000]     modules : 0xbf000000 - 0xc0000000   (  16 MB)
+<5>[    0.000000]       .init : 0xc0008000 - 0xc0035000   ( 180 kB)
+<5>[    0.000000]       .text : 0xc0035000 - 0xc0778000   (7436 kB)
+<5>[    0.000000]       .data : 0xc0778000 - 0xc07d6c08   ( 380 kB)
+<5>[    0.000000]        .bss : 0xc07d6c2c - 0xc093be28   (1429 kB)
+<6>[    0.000000] SLUB: Genslabs=11, HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+<6>[    0.000000] Preemptible hierarchical RCU implementation.
+<6>[    0.000000] NR_IRQS:339
+<6>[    0.000000] VIC @fc000000: id 0x00041192, vendor 0x41
+<6>[    0.000000] VIC @fc010000: id 0x00041192, vendor 0x41
+<6>[    0.000000] VIC @fc020000: id 0x00041192, vendor 0x41
+<6>[    0.000000] VIC @fc030000: id 0x00041192, vendor 0x41
+<6>[    0.000000] mult[140737]
+<6>[    0.000000] max_delta_ns[2937815369]
+<6>[    0.000000] min_delta_ns[30517]
+<6>[    0.000000] rate[32768]
+<6>[    0.000000] HZ[256]
+<6>[    0.000079] Calibrating delay loop... 795.12 BogoMIPS (lpj=1554432)
+<6>[    0.027235] pid_max: default: 32768 minimum: 301
+<6>[    0.027399] Mount-cache hash table entries: 512
+<6>[    0.027704] Initializing cgroup subsys debug
+<6>[    0.027719] Initializing cgroup subsys cpuacct
+<6>[    0.027737] Initializing cgroup subsys freezer
+<6>[    0.027767] CPU: Testing write buffer coherency: ok
+<6>[    0.027921] hw perfevents: enabled with ARMv7 Cortex-A8 PMU driver, 5 counters available
+<6>[    0.030097] print_constraints: dummy: 
+<6>[    0.030233] NET: Registered protocol family 16
+<4>[    0.032988] clk_get: could not find clock (null) for dev s5pv210_device_fiqdbg_uart2+0x8/0xd8 (fiq_debugger.2)
+<6>[    0.036478] console [ttyFIQ0] enabled
+<6>[    0.036553] Registered FIQ tty driver e785ccc0
+<6>[    0.038392] ram_console: got buffer at 57f00000, size ff000
+<6>[    0.038565] ram_console: uncorrectable error in header
+<6>[    0.038575] ram_console: no valid data in buffer (sig = 0xbffeeebf)
+<6>[    0.049336] console [ram-1] enabled
+<6>[    0.049560] S5PC110 Hardware version : EVT1
+<6>[    0.049713] HWREV is 0xb
+<4>[    0.050282] S3C Power Management, Copyright 2004 Simtec Electronics
+<6>[    0.050426] pmstats at 57fff000
+<7>[    0.050533] Universal :SD Detect configuration
+<6>[    0.051033] hw-breakpoint: debug architecture 0x4 unsupported.
+<6>[    0.051552] S5PV210: Initializing architecture
+<6>[    0.051867] s3c24xx-pwm s3c24xx-pwm.0: tin at 66700000, tdiv at 66700000, tin=divclk, base 0
+<6>[    0.052045] s3c24xx-pwm s3c24xx-pwm.1: tin at 66700000, tdiv at 66700000, tin=divclk, base 8
+<6>[    0.052219] s3c24xx-pwm s3c24xx-pwm.2: tin at 66700000, tdiv at 66700000, tin=divclk, base 12
+<6>[    0.052329] s3c24xx-pwm s3c24xx-pwm.3: tin at 66700000, tdiv at 66700000, tin=divclk, base 16
+<6>[    0.053120] print_constraints: pd_audio_supply: 5000 mV normal 
+<6>[    0.053368] print_constraints: pd_cam_supply: 5000 mV normal 
+<6>[    0.053570] print_constraints: pd_tv_supply: 5000 mV normal 
+<6>[    0.053800] print_constraints: pd_lcd_supply: 5000 mV normal 
+<6>[    0.053966] print_constraints: pd_g3d_supply: 5000 mV normal 
+<6>[    0.054201] print_constraints: pd_mfc_supply: 5000 mV normal 
+<6>[    0.059057] bio: create slab <bio-0> at 0
+<5>[    0.059837] SCSI subsystem initialized
+<6>[    0.060027] usbcore: registered new interface driver usbfs
+<6>[    0.060174] usbcore: registered new interface driver hub
+<6>[    0.060409] usbcore: registered new device driver usb
+<6>[    0.060770] i2c-gpio i2c-gpio.4: using pins 247 (SDA) and 246 (SCL)
+<3>[    0.061096] max8998 6-0066: No interrupt base specified, no interrupts
+<3>[    0.062803] i2:10, buck2_idx:0
+<6>[    0.064287] print_constraints: VALIVE_1.2V: 1200 mV 
+<6>[    0.064912] print_constraints: VUSB_1.1V: 1100 mV 
+<6>[    0.066038] print_constraints: VADC_3.3V: 3300 mV 
+<6>[    0.067132] print_constraints: VLCD_1.8V: 1800 mV 
+<6>[    0.067754] print_constraints: VUSB_3.3V: 3300 mV 
+<6>[    0.068874] print_constraints: VCC_2.8V_PDA: 2800 mV 
+<6>[    0.069491] print_constraints: CAM_AF_3.0V: 3000 mV 
+<6>[    0.070184] print_constraints: CAM_SENSOR_CORE_1.2V: 1200 mV 
+<6>[    0.070825] print_constraints: VGA_VDDIO_2.8V: 2800 mV 
+<6>[    0.071515] print_constraints: VGA_DVDD_1.8V: 1800 mV 
+<6>[    0.072140] print_constraints: CAM_ISP_HOST_2.8V: 2800 mV 
+<6>[    0.072839] print_constraints: VGA_AVDD_2.8V: 2800 mV 
+<6>[    0.073900] print_constraints: VCC_3.0V_LCD: 3000 mV 
+<6>[    0.074430] print_constraints: VDD_ARM: 750 <--> 1500 mV at 1200 mV 
+<6>[    0.074875] print_constraints: VDD_INT: 750 <--> 1500 mV at 1100 mV 
+<6>[    0.075823] print_constraints: VCC_1.8V: 1800 mV 
+<6>[    0.076272] print_constraints: CAM_ISP_CORE_1.2V: 1200 mV 
+<3>[    0.076584] i2c i2c-6: Failed to register i2c client rtc_max8998 at 0x06 (-16)
+<3>[    0.076668] i2c i2c-6: Can't create device at 0x06
+<6>[    0.076814] i2c-gpio i2c-gpio.6: using pins 206 (SDA) and 209 (SCL)
+<6>[    0.077032] i2c-gpio i2c-gpio.7: using pins 201 (SDA) and 202 (SCL)
+<6>[    0.077252] i2c-gpio i2c-gpio.8: using pins 42 (SDA) and 43 (SCL)
+<6>[    0.077458] i2c-gpio i2c-gpio.9: using pins 245 (SDA) and 244 (SCL)
+<6>[    0.077727] i2c-gpio i2c-gpio.11: using pins 114 (SDA) and 98 (SCL)
+<6>[    0.077892] i2c-gpio i2c-gpio.12: using pins 173 (SDA) and 172 (SCL)
+<6>[    0.078191] i2c-gpio i2c-gpio.14: using pins 240 (SDA) and 239 (SCL)
+<6>[    0.078408] i2c-gpio i2c-gpio.10: using pins 197 (SDA) and 198 (SCL)
+<6>[    0.078633] i2c-gpio i2c-gpio.5: using pins 203 (SDA) and 204 (SCL)
+<6>[    0.079033] s3c-i2c s3c2440-i2c.0: i2c-0: S3C I2C adapter
+<6>[    0.079339] s3c-i2c s3c2440-i2c.1: i2c-1: S3C I2C adapter
+<6>[    0.079641] s3c-i2c s3c2440-i2c.2: i2c-2: S3C I2C adapter
+<6>[    0.079947] Advanced Linux Sound Architecture Driver Version 1.0.24.
+<6>[    0.080437] Bluetooth: Core ver 2.16
+<6>[    0.080550] NET: Registered protocol family 31
+<6>[    0.080628] Bluetooth: HCI device and connection manager initialized
+<6>[    0.080771] Bluetooth: HCI socket layer initialized
+<6>[    0.080849] Bluetooth: L2CAP socket layer initialized
+<6>[    0.081001] Bluetooth: SCO socket layer initialized
+<6>[    0.081470] Switching to clocksource clock_source_systimer
+<6>[    0.081965] Switched to NOHz mode on CPU #0
+<6>[    0.085652] cfg80211: Calling CRDA to update world regulatory domain
+<6>[    0.089663] NET: Registered protocol family 2
+<6>[    0.089912] IP route cache hash table entries: 4096 (order: 2, 16384 bytes)
+<6>[    0.090594] TCP established hash table entries: 16384 (order: 5, 131072 bytes)
+<6>[    0.090931] TCP bind hash table entries: 16384 (order: 4, 65536 bytes)
+<6>[    0.091222] TCP: Hash tables configured (established 16384 bind 16384)
+<6>[    0.091302] TCP reno registered
+<6>[    0.091445] UDP hash table entries: 256 (order: 0, 4096 bytes)
+<6>[    0.091536] UDP-Lite hash table entries: 256 (order: 0, 4096 bytes)
+<6>[    0.091935] NET: Registered protocol family 1
+<6>[    0.092182] Trying to unpack rootfs image as initramfs...
+<6>[    0.103857] Freeing initrd memory: 160K
+<6>[    0.104092] PMU: registered new PMU device of type 0
+<4>[    0.104444] clk_get: could not find clock emu_src_ck for dev s5pv210_etb_device+0x0/0x100 (etb)
+<6>[    0.261406] wake enabled for irq 165
+<6>[    0.261588] wake disabled for irq 165
+<6>[    0.262027] S5PV210 ADC driver, (c) 2010 Samsung Electronics
+<6>[    0.262376] Loaded driver for PL330 DMAC-0 s3c-pl330
+<6>[    0.262520] 	DBUFF-64x8bytes Num_Chans-8 Num_Peri-2 Num_Events-32
+<6>[    0.262663] Loaded driver for PL330 DMAC-1 s3c-pl330
+<6>[    0.262806] 	DBUFF-8x4bytes Num_Chans-8 Num_Peri-32 Num_Events-32
+<6>[    0.262953] Loaded driver for PL330 DMAC-2 s3c-pl330
+<6>[    0.263096] 	DBUFF-8x4bytes Num_Chans-8 Num_Peri-32 Num_Events-32
+<6>[    0.270874] ashmem: initialized
+<6>[    0.278362] ROMFS MTD (C) 2007 Red Hat, Inc.
+<7>[    0.278625] yaffs: yaffs built Sep 10 2012 14:09:57 Installing.
+<6>[    0.278727] msgmni has been set to 686
+<6>[    0.279929] io scheduler noop registered
+<6>[    0.280011] io scheduler deadline registered
+<6>[    0.280138] io scheduler cfq registered (default)
+<6>[    0.281644] s3cfb s3cfb: [fb2] dma: 0x4c5be000, cpu: 0xe9000000, size: 0x00a41000
+<6>[    0.312557] FIMD src sclk = 166750000
+<6>[    0.312704] s3cfb s3cfb: pixclock adjusted from 39019 to 41979
+<6>[    0.312864] s3cfb s3cfb: registered successfully
+<6>[    0.313299] s5pv210-uart.0: s3c2410_serial0 at MMIO 0xe2900000 (irq = 16) is a S3C6400/10
+<6>[    0.320029] s5pv210-uart.1: s3c2410_serial1 at MMIO 0xe2900400 (irq = 20) is a S3C6400/10
+<6>[    0.327857] s5pv210-uart.3: s3c2410_serial3 at MMIO 0xe2900c00 (irq = 28) is a S3C6400/10
+<4>[    0.337940] PA FB = 0x4C5BE000, bits per pixel = 32
+<4>[    0.338032] screen width=480 height=800 va=0xdc5be000 pa=0x4c5be000
+<4>[    0.338175] xres_virtual = 480, yres_virtual = 5600, xoffset = 0, yoffset = 0
+<4>[    0.338317] fb_size=10752000
+<4>[    0.338399] Back frameBuffer[0].VAddr=dc735000 PAddr=4c735000 size=1536000
+<4>[    0.338480] Back frameBuffer[1].VAddr=dc8ac000 PAddr=4c8ac000 size=1536000
+<4>[    0.338634] Video Y Buffer[0].VAddr=dca23000 PAddr=4ca23000 size=921600
+<4>[    0.338777] Video Y Buffer[1].VAddr=dcb04000 PAddr=4cb04000 size=921600
+<4>[    0.338858] Video Y Buffer[2].VAddr=dcbe5000 PAddr=4cbe5000 size=921600
+<4>[    0.339003] Video UV Buffer[0].VAddr=dccc6000 PAddr=4ccc6000 size=462848
+<4>[    0.339085] Video UV Buffer[1].VAddr=dcd37000 PAddr=4cd37000 size=462848
+<4>[    0.339228] Video UV Buffer[2].VAddr=dcda8000 PAddr=4cda8000 size=462848
+<6>[    0.343245] brd: module loaded
+<6>[    0.345140] loop: module loaded
+<6>[    0.345251] Android kernel panic handler initialized (bind=kpanic)
+<6>[    0.351833] Loading pn544 driver
+<6>[    0.351988] pn544_probe : requesting IRQ 44
+<6>[    0.352149] sec_jack_probe : Registering jack driver
+<6>[    0.352516] wake enabled for irq 38
+<6>[    0.353888] wake enabled for irq 167
+<6>[    0.354339] fsa9480 7-0025: dev1: 0x0, dev2: 0x0
+<4>[    0.354515] i2c-core: driver [fsa9480] using legacy suspend method
+<4>[    0.354595] i2c-core: driver [fsa9480] using legacy resume method
+<6>[    0.357131] [MODEM] bp_irq() PHONE_ACTIVE_PIN=1
+<6>[    0.357230] wake enabled for irq 47
+<6>[    0.357371] wake enabled for irq 43
+<6>[    0.358048] Muxed OneNAND 512MB 1.8V 16-bit (0x50)
+<6>[    0.358130] OneNAND version = 0x013e
+<7>[    0.358271] Chip support all block unlock
+<7>[    0.358346] Chip has 4KiB pagesize
+<7>[    0.358423] Chip has cache program feature
+<6>[    0.358579] Scanning device for bad blocks
+<7>[    1.036526] onenand_bbt_wait: ecc 0xaaaa ctrl 0x0400 intr 0x8080 addr1 0x32e addr8 0x0
+<6>[    1.036673] OneNAND eraseblock 814 is an initial bad block
+<6>[    2.062528] OneNAND eraseblock 2047 is an initial bad block
+<5>[    2.062675] Creating 7 MTD partitions on "(null)":
+<5>[    2.062760] 0x000000000000-0x000000200000 : "bootloader"
+<5>[    2.063430] 0x0000004c0000-0x000000600000 : "misc"
+<5>[    2.064117] 0x000000600000-0x000000e00000 : "boot"
+<5>[    2.064725] 0x000000e00000-0x000001600000 : "recovery"
+<5>[    2.065352] 0x000001600000-0x00001eb80000 : "cache"
+<5>[    2.066868] 0x00001eb80000-0x00001f900000 : "radio"
+<5>[    2.067530] 0x00001f900000-0x00001ffc0000 : "efs"
+<6>[    2.159846] tl2796: c0, b-805c1c86, got v 1959909, factory wants 2002000
+<6>[    2.159995] tl2796: c1, b-7d86ed46, got v 2051590, factory wants 2044000
+<6>[    2.160079] tl2796: c2, b-803d80a3, got v 1711350, factory wants 1561000
+<6>[    2.304401] tl2796_probe successfully proved
+<6>[    2.304539] PPP generic driver version 2.4.2
+<6>[    2.304791] PPP Deflate Compression module registered
+<6>[    2.304871] PPP BSD Compression module registered
+<6>[    2.305536] PPP MPPE Compression module registered
+<6>[    2.305683] NET: Registered protocol family 24
+<6>[    2.307122] tun: Universal TUN/TAP device driver, 1.6
+<6>[    2.307267] tun: (C) 1999-2004 Max Krasnyansky <maxk@qualcomm.com>
+<6>[    2.307637] s3c-udc : S3C HS USB Device Controller Driver, (c) 2008-2009 Samsung Electronics
+<6>[    2.307645] s3c-udc : version 15 March 2009 (DMA Mode)
+<6>[    2.308891] android_usb gadget: Mass Storage Function, version: 2009/09/11
+<6>[    2.309040] android_usb gadget: Number of LUNs=1
+<6>[    2.309122]  lun0: LUN: removable file: (no medium)
+<6>[    2.309448] android_usb gadget: android_usb ready
+<7>[    2.325803] Registered gadget driver 'android_usb'
+<6>[    2.326025] usbcore: registered new interface driver xpad
+<6>[    2.326155] usbcore: registered new interface driver usb_acecad
+<6>[    2.326296] acecad: v3.2:USB Acecad Flair tablet driver
+<6>[    2.326414] usbcore: registered new interface driver aiptek
+<6>[    2.326557] aiptek: v2.3 (May 2, 2007):Aiptek HyperPen USB Tablet Driver (Linux 2.6.x)
+<6>[    2.326637] aiptek: Bryan W. Headley/Chris Atenasio/Cedric Brun/Rene van Paassen
+<6>[    2.326820] usbcore: registered new interface driver gtco
+<4>[    2.326962] GTCO usb driver version: 2.00.0006
+<6>[    2.327079] usbcore: registered new interface driver hanwang
+<6>[    2.327267] usbcore: registered new interface driver kbtab
+<6>[    2.327410] kbtab: v0.0.2:USB KB Gear JamStudio Tablet driver
+<6>[    2.327537] usbcore: registered new interface driver wacom
+<6>[    2.327679] wacom: v1.52:USB Wacom tablet driver
+<6>[    2.327982] input: mxt224_ts_input as /devices/virtual/input/input0
+<6>[    2.368760] Atmel MXT224 2-004a: family = 0x80, variant = 0x1, version = 0x16, build = 171
+<6>[    2.445479] input: gyro as /devices/virtual/input/input1
+<6>[    2.445854] wake enabled for irq 166
+<6>[    2.445958] wake enabled for irq 169
+<6>[    2.446120] wake enabled for irq 170
+<6>[    2.446200] GPIO Input Driver: Start gpio inputs for herring-keypad in interrupt mode
+<6>[    2.446495] input: herring-keypad as /devices/virtual/input/input2
+<6>[    2.446999] input: proximity as /devices/virtual/input/input3
+<6>[    2.447453] input: lightsensor-level as /devices/virtual/input/input4
+<6>[    2.447807] max8998-rtc max8998-rtc: RTC CHIP NAME: max8998-rtc
+<4>[    2.447987] S3C24XX RTC, (c) 2004,2006 Simtec Electronics
+<6>[    2.448823] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[    2.449025] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[    2.449111] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[    2.449259] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[    2.449549] using rtc device, s3c, for alarms
+<6>[    2.449717] s3c-rtc s3c2410-rtc: rtc core: registered s3c as rtc0
+<6>[    2.449914] i2c /dev entries driver
+<6>[    2.450912] lirc_dev: IR Remote Control driver registered, major 250 
+<6>[    2.451057] IR NEC protocol handler initialized
+<6>[    2.451135] IR RC5(x) protocol handler initialized
+<6>[    2.451275] IR RC6 protocol handler initialized
+<6>[    2.451351] IR JVC protocol handler initialized
+<6>[    2.451491] IR Sony protocol handler initialized
+<6>[    2.451568] IR RC5 (streamzap) protocol handler initialized
+<6>[    2.451708] IR LIRC bridge handler initialized
+<6>[    2.451785] Linux video capture interface: v2.00
+<6>[    2.451972] mfc_init: <6>S5PC110 MFC Driver, (c) 2009 Samsung Electronics
+<6>[    2.451979] 
+<6>[    2.452522] S3C JPEG Driver, (c) 2007 Samsung Electronics
+<6>[    2.452665] JPEG driver for S5PV210
+<6>[    2.457388] max17040 9-0036: MAX17040 Fuel-Gauge Ver 02
+<6>[    2.458277] device-mapper: uevent: version 1.0.3
+<6>[    2.458760] device-mapper: ioctl: 4.20.0-ioctl (2011-02-02) initialised: dm-devel@redhat.com
+<6>[    2.458880] Bluetooth: HCI UART driver ver 2.2
+<6>[    2.459029] Bluetooth: HCI H4 protocol initialized
+<6>[    2.459207] cpuidle: using governor ladder
+<6>[    2.459412] cpuidle: using governor menu
+<6>[    2.459525] sdhci: Secure Digital Host Controller Interface driver
+<6>[    2.459666] sdhci: Copyright(c) Pierre Ossman
+<6>[    2.459852] s3c-sdhci s3c-sdhci.0: clock source 0: hsmmc (133400000 Hz)
+<6>[    2.460009] s3c-sdhci s3c-sdhci.0: clock source 2: sclk_mmc (51307692 Hz)
+<4>[    2.460130] ------------[ cut here ]------------
+<4>[    2.460289] WARNING: at drivers/gpio/gpiolib.c:101 gpio_ensure_requested+0x60/0x1b8()
+<4>[    2.460368] autorequest GPIO-195
+<4>[    2.460443] Modules linked in:
+<4>[    2.460591] Backtrace: 
+<4>[    2.460756] [<c003f8a4>] (dump_backtrace+0x0/0x10c) from [<c056e2c0>] (dump_stack+0x18/0x1c)
+<4>[    2.460901]  r6:00000065 r5:c022ecd4 r4:e7827d78 r3:00000000
+<4>[    2.461278] [<c056e2a8>] (dump_stack+0x0/0x1c) from [<c00689d8>] (warn_slowpath_common+0x54/0x6c)
+<4>[    2.461429] [<c0068984>] (warn_slowpath_common+0x0/0x6c) from [<c0068a94>] (warn_slowpath_fmt+0x38/0x40)
+<4>[    2.461574]  r8:00000001 r7:e7b03a40 r6:00000000 r5:c07a46c0 r4:c082d2a4
+<4>[    2.461938] r3:00000009
+<4>[    2.462227] [<c0068a5c>] (warn_slowpath_fmt+0x0/0x40) from [<c022ecd4>] (gpio_ensure_requested+0x60/0x1b8)
+<4>[    2.462373]  r3:000000c3 r2:c06f1f6c
+<4>[    2.462601] [<c022ec74>] (gpio_ensure_requested+0x0/0x1b8) from [<c022f04c>] (gpio_direction_output+0xd4/0x2fc)
+<4>[    2.462759] [<c022ef78>] (gpio_direction_output+0x0/0x2fc) from [<c0052994>] (s5pv210_setup_sdhci0_cfg_gpio+0xe8/0x118)
+<4>[    2.462919] [<c00528ac>] (s5pv210_setup_sdhci0_cfg_gpio+0x0/0x118) from [<c056cec0>] (sdhci_s3c_probe+0x26c/0x58c)
+<4>[    2.463064]  r5:e7b03bb4 r4:00000000
+<4>[    2.463296] [<c056cc54>] (sdhci_s3c_probe+0x0/0x58c) from [<c0283ba0>] (platform_drv_probe+0x20/0x24)
+<4>[    2.463448] [<c0283b80>] (platform_drv_probe+0x0/0x24) from [<c0282580>] (driver_probe_device+0x98/0x270)
+<4>[    2.463599] [<c02824e8>] (driver_probe_device+0x0/0x270) from [<c02827ec>] (__driver_attach+0x94/0x98)
+<4>[    2.463682]  r8:00000000 r7:00000000 r6:c078e144 r5:c07ba96c r4:c078e110
+<4>[    2.464201] [<c0282758>] (__driver_attach+0x0/0x98) from [<c0281550>] (bus_for_each_dev+0x64/0x90)
+<4>[    2.464346]  r6:c0282758 r5:00000000 r4:c07ba96c r3:00000000
+<4>[    2.464716] [<c02814ec>] (bus_for_each_dev+0x0/0x90) from [<c02821d0>] (driver_attach+0x24/0x28)
+<4>[    2.464860]  r6:e7b25100 r5:c07a75b0 r4:c07ba96c
+<4>[    2.465159] [<c02821ac>] (driver_attach+0x0/0x28) from [<c0281e5c>] (bus_add_driver+0x198/0x280)
+<4>[    2.465246] [<c0281cc4>] (bus_add_driver+0x0/0x280) from [<c0282d48>] (driver_register+0x80/0x144)
+<4>[    2.465398] [<c0282cc8>] (driver_register+0x0/0x144) from [<c0283fb4>] (platform_driver_register+0x4c/0x60)
+<4>[    2.465543]  r8:00000000 r7:00000013 r6:00000000 r5:c07d6c40 r4:e7826000
+<4>[    2.465970] r3:00000000
+<4>[    2.466194] [<c0283f68>] (platform_driver_register+0x0/0x60) from [<c00220dc>] (sdhci_s3c_init+0x14/0x1c)
+<4>[    2.466351] [<c00220c8>] (sdhci_s3c_init+0x0/0x1c) from [<c00354c8>] (do_one_initcall+0x11c/0x184)
+<4>[    2.466441] [<c00353ac>] (do_one_initcall+0x0/0x184) from [<c0008a6c>] (kernel_init+0x7c/0x118)
+<4>[    2.466592] [<c00089f0>] (kernel_init+0x0/0x118) from [<c006c17c>] (do_exit+0x0/0x780)
+<4>[    2.466735]  r5:c00089f0 r4:00000000
+<4>[    2.466972] ---[ end trace 6486654f340847ac ]---
+<6>[    2.467257] mmc0: no vmmc regulator found
+<6>[    2.467497] mmc0: SDHCI controller on samsung-hsmmc [s3c-sdhci.0] using ADMA
+<6>[    2.467695] s3c-sdhci s3c-sdhci.2: clock source 0: hsmmc (133400000 Hz)
+<6>[    2.467789] s3c-sdhci s3c-sdhci.2: clock source 2: sclk_mmc (47642857 Hz)
+<6>[    2.467972] mmc1: no vmmc regulator found
+<6>[    2.468147] mmc1: SDHCI controller on samsung-hsmmc [s3c-sdhci.2] using ADMA
+<6>[    2.468534] s3c-sdhci s3c-sdhci.3: clock source 0: hsmmc (133400000 Hz)
+<6>[    2.468631] s3c-sdhci s3c-sdhci.3: clock source 2: sclk_mmc (47642857 Hz)
+<6>[    2.468814] mmc2: no vmmc regulator found
+<6>[    2.468983] mmc2: SDHCI controller on samsung-hsmmc [s3c-sdhci.3] using ADMA
+<6>[    2.471091] usbcore: registered new interface driver usbhid
+<6>[    2.471173] usbhid: USB HID core driver
+<6>[    2.471592] logger: created 256K log 'log_main'
+<6>[    2.471731] logger: created 256K log 'log_events'
+<6>[    2.471929] logger: created 256K log 'log_radio'
+<6>[    2.472071] logger: created 256K log 'log_system'
+<6>[    2.473153] WM8994 Audio Codec 0.1
+<6>[    2.488843] s3c_idma_preallocate_buffer:  VA-e8080000  PA-C0000000  163840bytes
+<6>[    2.489207] asoc: WM8994 PAIFRX <-> samsung-i2s.0 mapping ok
+<6>[    2.489655] ALSA device list:
+<6>[    2.489735]   #0: smdkc110
+<6>[    2.490046] GACT probability NOT on
+<6>[    2.490195] Mirror/redirect action on
+<6>[    2.490275] u32 classifier
+<6>[    2.490350]     Actions configured
+<6>[    2.490429] Netfilter messages via NETLINK v0.30.
+<6>[    2.490623] nf_conntrack version 0.5.0 (5488 buckets, 21952 max)
+<6>[    2.491487] ctnetlink v0.93: registering with nfnetlink.
+<6>[    2.491674] NF_TPROXY: Transparent proxy support initialized, version 4.1.0
+<6>[    2.491764] NF_TPROXY: Copyright (c) 2006-2007 BalaBit IT Ltd.
+<6>[    2.492219] xt_time: kernel timezone is -0000
+<6>[    2.493915] ip_tables: (C) 2000-2006 Netfilter Core Team
+<6>[    2.494212] arp_tables: (C) 2002 David S. Miller
+<6>[    2.494339] TCP cubic registered
+<6>[    2.494479] Initializing XFRM netlink socket
+<6>[    2.495361] NET: Registered protocol family 10
+<6>[    2.505664] Mobile IPv6
+<6>[    2.505838] ip6_tables: (C) 2000-2006 Netfilter Core Team
+<6>[    2.506204] IPv6 over IPv4 tunneling driver
+<6>[    2.514303] NET: Registered protocol family 17
+<6>[    2.514470] NET: Registered protocol family 15
+<6>[    2.514653] Bluetooth: RFCOMM TTY layer initialized
+<6>[    2.514802] Bluetooth: RFCOMM socket layer initialized
+<6>[    2.514882] Bluetooth: RFCOMM ver 1.11
+<6>[    2.514960] Bluetooth: BNEP (Ethernet Emulation) ver 1.3
+<6>[    2.515102] Bluetooth: HIDP (Human Interface Emulation) ver 1.2
+<6>[    2.515369] NET: Registered protocol family 35
+<6>[    2.515685] VFP support v0.3: implementor 41 architecture 3 part 30 variant c rev 2
+<6>[    2.515847] ThumbEE CPU extension supported.
+<6>[    2.516213] cpufreq_interactive_input_connect: connect to mxt224_ts_input
+<6>[    2.516386] s5pv210_cpufreq_init: S5PV210 cpu-freq driver
+<6>[    2.519600] regulator_init_complete: pd_mfc_supply: disabling
+<6>[    2.519688] regulator_init_complete: pd_tv_supply: disabling
+<6>[    2.519833] regulator_init_complete: pd_cam_supply: disabling
+<4>[    2.520061] ## wifi_probe
+<4>[    2.520205] wifi_set_power = 1
+<4>[    2.726341] wifi_set_carddetect = 1
+<6>[    2.822939] mmc0: new high speed MMC card at address 0001
+<6>[    2.825554] mmcblk0: mmc0:0001 SEM16G 14.8 GiB 
+<6>[    2.826706] mmcblk0boot0: mmc0:0001 SEM16G partition 1 1.00 MiB
+<6>[    2.828458] mmcblk0boot1: mmc0:0001 SEM16G partition 2 1.00 MiB
+<6>[    2.846737]  mmcblk0: p1 p2 p3
+<6>[    2.850894]  mmcblk0boot1: unknown partition table
+<6>[    2.853778]  mmcblk0boot0: unknown partition table
+<4>[    3.069839] mmc2: queuing unknown CIS tuple 0x80 (50 bytes)
+<4>[    3.079642] mmc2: queuing unknown CIS tuple 0x80 (7 bytes)
+<4>[    3.113378] mmc2: queuing unknown CIS tuple 0x80 (3 bytes)
+<6>[    3.122445] mmc2: new SDIO card at address 0001
+<4>[    3.233295] F1 signature read @0x18000000=0x9934329
+<4>[    3.242771] DHD: dongle ram size is set to 294912(orig 294912)
+<4>[    3.243982] wl_create_event_handler thr:41 started
+<4>[    3.244489] dhd_attach thr:42 started
+<4>[    3.244838] dhd_attach thr:43 started
+<4>[    3.245055] dhd_attach thr:44 started
+<4>[    3.245401] wifi_get_mac_addr
+<4>[    3.251168] Broadcom Dongle Host Driver: register interface [wlan0] MAC: 00:90:4c:11:22:33
+<4>[    3.251492] 
+<4>[    3.251499] Dongle Host Driver, version 5.90.195.75
+<4>[    3.251509] Compiled in drivers/net/wireless/bcmdhd on Sep 10 2012 at 14:10:03
+<4>[    3.252162] wifi_set_power = 0
+<4>[    3.252310] =========== WLAN placed in RESET ========
+<6>[    3.305013] cypress_touchkey_driver 10-0020: cypress_touchkey_probe: hardware rev1 = 0xa, rev2 = 0x9
+<6>[    3.305571] input: cypress-touchkey as /devices/virtual/input/input5
+<6>[    3.306642] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[    3.306833] s3c-rtc s3c2410-rtc: setting system clock to 2014-08-14 02:30:20 UTC (1407983420)
+<6>[    3.308828] FIMC0 registered successfully
+<6>[    3.310378] FIMC1 registered successfully
+<6>[    3.312010] FIMC2 registered successfully
+<6>[    3.312416] max8998_charger_probe : MAX8998 Charger Driver Loading
+<6>[    3.314781] max8998_charger_probe : pmic interrupt registered
+<6>[    3.316933] wake enabled for irq 39
+<6>[    3.319493] Freeing init memory: 180K
+<4>[    3.329286] init (1): /proc/1/oom_adj is deprecated, please use /proc/1/oom_score_adj instead.
+<6>[    3.390538] keychord: using input dev herring-keypad for fevent
+<6>[    3.406614] yaffs: dev is 32505860 name is "mtdblock4" rw
+<6>[    3.406685] yaffs: passed flags ""
+<7>[    3.406803] yaffs: Attempting MTD mount of 31.4,"mtdblock4"
+<7>[    3.412532] yaffs: yaffs_read_super: is_checkpointed 1
+<6>[    3.412758] yaffs: dev is 32505862 name is "mtdblock6" rw
+<6>[    3.412824] yaffs: passed flags ""
+<7>[    3.412888] yaffs: Attempting MTD mount of 31.6,"mtdblock6"
+<7>[    3.887287] yaffs: yaffs_read_super: is_checkpointed 0
+<6>[    3.906753] EXT4-fs (mmcblk0p1): mounted filesystem with ordered data mode. Opts: (null)
+<7>[    3.924553] EXT4-fs (mmcblk0p2): ext4_orphan_cleanup: deleting unreferenced inode 49472
+<6>[    3.925636] EXT4-fs (mmcblk0p2): 1 orphan inode deleted
+<6>[    3.925708] EXT4-fs (mmcblk0p2): recovery complete
+<6>[    4.192918] EXT4-fs (mmcblk0p2): mounted filesystem with ordered data mode. Opts: nomblk_io_submit,errors=panic
+<3>[    4.292736] init: cannot find '/system/etc/install-recovery.sh', disabling 'flash_recovery'
+<3>[    4.309687] android_usb: already disabled
+<6>[    4.312636] warning: `adbd' uses 32-bit capabilities (legacy support in use)
+<6>[    4.313592] adb_open
+<6>[    4.313681] adb_bind_config
+<6>[    4.743034] PVR_K:(Warning): SysFinalise: Version string: SGX540 S5PC110 [529, drivers/gpu/pvr/s5pc110/sysconfig.c]
+<3>[    4.756895] init: sys_prop: permission denied uid:1001  name:net.rmnet1.dns1
+<3>[    4.757111] init: sys_prop: permission denied uid:1001  name:net.rmnet1.dns2
+<3>[    4.757319] init: sys_prop: permission denied uid:1001  name:net.rmnet1.gw
+<3>[    4.757659] init: sys_prop: permission denied uid:1001  name:net.rmnet2.dns1
+<3>[    4.757814] init: sys_prop: permission denied uid:1001  name:net.rmnet2.dns2
+<3>[    4.758019] init: sys_prop: permission denied uid:1001  name:net.rmnet2.gw
+<6>[    6.000432] s3cfb s3cfb: [fb0] dma: 0x4c159000, cpu: 0xeb800000, size: 0x00465000
+<6>[    6.102473] [MODEM] modem_reset()
+<6>[    6.104323] [MODEM] bp_irq() PHONE_ACTIVE_PIN=0
+<6>[    6.417709] modemctl_ioctl() 0
+<6>[    9.733245] [MODEM] modem_start() normal
+<6>[   11.187463] wake enabled for irq 34
+<6>[   11.200191] input: compass as /devices/virtual/input/input6
+<6>[   11.267331] wake disabled for irq 34
+<6>[   12.582721] [MODEM] bp_irq() PHONE_ACTIVE_PIN=1
+<6>[   12.612291] [MODEM] binary load done
+<6>[   12.612502] [MODEM] modem_start() DONE
+<6>[   12.612660] modemctl_ioctl() 0
+<6>[   16.542685] wake enabled for irq 165
+<4>[   17.082351] 
+<4>[   17.082357] Dongle Host Driver, version 5.90.195.75
+<4>[   17.082362] Compiled in drivers/net/wireless/bcmdhd on Sep 10 2012 at 14:10:03
+<4>[   17.082608] wl_android_wifi_on in
+<4>[   17.082727] wifi_set_power = 1
+<4>[   17.288806] =========== WLAN going back to live  ========
+<4>[   17.289190] sdio_reset_comm():
+<4>[   17.534296] dhdsdio_write_vars: Download, Upload and compare of NVRAM succeeded.
+<6>[   17.611558] wake enabled for irq 164
+<4>[   17.612880] wifi_get_mac_addr
+<4>[   17.613511] Firmware up: op_mode=1, Broadcom Dongle Host Driver mac=b4:07:f9:de:9c:cf
+<4>[   17.618689] Firmware version = wl0: Apr 11 2012 15:30:54 version 4.218.248.42
+<3>[   17.619642] CFGP2P-ERROR) wl_cfgp2p_supported : wl p2p error -23
+<6>[   17.698998] acc_open
+<6>[   17.699088] acc_release
+<4>[   18.468630] connect failed event=0 e->status 0x3
+<3>[   18.468723] CFG80211-ERROR) wl_bss_connect_done : Report connect result - connection failed
+<6>[   20.627678] pn544_dev_ioctl power on
+<6>[   20.656062] pn544_dev_ioctl power off
+<6>[   20.722346] pn544_dev_ioctl power on
+<3>[   23.152156] init: sys_prop: permission denied uid:1003  name:service.bootanim.exit
+<4>[   26.240276] EPLL Rate changes from 96000000 to 67738000
+<6>[   36.765772] input: AVRCP as /devices/virtual/input/input7
+<3>[   40.842551] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   40.843904] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   40.845462] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   41.857574] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   41.860378] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   41.861518] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   42.869807] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   42.869950] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   42.870129] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   43.875352] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   43.877071] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   43.878180] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   44.893305] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   44.894642] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   44.896223] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   45.908123] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   45.909907] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   45.911025] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   46.915222] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   46.915525] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   46.915923] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   47.917430] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   47.917656] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   47.917783] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   48.919995] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   48.920157] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   48.920337] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   49.923929] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   49.924775] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   49.925431] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   50.928750] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   50.928912] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   50.929092] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   51.931457] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   51.931662] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   51.931817] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   52.939416] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   52.940585] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   52.942570] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   53.950062] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   53.952042] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   53.953541] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   54.961498] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   54.963120] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   54.964219] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   55.972631] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   55.973057] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   55.973340] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   56.979627] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   56.981427] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   56.982541] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   57.994145] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   57.995331] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   57.997158] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   59.004309] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   59.005968] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   59.007069] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   60.019365] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   60.020541] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   60.022092] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   61.033911] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   61.039071] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   61.039200] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   62.041440] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   62.041583] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   62.041760] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   63.047374] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   63.049001] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   63.050103] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   64.062053] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   64.063415] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   64.064961] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   65.072869] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   65.073066] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   65.073199] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   66.078664] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   66.079841] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   66.081393] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   67.092889] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   67.097237] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   67.097365] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   68.102668] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   68.103864] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   68.108402] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   69.120319] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   69.122129] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   69.123235] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   70.136083] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   70.136835] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   70.137639] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   71.140633] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   71.140829] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   71.140955] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   72.145040] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   72.145653] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   72.146455] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   73.152712] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   73.154356] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   73.155453] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   74.165869] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   74.167463] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   74.168390] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   75.177019] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   75.178669] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   75.182651] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   76.197163] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   76.198334] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   76.200054] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   77.204665] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   77.205085] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   77.205368] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   78.207982] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   78.208289] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   78.208689] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   79.211736] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   79.212160] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   79.212439] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   80.216983] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   80.217602] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   80.218481] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   81.223461] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   81.224309] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   81.224878] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   82.230252] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   82.230861] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   82.231661] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   83.236583] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   83.237436] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   83.238117] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   84.243260] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   84.243882] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   84.244687] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   85.249698] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   85.250538] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   85.251107] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   86.256383] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   86.256995] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   86.257657] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   87.262631] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   87.263478] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   87.264043] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   88.268978] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   88.269978] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   88.270554] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   89.275088] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   89.275397] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   89.275684] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   90.279551] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   90.279745] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   90.279872] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   91.282051] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   91.282196] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   91.282372] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   92.288254] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   92.290062] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   92.291172] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   93.303430] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   93.303575] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   93.303752] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   94.309110] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   94.310742] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   94.311837] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   95.324169] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   95.326928] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   95.330811] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   96.340870] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   96.341712] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   96.342275] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   97.346505] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   97.346674] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   97.346889] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   98.348677] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   98.348872] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   98.348999] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[   99.353593] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[   99.354199] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[   99.355088] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[  100.361837] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  100.363636] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  100.364747] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[  101.376966] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  101.378158] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  101.380013] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[  102.386936] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  102.388557] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  102.389650] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[  103.401490] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  103.402840] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  103.404409] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[  104.417778] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  104.419402] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  104.420505] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[  105.432632] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  105.434073] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  105.435645] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[  106.447412] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  106.449288] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  106.450406] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[  107.462826] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  107.464014] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  107.465796] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[  108.473010] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  108.474654] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  108.475754] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[  109.487436] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  109.488800] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  109.490359] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[  110.502398] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  110.504181] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  110.505285] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<6>[  110.596274] request_suspend_state: sleep (3->3) at 110585004680 (2014-08-14 02:32:07.787532026 UTC)
+<4>[  111.252256] dhd_set_suspend: force extra Suspend setting 
+<3>[  111.291528] pn544_dev_write : i2c_master_send returned -6
+<6>[  111.330190] PM: Syncing filesystems ... done.
+<4>[  111.331523] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  111.347526] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  111.491802] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  111.491966] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  111.492051] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  111.492201] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  111.492288] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  111.493286] PM: suspend of devices complete after 129.828 msecs
+<6>[  111.493634] PM: late suspend of devices complete after 0.260 msecs
+<7>[  111.493634] S5P_WAKEUP_STAT 0x2
+<7>[  111.493634] EINT_PEND 0x6, 0x10, 0x0, 0x40
+<6>[  111.494073] PM: early resume of devices complete after 0.266 msecs
+<6>[  111.564842] fsa9480 7-0025: dev1: 0x0, dev2: 0x0
+<6>[  111.565162] wakeup wake lock: event2-249
+<6>[  111.565321] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  111.565456] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  111.565904] PM: resume of devices complete after 71.620 msecs
+<4>[  111.566145] Restarting tasks ... done.
+<6>[  111.572302] suspend: exit suspend, ret = 0 (2014-08-14 02:32:43.006969861 UTC)
+<6>[  111.572390] active wake lock mmc1_detect
+<6>[  111.572532] active wake lock alarm, time left 1278
+<6>[  111.577631] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<3>[  111.756537] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  111.760529] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  111.762218] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<6>[  112.580197] PM: Syncing filesystems ... done.
+<4>[  112.596057] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  112.612926] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  112.757193] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  112.757297] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  112.757445] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  112.757532] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  112.757682] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  112.758614] PM: suspend of devices complete after 129.733 msecs
+<6>[  112.759015] active wake lock modem_fmt
+<3>[  112.759110] pm_noirq_op(): platform_pm_suspend_noirq+0x0/0x48 returns -11
+<3>[  112.759255] PM: Device power.0 failed to suspend late: error -11
+<6>[  112.759474] PM: early resume of devices complete after 0.136 msecs
+<3>[  112.759679] PM: Some devices failed to power down
+<6>[  112.830466] fsa9480 7-0025: dev1: 0x0, dev2: 0x0
+<6>[  112.830867] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  112.830998] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  112.831452] PM: resume of devices complete after 71.689 msecs
+<4>[  112.831706] Restarting tasks ... done.
+<6>[  112.841272] suspend: exit suspend, ret = -11 (2014-08-14 02:32:44.275940110 UTC)
+<6>[  112.841362] active wake lock mmc1_detect
+<6>[  112.843155] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<3>[  113.010697] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  113.012493] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  113.013597] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[  114.031325] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  114.032515] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  114.034079] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<6>[  114.300583] PM: Syncing filesystems ... done.
+<4>[  114.308323] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  114.327758] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  114.472062] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  114.472165] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  114.472312] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  114.472399] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  114.472549] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  114.473479] PM: suspend of devices complete after 129.747 msecs
+<6>[  114.473885] PM: late suspend of devices complete after 0.254 msecs
+<7>[  114.473885] S5P_WAKEUP_STAT 0x1
+<7>[  114.473885] EINT_PEND 0x6, 0x0, 0x20, 0x40
+<6>[  114.474327] PM: early resume of devices complete after 0.267 msecs
+<6>[  114.474464] wakeup wake lock: bt_host_wake
+<6>[  114.545429] fsa9480 7-0025: dev1: 0x0, dev2: 0x0
+<6>[  114.545761] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  114.545959] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  114.546300] PM: resume of devices complete after 71.650 msecs
+<4>[  114.546636] Restarting tasks ... done.
+<6>[  114.558029] suspend: exit suspend, ret = 0 (2014-08-14 02:33:49.012258913 UTC)
+<6>[  114.558179] active wake lock mmc1_detect
+<6>[  114.558257] active wake lock KeyEvents
+<6>[  114.558396] active wake lock event7-249
+<6>[  114.558473] active wake lock event5-249
+<6>[  114.558551] active wake lock bt_host_wake, time left 252
+<6>[  114.558693] active wake lock alarm, time left 1277
+<6>[  114.558770] active wake lock vbus_present, time left 125
+<6>[  114.568044] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<3>[  115.289893] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  115.291523] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  115.297014] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[  116.300891] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  116.301030] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  116.301206] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[  117.311462] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  117.313249] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  117.314341] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<6>[  117.836389] PM: Syncing filesystems ... done.
+<4>[  117.844595] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  117.862839] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  118.007010] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  118.007176] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  118.007260] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  118.007410] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  118.007498] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  118.008493] PM: suspend of devices complete after 129.716 msecs
+<6>[  118.008833] PM: late suspend of devices complete after 0.252 msecs
+<7>[  118.008833] S5P_WAKEUP_STAT 0x2
+<7>[  118.008833] EINT_PEND 0x6, 0x0, 0x0, 0x40
+<6>[  118.009268] PM: early resume of devices complete after 0.264 msecs
+<6>[  118.080056] fsa9480 7-0025: dev1: 0x0, dev2: 0x0
+<6>[  118.080376] wakeup wake lock: event2-249
+<6>[  118.080537] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  118.080672] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  118.081077] PM: resume of devices complete after 71.599 msecs
+<4>[  118.081349] Restarting tasks ... 
+<6>[  118.092886] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<4>[  118.093058] done.
+<6>[  118.093227] suspend: exit suspend, ret = 0 (2014-08-14 02:34:43.012685591 UTC)
+<6>[  118.093376] active wake lock mmc1_detect
+<6>[  118.093454] active wake lock alarm, time left 1276
+<6>[  118.093594] active wake lock vbus_present, time left 125
+<3>[  118.568256] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  118.574216] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  118.575299] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<6>[  118.590054] PM: Syncing filesystems ... done.
+<4>[  118.613763] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  118.628280] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  118.772434] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  118.772599] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  118.772688] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  118.772857] pm_op(): platform_pm_suspend+0x0/0x64 returns -16
+<3>[  118.772940] PM: Device alarm failed to suspend: error -16
+<3>[  118.773082] PM: Some devices failed to suspend
+<6>[  118.773216] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  118.773374] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  118.773656] PM: resume of devices complete after 0.491 msecs
+<4>[  118.773984] Restarting tasks ... done.
+<6>[  118.780505] suspend: exit suspend, ret = -16 (2014-08-14 02:34:43.699956527 UTC)
+<6>[  118.780656] active wake lock mmc1_detect
+<6>[  118.788218] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<6>[  118.946912] PM: Syncing filesystems ... done.
+<4>[  118.950659] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  118.968100] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  119.112365] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  119.112531] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  119.112616] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  119.112766] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  119.112855] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  119.113845] PM: suspend of devices complete after 129.815 msecs
+<6>[  119.114187] PM: late suspend of devices complete after 0.253 msecs
+<7>[  119.114187] S5P_WAKEUP_STAT 0x2
+<7>[  119.114187] EINT_PEND 0x6, 0x0, 0x0, 0x40
+<6>[  119.114621] PM: early resume of devices complete after 0.264 msecs
+<6>[  119.201032] fsa9480 7-0025: dev1: 0x0, dev2: 0x0
+<6>[  119.201351] wakeup wake lock: event2-249
+<6>[  119.201513] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  119.201649] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  119.202058] PM: resume of devices complete after 87.227 msecs
+<4>[  119.202296] Restarting tasks ... done.
+<6>[  119.209981] suspend: exit suspend, ret = 0 (2014-08-14 02:35:34.008456717 UTC)
+<6>[  119.210069] active wake lock mmc1_detect
+<6>[  119.210209] active wake lock PowerManagerService
+<6>[  119.210288] active wake lock alarm, time left 1277
+<6>[  119.213800] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<6>[  119.368639] PM: Syncing filesystems ... done.
+<4>[  119.372371] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  119.389766] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  119.534037] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  119.534142] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  119.534310] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  119.534410] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  119.534578] pm_op(): platform_pm_suspend+0x0/0x64 returns -16
+<3>[  119.534661] PM: Device alarm failed to suspend: error -16
+<3>[  119.534803] PM: Some devices failed to suspend
+<3>[  119.534914] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  119.535277] PM: resume of devices complete after 0.391 msecs
+<4>[  119.535547] Restarting tasks ... done.
+<6>[  119.541946] suspend: exit suspend, ret = -16 (2014-08-14 02:35:34.340422690 UTC)
+<6>[  119.542035] active wake lock mmc1_detect
+<6>[  119.549743] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<6>[  119.710945] PM: Syncing filesystems ... done.
+<4>[  119.718648] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  119.737377] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  119.881693] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  119.881795] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  119.881963] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  119.882064] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  119.882231] pm_op(): platform_pm_suspend+0x0/0x64 returns -16
+<3>[  119.882312] PM: Device alarm failed to suspend: error -16
+<3>[  119.882452] PM: Some devices failed to suspend
+<3>[  119.882564] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  119.882926] PM: resume of devices complete after 0.389 msecs
+<4>[  119.883191] Restarting tasks ... done.
+<6>[  119.893675] suspend: exit suspend, ret = -16 (2014-08-14 02:35:34.692150679 UTC)
+<6>[  119.893765] active wake lock mmc1_detect
+<6>[  119.897448] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<6>[  120.062685] PM: Syncing filesystems ... done.
+<4>[  120.070483] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  120.088955] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  120.233284] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  120.233385] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  120.233530] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  120.233617] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  120.233767] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  120.234694] PM: suspend of devices complete after 129.708 msecs
+<6>[  120.235100] active wake lock alarm, time left 1278
+<3>[  120.235196] pm_noirq_op(): platform_pm_suspend_noirq+0x0/0x48 returns -11
+<3>[  120.235339] PM: Device power.0 failed to suspend late: error -11
+<6>[  120.235559] PM: early resume of devices complete after 0.136 msecs
+<3>[  120.235762] PM: Some devices failed to power down
+<6>[  120.306415] fsa9480 7-0025: dev1: 0x0, dev2: 0x0
+<6>[  120.306815] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  120.306946] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  120.307305] PM: resume of devices complete after 71.459 msecs
+<4>[  120.307586] Restarting tasks ... 
+<6>[  120.319290] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<4>[  120.319462] done.
+<6>[  120.319630] suspend: exit suspend, ret = -11 (2014-08-14 02:35:35.118113063 UTC)
+<6>[  120.319778] active wake lock mmc1_detect
+<6>[  120.319855] active wake lock PowerManagerService
+<6>[  120.319995] active wake lock vbus_present, time left 126
+<3>[  120.322506] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  120.322732] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  120.322884] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<3>[  120.324064] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  120.324221] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  120.324435] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<6>[  120.815991] PM: Syncing filesystems ... done.
+<4>[  120.825458] Freezing user space processes ... (elapsed 0.02 seconds) done.
+<4>[  120.846762] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  120.991050] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  120.991154] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  120.991300] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  120.991388] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  120.991537] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  120.992469] PM: suspend of devices complete after 129.650 msecs
+<6>[  120.992874] PM: late suspend of devices complete after 0.253 msecs
+<7>[  120.992874] S5P_WAKEUP_STAT 0x2
+<7>[  120.992874] EINT_PEND 0x6, 0x0, 0x0, 0x40
+<6>[  120.993307] PM: early resume of devices complete after 0.265 msecs
+<6>[  121.079857] fsa9480 7-0025: dev1: 0x0, dev2: 0x0
+<6>[  121.080236] wakeup wake lock: event2-249
+<6>[  121.080333] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  121.080530] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  121.080871] PM: resume of devices complete after 87.417 msecs
+<4>[  121.081205] Restarting tasks ... done.
+<6>[  121.093620] suspend: exit suspend, ret = 0 (2014-08-14 02:36:42.013275496 UTC)
+<6>[  121.093769] active wake lock mmc1_detect
+<6>[  121.093846] active wake lock PowerManagerService
+<6>[  121.093986] active wake lock vbus_present, time left 125
+<6>[  121.096489] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<3>[  121.592765] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  121.593936] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  121.595479] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<6>[  121.598024] PM: Syncing filesystems ... done.
+<4>[  121.611347] Freezing user space processes ... (elapsed 0.02 seconds) done.
+<4>[  121.631841] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  121.776111] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  121.776216] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  121.776363] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  121.776450] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  121.776622] pm_op(): platform_pm_suspend+0x0/0x64 returns -16
+<3>[  121.776704] PM: Device alarm failed to suspend: error -16
+<3>[  121.776846] PM: Some devices failed to suspend
+<3>[  121.776961] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  121.777333] PM: resume of devices complete after 0.404 msecs
+<4>[  121.777600] Restarting tasks ... done.
+<6>[  121.784142] suspend: exit suspend, ret = -16 (2014-08-14 02:36:42.703797160 UTC)
+<6>[  121.784231] active wake lock mmc1_detect
+<6>[  121.791803] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<6>[  121.953117] PM: Syncing filesystems ... done.
+<4>[  121.960894] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  121.979452] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  122.123738] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  122.123841] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  122.124009] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  122.124110] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  122.124275] pm_op(): platform_pm_suspend+0x0/0x64 returns -16
+<3>[  122.124357] PM: Device alarm failed to suspend: error -16
+<3>[  122.124497] PM: Some devices failed to suspend
+<3>[  122.124609] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  122.124974] PM: resume of devices complete after 0.395 msecs
+<4>[  122.125242] Restarting tasks ... done.
+<6>[  122.134308] suspend: exit suspend, ret = -16 (2014-08-14 02:36:43.053964163 UTC)
+<6>[  122.134397] active wake lock mmc1_detect
+<6>[  122.139505] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<6>[  122.300684] PM: Syncing filesystems ... done.
+<4>[  122.308379] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  122.327086] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  122.471422] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  122.471522] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  122.471689] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  122.471788] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  122.471955] pm_op(): platform_pm_suspend+0x0/0x64 returns -16
+<3>[  122.472037] PM: Device alarm failed to suspend: error -16
+<3>[  122.472178] PM: Some devices failed to suspend
+<3>[  122.472289] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  122.472653] PM: resume of devices complete after 0.391 msecs
+<4>[  122.472921] Restarting tasks ... done.
+<6>[  122.481777] suspend: exit suspend, ret = -16 (2014-08-14 02:36:43.401433667 UTC)
+<6>[  122.481867] active wake lock mmc1_detect
+<6>[  122.487028] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<6>[  122.648428] PM: Syncing filesystems ... done.
+<4>[  122.656214] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  122.674762] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  122.819048] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  122.819150] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  122.819316] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  122.819415] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  122.819581] pm_op(): platform_pm_suspend+0x0/0x64 returns -16
+<3>[  122.819664] PM: Device alarm failed to suspend: error -16
+<3>[  122.819805] PM: Some devices failed to suspend
+<3>[  122.819917] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  122.820279] PM: resume of devices complete after 0.392 msecs
+<4>[  122.820547] Restarting tasks ... done.
+<6>[  122.830959] suspend: exit suspend, ret = -16 (2014-08-14 02:36:43.750615707 UTC)
+<6>[  122.831110] active wake lock mmc1_detect
+<6>[  122.834757] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<6>[  122.999016] PM: Syncing filesystems ... done.
+<4>[  123.006343] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  123.026343] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  123.170635] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  123.170738] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  123.170886] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  123.170973] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  123.171123] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  123.172053] PM: suspend of devices complete after 129.683 msecs
+<6>[  123.172460] PM: late suspend of devices complete after 0.257 msecs
+<7>[  123.172460] S5P_WAKEUP_STAT 0x2
+<7>[  123.172460] EINT_PEND 0x6, 0x0, 0x0, 0x40
+<6>[  123.172893] PM: early resume of devices complete after 0.263 msecs
+<6>[  123.243758] fsa9480 7-0025: dev1: 0x0, dev2: 0x0
+<6>[  123.244137] wakeup wake lock: event2-249
+<6>[  123.244235] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  123.244432] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  123.244781] PM: resume of devices complete after 71.741 msecs
+<4>[  123.245114] Restarting tasks ... 
+<6>[  123.256515] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<4>[  123.256752] done.
+<6>[  123.256921] suspend: exit suspend, ret = 0 (2014-08-14 02:38:43.012682274 UTC)
+<6>[  123.257008] active wake lock mmc1_detect
+<6>[  123.257147] active wake lock PowerManagerService
+<6>[  123.257225] active wake lock vbus_present, time left 125
+<3>[  123.517208] CFG80211-ERROR) wl_run_escan :  Escan set error (-16)
+<3>[  123.522399] CFG80211-ERROR) wl_run_escan : error (-16)
+<3>[  123.523996] CFG80211-ERROR) wl_cfg80211_scan : scan error (-16)
+<6>[  123.752843] PM: Syncing filesystems ... done.
+<4>[  123.760528] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  123.780113] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  123.924395] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  123.924500] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  123.924653] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  123.924762] pm_op(): platform_pm_suspend+0x0/0x64 returns -16
+<3>[  123.924908] PM: Device alarm failed to suspend: error -16
+<3>[  123.924987] PM: Some devices failed to suspend
+<6>[  123.925187] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  123.925282] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  123.925620] PM: resume of devices complete after 0.489 msecs
+<4>[  123.925888] Restarting tasks ... done.
+<6>[  123.932385] suspend: exit suspend, ret = -16 (2014-08-14 02:38:43.688138871 UTC)
+<6>[  123.932474] active wake lock mmc1_detect
+<6>[  123.940095] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<6>[  124.107504] PM: Syncing filesystems ... done.
+<4>[  124.108932] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  124.123863] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  124.268144] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  124.268245] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  124.268394] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  124.268481] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  124.268631] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  124.269562] PM: suspend of devices complete after 129.655 msecs
+<6>[  124.269967] PM: late suspend of devices complete after 0.252 msecs
+<7>[  124.269967] S5P_WAKEUP_STAT 0x1
+<7>[  124.269967] EINT_PEND 0x6, 0x0, 0x10, 0x40
+<6>[  124.270406] PM: early resume of devices complete after 0.264 msecs
+<6>[  124.356439] wakeup wake lock: wlan_wake
+<4>[  124.357199] wl_bss_connect_done succeeded
+<6>[  124.359011] fsa9480 7-0025: dev1: 0x0, dev2: 0x0
+<6>[  124.359779] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  124.360227] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DISASSOC_IND event with reason code: 2
+<4>[  124.360506] ------------[ cut here ]------------
+<4>[  124.360610] WARNING: at net/wireless/sme.c:482 __cfg80211_connect_result+0x1d8/0x210()
+<4>[  124.360752] Modules linked in:
+<4>[  124.360897] Backtrace: 
+<4>[  124.361059] [<c003f8a4>] (dump_backtrace+0x0/0x10c) from [<c056e2c0>] (dump_stack+0x18/0x1c)
+<4>[  124.361204]  r6:000001e2 r5:c055fc3c r4:00000000 r3:00000000
+<4>[  124.361694] [<c056e2a8>] (dump_stack+0x0/0x1c) from [<c00689d8>] (warn_slowpath_common+0x54/0x6c)
+<4>[  124.361784] [<c0068984>] (warn_slowpath_common+0x0/0x6c) from [<c0068a14>] (warn_slowpath_null+0x24/0x2c)
+<4>[  124.361929]  r8:d22f5c0c r7:00000000
+<3>[  124.362390] CFG80211-ERROR) wl_notify_connect_status : link down, calling cfg80211_disconnected with deauth_reason:2
+<3>[  124.362688] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<4>[  124.362860]  r6:00000087 r5:d22f5c28 r4:e7bbc840
+<4>[  124.363141] r3:00000009
+<4>[  124.363367] [<c00689f0>] (warn_slowpath_null+0x0/0x2c) from [<c055fc3c>] (__cfg80211_connect_result+0x1d8/0x210)
+<4>[  124.363521] [<c055fa64>] (__cfg80211_connect_result+0x0/0x210) from [<c054cc3c>] (cfg80211_process_rdev_events+0x230/0x264)
+<4>[  124.363680] [<c054ca0c>] (cfg80211_process_rdev_events+0x0/0x264) from [<c054a570>] (cfg80211_event_work+0x2c/0x5c)
+<4>[  124.363835] [<c054a544>] (cfg80211_event_work+0x0/0x5c) from [<c0083ef8>] (process_one_work+0x150/0x494)
+<4>[  124.363980]  r5:e7acfe00 r4:e7af0000
+<4>[  124.364206] [<c0083da8>] (process_one_work+0x0/0x494) from [<c0084e08>] (worker_thread+0x160/0x3f4)
+<4>[  124.364361] [<c0084ca8>] (worker_thread+0x0/0x3f4) from [<c0089044>] (kthread+0x8c/0x94)
+<4>[  124.364511] [<c0088fb8>] (kthread+0x0/0x94) from [<c006c17c>] (do_exit+0x0/0x780)
+<4>[  124.364591]  r6:c006c17c r5:c0088fb8 r4:e7833ee4
+<4>[  124.364946] ---[ end trace 6486654f340847ae ]---
+<3>[  124.365188] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  124.368235] cfg80211: Calling CRDA to update world regulatory domain
+<6>[  124.368504] PM: resume of devices complete after 97.950 msecs
+<4>[  124.368819] Restarting tasks ... 
+<6>[  124.383814] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<4>[  124.385675] done.
+<6>[  124.385804] suspend: exit suspend, ret = 0 (2014-08-14 02:39:25.026024228 UTC)
+<6>[  124.385897] active wake lock mmc1_detect
+<6>[  124.386037] active wake lock radio-interface
+<6>[  124.386115] active wake lock wlan_rx_wake, time left 248
+<6>[  124.386255] active wake lock alarm, time left 1274
+<6>[  124.386333] active wake lock wlan_ctrl_wake, time left 256
+<6>[  125.873777] PM: Syncing filesystems ... done.
+<4>[  125.881808] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  125.900967] Freezing remaining freezable tasks ... 
+<6>[  125.901277] active wake lock modem_fmt
+<4>[  125.901425] 
+<3>[  125.901500] Freezing of tasks  aborted
+<4>[  125.901820] 
+<4>[  125.901898] Restarting tasks ... done.
+<6>[  125.908775] suspend: exit suspend, ret = -16 (2014-08-14 02:39:26.548989852 UTC)
+<6>[  125.908925] active wake lock mmc1_detect
+<6>[  125.909004] active wake lock secril_fmt-interface
+<6>[  125.909143] active wake lock modem_fmt
+<6>[  126.085564] PM: Syncing filesystems ... done.
+<4>[  126.093201] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  126.112009] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  126.256311] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  126.256477] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  126.256560] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  126.256710] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  126.256797] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  126.257792] PM: suspend of devices complete after 129.817 msecs
+<6>[  126.258137] PM: late suspend of devices complete after 0.255 msecs
+<7>[  126.258137] S5P_WAKEUP_STAT 0x2
+<7>[  126.258137] EINT_PEND 0x6, 0x0, 0x0, 0x40
+<6>[  126.258570] PM: early resume of devices complete after 0.264 msecs
+<6>[  126.329333] fsa9480 7-0025: dev1: 0x0, dev2: 0x0
+<6>[  126.329714] wakeup wake lock: event2-249
+<6>[  126.329813] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  126.329949] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  126.330361] PM: resume of devices complete after 71.644 msecs
+<4>[  126.330695] Restarting tasks ... 
+<6>[  126.342136] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<4>[  126.342309] done.
+<6>[  126.342536] suspend: exit suspend, ret = 0 (2014-08-14 02:40:35.012718429 UTC)
+<6>[  126.342622] active wake lock mmc1_detect
+<6>[  126.342762] active wake lock PowerManagerService
+<6>[  126.342841] active wake lock vbus_present, time left 125
+<4>[  126.985352] wl_bss_connect_done succeeded
+<3>[  126.999257] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DISASSOC_IND event with reason code: 2
+<3>[  127.003888] CFG80211-ERROR) wl_notify_connect_status : link down, calling cfg80211_disconnected with deauth_reason:2
+<3>[  127.021172] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<6>[  127.022022] cfg80211: Calling CRDA for country: KR
+<4>[  127.678093] wl_bss_connect_done succeeded
+<3>[  127.692261] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 6
+<3>[  127.703396] CFG80211-ERROR) wl_notify_connect_status : link down, calling cfg80211_disconnected with deauth_reason:6
+<6>[  127.721090] cfg80211: Calling CRDA to update world regulatory domain
+<4>[  128.750376] wl_bss_connect_done succeeded
+<3>[  128.758269] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  128.759549] CFG80211-ERROR) wl_notify_connect_status : link down, calling cfg80211_disconnected with deauth_reason:2
+<6>[  128.764752] cfg80211: Calling CRDA to update world regulatory domain
+<4>[  129.414976] wl_bss_connect_done succeeded
+<4>[  129.432663] wl_bss_connect_done succeeded
+<3>[  129.449019] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  129.449995] CFG80211-ERROR) wl_notify_connect_status : link down, calling cfg80211_disconnected with deauth_reason:2
+<6>[  129.454071] cfg80211: Calling CRDA for country: KR
+<6>[  131.451835] PM: Syncing filesystems ... done.
+<4>[  131.460035] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  131.478994] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  131.623287] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  131.623392] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  131.623540] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  131.623627] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  131.623776] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  131.624706] PM: suspend of devices complete after 129.806 msecs
+<6>[  131.625112] PM: late suspend of devices complete after 0.256 msecs
+<7>[  131.625112] S5P_WAKEUP_STAT 0x2
+<7>[  131.625112] EINT_PEND 0x6, 0x0, 0x0, 0x40
+<6>[  131.625546] PM: early resume of devices complete after 0.264 msecs
+<6>[  131.696420] fsa9480 7-0025: dev1: 0x0, dev2: 0x0
+<6>[  131.696739] wakeup wake lock: event2-249
+<6>[  131.696837] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  131.697032] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  131.697368] PM: resume of devices complete after 71.675 msecs
+<4>[  131.697667] Restarting tasks ... done.
+<6>[  131.705351] suspend: exit suspend, ret = 0 (2014-08-14 02:40:43.008503894 UTC)
+<6>[  131.705501] active wake lock mmc1_detect
+<6>[  131.709257] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<6>[  132.715204] PM: Syncing filesystems ... done.
+<4>[  132.727283] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  132.744514] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  132.888765] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  132.888930] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  132.889015] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  132.889165] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  132.889252] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  132.890245] PM: suspend of devices complete after 129.785 msecs
+<6>[  132.890587] PM: late suspend of devices complete after 0.254 msecs
+<7>[  132.890587] S5P_WAKEUP_STAT 0x2
+<7>[  132.890587] EINT_PEND 0x6, 0x0, 0x0, 0x40
+<6>[  132.891019] PM: early resume of devices complete after 0.264 msecs
+<6>[  132.961732] fsa9480 7-0025: dev1: 0x0, dev2: 0x0
+<6>[  132.962049] wakeup wake lock: event2-249
+<6>[  132.962210] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  132.962343] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  132.962753] PM: resume of devices complete after 71.587 msecs
+<4>[  132.963092] Restarting tasks ... 
+<6>[  132.974566] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<4>[  132.974743] done.
+<6>[  132.974910] suspend: exit suspend, ret = 0 (2014-08-14 02:42:43.012696450 UTC)
+<6>[  132.975060] active wake lock mmc1_detect
+<6>[  132.975137] active wake lock radio-interface
+<6>[  132.975277] active wake lock alarm, time left 1276
+<6>[  132.975356] active wake lock vbus_present, time left 125
+<6>[  133.987553] PM: Syncing filesystems ... done.
+<4>[  133.999515] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  134.017791] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  134.162036] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  134.162203] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  134.162289] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  134.162440] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  134.162529] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  134.163522] PM: suspend of devices complete after 129.818 msecs
+<6>[  134.163865] PM: late suspend of devices complete after 0.255 msecs
+<7>[  134.163865] S5P_WAKEUP_STAT 0x2
+<7>[  134.163865] EINT_PEND 0x6, 0x0, 0x0, 0x40
+<6>[  134.164300] PM: early resume of devices complete after 0.265 msecs
+<6>[  134.235060] fsa9480 7-0025: dev1: 0x0, dev2: 0x0
+<6>[  134.235380] wakeup wake lock: event2-249
+<6>[  134.235541] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  134.235676] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  134.236091] PM: resume of devices complete after 71.581 msecs
+<4>[  134.236363] Restarting tasks ... 
+<6>[  134.247872] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<4>[  134.248046] done.
+<6>[  134.248215] suspend: exit suspend, ret = 0 (2014-08-14 02:44:43.012670355 UTC)
+<6>[  134.248363] active wake lock mmc1_detect
+<6>[  134.248440] active wake lock radio-interface
+<6>[  134.248580] active wake lock alarm, time left 1276
+<6>[  134.248659] active wake lock vbus_present, time left 125
+<6>[  135.255619] PM: Syncing filesystems ... done.
+<4>[  135.263232] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  135.283235] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  135.427462] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  135.427629] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  135.427715] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  135.427865] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  135.427952] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  135.428953] PM: suspend of devices complete after 129.787 msecs
+<6>[  135.429294] active wake lock modem_fmt
+<3>[  135.429452] pm_noirq_op(): platform_pm_suspend_noirq+0x0/0x48 returns -11
+<3>[  135.429535] PM: Device power.0 failed to suspend late: error -11
+<6>[  135.429816] PM: early resume of devices complete after 0.136 msecs
+<3>[  135.429959] PM: Some devices failed to power down
+<6>[  135.516338] fsa9480 7-0025: dev1: 0x0, dev2: 0x0
+<6>[  135.516675] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  135.516866] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  135.517177] PM: resume of devices complete after 87.072 msecs
+<4>[  135.517522] Restarting tasks ... done.
+<6>[  135.525476] suspend: exit suspend, ret = -11 (2014-08-14 02:44:44.289924078 UTC)
+<6>[  135.525628] active wake lock mmc1_detect
+<6>[  135.525705] active wake lock secril_fmt-interface
+<6>[  135.525846] active wake lock modem_fmt
+<6>[  135.529041] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<6>[  135.694444] PM: Syncing filesystems ... done.
+<4>[  135.702824] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  135.720658] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  135.864959] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  135.865063] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  135.865210] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  135.865297] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  135.865447] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  135.866374] PM: suspend of devices complete after 129.745 msecs
+<6>[  135.866781] PM: late suspend of devices complete after 0.255 msecs
+<7>[  135.866781] S5P_WAKEUP_STAT 0x2
+<7>[  135.866781] EINT_PEND 0x6, 0x0, 0x0, 0x40
+<6>[  135.867216] PM: early resume of devices complete after 0.265 msecs
+<6>[  135.938057] fsa9480 7-0025: dev1: 0x0, dev2: 0x0
+<6>[  135.938375] wakeup wake lock: event2-249
+<6>[  135.938474] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  135.938671] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  135.939080] PM: resume of devices complete after 71.654 msecs
+<4>[  135.939319] Restarting tasks ... done.
+<6>[  135.947021] suspend: exit suspend, ret = 0 (2014-08-14 02:45:34.008536406 UTC)
+<6>[  135.947173] active wake lock mmc1_detect
+<6>[  135.947250] active wake lock PowerManagerService
+<6>[  135.947391] active wake lock alarm, time left 1277
+<6>[  135.950833] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<6>[  136.104086] PM: Syncing filesystems ... done.
+<4>[  136.106160] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  136.122855] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  136.267162] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  136.267328] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  136.267417] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  136.267587] pm_op(): platform_pm_suspend+0x0/0x64 returns -16
+<3>[  136.267669] PM: Device alarm failed to suspend: error -16
+<3>[  136.267810] PM: Some devices failed to suspend
+<6>[  136.267945] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  136.268104] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  136.268386] PM: resume of devices complete after 0.491 msecs
+<4>[  136.268714] Restarting tasks ... done.
+<6>[  136.270878] suspend: exit suspend, ret = -16 (2014-08-14 02:45:34.332396605 UTC)
+<6>[  136.271118] active wake lock mmc1_detect
+<6>[  136.271197] active wake lock event5-249
+<6>[  136.282847] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<6>[  136.444181] PM: Syncing filesystems ... done.
+<4>[  136.452027] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  136.470504] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  136.614837] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  136.614940] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  136.615107] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  136.615207] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  136.615372] pm_op(): platform_pm_suspend+0x0/0x64 returns -16
+<3>[  136.615454] PM: Device alarm failed to suspend: error -16
+<3>[  136.615594] PM: Some devices failed to suspend
+<3>[  136.615706] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  136.616069] PM: resume of devices complete after 0.392 msecs
+<4>[  136.616336] Restarting tasks ... done.
+<6>[  136.623612] suspend: exit suspend, ret = -16 (2014-08-14 02:45:34.685127868 UTC)
+<6>[  136.623701] active wake lock mmc1_detect
+<6>[  136.630525] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<6>[  136.791799] PM: Syncing filesystems ... done.
+<4>[  136.799332] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  136.818181] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  136.962499] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  136.962601] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  136.962766] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  136.962865] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  136.963032] pm_op(): platform_pm_suspend+0x0/0x64 returns -16
+<3>[  136.963116] PM: Device alarm failed to suspend: error -16
+<3>[  136.963257] PM: Some devices failed to suspend
+<3>[  136.963371] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  136.963756] PM: resume of devices complete after 0.415 msecs
+<4>[  136.964025] Restarting tasks ... done.
+<6>[  136.974426] suspend: exit suspend, ret = -16 (2014-08-14 02:45:35.035943128 UTC)
+<6>[  136.974515] active wake lock mmc1_detect
+<6>[  136.974654] active wake lock PowerManagerService
+<6>[  136.974733] active wake lock vbus_present, time left 126
+<6>[  136.978177] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<6>[  138.490924] PM: Syncing filesystems ... done.
+<4>[  138.500542] Freezing user space processes ... (elapsed 0.02 seconds) done.
+<4>[  138.521330] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  138.665588] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  138.665690] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  138.665837] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  138.665924] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  138.666011] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  138.667009] PM: suspend of devices complete after 129.617 msecs
+<6>[  138.667355] PM: late suspend of devices complete after 0.256 msecs
+<7>[  138.667355] S5P_WAKEUP_STAT 0x2
+<7>[  138.667355] EINT_PEND 0x6, 0x0, 0x0, 0x40
+<6>[  138.667788] PM: early resume of devices complete after 0.264 msecs
+<6>[  138.738648] fsa9480 7-0025: dev1: 0x0, dev2: 0x0
+<6>[  138.739029] wakeup wake lock: event2-249
+<6>[  138.739126] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  138.739261] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  138.739697] PM: resume of devices complete after 71.760 msecs
+<4>[  138.740030] Restarting tasks ... 
+<6>[  138.751448] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<4>[  138.751623] done.
+<6>[  138.751855] suspend: exit suspend, ret = 0 (2014-08-14 02:46:43.012724113 UTC)
+<6>[  138.751941] active wake lock mmc1_detect
+<6>[  138.752080] active wake lock PowerManagerService
+<6>[  138.752159] active wake lock vbus_present, time left 125
+<6>[  139.247777] PM: Syncing filesystems ... done.
+<4>[  139.259745] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  139.278937] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  139.423245] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  139.423409] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  139.423499] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  139.423670] pm_op(): platform_pm_suspend+0x0/0x64 returns -16
+<3>[  139.423752] PM: Device alarm failed to suspend: error -16
+<3>[  139.423893] PM: Some devices failed to suspend
+<6>[  139.424027] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  139.424123] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  139.424465] PM: resume of devices complete after 0.490 msecs
+<4>[  139.424796] Restarting tasks ... done.
+<6>[  139.431124] suspend: exit suspend, ret = -16 (2014-08-14 02:46:43.691985271 UTC)
+<6>[  139.431277] active wake lock mmc1_detect
+<6>[  139.438911] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<6>[  139.595297] PM: Syncing filesystems ... done.
+<4>[  139.596709] Freezing user space processes ... (elapsed 0.01 seconds) done.
+<4>[  139.610927] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+<6>[  139.755257] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  139.755422] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  139.755508] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  139.755658] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  139.755746] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<6>[  139.756741] PM: suspend of devices complete after 129.816 msecs
+<6>[  139.757084] PM: late suspend of devices complete after 0.255 msecs
+<7>[  139.757084] S5P_WAKEUP_STAT 0x1
+<7>[  139.757084] EINT_PEND 0x6, 0x0, 0x40, 0x40
+<6>[  139.757522] PM: early resume of devices complete after 0.263 msecs
+<6>[  139.757719] wakeup wake lock: gpio_input
+<6>[  139.828307] fsa9480 7-0025: dev1: 0x0, dev2: 0x0
+<6>[  139.828702] s3c-rtc s3c2410-rtc: rtc disabled, re-enabling
+<3>[  139.828837] [ wm8994_samsung.c (wm8994_resume,3103) ] ------WM8994 Revision = [3]-------
+<6>[  139.829256] PM: resume of devices complete after 71.412 msecs
+<4>[  139.829496] Restarting tasks ... done.
+<6>[  139.837581] suspend: exit suspend, ret = 0 (2014-08-14 02:47:14.008868710 UTC)
+<6>[  139.837670] active wake lock mmc1_detect
+<6>[  139.837809] active wake lock KeyEvents
+<6>[  139.837887] active wake lock alarm, time left 1277
+<6>[  139.839127] request_suspend_state: wakeup (3->0) at 139830310094 (2014-08-14 02:47:14.010414751 UTC)
+<6>[  139.839580] s3cfb_late_resume is called
+<6>[  139.839924] FIMD src sclk = 166750000
+<6>[  139.840072] s3cfb s3cfb: pixclock adjusted from 41979 to 41979
+<6>[  139.841080] dai_active 0, IISMOD d0001c00, IISCON 8030ce38
+<6>[  139.883920] s3cfb_late_resume is complete
+<3>[  140.024050] pn544_dev_write : i2c_master_send returned -6
+<4>[  140.451918] wl_bss_connect_done succeeded
+<4>[  140.521738] wl_bss_connect_done succeeded
+<3>[  140.959658] qtaguid: iface_stat: stat_update() wlan0 not found
+<3>[  141.066362] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  141.067753] CFG80211-ERROR) wl_notify_connect_status : link down, calling cfg80211_disconnected with deauth_reason:2
+<6>[  141.071644] cfg80211: Calling CRDA to update world regulatory domain
+<4>[  141.748588] wl_bss_connect_done succeeded
+<4>[  141.751744] wl_bss_connect_done succeeded
+<3>[  141.987354] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  141.993114] CFG80211-ERROR) wl_notify_connect_status : link down, calling cfg80211_disconnected with deauth_reason:2
+<6>[  142.000238] cfg80211: Calling CRDA for country: KR
+<4>[  142.639274] wl_bss_connect_done succeeded
+<4>[  142.776441] wl_bss_connect_done succeeded
+<3>[  142.816363] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  142.820077] CFG80211-ERROR) wl_notify_connect_status : link down, calling cfg80211_disconnected with deauth_reason:2
+<6>[  142.860023] cfg80211: Calling CRDA to update world regulatory domain
+<4>[  143.506890] wl_bss_connect_done succeeded
+<4>[  143.593712] wl_bss_connect_done succeeded
+<3>[  143.712649] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  143.717269] CFG80211-ERROR) wl_notify_connect_status : link down, calling cfg80211_disconnected with deauth_reason:2
+<6>[  143.737483] cfg80211: Calling CRDA to update world regulatory domain
+<3>[  144.329953] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<4>[  144.330386] link down, during connecting
+<3>[  144.330550] CFG80211-ERROR) wl_bss_connect_done : Report connect result - connection failed
+<3>[  144.656606] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<4>[  144.988314] connect failed event=0 e->status 0x1
+<3>[  155.877276] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<4>[  155.878938] link down, during connecting
+<3>[  155.883252] CFG80211-ERROR) wl_bss_connect_done : Report connect result - connection failed
+<4>[  156.222872] wl_bss_connect_done succeeded
+<4>[  156.292985] wl_bss_connect_done succeeded
+<3>[  156.367656] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<6>[  156.484430] fsa9480 7-0025: dev1: 0x4, dev2: 0x0
+<6>[  156.508486] android_work: did not send uevent (0 0   (null))
+<6>[  156.684977] android_work: sent uevent USB_STATE=CONNECTED
+<6>[  156.759893] android_usb gadget: high speed config #1: android
+<6>[  156.760166] android_work: sent uevent USB_STATE=CONFIGURED
+<4>[  157.092640] wl_bss_connect_done succeeded
+<3>[  157.199376] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<4>[  157.929057] wl_bss_connect_done succeeded
+<3>[  158.035077] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<4>[  158.767480] wl_bss_connect_done succeeded
+<3>[  158.774216] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DISASSOC_IND event with reason code: 2
+<3>[  158.790928] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  159.503929] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  159.823860] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 6
+<4>[  160.149039] wl_bss_connect_done succeeded
+<3>[  160.152917] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  160.908815] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<4>[  161.237560] wl_bss_connect_done succeeded
+<3>[  161.248687] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  162.049854] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<4>[  162.375599] wl_bss_connect_done succeeded
+<3>[  162.382509] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  163.163626] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<4>[  163.492082] wl_bss_connect_done succeeded
+<3>[  163.494278] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  164.358548] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<4>[  164.684182] wl_bss_connect_done succeeded
+<3>[  164.684956] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  165.448518] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<4>[  165.773541] wl_bss_connect_done succeeded
+<3>[  165.781641] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  166.565650] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  171.252147] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<4>[  171.253804] link down, during connecting
+<3>[  171.257045] CFG80211-ERROR) wl_bss_connect_done : Report connect result - connection failed
+<4>[  171.574427] wl_bss_connect_done succeeded
+<3>[  171.586301] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 6
+<3>[  172.393751] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  172.722622] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  173.070623] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  174.734608] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  175.058063] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  175.384558] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  176.479318] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  177.398107] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  177.723529] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  178.047423] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  179.493532] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<4>[  179.493728] link down, during connecting
+<3>[  179.493805] CFG80211-ERROR) wl_bss_connect_done : Report connect result - connection failed
+<3>[  179.821509] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  180.143732] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  181.292467] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  182.232320] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  182.569054] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  183.344940] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  184.256455] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  184.588806] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  184.910035] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  185.996002] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  186.319624] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  186.646516] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  187.533890] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  187.855914] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  188.176547] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  189.279034] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  190.096641] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  190.428734] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  191.265851] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<4>[  191.267682] link down, during connecting
+<3>[  191.269898] CFG80211-ERROR) wl_bss_connect_done : Report connect result - connection failed
+<3>[  191.592869] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  191.915730] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  192.653989] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  192.978197] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  193.302483] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  194.404723] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  195.316518] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  195.639818] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  195.961823] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  197.069356] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  197.880730] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  198.799872] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  199.720310] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  200.041014] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  200.373691] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  201.255512] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  201.578857] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  201.901773] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  203.043758] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<4>[  203.045149] link down, during connecting
+<3>[  203.047470] CFG80211-ERROR) wl_bss_connect_done : Report connect result - connection failed
+<3>[  203.366787] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  203.692218] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  204.747465] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<6>[  205.478443] adb_release
+<6>[  205.479726] android_work: sent uevent USB_STATE=DISCONNECTED
+<6>[  205.526921] adb_open
+<6>[  205.527640] adb_bind_config
+<6>[  205.534374] android_work: did not send uevent (0 0   (null))
+<3>[  205.656656] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<6>[  205.678337] android_work: sent uevent USB_STATE=CONNECTED
+<6>[  205.895431] android_usb gadget: high speed config #1: android
+<6>[  205.896452] android_work: sent uevent USB_STATE=CONFIGURED
+<3>[  205.980942] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  206.316796] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  206.497299] init: untracked pid 1245 exited
+<3>[  206.498587] init: untracked pid 1243 exited
+<3>[  207.397473] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  207.722533] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  208.047108] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  209.143659] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  209.470130] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  209.797996] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  210.573117] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  210.901144] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  211.804947] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  212.131960] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  212.459975] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  213.339033] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  213.660853] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  213.991570] CFG80211-ERROR) wl_notify_connect_status : Received WLC_E_DEAUTH_IND event with reason code: 2
+<3>[  214.092783] CFG80211-ERROR) wl_escan_handler : escan is not ready ndev e7bf0000 wl->escan_on 1 drv_status 0x0
+<3>[  214.637857] CFG80211-ERROR) wl_notify_scan_status : scan is not ready 
