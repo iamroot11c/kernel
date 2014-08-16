@@ -352,9 +352,10 @@ void __init arm_memblock_init(struct meminfo *mi,
 	                 // 메핑되는 영역을 region으로 부름
 	memblock_reserve(__pa(_sdata), _end - _sdata);
 #else
+	// text 영역을 reserve영역에 add 함.
 	memblock_reserve(__pa(_stext), _end - _stext);
 #endif
-#ifdef CONFIG_BLK_DEV_INITRD
+#ifdef CONFIG_BLK_DEV_INITRD		// defined
 	if (phys_initrd_size &&
 	    !memblock_is_region_memory(phys_initrd_start, phys_initrd_size)) {
 		pr_err("INITRD: 0x%08llx+0x%08lx is not a memory region - disabling initrd\n",
@@ -375,6 +376,7 @@ void __init arm_memblock_init(struct meminfo *mi,
 		initrd_end = initrd_start + phys_initrd_size;
 	}
 #endif
+// 2014-08-16, 여기까지 함
 
 	arm_mm_memblock_reserve();
 	arm_dt_memblock_reserve();

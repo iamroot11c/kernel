@@ -2,7 +2,7 @@
 #define _LINUX_NUMA_H
 
 
-#ifdef CONFIG_NODES_SHIFT
+#ifdef CONFIG_NODES_SHIFT		// not define
 #define NODES_SHIFT     CONFIG_NODES_SHIFT
 #else
 #define NODES_SHIFT     0

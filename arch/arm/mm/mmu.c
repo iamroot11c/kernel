@@ -1151,6 +1151,8 @@ void __init sanity_check_meminfo(void)
 #endif
 	meminfo.nr_banks = j;
 	high_memory = __va(arm_lowmem_limit - 1) + 1; // 물리 주소를 가상 주소로 변환
+	// 2014-08-15, Blomdhal, high_memory가 중요한 이유는 VMALLOC_START macro에서 사용되기 때문이다.
+	// #define VMALLOC_START       (((unsigned long)high_memory + VMALLOC_OFFSET) & ~(VMALLOC_OFFSET-1))
 
 	/*
 	 * Round the memblock limit down to a section size.  This

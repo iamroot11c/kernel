@@ -55,6 +55,9 @@ memblock_type_name(struct memblock_type *type)
 /* adjust *@size so that (@base + *@size) doesn't overflow, return new size */
 static inline phys_addr_t memblock_cap_size(phys_addr_t base, phys_addr_t *size)
 {
+	// 둘 중, 작은 값을 리턴
+	// #define ULLONG_MAX  (~0ULL)
+	// end의 최대값은 ULLONG_MAX, ULLONG_MAX을 넘어서면 안된다.
 	return *size = min(*size, (phys_addr_t)ULLONG_MAX - base);
 }
 
@@ -188,6 +191,8 @@ phys_addr_t __init_memblock get_allocated_memblock_reserved_regions_info(
  * RETURNS:
  * 0 on success, -1 on failure.
  */
+
+ // 2014-08-16, TO DO
 static int __init_memblock memblock_double_array(struct memblock_type *type,
 						phys_addr_t new_area_start,
 						phys_addr_t new_area_size)
@@ -195,7 +200,7 @@ static int __init_memblock memblock_double_array(struct memblock_type *type,
 	struct memblock_region *new_array, *old_array;
 	phys_addr_t old_alloc_size, new_alloc_size;
 	phys_addr_t old_size, new_size, addr;
-	int use_slab = slab_is_available();
+	int use_slab = slab_is_available();		// UP, FULL이상일 때, 사용가능.
 	int *in_slab;
 
 	/* We don't allow resizing until we know about the reserved regions
@@ -233,8 +238,9 @@ static int __init_memblock memblock_double_array(struct memblock_type *type,
 	 */
 	if (use_slab) {
 		new_array = kmalloc(new_size, GFP_KERNEL);
-		addr = new_array ? __pa(new_array) : 0;
+		addr = new_array ? __pa(new_array) : 0;		// kmalloc은 virt를 넘겨준다.
 	} else {
+		// use_slab임을 가정하고 무시했음.
 		/* only exclude range when trying to double reserved.regions */
 		if (type != &memblock.reserved)
 			new_area_start = new_area_size = 0;
@@ -271,8 +277,11 @@ static int __init_memblock memblock_double_array(struct memblock_type *type,
 	type->max <<= 1;
 
 	/* Free old array. We needn't free it if the array is the static one */
+	// kmalloc 잡은 영역에 대해서 free하는 것이다.
+	// 최초에는 static array로 잡은 영역이고, 이 때를 free하지 않는다.
+	// 함수 말미에, *in_slab을 갱신하고 있다. 이는 kmalloc으로 메모리 할당했음을 의미.
 	if (*in_slab)
-		kfree(old_array);
+		kfree(old_array);		
 	else if (old_array != memblock_memory_init_regions &&
 		 old_array != memblock_reserved_init_regions)
 		memblock_free(__pa(old_array), old_alloc_size);
@@ -301,10 +310,14 @@ static void __init_memblock memblock_merge_regions(struct memblock_type *type)
 	int i = 0;
 
 	/* cnt never goes below 1 */
+	// type->cnt - 1의 의미는,
+	// add -> insert를 하지 않았다면, merge할 것도 없다는 의미.
+	// 그러므로, Loop 진입 시, type->cnt는 최소 2를 보장한다.
 	while (i < type->cnt - 1) {
 		struct memblock_region *this = &type->regions[i];
 		struct memblock_region *next = &type->regions[i + 1];
 
+		// 인접한 메모리에 대해서만 머지를 함.
 		if (this->base + this->size != next->base ||
 		    memblock_get_region_node(this) !=
 		    memblock_get_region_node(next)) {
@@ -315,6 +328,9 @@ static void __init_memblock memblock_merge_regions(struct memblock_type *type)
 
 		this->size += next->size;
 		/* move forward from next + 1, index of which is i + 2 */
+		// this(0), next(1)
+		// [0, 1, 2, 3, 4] -> [0+1, 2, 3, 4]
+		// (i+2)의 의미 : 2개라면 따로 합칠 필요가 없다.
 		memmove(next, next + 1, (type->cnt - (i + 2)) * sizeof(*next));
 		type->cnt--;
 	}
@@ -338,12 +354,16 @@ static void __init_memblock memblock_insert_region(struct memblock_type *type,
 	struct memblock_region *rgn = &type->regions[idx];
 
 	BUG_ON(type->cnt >= type->max);
+	// memmove 기본 개념상: [0, 1, 2, 3, 4] -> [0, 0, 1, 2, 3]
+	// 아래 코드는 멤버 하나에 대해서만, 개념상 정리
+	// [0, 1, 2, 3, 4] -> [0, 0, 2, 3, 4]
+	// [0, 0, 2, 3, 4] -> [0, 0, 0, 3, 4]
 	memmove(rgn + 1, rgn, (type->cnt - idx) * sizeof(*rgn));
 	rgn->base = base;
 	rgn->size = size;
 	memblock_set_region_node(rgn, nid);
 	type->cnt++;
-	type->total_size += size;
+	type->total_size += size;	// !total_size 커졌다.
 }
 
 /**
@@ -361,11 +381,16 @@ static void __init_memblock memblock_insert_region(struct memblock_type *type,
  * RETURNS:
  * 0 on success, -errno on failure.
  */
+
+// 2014-08-16
+// memblock_add_region(&memblock.memory, base, size, MAX_NUMNODES);
+// memblock은 region을 포함한다. 다시말해, region은 memblock원소.
+// 이름 그대로, memblock에 region을 type별로 추가시키는 기능이 아닐까? 추측
 static int __init_memblock memblock_add_region(struct memblock_type *type,
 				phys_addr_t base, phys_addr_t size, int nid)
 {
 	bool insert = false;
-	phys_addr_t obase = base;
+	phys_addr_t obase = base;		// original base
 	phys_addr_t end = base + memblock_cap_size(base, &size);
 	int i, nr_new;
 
@@ -377,6 +402,9 @@ static int __init_memblock memblock_add_region(struct memblock_type *type,
 		WARN_ON(type->cnt != 1 || type->total_size);
 		type->regions[0].base = base;
 		type->regions[0].size = size;
+		// node라는 개념 등장
+		// nid는 CONFIG_HAVE_MEMBLOCK_NODE_MAP을 미지원함으로, 1임.
+		// 실제 하는 일이 없음.
 		memblock_set_region_node(&type->regions[0], nid);
 		type->total_size = size;
 		return 0;
@@ -390,6 +418,7 @@ repeat:
 	base = obase;
 	nr_new = 0;
 
+	// 2014-08-16, type(memory), type->cnt(1)
 	for (i = 0; i < type->cnt; i++) {
 		struct memblock_region *rgn = &type->regions[i];
 		phys_addr_t rbase = rgn->base;
@@ -411,13 +440,14 @@ repeat:
 		}
 		/* area below @rend is dealt with, forget about it */
 		base = min(rend, end);
-	}
+	} // for
 
 	/* insert the remaining portion */
 	if (base < end) {
 		nr_new++;
 		if (insert)
 			memblock_insert_region(type, i, base, end - base, nid);
+			// 현재 base는 rend
 	}
 
 	/*
@@ -426,6 +456,7 @@ repeat:
 	 */
 	if (!insert) {
 		while (type->cnt + nr_new > type->max)
+			// TO DO, memory block size를 두 배로 늘려준다?
 			if (memblock_double_array(type, obase, size) < 0)
 				return -ENOMEM;
 		insert = true;
@@ -886,6 +917,7 @@ void __init memblock_enforce_memory_limit(phys_addr_t limit)
 	__memblock_remove(&memblock.reserved, max_addr, (phys_addr_t)ULLONG_MAX);
 }
 
+// 이진 탐색, 알고리즘 적용
 static int __init_memblock memblock_search(struct memblock_type *type, phys_addr_t addr)
 {
 	unsigned int left = 0, right = type->cnt;

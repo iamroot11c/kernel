@@ -914,6 +914,8 @@ void __init setup_arch(char **cmdline_p)
 
 	sort(&meminfo.bank, meminfo.nr_banks, sizeof(meminfo.bank[0]), meminfo_cmp, NULL);
 	sanity_check_meminfo(); // 2014년 08월 09일 완료
+
+	// 2014-08-16, 분석 시작
 	arm_memblock_init(&meminfo, mdesc);
 
 	paging_init(mdesc);
