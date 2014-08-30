@@ -378,10 +378,16 @@ void __init arm_memblock_init(struct meminfo *mi,
 #endif
 // 2014-08-16, 여기까지 함
 
+	// page global directory 영역을 reserved로 add
 	arm_mm_memblock_reserve();
+	// DTB의 reserved_map을 읽어서 reserved로 add
 	arm_dt_memblock_reserve();
 
 	/* reserve any platform specific memblock areas */
+	// MFC(multi format codec)에 대한 reserve 영역을  s5p_mfc_mem 에 등록
+	// 만약 겹치는 memory 영역이 있으면 remove함
+	//  s5p-dev-mfc.c
+	//   77 static struct s5p_mfc_reserved_mem s5p_mfc_mem[2] __initdata;
 	if (mdesc->reserve)
 		mdesc->reserve();
 
@@ -389,6 +395,9 @@ void __init arm_memblock_init(struct meminfo *mi,
 	 * reserve memory for DMA contigouos allocations,
 	 * must come from DMA area inside low memory
 	 */
+	//arm_dma_limit: #define arm_dma_limit ((phys_addr_t)~0) =0xffffffff = 4Gbyte
+	//arm_lowmem_limit: mmu.c에 void __init sanity_check_meminfo(void)에서 설정 
+	//ZONE_NORMAL (low memory)
 	dma_contiguous_reserve(min(arm_dma_limit, arm_lowmem_limit));
 
 	arm_memblock_steal_permitted = false;

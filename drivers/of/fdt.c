@@ -434,8 +434,8 @@ EXPORT_SYMBOL_GPL(of_fdt_unflatten_tree);
 /* Everything below here references initial_boot_params directly. */
 int __initdata dt_root_addr_cells;
 int __initdata dt_root_size_cells;
-
-struct boot_param_header *initial_boot_params;
+ 
+struct boot_param_header *ianitial_boot_params;
 
 #ifdef CONFIG_OF_EARLY_FLATTREE
 
