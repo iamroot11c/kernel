@@ -518,12 +518,18 @@ __enable_mmu:
 	bic	r0, r0, #CR_I
 #endif
 #ifndef CONFIG_ARM_LPAE
-	mov	r5, #(domain_val(DOMAIN_USER, DOMAIN_MANAGER) | \ 		//mmu domain 설정
-		      domain_val(DOMAIN_KERNEL, DOMAIN_MANAGER) | \ 	//domain : 개별적 접근 권한을 갖도록 정의된 메모리 영역
-		      domain_val(DOMAIN_TABLE, DOMAIN_MANAGER) | \ 		//arm referenc 1558page 참조, asm/domain.h 참조
-		      domain_val(DOMAIN_IO, DOMAIN_CLIENT)) 			//r5=0b01:11:11
+	/*mmu domain 설정	527
+	 *domain : 개별적 접근 권한을 갖도록 정의된 메모리 영역 528
+	 *arm reference 1558page 참조, arm/domain.h 참조	529
+	 *r5=0b01:11:11		530
+	 *r4=page table		531
+	 * */
+	mov	r5, #(domain_val(DOMAIN_USER, DOMAIN_MANAGER) | \ 	
+		      domain_val(DOMAIN_KERNEL, DOMAIN_MANAGER) | \
+		      domain_val(DOMAIN_TABLE, DOMAIN_MANAGER) | \
+		      domain_val(DOMAIN_IO, DOMAIN_CLIENT)) 		
 	mcr	p15, 0, r5, c3, c0, 0		@ load domain access register
-	mcr	p15, 0, r4, c2, c0, 0		@ load page table pointer 	//r4=page table
+	mcr	p15, 0, r4, c2, c0, 0		@ load page table pointer
 #endif
 	b	__turn_mmu_on
 ENDPROC(__enable_mmu)

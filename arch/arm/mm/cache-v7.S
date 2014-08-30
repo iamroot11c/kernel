@@ -210,7 +210,7 @@ loop2:
 	 r7: number of set int cache 의 갯수 r9: numer of ways
 	 r10: 0
 	 r11: ??
- /*
+ */
 //r11 에 way 개수 구해서 적재
  THUMB(	lsl	r6, r9, r5		)
  THUMB(	orr	r11, r10, r6		)	@ factor way and cache number into r11
