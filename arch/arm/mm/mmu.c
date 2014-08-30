@@ -1124,7 +1124,7 @@ void __init sanity_check_meminfo(void)
 			}
 		}
 		j++;
-	} // for
+	} // fof (!highmem && bank->size > size_limit)r
 #ifdef CONFIG_HIGHMEM
 	if (highmem) { 
 	// 하이 메모리이지만 Cortex A15는 PIPT로 아래의 조건에 맞지 않아 실행 되지 않음

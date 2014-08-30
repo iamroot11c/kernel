@@ -331,6 +331,8 @@ static void __init_memblock memblock_merge_regions(struct memblock_type *type)
 		// this(0), next(1)
 		// [0, 1, 2, 3, 4] -> [0+1, 2, 3, 4]
 		// (i+2)의 의미 : 2개라면 따로 합칠 필요가 없다.
+		// ?? type-cnt(2)이고, i(1)이면 어떻게 되는가요? 마이너스가 되는데요.
+		// 테스트 프로그램으로 테스트 해보니, Seg Fault가 발생하군요.
 		memmove(next, next + 1, (type->cnt - (i + 2)) * sizeof(*next));
 		type->cnt--;
 	}
@@ -347,6 +349,8 @@ static void __init_memblock memblock_merge_regions(struct memblock_type *type)
  * Insert new memblock region [@base,@base+@size) into @type at @idx.
  * @type must already have extra room to accomodate the new region.
  */
+
+// memblock_insert_region(type, i++, base, rbase - base, nid);
 static void __init_memblock memblock_insert_region(struct memblock_type *type,
 						   int idx, phys_addr_t base,
 						   phys_addr_t size, int nid)
@@ -356,8 +360,8 @@ static void __init_memblock memblock_insert_region(struct memblock_type *type,
 	BUG_ON(type->cnt >= type->max);
 	// memmove 기본 개념상: [0, 1, 2, 3, 4] -> [0, 0, 1, 2, 3]
 	// 아래 코드는 멤버 하나에 대해서만, 개념상 정리
-	// [0, 1, 2, 3, 4] -> [0, 0, 2, 3, 4]
-	// [0, 0, 2, 3, 4] -> [0, 0, 0, 3, 4]
+	// idx == 0, [0, 1, 2, 3, 4] -> [0, 0, 2, 3, 4]
+	// idx == 1, [0, 0, 2, 3, 4] -> [0, 0, 0, 3, 4]
 	memmove(rgn + 1, rgn, (type->cnt - idx) * sizeof(*rgn));
 	rgn->base = base;
 	rgn->size = size;
@@ -398,6 +402,8 @@ static int __init_memblock memblock_add_region(struct memblock_type *type,
 		return 0;
 
 	/* special case for empty array */
+	// 2014-08-20, 최초에는 전역변수로 선언되어 ZI 형태로 존재할 것입니다.
+	// 그래서, 아래 조건에 해당하겠군요.
 	if (type->regions[0].size == 0) {
 		WARN_ON(type->cnt != 1 || type->total_size);
 		type->regions[0].base = base;
@@ -406,6 +412,8 @@ static int __init_memblock memblock_add_region(struct memblock_type *type,
 		// nid는 CONFIG_HAVE_MEMBLOCK_NODE_MAP을 미지원함으로, 1임.
 		// 실제 하는 일이 없음.
 		memblock_set_region_node(&type->regions[0], nid);
+		// 2014-08-20, total_size는 따로 초기화 하지 않았습니다.
+		// 이 때, 최초로 설정되는군요.
 		type->total_size = size;
 		return 0;
 	}
@@ -437,6 +445,7 @@ repeat:
 			if (insert)
 				memblock_insert_region(type, i++, base,
 						       rbase - base, nid);
+				// 위의 경우는, end값 대신, rbase - base을 사용하군요.
 		}
 		/* area below @rend is dealt with, forget about it */
 		base = min(rend, end);
