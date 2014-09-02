@@ -98,6 +98,7 @@ static long __init_memblock memblock_overlaps_region(struct memblock_type *type,
  * RETURNS:
  * Found address on success, %0 on failure.
  */
+//found = memblock_find_in_range_node(0, max_addr, size, align, nid);
 phys_addr_t __init_memblock memblock_find_in_range_node(phys_addr_t start,
 					phys_addr_t end, phys_addr_t size,
 					phys_addr_t align, int nid)
@@ -110,10 +111,14 @@ phys_addr_t __init_memblock memblock_find_in_range_node(phys_addr_t start,
 		end = memblock.current_limit;
 
 	/* avoid allocating the first page */
+	// max(start, 4096) 
 	start = max_t(phys_addr_t, start, PAGE_SIZE);
 	end = max(start, end);
 
+	//http://iamroot.org/wiki/doku.php?id=%EC%8A%A4%ED%84%B0%EB%94%94:kernel_%EC%8A%A4%ED%84%B0%EB%94%94_10%EC%B0%A8_arm_c
+	//B) reserved 영역을 피하여 memory 할당 영역 계산 참조하기 (10차 c)
 	for_each_free_mem_range_reverse(i, nid, &this_start, &this_end, NULL) {
+		//clamp : 세 인자에 대해서 type검사를 수행하고, 셋중 중간값을 return함
 		this_start = clamp(this_start, start, end);
 		this_end = clamp(this_end, start, end);
 
@@ -591,6 +596,7 @@ int __init_memblock memblock_free(phys_addr_t base, phys_addr_t size)
 	return __memblock_remove(&memblock.reserved, base, size);
 }
 
+// memblock_reserve(0x40004000, 8192);
 int __init_memblock memblock_reserve(phys_addr_t base, phys_addr_t size)
 {
 	struct memblock_type *_rgn = &memblock.reserved;
@@ -689,15 +695,19 @@ void __init_memblock __next_free_mem_range(u64 *idx, int nid,
  *
  * Reverse of __next_free_mem_range().
  */
+// idx = 0xffff_ffff_ffff_ffff
 void __init_memblock __next_free_mem_range_rev(u64 *idx, int nid,
 					   phys_addr_t *out_start,
 					   phys_addr_t *out_end, int *out_nid)
 {
 	struct memblock_type *mem = &memblock.memory;
 	struct memblock_type *rsv = &memblock.reserved;
+	// mi: memory index
+	// ri: reserved index 
 	int mi = *idx & 0xffffffff;
 	int ri = *idx >> 32;
 
+	// start 
 	if (*idx == (u64)ULLONG_MAX) {
 		mi = mem->cnt - 1;
 		ri = rsv->cnt;
@@ -715,6 +725,12 @@ void __init_memblock __next_free_mem_range_rev(u64 *idx, int nid,
 		/* scan areas before each reservation for intersection */
 		for ( ; ri >= 0; ri--) {
 			struct memblock_region *r = &rsv->regions[ri];
+			// 현재의 r_start는 이전값(r[-1])의 base+size (r[-1]의 end) 이고,
+			// 현재의 r_end는 다음값의 base이여야 하는데? 왜 현재의 base값을 넣었는지?
+			//     r[-1].size	               r[0].base
+			// |----------------|~~~~~~~~~~~~~~~~|----------------|
+			// r[-1].base	  r_start          r_end
+			// 이렇게 되어서 rsv->regions에 할당되지 않는 빈 공간을 찾는 것이 아닐까?
 			phys_addr_t r_start = ri ? r[-1].base + r[-1].size : 0;
 			phys_addr_t r_end = ri < rsv->cnt ? r->base : ULLONG_MAX;
 
@@ -806,18 +822,23 @@ int __init_memblock memblock_set_node(phys_addr_t base, phys_addr_t size,
 }
 #endif /* CONFIG_HAVE_MEMBLOCK_NODE_MAP */
 
+//max_addr = limit
 static phys_addr_t __init memblock_alloc_base_nid(phys_addr_t size,
 					phys_addr_t align, phys_addr_t max_addr,
 					int nid)
 {
 	phys_addr_t found;
 
+	// __alignof__ 은 인자의 align 단위를 반환함
+	// __alignof__(long long) = 8
+	// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0348bk/BABBDFAF.html
 	if (WARN_ON(!align))
 		align = __alignof__(long long);
 
 	/* align @size to avoid excessive fragmentation on reserved array */
 	size = round_up(size, align);
 
+	// max_addr = 0
 	found = memblock_find_in_range_node(0, max_addr, size, align, nid);
 	if (found && !memblock_reserve(found, size))
 		return found;

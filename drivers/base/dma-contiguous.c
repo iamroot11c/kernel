@@ -163,8 +163,8 @@ static int __init cma_activate_area(struct cma *cma)
 
 	return 0;
 }
-
-static struct cma cma_areas[MAX_CMA_AREAS];
+// MAX_CMA_AREAS 8
+static struct cma cma_areas[MAX_CMA_AREAS]; 
 static unsigned cma_area_count;
 
 static int __init cma_init_reserved_areas(void)
@@ -194,6 +194,7 @@ core_initcall(cma_init_reserved_areas);
  * memory. This function allows to create custom reserved areas for specific
  * devices.
  */
+// 	dma_contiguous_reserve_area(selected_size, 0, limit, &dma_contiguous_default_area);
 int __init dma_contiguous_reserve_area(phys_addr_t size, phys_addr_t base,
 				       phys_addr_t limit, struct cma **res_cma)
 {
@@ -215,10 +216,15 @@ int __init dma_contiguous_reserve_area(phys_addr_t size, phys_addr_t base,
 		return -EINVAL;
 
 	/* Sanitise input arguments */
-	alignment = PAGE_SIZE << max(MAX_ORDER - 1, pageblock_order);
-	base = ALIGN(base, alignment);
-	size = ALIGN(size, alignment);
-	limit &= ~(alignment - 1);
+	//MAX_ORDER: 11  
+	//HUGETLB_PAGE_ORDER:	(HPAGE_SHIFT - PAGE_SHIFT) = 9
+	//위의  HUGETLB CONFIG 가 설정되어있지 않으므로 pageblock_order = (MAX_ORDER -1)
+	// max(10, 10) = 10 
+	// 4kb << 10 = 4Mb
+	alignment = PAGE_SIZE << max(MAX_ORDER - 1, pageblock_order); 
+	base = ALIGN(base, alignment); //4mb align
+	size = ALIGN(size, alignment); //4mb align
+	limit &= ~(alignment - 1); //4mb mask
 
 	/* Reserve memory */
 	if (base) {

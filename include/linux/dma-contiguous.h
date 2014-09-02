@@ -63,7 +63,7 @@ struct device;
  * There is always at least global CMA area and a few optional device
  * private areas configured in kernel .config.
  */
-#define MAX_CMA_AREAS	(1 + CONFIG_CMA_AREAS)
+#define MAX_CMA_AREAS	(1 + CONFIG_CMA_AREAS) 
 
 extern struct cma *dma_contiguous_default_area;
 

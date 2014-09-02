@@ -40,10 +40,15 @@ void __init arm_dt_memblock_reserve(void)
 {
 	u64 *reserve_map, base, size;
 
+	// 우리는 dtb 를 사용하므로  initial_boot_params이 있다고 가정
 	if (!initial_boot_params)
 		return;
 
 	/* Reserve the dtb region */
+	//시스템이 big-endian 일 경우 #define __be32_to_cpu(x) ((__force __u32)(__be32)(x))
+	//시스템이little-endian 일 경우#define __be32_to_cpu(x) __swab32((__force __u32)(__be32)(x))	
+	// initial_boot_params 는 device tree의 시작주소
+	// memory의 device tree 영역을 reserved 영역으로 add 
 	memblock_reserve(virt_to_phys(initial_boot_params),
 			 be32_to_cpu(initial_boot_params->totalsize));
 
@@ -52,6 +57,9 @@ void __init arm_dt_memblock_reserve(void)
 	 * and dtb locations which are already reserved, but overlaping
 	 * doesn't hurt anything
 	 */
+	// off_mem_rsvmap: offset to memory reserve map
+	// reserve_map: reserve map의 시작주소
+	// dtb의 reserve_map에서 base, size정보를 읽어와서 memblock에 add 
 	reserve_map = ((void*)initial_boot_params) +
 			be32_to_cpu(initial_boot_params->off_mem_rsvmap);
 	while (1) {

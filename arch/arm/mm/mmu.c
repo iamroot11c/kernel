@@ -1218,6 +1218,17 @@ void __init arm_mm_memblock_reserve(void)
 	 * Reserve the page tables.  These are already in use,
 	 * and can only be in node 0.
 	 */
+	// #define SWAPPER_PG_DIR_SIZE (PTRS_PER_PGD * sizeof(pgd_t)) 
+	// PTRS_PER_PGD = 2048
+	// pgd_t = unsigned long  
+	// SWAPPER_PG_DIR_SIZE = 2048 * 4 = 8192
+	// #define swapper_pg_dir KERNEL_RAM_VADDR - PG_DIR_SIZE (head.S 에 .globl, .equ로 정의되어있음.   gnu assembly에서 .equ는 define과 같은의미)
+	// KERNEL_RAM_VADDR = 0xc0008000
+	//  PG_DIR_SIZE = 0x4000
+	//  swapper_pg_dir = KERNEL_RAM_VADDR - PG_DIR_SIZE = 0xc0004000
+	//  __pa(0xc0004000) = 0xc0004000 - 0xc0000000(page_offset) + 0x40000000(phys_offset) = 0x40004000
+	//   따라서 memblock_reserve(0x40004000, 8192);
+	// page globl directory 메모리 영역을 reserved 영역에 추가함  
 	memblock_reserve(__pa(swapper_pg_dir), SWAPPER_PG_DIR_SIZE);
 
 #ifdef CONFIG_SA1111
