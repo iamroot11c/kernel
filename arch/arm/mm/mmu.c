@@ -348,7 +348,7 @@ static void __init build_mem_type_table(void)
 	unsigned int cr = get_cr();
 	pteval_t user_pgprot, kern_pgprot, vecs_pgprot;
 	pteval_t hyp_device_pgprot, s2_pgprot, s2_device_pgprot;
-	int cpu_arch = cpu_architecture();
+	int cpu_arch = cpu_architecture();	//cpu_arch = CPU_ARCH_ARMv7
 	int i;
 
 	if (cpu_arch < CPU_ARCH_ARMv6) {
@@ -365,7 +365,7 @@ static void __init build_mem_type_table(void)
 			cachepolicy = CPOLICY_WRITEBACK;
 		ecc_mask = 0;
 	}
-	if (is_smp())
+	if (is_smp())	//is_smp() => True
 		cachepolicy = CPOLICY_WRITEALLOC;
 
 	/*
@@ -376,6 +376,7 @@ static void __init build_mem_type_table(void)
 	if (cpu_arch < CPU_ARCH_ARMv5)
 		for (i = 0; i < ARRAY_SIZE(mem_types); i++)
 			mem_types[i].prot_sect &= ~PMD_SECT_TEX(7);
+	//CR_XP : Reserved,RAO/SBOP. Read-As-One, Should-Be-One-or-Preserved on writes
 	if ((cpu_arch < CPU_ARCH_ARMv6 || !(cr & CR_XP)) && !cpu_is_xsc3())
 		for (i = 0; i < ARRAY_SIZE(mem_types); i++)
 			mem_types[i].prot_sect &= ~PMD_SECT_S;
@@ -457,9 +458,14 @@ static void __init build_mem_type_table(void)
 	/*
 	 * Now deal with the memory-type mappings
 	 */
-	cp = &cache_policies[cachepolicy];
-	vecs_pgprot = kern_pgprot = user_pgprot = cp->pte;
-	s2_pgprot = cp->pte_s2;
+	cp = &cache_policies[cachepolicy];	
+//		.policy		= "writealloc",
+//		.cr_mask	= 0,
+//		.pmd		= PMD_SECT_WBWA,
+//		.pte		= L_PTE_MT_WRITEALLOC,
+//		.pte_s2		= s2_policy(L_PTE_S2_MT_WRITEBACK),
+	vecs_pgprot = kern_pgprot = user_pgprot = cp->pte; 
+	s2_pgprot = cp->pte_s2;	//cp->pte_s2 = 0;
 	hyp_device_pgprot = mem_types[MT_DEVICE].prot_pte;
 	s2_device_pgprot = mem_types[MT_DEVICE].prot_pte_s2;
 
@@ -492,7 +498,7 @@ static void __init build_mem_type_table(void)
 			 * Mark memory with the "shared" attribute
 			 * for SMP systems
 			 */
-			user_pgprot |= L_PTE_SHARED;
+			user_pgprot |= L_PTE_SHARED; // L_PTE_MT_WRITEALLOC | L_PTE_SHARED
 			kern_pgprot |= L_PTE_SHARED;
 			vecs_pgprot |= L_PTE_SHARED;
 			s2_pgprot |= L_PTE_SHARED;
@@ -542,6 +548,8 @@ static void __init build_mem_type_table(void)
 	for (i = 0; i < 16; i++) {
 		pteval_t v = pgprot_val(protection_map[i]);
 		protection_map[i] = __pgprot(v | user_pgprot);
+// protection_map[index] = __pgprot( protection_map[index] | (L_PTE_MT_WRITEALLOC | L_PTE_SHARED))
+ 
 	}
 
 	mem_types[MT_LOW_VECTORS].prot_pte |= vecs_pgprot;
@@ -550,6 +558,7 @@ static void __init build_mem_type_table(void)
 	pgprot_user   = __pgprot(L_PTE_PRESENT | L_PTE_YOUNG | user_pgprot);
 	pgprot_kernel = __pgprot(L_PTE_PRESENT | L_PTE_YOUNG |
 				 L_PTE_DIRTY | kern_pgprot);
+	// s2 : Stage 2 translation (I.P.A -> P.A), owned by VMM(Virtual Machine Monitor, Hypervisor) 
 	pgprot_s2  = __pgprot(L_PTE_PRESENT | L_PTE_YOUNG | s2_pgprot);
 	pgprot_s2_device  = __pgprot(s2_device_pgprot);
 	pgprot_hyp_device  = __pgprot(hyp_device_pgprot);
@@ -581,6 +590,7 @@ static void __init build_mem_type_table(void)
 		if (t->prot_sect)
 			t->prot_sect |= PMD_DOMAIN(t->domain);
 	}
+	//14-09-13 end
 }
 
 #ifdef CONFIG_ARM_DMA_MEM_BUFFERABLE
