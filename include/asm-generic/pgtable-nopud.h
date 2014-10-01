@@ -37,6 +37,7 @@ static inline void pgd_clear(pgd_t *pgd)	{ }
 
 static inline pud_t * pud_offset(pgd_t * pgd, unsigned long address)
 {
+		// 전달받은 값을 그대로 리턴 
 	return (pud_t *)pgd;
 }
 

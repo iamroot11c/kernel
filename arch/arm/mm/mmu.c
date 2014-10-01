@@ -1184,10 +1184,13 @@ static inline void prepare_page_table(void)
 
 	/*
 	 * Clear out all the mappings below the kernel image.
-	 */
+	 */ 
+	 // MODULES_VADDR : 물리 메모리 오프셋
+	 // PMD_SIZE : 2MB
 	for (addr = 0; addr < MODULES_VADDR; addr += PMD_SIZE)
+		// pmd_clear : 
 		pmd_clear(pmd_off_k(addr));
-
+	
 #ifdef CONFIG_XIP_KERNEL
 	/* The XIP kernel is mapped in the module area -- skip over it */
 	addr = ((unsigned long)_etext + PMD_SIZE - 1) & PMD_MASK;

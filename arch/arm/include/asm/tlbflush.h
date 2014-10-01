@@ -176,7 +176,12 @@
 #ifdef CONFIG_CPU_TLB_V7
 
 # ifdef CONFIG_SMP_ON_UP
+// 현재 프로세서 설정 값
+// CONFIG_SMP_ON_UP, CONFIG_SMP 두 값이 설정이 되어있지만
+// 첫 번째 항목이 먼저 있기 때문에 해당 위치의 플래그가 세팅된다.
+// DCLEAN config
 #  define v7wbi_possible_flags	(v7wbi_tlb_flags_smp | v7wbi_tlb_flags_up)
+// DCLEAN nonConfig
 #  define v7wbi_always_flags	(v7wbi_tlb_flags_smp & v7wbi_tlb_flags_up)
 # elif defined(CONFIG_SMP)
 #  define v7wbi_possible_flags	v7wbi_tlb_flags_smp
@@ -286,6 +291,8 @@ extern struct cpu_tlb_fns cpu_tlb;
  * implemented the "%?" method, but this has been discontinued due to too
  * many people getting it wrong.
  */
+ // config 옵션이 걸리지 않은 경우는 0으로 설정
+ // 0 | .... my_config_flag == my_config_flag만 남을 것이다. 
 #define possible_tlb_flags	(v4_possible_flags | \
 				 v4wbi_possible_flags | \
 				 fr_possible_flags | \
@@ -294,6 +301,8 @@ extern struct cpu_tlb_fns cpu_tlb;
 				 v6wbi_possible_flags | \
 				 v7wbi_possible_flags)
 
+// config옵션이 걸리지 않은 경우는 (-1)UL로 설정
+// (-1)UL & .... my_config_flag == my_config_flag만 남을 것이다.
 #define always_tlb_flags	(v4_always_flags & \
 				 v4wbi_always_flags & \
 				 fr_always_flags & \
@@ -305,11 +314,19 @@ extern struct cpu_tlb_fns cpu_tlb;
 #define tlb_flag(f)	((always_tlb_flags & (f)) || (__tlb_flag & possible_tlb_flags & (f)))
 
 #define __tlb_op(f, insnarg, arg)					\
+	// f == tlb_DCLEAN, tlb_L2CLEAN
+	// arg => [0] = 0, [1] = 0이 세팅된 주소가 넘어온다.
 	do {								\
 		if (always_tlb_flags & (f))				\
+			// tlb_DCLEAN, tlb_L2CLEAN 미설정
 			asm("mcr " insnarg				\
 			    : : "r" (arg) : "cc");			\
 		else if (possible_tlb_flags & (f))			\
+			// %? -> inline assembly의 인자 항목에서 ?번째의 인자를 말함
+			// __tlb_flag : 매크로 함수를 부르기 전에 미리 정의한 로컬변수
+			// tst __tlb_flag, f
+			// mcrne "전달받은 명령어"
+			// tlb_DCLEAN 설정 인자 전달 시 해당 명령문 실행
 			asm("tst %1, %2\n\t"				\
 			    "mcrne " insnarg				\
 			    : : "r" (arg), "r" (__tlb_flag), "Ir" (f)	\
@@ -620,7 +637,9 @@ static inline void clean_pmd_entry(void *pmd)
 	const unsigned int __tlb_flag = __cpu_tlb_flags;
 
 	tlb_op(TLB_DCLEAN, "c7, c10, 1	@ flush_pmd", pmd);
+	// 2014.09.27 end
 	tlb_l2_op(TLB_L2CLEAN_FR, "c15, c9, 1  @ L2 flush_pmd", pmd);
+
 }
 
 #undef tlb_op

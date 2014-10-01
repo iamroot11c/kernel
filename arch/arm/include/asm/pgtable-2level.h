@@ -158,6 +158,7 @@
 
 static inline pmd_t *pmd_offset(pud_t *pud, unsigned long addr)
 {
+	// 전달받은 값을 그대로 type cast 후 :리턴
 	return (pmd_t *)pud;
 }
 
