@@ -183,6 +183,7 @@
 #  define v7wbi_possible_flags	(v7wbi_tlb_flags_smp | v7wbi_tlb_flags_up)
 // DCLEAN nonConfig
 #  define v7wbi_always_flags	(v7wbi_tlb_flags_smp & v7wbi_tlb_flags_up)
+
 # elif defined(CONFIG_SMP)
 #  define v7wbi_possible_flags	v7wbi_tlb_flags_smp
 #  define v7wbi_always_flags	v7wbi_tlb_flags_smp
@@ -190,8 +191,10 @@
 #  define v7wbi_possible_flags	v7wbi_tlb_flags_up
 #  define v7wbi_always_flags	v7wbi_tlb_flags_up
 # endif
+
 # ifdef _TLB
 #  define MULTI_TLB 1
+
 # else
 #  define _TLB v7wbi
 # endif
@@ -313,20 +316,32 @@ extern struct cpu_tlb_fns cpu_tlb;
 
 #define tlb_flag(f)	((always_tlb_flags & (f)) || (__tlb_flag & possible_tlb_flags & (f)))
 
+	/* f == tlb_DCLEAN, tlb_L2CLEAN
+	 arg => [0] = 0, [1] = 0이 세팅된 주소가 넘어온다.
+     */                                         
+	/* if(alway .. ) tlb_DCLEAN, tlb_L2CLEAN 미설정 */  
+    /* else if(..) 
+    %? -> inline assembly의 인자 항목에서 ?번째의 인자를 말함
+     __tlb_flag : 매크로 함수를 부르기 전에 미리 정의한 로컬변수
+     tst __tlb_flag, f
+     mcrne "전달받은 명령어"
+     tlb_DCLEAN 설정 인자 전달 시 해당 명령문 실행
+     cotex-a15 mpcore 4-8 DCCMVAC
+     Clean data cache line by MVA to PoC
+     mcrne    p15, 0, %0, c7, c10, 1 @ flush_pmd
+     mcr      coproc, op1, Rt, Crn, Crm, op2
+     %0 = pmd
+     %1 = __tlb_flag
+     %2 =  TLB_DCLEAN
+     poc, pou, mva 관련내용은 옛날에도 했던것이며 wiki 10차
+     poc로 검색하면 잘나옴
+     */                                 \
 #define __tlb_op(f, insnarg, arg)					\
-	// f == tlb_DCLEAN, tlb_L2CLEAN
-	// arg => [0] = 0, [1] = 0이 세팅된 주소가 넘어온다.
 	do {								\
 		if (always_tlb_flags & (f))				\
-			// tlb_DCLEAN, tlb_L2CLEAN 미설정
 			asm("mcr " insnarg				\
 			    : : "r" (arg) : "cc");			\
 		else if (possible_tlb_flags & (f))			\
-			// %? -> inline assembly의 인자 항목에서 ?번째의 인자를 말함
-			// __tlb_flag : 매크로 함수를 부르기 전에 미리 정의한 로컬변수
-			// tst __tlb_flag, f
-			// mcrne "전달받은 명령어"
-			// tlb_DCLEAN 설정 인자 전달 시 해당 명령문 실행
 			asm("tst %1, %2\n\t"				\
 			    "mcrne " insnarg				\
 			    : : "r" (arg), "r" (__tlb_flag), "Ir" (f)	\

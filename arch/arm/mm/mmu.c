@@ -667,7 +667,13 @@ static void __init __map_init_section(pmd_t *pmd, unsigned long addr,
 
 	flush_pmd_entry(p);
 }
-
+/*
+ * pud = pgd
+ * addr = region virtual addr
+ * end = next = end
+ * phys = region 의 phys addr
+ * type = MT_MEMORY
+ * */
 static void __init alloc_init_pmd(pud_t *pud, unsigned long addr,
 				      unsigned long end, phys_addr_t phys,
 				      const struct mem_type *type)
@@ -686,6 +692,12 @@ static void __init alloc_init_pmd(pud_t *pud, unsigned long addr,
 		 * Try a section mapping - addr, next and phys must all be
 		 * aligned to a section boundary.
 		 */
+		/*
+		 *2단계 페이징이므로 여기까지 next = end, pmd=pud=pgd 가된다
+		 *type->prot_sect 는 값이 있으며,
+		 *뒤의 addr...들은 안들어올것으로 예상(들어올수도있다)
+		 * */
+		 //2014-10-11 
 		if (type->prot_sect &&
 				((addr | next | phys) & ~SECTION_MASK) == 0) {
 			__map_init_section(pmd, addr, next, phys, type);
@@ -698,7 +710,13 @@ static void __init alloc_init_pmd(pud_t *pud, unsigned long addr,
 
 	} while (pmd++, addr = next, addr != end);
 }
-
+/*
+ * pgd : 현재 설정중인 pgd
+ * addr : 현재 설정주인 region의 virtual addr
+ * end : end
+ * phys : region의 Phys addr
+ * type : MT_MEMORY의 정보가 있는곳의 주소
+ * */
 static void __init alloc_init_pud(pgd_t *pgd, unsigned long addr,
 				  unsigned long end, phys_addr_t phys,
 				  const struct mem_type *type)
@@ -708,6 +726,7 @@ static void __init alloc_init_pud(pgd_t *pgd, unsigned long addr,
 
 	do {
 		next = pud_addr_end(addr, end);
+		//pud는 사용을 안하므로 next=end가 됨
 		alloc_init_pmd(pud, addr, next, phys, type);
 		phys += next - addr;
 	} while (pud++, addr = next, addr != end);
@@ -782,6 +801,15 @@ static void __init create_36bit_mapping(struct map_desc *md,
  * offsets, and we take full advantage of sections and
  * supersections.
  */
+/* arm 에서
+ * 1단계 paging 
+ * super section : 16MB
+ * section : 1MB
+ *
+ * 2단계 paging
+ * super section : 64kb
+ * section : 4kb
+ * */
 static void __init create_mapping(struct map_desc *md)
 {
 	unsigned long addr, length, end;
@@ -789,6 +817,13 @@ static void __init create_mapping(struct map_desc *md)
 	const struct mem_type *type;
 	pgd_t *pgd;
 
+	//region start지점이 task_size보다 작은지, vectors_base와 같은지를 검사
+	//vectors_base의 V flag( 0xffff_0000로 relocation을 하는지에 대한)가 설정되있는지
+	//확인한다.
+	/*relocation 을 안했으면 vectors_base = 0이고
+	 *relocation 을 했으면 vectors_base = 0xffff_0000 인데
+	 *start지점이 base와 같으면 정상적으로 설정이 됬다고 판단
+	*/
 	if (md->virtual != vectors_base() && md->virtual < TASK_SIZE) {
 		printk(KERN_WARNING "BUG: not creating mapping for 0x%08llx"
 		       " at 0x%08lx in user region\n",
@@ -804,22 +839,31 @@ static void __init create_mapping(struct map_desc *md)
 		       (long long)__pfn_to_phys((u64)md->pfn), md->virtual);
 	}
 
+	//mem_type struct의 MT_MEMORY 배열인덱스 주소를 type에 저장
 	type = &mem_types[md->type];
 
 #ifndef CONFIG_ARM_LPAE
 	/*
 	 * Catch 36-bit addresses
 	 */
+	//나중에
 	if (md->pfn >= 0x100000) {
 		create_36bit_mapping(md, type);
 		return;
 	}
 #endif
-
+	/*
+	 * md->virtual(start)가 ffff_0000 or 0 인경우 -> addr = 0
+	 * md->virtual이 TASK_SIZE보다 큰경우 -> addr = PAGE_MASK값
+	 * */
 	addr = md->virtual & PAGE_MASK;
 	phys = __pfn_to_phys(md->pfn);
 	length = PAGE_ALIGN(md->length + (md->virtual & ~PAGE_MASK));
 
+	/*
+	 * prot_l1 == 0인 동시에 (addr | phys | length) & ~SECTION_MASK가 의미있는 값을
+	 * 가질수는 없다.
+	 * */
 	if (type->prot_l1 == 0 && ((addr | phys | length) & ~SECTION_MASK)) {
 		printk(KERN_WARNING "BUG: map for 0x%08llx at 0x%08lx can not "
 		       "be mapped using pages, ignoring.\n",
@@ -830,6 +874,7 @@ static void __init create_mapping(struct map_desc *md)
 	pgd = pgd_offset_k(addr);
 	end = addr + length;
 	do {
+		//addr+end가 pgd끝을 넘는지를 검사. 넘으면 pgd끝으로, 아니면 addr+end로
 		unsigned long next = pgd_addr_end(addr, end);
 
 		alloc_init_pud(pgd, addr, next, phys, type);
@@ -1185,7 +1230,7 @@ static inline void prepare_page_table(void)
 	/*
 	 * Clear out all the mappings below the kernel image.
 	 */ 
-	 // MODULES_VADDR : 물리 메모리 오프셋
+	 // MODULES_VADDR : PAGE_OFFSET - 16M
 	 // PMD_SIZE : 2MB
 	for (addr = 0; addr < MODULES_VADDR; addr += PMD_SIZE)
 		// pmd_clear : 
@@ -1195,6 +1240,7 @@ static inline void prepare_page_table(void)
 	/* The XIP kernel is mapped in the module area -- skip over it */
 	addr = ((unsigned long)_etext + PMD_SIZE - 1) & PMD_MASK;
 #endif
+	// 결국 0~PAGE_OFFSET 까지 pmd_clear를 한다.
 	for ( ; addr < PAGE_OFFSET; addr += PMD_SIZE)
 		pmd_clear(pmd_off_k(addr));
 
@@ -1212,6 +1258,10 @@ static inline void prepare_page_table(void)
 	for (addr = __phys_to_virt(end);
 	     addr < VMALLOC_START; addr += PMD_SIZE)
 		pmd_clear(pmd_off_k(addr));
+	/*
+	 * addr 0 ~ pageoffset 까지와
+	 * lowmem end~ vmlloc start 까지 pmd_clear 한다
+	 * */
 }
 
 #ifdef CONFIG_ARM_LPAE
@@ -1359,7 +1409,7 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 
 static void __init kmap_init(void)
 {
-#ifdef CONFIG_HIGHMEM
+#ifdef CONFIG_HIGHMEM	//y
 	pkmap_page_table = early_pte_alloc(pmd_off_k(PKMAP_BASE),
 		PKMAP_BASE, _PAGE_KERNEL_TABLE);
 #endif
@@ -1370,6 +1420,7 @@ static void __init map_lowmem(void)
 	struct memblock_region *reg;
 
 	/* Map all the lowmem memory banks. */
+	/*memblock_type은 memory */
 	for_each_memblock(memory, reg) {
 		phys_addr_t start = reg->base;
 		phys_addr_t end = start + reg->size;

@@ -170,7 +170,10 @@ static inline pmd_t *pmd_offset(pud_t *pud, unsigned long addr)
 		pmdpd[1] = pmdps[1];	\
 		flush_pmd_entry(pmdpd);	\
 	} while (0)
-
+/*
+ * pmd의 단위는 원래 1Mb인데 arm용은 2Mb이라서 배열 0,1을 써서 1Mb를
+ * 2Mb로 변환
+ * */
 #define pmd_clear(pmdp)			\
 	do {				\
 		pmdp[0] = __pmd(0);	\

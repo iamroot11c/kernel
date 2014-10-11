@@ -227,6 +227,11 @@ static inline unsigned long memblock_region_reserved_end_pfn(const struct memblo
 	return PFN_UP(reg->base + reg->size);
 }
 
+/*mm/memblock.c 의 memblock 구조체에있음
+ * memblock_type은 변수나 define된것이아니라 struct에서 memory 나 reserved 의 멤버이름을
+ * 뜻한다.
+ *  page_init에서는 memblock_type이 memory로 들어온다.
+ * */
 #define for_each_memblock(memblock_type, region)					\
 	for (region = memblock.memblock_type.regions;				\
 	     region < (memblock.memblock_type.regions + memblock.memblock_type.cnt);	\

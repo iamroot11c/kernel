@@ -237,7 +237,7 @@ setup_machine_tags(phys_addr_t __atags_pointer, unsigned int machine_nr)
 		parse_tags(tags); 
 		// arch/arm/include/asm/setup.h 
 		//#define __tag __used __attribute__((__section__(".taglist.init")))
-		//#define __tagtable(tag, fn) \
+		//#define __tagtable(tag, fn) 
 		//static const struct tagtable __tagtable_##fn __tag = { tag, fn }
 		//위 define을 사용해서 아래struct 변수를 생성하고 tag이름과 function pointer를 설정함
 		//ex)arch/arm/kernel/atags_parse.c __tagtable(ATAG_RAMDISK, parse_tag_ramdisk);

@@ -517,13 +517,14 @@ __enable_mmu:
 #ifdef CONFIG_CPU_ICACHE_DISABLE
 	bic	r0, r0, #CR_I
 #endif
-#ifndef CONFIG_ARM_LPAE
+
 	/*mmu domain 설정	527
 	 *domain : 개별적 접근 권한을 갖도록 정의된 메모리 영역 528
 	 *arm reference 1558page 참조, arm/domain.h 참조	529
 	 *r5=0b01:11:11		530
 	 *r4=page table		531
 	 * */
+#ifndef CONFIG_ARM_LPAE
 	mov	r5, #(domain_val(DOMAIN_USER, DOMAIN_MANAGER) | \ 	
 		      domain_val(DOMAIN_KERNEL, DOMAIN_MANAGER) | \
 		      domain_val(DOMAIN_TABLE, DOMAIN_MANAGER) | \
