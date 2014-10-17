@@ -1450,6 +1450,7 @@ void __init paging_init(const struct machine_desc *mdesc)
 
 	build_mem_type_table();
 	prepare_page_table();
+	//2014-10-11 분석중
 	map_lowmem();
 	dma_contiguous_remap();
 	devicemaps_init(mdesc);

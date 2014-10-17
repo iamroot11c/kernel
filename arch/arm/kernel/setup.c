@@ -918,6 +918,7 @@ void __init setup_arch(char **cmdline_p)
 	// 2014-08-16, 분석 시작
 	arm_memblock_init(&meminfo, mdesc);
 
+	// 2014-10-11 분석중
 	paging_init(mdesc);
 	request_standard_resources(mdesc);
 
