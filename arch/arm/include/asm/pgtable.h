@@ -185,11 +185,16 @@ extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
 /* to find an entry in a kernel page-table-directory */
 #define pgd_offset_k(addr)	pgd_offset(&init_mm, addr)
 
+// return (pmd.pmd == 0)
 #define pmd_none(pmd)		(!pmd_val(pmd))
 #define pmd_present(pmd)	(pmd_val(pmd))
 
 static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 {
+	// pmd.pmd 값을 PAGE_MASK 단위로 ALIGN
+	// (S32) -> 32비트 머신인가, 64비트 머신인가에 따라 
+	// PAGE_MASK값이 다를 수 있기 때문에
+	// 명시적으로 마스크에 대한 값을 표시
 	return __va(pmd_val(pmd) & PHYS_MASK & (s32)PAGE_MASK);
 }
 
@@ -203,8 +208,9 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 #define __pte_unmap(pte)	kunmap_atomic(pte)
 #endif
 
+// pte bit(20:12) 값 추출
 #define pte_index(addr)		(((addr) >> PAGE_SHIFT) & (PTRS_PER_PTE - 1))
-
+// vaddr -> pmd[0] 4kb align + vaddr[20:12]
 #define pte_offset_kernel(pmd,addr)	(pmd_page_vaddr(*(pmd)) + pte_index(addr))
 
 #define pte_offset_map(pmd,addr)	(__pte_map(pmd) + pte_index(addr))

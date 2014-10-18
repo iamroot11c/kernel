@@ -161,7 +161,7 @@ static inline pmd_t *pmd_offset(pud_t *pud, unsigned long addr)
 	// 전달받은 값을 그대로 type cast 후 :리턴
 	return (pmd_t *)pud;
 }
-
+// SECTION인가 아닌가를 확인. l1 page table에서는 뒤의 2비트가 0x10로 설정되어 있다.
 #define pmd_bad(pmd)		(pmd_val(pmd) & 2)
 
 #define copy_pmd(pmdpd,pmdps)		\

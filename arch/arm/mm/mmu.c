@@ -610,6 +610,7 @@ EXPORT_SYMBOL(phys_mem_access_prot);
 
 static void __init *early_alloc_aligned(unsigned long sz, unsigned long align)
 {
+	// sz 만큼 메모리 할당, 초기화 후 포인터 리턴
 	void *ptr = __va(memblock_alloc(sz, align));
 	memset(ptr, 0, sz);
 	return ptr;
@@ -623,7 +624,13 @@ static void __init *early_alloc(unsigned long sz)
 static pte_t * __init early_pte_alloc(pmd_t *pmd, unsigned long addr, unsigned long prot)
 {
 	if (pmd_none(*pmd)) {
+		// *pmd == 0인 경우, 즉 pmd 내에 매핑된 주소가 설정되지 않은 경우
+		// PTE_HWTABLE_OFF + PTE_WHTABLE_SIZE == 4KB
+		// 4kb size 4kb align으로 메모리 할당
 		pte_t *pte = early_alloc(PTE_HWTABLE_OFF + PTE_HWTABLE_SIZE);
+		// 메모리 할당 후 물리 주소 변환, PMD_TABLE 세팅 값을 넘김
+		// 할당된 주소를 pmd[0], pmd[1]에 세팅.
+		// l1 table -> page table type 
 		__pmd_populate(pmd, __pa(pte), prot);
 	}
 	BUG_ON(pmd_bad(*pmd));
@@ -634,6 +641,7 @@ static void __init alloc_init_pte(pmd_t *pmd, unsigned long addr,
 				  unsigned long end, unsigned long pfn,
 				  const struct mem_type *type)
 {
+	// pmd 로 pte를 구하는 동작 
 	pte_t *pte = early_pte_alloc(pmd, addr, type->prot_l1);
 	do {
 		set_pte_ext(pte, pfn_pte(pfn, __pgprot(type->prot_pte)), 0);
@@ -657,10 +665,17 @@ static void __init __map_init_section(pmd_t *pmd, unsigned long addr,
 	 * offset for odd 1MB sections.
 	 * (See arch/arm/include/asm/pgtable-2level.h)
 	 */
+	 // in createmapping, addr == md->virtual의 4KB align
+	 // addr이 SECTION_SIZE(1mb)단위이면  pmd증가
 	if (addr & SECTION_SIZE)
 		pmd++;
 #endif
 	do {
+		// type->prot_sect : MT_MEMORY로 넘길 때 (1 << 2 | 1 << 10)의 값을 지님
+		// __pmd 단순한 형변환
+		// pmd : 4kb aligned address 
+		// -> 10bit(AP(0x01)), 2bit(B bit Setting) 페이지 테이블 세팅
+		// read/write privileged only 설정
 		*pmd = __pmd(phys | type->prot_sect);
 		phys += SECTION_SIZE;
 	} while (pmd++, addr += SECTION_SIZE, addr != end);
@@ -700,6 +715,8 @@ static void __init alloc_init_pmd(pud_t *pud, unsigned long addr,
 		 //2014-10-11 
 		if (type->prot_sect &&
 				((addr | next | phys) & ~SECTION_MASK) == 0) {
+			// prot_sect가 설정되어있고, addr, next, phys 3개 중 1개 이상이 1mb단위가 아닐 때
+			// pmd에 대해 type->prot_sect의 비트(여기서는 ap(0x01), b(0x01))를 설정한다.
 			__map_init_section(pmd, addr, next, phys, type);
 		} else {
 			alloc_init_pte(pmd, addr, next,
@@ -740,6 +757,12 @@ static void __init create_36bit_mapping(struct map_desc *md,
 	phys_addr_t phys;
 	pgd_t *pgd;
 
+	addr = md->virtual;
+
+	addr = md->virtual;
+	addr = md->virtual;
+
+	addr = md->virtual;
 	addr = md->virtual;
 	phys = __pfn_to_phys(md->pfn);
 	length = PAGE_ALIGN(md->length);
@@ -1446,12 +1469,6 @@ static void __init map_lowmem(void)
  */
 void __init paging_init(const struct machine_desc *mdesc)
 {
-	void *zero_page;
-
-	build_mem_type_table();
-	prepare_page_table();
-	//2014-10-11 분석중
-	map_lowmem();
 	dma_contiguous_remap();
 	devicemaps_init(mdesc);
 	kmap_init();

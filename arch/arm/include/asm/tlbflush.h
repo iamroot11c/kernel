@@ -639,11 +639,14 @@ static inline void dummy_flush_tlb_a15_erratum(void)
 static inline void flush_pmd_entry(void *pmd)
 {
 	const unsigned int __tlb_flag = __cpu_tlb_flags;
-
+	// 
 	tlb_op(TLB_DCLEAN, "c7, c10, 1	@ flush_pmd", pmd);
+	// TLB_L2CLEAN_FR에 해당 명령어는 실행되지 않는다.
 	tlb_l2_op(TLB_L2CLEAN_FR, "c15, c9, 1  @ L2 flush_pmd", pmd);
 
 	if (tlb_flag(TLB_WB))
+		// 저장이 완료될 때까지만 기다리고 공유 가능한 내부 도메인까지 수행되는 dsb 작업
+		// 캐시 내 명령어가 완수될 때까지 대기
 		dsb(ishst);
 }
 

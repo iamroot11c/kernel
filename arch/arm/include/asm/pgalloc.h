@@ -129,9 +129,11 @@ static inline void pte_free(struct mm_struct *mm, pgtable_t pte)
 static inline void __pmd_populate(pmd_t *pmdp, phys_addr_t pte,
 				  pmdval_t prot)
 {
+	// + 11bit add 후  2bit setting
 	pmdval_t pmdval = (pte + PTE_HWTABLE_OFF) | prot;
 	pmdp[0] = __pmd(pmdval);
 #ifndef CONFIG_ARM_LPAE
+	// pmd[1] = pmd[0] + 10bit add
 	pmdp[1] = __pmd(pmdval + 256 * sizeof(pte_t));
 #endif
 	flush_pmd_entry(pmdp);
