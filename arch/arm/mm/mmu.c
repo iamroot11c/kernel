@@ -758,12 +758,6 @@ static void __init create_36bit_mapping(struct map_desc *md,
 	pgd_t *pgd;
 
 	addr = md->virtual;
-
-	addr = md->virtual;
-	addr = md->virtual;
-
-	addr = md->virtual;
-	addr = md->virtual;
 	phys = __pfn_to_phys(md->pfn);
 	length = PAGE_ALIGN(md->length);
 
@@ -1469,6 +1463,12 @@ static void __init map_lowmem(void)
  */
 void __init paging_init(const struct machine_desc *mdesc)
 {
+	void *zero_page;
+
+	build_mem_type_table();
+	prepare_page_table();
+	// 2014-10-11 
+	map_lowmem();
 	dma_contiguous_remap();
 	devicemaps_init(mdesc);
 	kmap_init();
