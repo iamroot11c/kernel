@@ -667,6 +667,11 @@ static void __init __map_init_section(pmd_t *pmd, unsigned long addr,
 	 */
 	 // in createmapping, addr == md->virtual의 4KB align
 	 // addr이 SECTION_SIZE(1mb)단위이면  pmd증가
+	 /* 이 함수 진입시 |~SECTION_MASK == 0임을 체크했을때 
+	  * addr이 SECTION_SIZE보다 작을 것임을 이미 체크.
+	  * 다른곳에서 쓰는진 모름 (틀린 가정일지도 모름)
+	  * 일단 이건 넘긴다고 예상
+	  */
 	if (addr & SECTION_SIZE)
 		pmd++;
 #endif
@@ -711,8 +716,19 @@ static void __init alloc_init_pmd(pud_t *pud, unsigned long addr,
 		 *2단계 페이징이므로 여기까지 next = end, pmd=pud=pgd 가된다
 		 *type->prot_sect 는 값이 있으며,
 		 *뒤의 addr...들은 안들어올것으로 예상(들어올수도있다)
+		 *prot_sect = PMD_TYPE_SECT | PMD_SECT_AP_WRITE
 		 * */
 		 //2014-10-11 
+		 /*
+		  * addr(가상주소), next(다음의 가상주소), phys이 전부 
+		  * section_mask, 즉 1M인 경우 이는 map init의 맨 처음임을
+		  * 예상할 수 있다.
+		  * 만약 처음임에도 이 if문에 걸리지 않는 경우는 map init을
+		  * 할 필요가 없는 경우라고 판단된다.
+		  * (addr == 0인경우와 addr = 0xffff_0000인 경우등등이
+		  * 있었음을 상기. 그렇다면 addr = 0인 경우는 그렇다쳐도 
+		  * 다른경우는 왜 map 초기화를 할필요가 없을까?)
+		  * */
 		if (type->prot_sect &&
 				((addr | next | phys) & ~SECTION_MASK) == 0) {
 			// prot_sect가 설정되어있고, addr, next, phys 3개 중 1개 이상이 1mb단위가 아닐 때
@@ -879,6 +895,9 @@ static void __init create_mapping(struct map_desc *md)
 	/*
 	 * Catch 36-bit addresses
 	 */
+	//32bit 이상인 경우 pfn >= 0x100000 이다. 
+	// 1pfn = 0x1000(4k) 이므로 0x100000(1M) 을 곱하면 4G.
+	//나중에
 	// 2014-10-25, 시작!
 	if (md->pfn >= 0x100000) {
 		create_36bit_mapping(md, type);
@@ -886,16 +905,23 @@ static void __init create_mapping(struct map_desc *md)
 	}
 #endif
 	/*
-	 * md->virtual(start)가 ffff_0000 or 0 인경우 -> addr = 0
-	 * md->virtual이 TASK_SIZE보다 큰경우 -> addr = PAGE_MASK값
+	 * md->virtual(start)가 0 -> addr = 0
+	 * md->virtual(start)가 ffff_0000 -> addr = ffff_0000
+	 * md->virtual이 TASK_SIZE보다 큰경우 -> &PAGE_MASK 한값
+	 * PAGE_MASK는 시작주소를 PAGE_ALIGN한 개념
 	 * */
 	addr = md->virtual & PAGE_MASK;
 	phys = __pfn_to_phys(md->pfn);
+	/*
+	 *원래 length에 위에 addr(start)를 할때 PAGE_MASK에 의해 버려진값
+	 *을 더한후 ALIGN한 것.
+	 * */
 	length = PAGE_ALIGN(md->length + (md->virtual & ~PAGE_MASK));
 
 	/*
 	 * prot_l1 == 0인 동시에 (addr | phys | length) & ~SECTION_MASK가 의미있는 값을
 	 * 가질수는 없다.
+	 * MT_MEMORY의 prot_l1은 table_type(0x1)이다. 0인경우는 fault
 	 * */
 	if (type->prot_l1 == 0 && ((addr | phys | length) & ~SECTION_MASK)) {
 		printk(KERN_WARNING "BUG: map for 0x%08llx at 0x%08lx can not "
@@ -904,14 +930,25 @@ static void __init create_mapping(struct map_desc *md)
 		return;
 	}
 
+	//pgd base addr(0xc000_8000(ram+text) - 0x4000(pgdir size) + pgd_offset(addr))
 	pgd = pgd_offset_k(addr);
+	//이때당시 addr은 startstart이므로 length를 add하면 end가 나온다
 	end = addr + length;
 	do {
 		//addr+end가 pgd끝을 넘는지를 검사. 넘으면 pgd끝으로, 아니면 addr+end로
+		/*
+		 *이때 생각해놔야 될것이, pgd, next는 실제 물리주소에 있는
+		 * page table의 주소이고, addr,phy는 해당 pgd(pmd,pte등등)
+		 * 가리키고 있는 실제 물리주소를 의미하는걸 유념..
+		 * */
 		unsigned long next = pgd_addr_end(addr, end);
 
 		alloc_init_pud(pgd, addr, next, phys, type);
 
+		//phys는 ptn을 다시 원상복귀한 값이였음을 유념
+		//안에서 pfn을 다시 계산하기 위해 사용하는것 같음
+		//더해지는 값은 각 층(pgd,...pte)의 값
+		//pgd에서는 2MB, pte에서는 ..값임을 예상
 		phys += next - addr;
 		addr = next;
 	} while (pgd++, addr != end);
@@ -1488,6 +1525,8 @@ void __init paging_init(const struct machine_desc *mdesc)
 	void *zero_page;
 
 	build_mem_type_table();
+	//https://www.google.co.kr/search?q=linux+page+section+1mb&newwindow=1&espv=2&biw=1920&bih=979&source=lnms&tbm=isch&sa=X&ei=vDxGVI6AOuHImAWUm4HgAg&ved=0CAYQ_AUoAQ#imgdii=_
+	//http://www.iamroot.org/xe/Kernel_10_ARM/176798
 	prepare_page_table();
 	// 2014-10-11, start 
 	map_lowmem();

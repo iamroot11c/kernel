@@ -176,6 +176,8 @@ extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
 /* to find an entry in a page-table-directory */
 // PGDIR_SHIFT : global page 에 해당하는 값을 추출하기 위한 값
 // 현재 구조에서는 2단계 페이징 시스템을 사용하기 때문에 해당 값은 21
+// pgd size는 2MB이기 때문에 2MB만큼 shift한것.
+// http://www.iamroot.org/xe/Kernel_10_ARM/176798
 #define pgd_index(addr)		((addr) >> PGDIR_SHIFT)
 
 // mm->pgd == swapper_pg_dir
