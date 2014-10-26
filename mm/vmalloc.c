@@ -1131,6 +1131,8 @@ void __init vm_area_add_early(struct vm_struct *vm)
 		} else
 			BUG_ON(tmp->addr + tmp->size > vm->addr);
 	}
+
+	// vmlist의 가장 마지막에 arg vm을 추가한다.
 	vm->next = *p;
 	*p = vm;
 }

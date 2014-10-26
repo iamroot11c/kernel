@@ -84,6 +84,8 @@ struct static_vm *find_static_vm_vaddr(void *vaddr)
 	return NULL;
 }
 
+// 2014-10-25
+// 전달된 svm을 static_vmlist에 추가하는 기능
 void __init add_static_vm_early(struct static_vm *svm)
 {
 	struct static_vm *curr_svm;
@@ -91,15 +93,19 @@ void __init add_static_vm_early(struct static_vm *svm)
 	void *vaddr;
 
 	vm = &svm->vm;
+	// 현재 구성된 vmlist에 가장 마지막 노드로 추가됨
 	vm_area_add_early(vm);
 	vaddr = vm->addr;
 
 	list_for_each_entry(curr_svm, &static_vmlist, list) {
 		vm = &curr_svm->vm;
 
+		// 삽입 지점 선정
 		if (vm->addr > vaddr)
 			break;
 	}
+
+	// 삽입
 	list_add_tail(&svm->list, &curr_svm->list);
 }
 

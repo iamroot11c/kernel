@@ -749,6 +749,9 @@ static void __init alloc_init_pud(pgd_t *pgd, unsigned long addr,
 	} while (pud++, addr = next, addr != end);
 }
 
+// 2014-10-25
+// *pmd값을 아래와 같이 설정하는 것이 주기능.
+// *pmd++ = __pmd(phys | type->prot_sect | PMD_SECT_SUPER);
 #ifndef CONFIG_ARM_LPAE
 static void __init create_36bit_mapping(struct map_desc *md,
 					const struct mem_type *type)
@@ -758,9 +761,11 @@ static void __init create_36bit_mapping(struct map_desc *md,
 	pgd_t *pgd;
 
 	addr = md->virtual;
+	// pfn(page frame number)
 	phys = __pfn_to_phys(md->pfn);
 	length = PAGE_ALIGN(md->length);
 
+	// cpu_is_xsc3 - Intel's XScale3 core
 	if (!(cpu_architecture() >= CPU_ARCH_ARMv6 || cpu_is_xsc3())) {
 		printk(KERN_ERR "MM: CPU does not support supersection "
 		       "mapping for 0x%08llx at 0x%08lx\n",
@@ -774,6 +779,7 @@ static void __init create_36bit_mapping(struct map_desc *md,
 	 *	supersections are only allocated for domain 0 regardless
 	 *	of the actual domain assignments in use.
 	 */
+	 // ARMv6 supsections는 domain 0에서 동작하는것으로 미리 정의됨.
 	if (type->domain) {
 		printk(KERN_ERR "MM: invalid domain in supersection "
 		       "mapping for 0x%08llx at 0x%08lx\n",
@@ -781,6 +787,8 @@ static void __init create_36bit_mapping(struct map_desc *md,
 		return;
 	}
 
+	// ~SUPERSECTION_MASK : 하위 24비트
+	// 하위 24비트의 값은 0으로 미리 채워져 있을것이다라고 예상함.
 	if ((addr | length | __pfn_to_phys(md->pfn)) & ~SUPERSECTION_MASK) {
 		printk(KERN_ERR "MM: cannot create mapping for 0x%08llx"
 		       " at 0x%08lx invalid alignment\n",
@@ -792,7 +800,10 @@ static void __init create_36bit_mapping(struct map_desc *md,
 	 * Shift bits [35:32] of address into bits [23:20] of PMD
 	 * (See ARMv6 spec).
 	 */
+	// 위 주석의 내용대로라면, [23:20]의 값을, [35:32]에 채워넣는다.
+	// if (md->pfn >= 0x100000) 20bit
 	phys |= (((md->pfn >> (32 - PAGE_SHIFT)) & 0xF) << 20);
+	//
 
 	pgd = pgd_offset_k(addr);
 	end = addr + length;
@@ -801,11 +812,16 @@ static void __init create_36bit_mapping(struct map_desc *md,
 		pmd_t *pmd = pmd_offset(pud, addr);
 		int i;
 
+		// Loop, total 16회.
+		// [MEMORY].prot_sect = PMD_TYPE_SECT[:2] | PMD_SECT_AP_WRITE[:10],
+		// PMD_SECT_SUPER = (1 << 18);
 		for (i = 0; i < 16; i++)
 			*pmd++ = __pmd(phys | type->prot_sect | PMD_SECT_SUPER);
 
+		// SUPERSECTION_SIZE : 1 << 24;
 		addr += SUPERSECTION_SIZE;
 		phys += SUPERSECTION_SIZE;
+		// PGDIR_SHIFT 21
 		pgd += SUPERSECTION_SIZE >> PGDIR_SHIFT;
 	} while (addr != end);
 }
@@ -863,7 +879,7 @@ static void __init create_mapping(struct map_desc *md)
 	/*
 	 * Catch 36-bit addresses
 	 */
-	//나중에
+	// 2014-10-25, 시작!
 	if (md->pfn >= 0x100000) {
 		create_36bit_mapping(md, type);
 		return;
@@ -904,6 +920,7 @@ static void __init create_mapping(struct map_desc *md)
 /*
  * Create the architecture specific mappings
  */
+// 2014-10-25, iotable_init(&map, 1);
 void __init iotable_init(struct map_desc *io_desc, int nr)
 {
 	struct map_desc *md;
@@ -913,6 +930,7 @@ void __init iotable_init(struct map_desc *io_desc, int nr)
 	if (!nr)
 		return;
 
+	// 만약, sizeof(svm)이라면 4일것이다.
 	svm = early_alloc_aligned(sizeof(*svm) * nr, __alignof__(*svm));
 
 	for (md = io_desc; nr; md++, nr--) {
@@ -923,8 +941,10 @@ void __init iotable_init(struct map_desc *io_desc, int nr)
 		vm->size = PAGE_ALIGN(md->length + (md->virtual & ~PAGE_MASK));
 		vm->phys_addr = __pfn_to_phys(md->pfn);
 		vm->flags = VM_IOREMAP | VM_ARM_STATIC_MAPPING;
+		// #define VM_ARM_MTYPE(mt)        ((mt) << 20)
 		vm->flags |= VM_ARM_MTYPE(md->type);
 		vm->caller = iotable_init;
+		// static_vmlist에 추가
 		add_static_vm_early(svm++);
 	}
 }
@@ -1333,11 +1353,13 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 	unsigned long addr;
 	void *vectors;
 
+    //
 	/*
 	 * Allocate the vector page early.
 	 */
 	vectors = early_alloc(PAGE_SIZE * 2);
 
+	// 2014-10-25, 분석중
 	early_trap_init(vectors);
 
 	for (addr = VMALLOC_START; addr; addr += PMD_SIZE)
@@ -1467,10 +1489,18 @@ void __init paging_init(const struct machine_desc *mdesc)
 
 	build_mem_type_table();
 	prepare_page_table();
-	// 2014-10-11 
+	// 2014-10-11, start 
 	map_lowmem();
+	// 2014-10-25, end
+
+	// 2014-10-25, start
 	dma_contiguous_remap();
+	// 2014-10-25, end
+
+	// 2014-10-25, start
 	devicemaps_init(mdesc);
+	//
+
 	kmap_init();
 	tcm_init();
 

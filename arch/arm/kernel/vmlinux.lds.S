@@ -159,6 +159,7 @@ SECTIONS
 	. = __vectors_start + SIZEOF(.vectors);
 	__vectors_end = .;
 
+	/* 2014-10-25, 아래에서, 0x1000은 무엇을 의미할까? */
 	__stubs_start = .;
 	.stubs 0x1000 : AT(__stubs_start) {
 		*(.stubs)

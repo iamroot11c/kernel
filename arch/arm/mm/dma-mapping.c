@@ -409,9 +409,15 @@ void __init dma_contiguous_early_fixup(phys_addr_t base, unsigned long size)
 	dma_mmu_remap_num++;
 }
 
+
+// 2014-10-25
+// dma_mmu_remap을 읽어서, struct map_desc 변수 설정 후
+// iotable_init() 하는 것이 주된 기능이다.
 void __init dma_contiguous_remap(void)
 {
 	int i;
+	// dma_mmu_remap_num은 dma_contiguous_early_fixup() 호출된 횟수만큼이다.
+	// 참고로, dma_contiguous_early_fixup(), arm_memblock_init()을 통해서 호출된다.
 	for (i = 0; i < dma_mmu_remap_num; i++) {
 		phys_addr_t start = dma_mmu_remap[i].base;
 		phys_addr_t end = start + dma_mmu_remap[i].size;
@@ -431,6 +437,7 @@ void __init dma_contiguous_remap(void)
 		/*
 		 * Clear previous low-memory mapping
 		 */
+		// Offset(Unit)은 PMD_SIZE이다.
 		for (addr = __phys_to_virt(start); addr < __phys_to_virt(end);
 		     addr += PMD_SIZE)
 			pmd_clear(pmd_off_k(addr));

@@ -39,7 +39,7 @@
 #define tls_emu		0
 #define has_tls_reg		(elf_hwcap & HWCAP_TLS)
 #define switch_tls	switch_tls_v6
-#elif defined(CONFIG_CPU_32v6K)
+#elif defined(CONFIG_CPU_32v6K) // CONFIG_CPU_32v6K=y
 #define tls_emu		0
 #define has_tls_reg		1
 #define switch_tls	switch_tls_v6k

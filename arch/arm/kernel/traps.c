@@ -841,18 +841,43 @@ void __init trap_init(void)
 	return;
 }
 
+// 2014-10-25, CONFIG_KUSER_HELPERS=y
+// early_trap_init()로부터 호출되었다면, 
+// @vectors는 8K 할당 받았고, 각각에 대해서 memcpy를 마친 상태
+// 
+// @vectors에 __kuser_helper_xxx function들을 등록하고
+// hardware TLS instruction을 저장하는 기능.
 #ifdef CONFIG_KUSER_HELPERS
 static void __init kuser_init(void *vectors)
 {
+	// arch/arm/kernel/entry-armv.S
+	// __kuser_helper_start[], __kuser_helper_end[]
+	/*
+	* From System.map
+	* c04f6340 T __kuser_helper_start
+	* c04f6380 t __kuser_memory_barrier
+	* c04f63a0 t __kuser_cmpxchg
+	* c04f63c0 t __kuser_get_tls
+	* c04f63dc t __kuser_helper_version
+	* c04f63e0 T __kuser_helper_end
+	*/
 	extern char __kuser_helper_start[], __kuser_helper_end[];
 	int kuser_sz = __kuser_helper_end - __kuser_helper_start;
 
+    // 첫번째 Page 중, 두번째 Page - kuser_sz 곳이 Destination
+	// NOTE: 2번째 Page가 아니다.
 	memcpy(vectors + 0x1000 - kuser_sz, __kuser_helper_start, kuser_sz);
 
 	/*
 	 * vectors + 0xfe0 = __kuser_get_tls
 	 * vectors + 0xfe8 = hardware TLS instruction at 0xffff0fe8
 	 */
+	/* iamroot
+	  #elif defined(CONFIG_CPU_32v6K) // CONFIG_CPU_32v6K=y
+	  #define tls_emu     0
+	  #define has_tls_reg     1
+	  #define switch_tls  switch_tls_v6k
+	*/
 	if (tls_emu || has_tls_reg)
 		memcpy(vectors + 0xfe0, vectors + 0xfe8, 4);
 }
@@ -862,6 +887,9 @@ static void __init kuser_init(void *vectors)
 }
 #endif
 
+// 2014-10-25, 
+// early_trap_init(vectors);
+// 호출되기 전, vectors_base는 8K 할당 받았었다.
 void __init early_trap_init(void *vectors_base)
 {
 #ifndef CONFIG_CPU_V7M
@@ -878,6 +906,9 @@ void __init early_trap_init(void *vectors_base)
 	 * ISAs.  The Thumb version is an undefined instruction with a
 	 * branch back to the undefined instruction.
 	 */
+	 // 1024번 수행
+	 // 1 page에 대해서, 0xe7fddef1으로 값을 채움
+	 // NOTE: 할당 받은 8K 중에서, 4K에 대해서만 초기화 하고 있다.
 	for (i = 0; i < PAGE_SIZE / sizeof(u32); i++)
 		((u32 *)vectors_base)[i] = 0xe7fddef1;
 
@@ -886,12 +917,23 @@ void __init early_trap_init(void *vectors_base)
 	 * into the vector page, mapped at 0xffff0000, and ensure these
 	 * are visible to the instruction stream.
 	 */
+	// arch/arm/kernel/vmlinux.lds.S
+	// __vectors_start, __vectors_end
+	// __stubs_start, __stubs_end
+	// NOTE: 할당 받은 8K 중에서, 4K에 대해서는 __vectors_xxxx에 대해서
 	memcpy((void *)vectors, __vectors_start, __vectors_end - __vectors_start);
+	// 0x1000 == 4K, 4096
+	// NOTE: 0x1000은 나머지 4K에 대해서 __stubs_xxxx 값을 copy하고 있다.
 	memcpy((void *)vectors + 0x1000, __stubs_start, __stubs_end - __stubs_start);
 
 	kuser_init(vectors_base);
 
+	// arch/arm/mm/cache-v7.S
+	// v7_coherent_kern_range - 주석의 의하면 /* FALLTHROUGH */인 상태임으로
+	// 실제 동작은 하지 않을 것임
 	flush_icache_range(vectors, vectors + PAGE_SIZE * 2);
+	// 2014-10-25, 여기까지 
+
 	modify_domain(DOMAIN_USER, DOMAIN_CLIENT);
 #else /* ifndef CONFIG_CPU_V7M */
 	/*
