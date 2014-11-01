@@ -1,0 +1,603 @@
+Full boot log:
+
+Connected to octa console [channel connected] (~$quit to exit)
+(user:khilman) is already connected
+
+
+# PYBOOT: console: connected.
+~$hardreset
+
+Command(octa console)> hardreset
+(user:khilman) Reboot octa
+
+
+U-Boot 2012.07-00002-g46d2f2226fdc (Jun 26 2014 - 07:46:22) for ARNDALE OCTA
+
+CPU: Exynos5420 Rev2.0 [Samsung SOC on SMP Platform Base on ARM CortexA15]
+APLL = 800MHz, KPLL = 600MHz
+MPLL = 532MHz, BPLL = 800MHz
+
+Board: ARNDALE OCTA
+DRAM:  2 GiB
+WARNING: Caches not enabled
+
+TrustZone Enabled BSP
+BL1 version: 
+
+Checking Boot Mode ... SDMMC
+MMC:   S5P_MSHC2: 0, S5P_MSHC0: 1
+MMC Device 0: 7.4 GiB
+MMC Device 1: 3.6 GiB
+MMC Device 2: MMC Device 2 not found
+there are pending interrupts 0x00000001
+In:    serial
+Out:   serial
+Err:   serial
+Net:   No ethernet found.
+(Re)start USB...
+USB:   Register 1313 NbrPorts 3
+USB EHCI 1.00
+scanning bus for devices... The request port(2) is not configured
+The request port(2) is not configured
+3 USB Device(s) found
+       scanning bus for storage devices... 0 Storage Device(s) found
+       scanning usb for ethernet devices... 1 Ethernet Device(s) found
+Hit any key to stop autoboot:  1 
+
+# PYBOOT: u-boot: taking control.
+ 0 
+ARNDALE # 
+ARNDALE # version
+version
+
+U-Boot 2012.07-00002-g46d2f2226fdc (Jun 26 2014 - 07:46:22) for ARNDALE OCTA
+arm-linux-gnueabi-gcc (Ubuntu/Linaro 4.7.3-1ubuntu1) 4.7.3
+GNU ld (GNU Binutils for Ubuntu) 2.23.52.20130913
+ARNDALE # setenv ethaddr 6e:e6:84:36:8e:9fs
+setenv ethaddr 6e:e6:84:36:8e:9fs
+ARNDALE # setenv initrd_high 0xffffffff
+setenv initrd_high 0xffffffff
+ARNDALE # setenv fdt_high 0xffffffff
+setenv fdt_high 0xffffffff
+ARNDALE # setenv bootargs console=ttySAC3,115200n8 debug earlyprintk
+setenv bootargs console=ttySAC3,115200n8 debug earlyprintk
+ARNDALE # setenv netargs 'setenv bootargs ${bootargs} "ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:::none:192.168.1.254"'
+setenv netargs 'setenv bootargs ${bootargs} "ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:::none:192.168.1.254"'
+ARNDALE # if test -n ${initenv}; then run initenv; fi
+if test -n ${initenv}; then run initenv; fi
+ARNDALE # if test -n ${preboot}; then run preboot; fi
+if test -n ${preboot}; then run preboot; fi
+(Re)start USB...
+USB:   Register 1313 NbrPorts 3
+USB EHCI 1.00
+scanning bus for devices... The request port(2) is not configured
+The request port(2) is not configured
+3 USB Device(s) found
+       scanning bus for storage devices... 0 Storage Device(s) found
+       scanning usb for ethernet devices... 1 Ethernet Device(s) found
+ARNDALE # setenv autoload no; setenv autoboot no
+setenv autoload no; setenv autoboot no
+ARNDALE # dhcp
+dhcp
+Waiting for Ethernet connection... done.
+BOOTP broadcast 1
+DHCP client bound to address 192.168.1.196
+ARNDALE # setenv serverip 192.168.1.2
+setenv serverip 192.168.1.2
+ARNDALE # if test -n ${netargs}; then run netargs; fi
+if test -n ${netargs}; then run netargs; fi
+ARNDALE # tftp 0x21000000 192.168.1.2:tmp/octa-y_w3S5/zImage
+tftp 0x21000000 192.168.1.2:tmp/octa-y_w3S5/zImage
+Waiting for Ethernet connection... done.
+Using asx0 device
+TFTP from server 192.168.1.2; our IP address is 192.168.1.196
+Filename 'tmp/octa-y_w3S5/zImage'.
+Load address: 0x21000000
+Loading: *#################################################################
+ #################################################################
+ #################################################################
+ #########################
+done
+Bytes transferred = 3222800 (312d10 hex)
+ARNDALE #tftp 0x22000000 192.168.1.2:tmp/octa-y_w3S5/rootfs.cpio.gz
+ tftp 0x22000000 192.168.1.2:tmp/octa-y_w3S5/rootfs.cpio.gz
+Waiting for Ethernet connection... done.
+Using asx0 device
+TFTP from server 192.168.1.2; our IP address is 192.168.1.196
+Filename 'tmp/octa-y_w3S5/rootfs.cpio.gz'.
+Load address: 0x22000000
+Loading: *############################################
+done
+Bytes transferred = 642843 (9cf1b hex)
+ARNDALE # tftp 0x23000000 192.168.1.2:tmp/octa-y_w3S5/tmpxZPXAc.dtb
+tftp 0x23000000 192.168.1.2:tmp/octa-y_w3S5/tmpxZPXAc.dtb
+Waiting for Ethernet connection... done.
+Using asx0 device
+TFTP from server 192.168.1.2; our IP address is 192.168.1.196
+Filename 'tmp/octa-y_w3S5/tmpxZPXAc.dtb'.
+Load address: 0x23000000
+Loading: *###
+done
+Bytes transferred = 33491 (82d3 hex)
+ARNDALE # printenv bootargs
+printenv bootargs
+bootargs=console=ttySAC3,115200n8 debug earlyprintk ip=192.168.1.196:192.168.1.2:192.168.1.254:255.255.255.0:::none:192.168.1.254
+ARNDALE # bootz 0x21000000 - 0x23000000
+
+# PYBOOT: u-boot: jumping to kernel image
+bootz 0x21000000 - 0x23000000
+## Flattened Device Tree blob at 23000000
+   Booting using the fdt blob at 0x23000000
+   Using Device Tree in place at 23000000, end 2300b2d2
+
+Starting kernel ...
+
+[    0.000000] Booting Linux on physical CPU 0x0
+[    0.000000] Linux version 3.17.0-rc4-next-20140910 (buildslave@kbuilderdedi01) (gcc version 4.7.1 (Ubuntu/Linaro 4.7.1-5ubuntu1~ppa1) ) #1 SMP PREEMPT Wed Sep 10 11:38:17 CEST 2014
+[    0.000000] CPU: ARMv7 Processor [412fc0f3] revision 3 (ARMv7), cr=10c5387d
+[    0.000000] CPU: PIPT / VIPT nonaliasing data cache, PIPT instruction cache
+[    0.000000] Machine model: Insignal Arndale Octa evaluation board based on EXYNOS5420
+[    0.000000] cma: Reserved 64 MiB at 9b800000
+[    0.000000] Memory policy: Data cache writealloc
+[    0.000000] On node 0 totalpages: 518656
+[    0.000000] free_area_init_node: node 0, pgdat c0629580, node_mem_map ee7fc000
+[    0.000000]   Normal zone: 1520 pages used for memmap
+[    0.000000]   Normal zone: 0 pages reserved
+[    0.000000]   Normal zone: 192512 pages, LIFO batch:31
+[    0.000000]   HighMem zone: 2564 pages used for memmap
+[    0.000000]   HighMem zone: 326144 pages, LIFO batch:31
+[    0.000000] Running under secure firmware.
+[    0.000000] PERCPU: Embedded 9 pages/cpu @ee785000 s7552 r8192 d21120 u36864
+[    0.000000] pcpu-alloc: s7552 r8192 d21120 u36864 alloc=9*4096
+[    0.000000] pcpu-alloc: [0] 0 [0] 1 [0] 2 [0] 3 [0] 4 [0] 5 [0] 6 [0] 7 
+[    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 517136
+[    0.000000] Kernel command line: console=ttySAC3,115200n8 debug earlyprintk ip=192.168.1.196:192.168.1.2:192.168.1.254:255.255.255.0:::none:192.168.1.254
+[    0.000000] PID hash table entries: 4096 (order: 2, 16384 bytes)
+[    0.000000] Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
+[    0.000000] Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
+[    0.000000] Memory: 1984312K/2074624K available (4273K kernel code, 273K rwdata, 1448K rodata, 283K init, 275K bss, 90312K reserved, 1239040K highmem)
+[    0.000000] Virtual kernel memory layout:
+[    0.000000]     vector  : 0xffff0000 - 0xffff1000   (   4 kB)
+[    0.000000]     fixmap  : 0xffc00000 - 0xffe00000   (2048 kB)
+[    0.000000]     vmalloc : 0xf0000000 - 0xff000000   ( 240 MB)
+[    0.000000]     lowmem  : 0xc0000000 - 0xef800000   ( 760 MB)
+[    0.000000]     pkmap   : 0xbfe00000 - 0xc0000000   (   2 MB)
+[    0.000000]     modules : 0xbf000000 - 0xbfe00000   (  14 MB)
+[    0.000000]       .text : 0xc0008000 - 0xc059ea48   (5723 kB)
+[    0.000000]       .init : 0xc059f000 - 0xc05e5d80   ( 284 kB)
+[    0.000000]       .data : 0xc05e6000 - 0xc062a480   ( 274 kB)
+[    0.000000]        .bss : 0xc062a480 - 0xc066f200   ( 276 kB)
+[    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=8, Nodes=1
+[    0.000000] Preemptible hierarchical RCU implementation.
+[    0.000000] NR_IRQS:16 nr_irqs:16 16
+[    0.000000] GIC physical location is 0x10481000
+[    0.000000] L2C: failed to init: -19
+[    0.000000] Switching to timer-based delay loop, resolution 41ns
+[    0.000006] sched_clock: 32 bits at 24MHz, resolution 41ns, wraps every 178956969942ns
+[    0.000351] Console: colour dummy device 80x30
+[    0.000380] Calibrating delay loop (skipped), value calculated using timer frequency.. 48.00 BogoMIPS (lpj=120000)
+[    0.000397] pid_max: default: 32768 minimum: 301
+[    0.000584] Mount-cache hash table entries: 2048 (order: 1, 8192 bytes)
+[    0.000597] Mountpoint-cache hash table entries: 2048 (order: 1, 8192 bytes)
+[    0.001266] CPU: Testing write buffer coherency: ok
+[    0.001616] CPU0: update cpu_capacity 1535
+[    0.001629] CPU0: thread -1, cpu 0, socket 0, mpidr 80000000
+[    0.001797] Setting up static identity map for 0x2040dc00 - 0x2040dc58
+[    0.002066] ARM CCI driver probed
+[    0.003073] Exynos MCPM support installed
+[    0.030479] CPU1: Booted secondary processor
+[    0.030530] CPU1: update cpu_capacity 1535
+[    0.030537] CPU1: thread -1, cpu 1, socket 0, mpidr 80000001
+[    0.040461] CPU2: Booted secondary processor
+[    0.040505] CPU2: update cpu_capacity 1535
+[    0.040512] CPU2: thread -1, cpu 2, socket 0, mpidr 80000002
+[    0.050467] CPU3: Booted secondary processor
+[    0.050510] CPU3: update cpu_capacity 1535
+[    0.050517] CPU3: thread -1, cpu 3, socket 0, mpidr 80000003
+[    1.060016] CPU4: failed to come online
+[    2.070031] CPU5: failed to come online
+[    3.080049] CPU6: failed to come online
+[    4.090066] CPU7: failed to come online
+[    4.090099] Brought up 4 CPUs
+[    4.090109] SMP: Total of 4 processors activated.
+[    4.090119] CPU: WARNING: CPU(s) started in wrong/inconsistent modes (primary CPU mode 0x13)
+[    4.090128] CPU: This may indicate a broken bootloader or firmware.
+[    4.090774] devtmpfs: initialized
+[    4.100073] VFP support v0.3: implementor 41 architecture 4 part 30 variant f rev 0
+[    4.102003] pinctrl core: initialized pinctrl subsystem
+[    4.102743] regulator-dummy: no parameters
+[    4.121316] NET: Registered protocol family 16
+[    4.123011] DMA: preallocated 256 KiB pool for atomic coherent allocations
+[    4.127921] gpiochip_add: registered GPIOs 0 to 7 on device: gpy7
+[    4.127939] gpiochip_add: registered GPIOs 8 to 15 on device: gpx0
+[    4.127954] gpiochip_add: registered GPIOs 16 to 23 on device: gpx1
+[    4.127968] gpiochip_add: registered GPIOs 24 to 31 on device: gpx2
+[    4.127983] gpiochip_add: registered GPIOs 32 to 39 on device: gpx3
+[    4.129150] gpiochip_add: registered GPIOs 40 to 47 on device: gpc0
+[    4.129166] gpiochip_add: registered GPIOs 48 to 55 on device: gpc1
+[    4.129180] gpiochip_add: registered GPIOs 56 to 62 on device: gpc2
+[    4.129194] gpiochip_add: registered GPIOs 63 to 66 on device: gpc3
+[    4.129207] gpiochip_add: registered GPIOs 67 to 68 on device: gpc4
+[    4.129220] gpiochip_add: registered GPIOs 69 to 76 on device: gpd1
+[    4.129233] gpiochip_add: registered GPIOs 77 to 82 on device: gpy0
+[    4.129246] gpiochip_add: registered GPIOs 83 to 86 on device: gpy1
+[    4.129259] gpiochip_add: registered GPIOs 87 to 92 on device: gpy2
+[    4.129272] gpiochip_add: registered GPIOs 93 to 100 on device: gpy3
+[    4.129285] gpiochip_add: registered GPIOs 101 to 108 on device: gpy4
+[    4.129298] gpiochip_add: registered GPIOs 109 to 116 on device: gpy5
+[    4.129311] gpiochip_add: registered GPIOs 117 to 124 on device: gpy6
+[    4.130166] gpiochip_add: registered GPIOs 125 to 132 on device: gpe0
+[    4.130182] gpiochip_add: registered GPIOs 133 to 134 on device: gpe1
+[    4.130195] gpiochip_add: registered GPIOs 135 to 140 on device: gpf0
+[    4.130208] gpiochip_add: registered GPIOs 141 to 148 on device: gpf1
+[    4.130222] gpiochip_add: registered GPIOs 149 to 156 on device: gpg0
+[    4.130235] gpiochip_add: registered GPIOs 157 to 164 on device: gpg1
+[    4.130248] gpiochip_add: registered GPIOs 165 to 166 on device: gpg2
+[    4.130261] gpiochip_add: registered GPIOs 167 to 170 on device: gpj4
+[    4.131076] gpiochip_add: registered GPIOs 171 to 178 on device: gpa0
+[    4.131091] gpiochip_add: registered GPIOs 179 to 184 on device: gpa1
+[    4.131105] gpiochip_add: registered GPIOs 185 to 192 on device: gpa2
+[    4.131118] gpiochip_add: registered GPIOs 193 to 197 on device: gpb0
+[    4.131132] gpiochip_add: registered GPIOs 198 to 202 on device: gpb1
+[    4.131145] gpiochip_add: registered GPIOs 203 to 206 on device: gpb2
+[    4.131158] gpiochip_add: registered GPIOs 207 to 214 on device: gpb3
+[    4.131170] gpiochip_add: registered GPIOs 215 to 216 on device: gpb4
+[    4.131183] gpiochip_add: registered GPIOs 217 to 224 on device: gph0
+[    4.132096] gpiochip_add: registered GPIOs 225 to 231 on device: gpz
+[    4.134210] exynos-audss-clk 3810000.audss-clock-controller: setup completed
+[    4.144815] EXYNOS: PMU not supported
+[    4.174099] SCSI subsystem initialized
+[    4.174608] usbcore: registered new interface driver usbfs
+[    4.174730] usbcore: registered new interface driver hub
+[    4.174884] usbcore: registered new device driver usb
+[    4.179253] Advanced Linux Sound Architecture Driver Initialized.
+[    4.180302] Switched to clocksource mct-frc
+[    4.198902] NET: Registered protocol family 2
+[    4.199648] TCP established hash table entries: 8192 (order: 3, 32768 bytes)
+[    4.199844] TCP bind hash table entries: 8192 (order: 5, 163840 bytes)
+[    4.200054] TCP: Hash tables configured (established 8192 bind 8192)
+[    4.200120] TCP: reno registered
+[    4.200139] UDP hash table entries: 512 (order: 2, 24576 bytes)
+[    4.200190] UDP-Lite hash table entries: 512 (order: 2, 24576 bytes)
+[    4.200993] NET: Registered protocol family 1
+[    4.201297] Trying to unpack rootfs image as initramfs...
+[    4.263099] Freeing initrd memory: 624K (c2000000 - c209c000)
+[    4.266009] futex hash table entries: 2048 (order: 5, 131072 bytes)
+[    4.286330] romfs: ROMFS MTD (C) 2007 Red Hat, Inc.
+[    4.286657] msgmni has been set to 1456
+[    4.287460] bounce: pool size: 64 pages
+[    4.287482] io scheduler noop registered
+[    4.287502] io scheduler deadline registered
+[    4.288156] io scheduler cfq registered (default)
+[    4.291344] 12100000.phy supply vbus not found, using dummy regulator
+[    4.291891] 12500000.phy supply vbus not found, using dummy regulator
+[    4.296794] dma-pl330 3880000.adma: Loaded driver for PL330 DMAC-2364208
+[    4.296813] dma-pl330 3880000.adma: DBUFF-4x8bytes Num_Chans-6 Num_Peri-16 Num_Events-6
+[    4.302854] dma-pl330 121a0000.pdma: Loaded driver for PL330 DMAC-2364208
+[    4.302871] dma-pl330 121a0000.pdma: DBUFF-32x4bytes Num_Chans-8 Num_Peri-32 Num_Events-32
+[    4.308777] dma-pl330 121b0000.pdma: Loaded driver for PL330 DMAC-2364208
+[    4.308794] dma-pl330 121b0000.pdma: DBUFF-32x4bytes Num_Chans-8 Num_Peri-32 Num_Events-32
+[    4.310462] dma-pl330 10800000.mdma: Loaded driver for PL330 DMAC-2364208
+[    4.310479] dma-pl330 10800000.mdma: DBUFF-64x8bytes Num_Chans-8 Num_Peri-1 Num_Events-32
+[    4.422271] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+[    4.424696] samsung-uart 12c00000.serial: ttySAC0 at MMIO 0x12c00000 (irq = 83, base_baud = 0) is a S3C6400/10
+[    4.425972] samsung-uart 12c10000.serial: ttySAC1 at MMIO 0x12c10000 (irq = 84, base_baud = 0) is a S3C6400/10
+[    4.426590] samsung-uart 12c20000.serial: ttySAC2 at MMIO 0x12c20000 (irq = 85, base_baud = 0) is a S3C6400/10
+[    4.427167] samsung-uart 12c30000.serial: ttySAC3 at MMIO 0x12c30000 (irq = 86, base_baud = 0) is a S3C6400/10
+[    5.335239] console [ttySAC3] enabled
+[    5.353195] brd: module loaded
+[    5.361261] loop: module loaded
+[    5.364109] usbcore: registered new interface driver asix
+[    5.368419] usbcore: registered new interface driver ax88179_178a
+[    5.374516] usbcore: registered new interface driver cdc_ether
+[    5.380688] usbcore: registered new interface driver smsc75xx
+[    5.386069] usbcore: registered new interface driver smsc95xx
+[    5.391789] usbcore: registered new interface driver net1080
+[    5.397357] usbcore: registered new interface driver cdc_subset
+[    5.403245] usbcore: registered new interface driver zaurus
+[    5.408845] usbcore: registered new interface driver cdc_ncm
+[    5.415353] usb@12000000 supply vdd33 not found, using dummy regulator
+[    5.420941] usb@12000000 supply vdd10 not found, using dummy regulator
+[    5.629327] usb@12400000 supply vdd33 not found, using dummy regulator
+[    5.634471] usb@12400000 supply vdd10 not found, using dummy regulator
+[    5.842279] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+[    5.847390] ehci-exynos: EHCI EXYNOS driver
+[    5.851767] of_get_named_gpiod_flags: can't parse 'samsung,vbus-gpio' property of node '/usb@12110000[0]'
+[    5.861282] exynos-ehci 12110000.usb: EHCI Host Controller
+[    5.866587] exynos-ehci 12110000.usb: new USB bus registered, assigned bus number 1
+[    5.874371] exynos-ehci 12110000.usb: irq 103, io mem 0x12110000
+[    5.885344] exynos-ehci 12110000.usb: USB 2.0 started, EHCI 1.00
+[    5.891150] hub 1-0:1.0: USB hub found
+[    5.893622] hub 1-0:1.0: 3 ports detected
+[    5.898634] ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
+[    5.903779] ohci-exynos: OHCI EXYNOS driver
+[    5.908215] exynos-ohci 12120000.usb: USB Host Controller
+[    5.913315] exynos-ohci 12120000.usb: new USB bus registered, assigned bus number 2
+[    5.921049] exynos-ohci 12120000.usb: irq 103, io mem 0x12120000
+[    5.985586] hub 2-0:1.0: USB hub found
+[    5.987894] hub 2-0:1.0: 3 ports detected
+[    5.993080] xhci-hcd xhci-hcd.2.auto: xHCI Host Controller
+[    5.997525] xhci-hcd xhci-hcd.2.auto: new USB bus registered, assigned bus number 3
+[    6.005398] xhci-hcd xhci-hcd.2.auto: irq 104, io mem 0x12000000
+[    6.012093] hub 3-0:1.0: USB hub found
+[    6.014676] hub 3-0:1.0: 1 port detected
+[    6.019164] xhci-hcd xhci-hcd.2.auto: xHCI Host Controller
+[    6.024072] xhci-hcd xhci-hcd.2.auto: new USB bus registered, assigned bus number 4
+[    6.032936] hub 4-0:1.0: USB hub found
+[    6.035475] hub 4-0:1.0: 1 port detected
+[    6.039923] xhci-hcd xhci-hcd.5.auto: xHCI Host Controller
+[    6.044782] xhci-hcd xhci-hcd.5.auto: new USB bus registered, assigned bus number 5
+[    6.052782] xhci-hcd xhci-hcd.5.auto: irq 105, io mem 0x12400000
+[    6.059541] hub 5-0:1.0: USB hub found
+[    6.062116] hub 5-0:1.0: 1 port detected
+[    6.066589] xhci-hcd xhci-hcd.5.auto: xHCI Host Controller
+[    6.071442] xhci-hcd xhci-hcd.5.auto: new USB bus registered, assigned bus number 6
+[    6.080264] hub 6-0:1.0: USB hub found
+[    6.082831] hub 6-0:1.0: 1 port detected
+[    6.087582] usbcore: registered new interface driver usb-storage
+[    6.093512] mousedev: PS/2 mouse device common for all mice
+[    6.099167] s3c-rtc 101e0000.rtc: failed to find rtc source clock
+[    6.104310] s3c-rtc: probe of 101e0000.rtc failed with error -2
+[    6.117713] PVDD_ALIVE_1V0: 1000 mV 
+[    6.121033] PVDD_APIO_1V8: 1800 mV 
+[    6.124956] PVDD_APIO_MMCON_1V8: 1800 mV 
+[    6.128758] PVDD_ADC_1V8: 1800 mV 
+[    6.132557] PVDD_PLL_1V8: 1800 mV 
+[    6.135677] PVDD_ANAIP_1V0: 1000 mV 
+[    6.139205] PVDD_ANAIP_1V8: 1800 mV 
+[    6.142821] PVDD_ABB_1V8: 1800 mV 
+[    6.146600] PVDD_USB_3V3: 3000 mV 
+[    6.150141] PVDD_PRE_1V8: 1800 mV 
+[    6.153696] PVDD_USB_1V0: 1000 mV 
+[    6.156819] PVDD_HSIC_1V8: 1800 mV 
+[    6.160252] PVDD_APIO_MMCOFF_2V8: 2800 mV 
+[    6.164354] LDO14: at 3000 mV 
+[    6.167391] PVDD_PERI_2V8: 3300 mV 
+[    6.170971] PVDD_PERI_3V3: 2200 mV 
+[    6.174302] LDO17: at 3300 mV 
+[    6.177369] PVDD_EMMC_1V8: 1800 mV 
+[    6.180934] PVDD_TFLASH_2V8: 2800 mV 
+[    6.184433] PVDD_BTWIFI_1V8: 1800 mV 
+[    6.188094] PVDD_CAM1IO_1V8: 1800 mV 
+[    6.191784] LDO22: at 1200 mV 
+[    6.197071] PVDD_MIFS_1V1: ramp_delay not set
+[    6.200396] PVDD_MIFS_1V1: 1200 mV 
+[    6.204592] PVDD_CAM1_AVDD_2V8: 2800 mV 
+[    6.205460] usb 1-1: new high-speed USB device number 2 using exynos-ehci
+[    6.215318] LDO25: at 1800 mV 
+[    6.218272] PVDD_CAM0_AF_2V8: 3000 mV 
+[    6.224315] PVDD_G3DS_1V0: ramp_delay not set
+[    6.227247] PVDD_G3DS_1V0: 1200 mV 
+[    6.231914] PVDD_TSP_3V3: 3300 mV 
+[    6.235205] PVDD_AUDIO_1V8: 1800 mV 
+[    6.238771] LDO30: at 1800 mV 
+[    6.241805] PVDD_PERI_1V8: 1800 mV 
+[    6.245248] PVDD_LCD_1V8: 1800 mV 
+[    6.248647] PVDD_CAM0IO_1V8: 1800 mV 
+[    6.252292] LDO34: at 3000 mV 
+[    6.257174] PVDD_CAM0_DVDD_1V2: 1200 mV 
+[    6.260972] LDO36: at 1800 mV 
+[    6.263800] LDO37: at 1800 mV 
+[    6.266888] PVDD_CAM0_AVDD_2V8: 2800 mV 
+[    6.271271] PVDD_MIF_1V1: 800 <--> 1100 mV at 1100 mV 
+[    6.276531] vdd_arm: 800 <--> 1000 mV at 1000 mV 
+[    6.281394] PVDD_INT_1V0: 800 <--> 1000 mV at 1000 mV 
+[    6.286212] PVDD_G3D_1V0: 800 <--> 1000 mV at 1000 mV 
+[    6.291798] PVDD_LPDDR3_1V2: 800 <--> 1200 mV at 1200 mV 
+[    6.297344] PVDD_KFC_1V0: 800 <--> 1000 mV at 1000 mV 
+[    6.302627] VIN_LLDO_1V4: 800 <--> 1400 mV at 900 mV 
+[    6.307839] VIN_MLDO_2V0: 800 <--> 2000 mV at 1225 mV 
+[    6.313184] VIN_HLDO_3V5: 3000 <--> 3500 mV at 5000 mV 
+[    6.320032] PVDD_EMMCF_2V8: 2800 mV 
+[    6.324415] 10060000.tmu supply vtmu not found, using dummy regulator
+[    6.329872] exynos-tmu 10060000.tmu: Exynos: Thermal zone(therm_zone0) registered
+[    6.337007] 10064000.tmu supply vtmu not found, using dummy regulator
+[    6.343966] exynos-tmu 10064000.tmu: Exynos: Thermal zone(therm_zone0) registered
+[    6.345203] hub 1-1:1.0: USB hub found
+[    6.345623] hub 1-1:1.0: 4 ports detected
+[    6.358545] 10068000.tmu supply vtmu not found, using dummy regulator
+[    6.365347] exynos-tmu 10068000.tmu: Exynos: Thermal zone(therm_zone0) registered
+[    6.372412] 1006c000.tmu supply vtmu not found, using dummy regulator
+[    6.379259] exynos-tmu 1006c000.tmu: Exynos: Thermal zone(therm_zone0) registered
+[    6.386272] 100a0000.tmu supply vtmu not found, using dummy regulator
+[    6.393113] exynos-tmu 100a0000.tmu: Exynos: Thermal zone(therm_zone0) registered
+[    6.401123] s3c2410-wdt 101d0000.watchdog: watchdog inactive, reset disabled, irq disabled
+[    6.409447] device-mapper: ioctl: 4.27.0-ioctl (2013-10-30) initialised: dm-devel@redhat.com
+[    6.416772] sdhci: Secure Digital Host Controller Interface driver
+[    6.422827] sdhci: Copyright(c) Pierre Ossman
+[    6.427421] Synopsys Designware Multimedia Card Interface Driver
+[    6.433779] dwmmc_exynos 12200000.mmc: num-slots property not found, assuming 1 slot is available
+[    6.442192] dwmmc_exynos 12200000.mmc: Using internal DMA controller.
+[    6.448406] dwmmc_exynos 12200000.mmc: Version ID is 250a
+[    6.453957] dwmmc_exynos 12200000.mmc: DW MMC controller at irq 107, 64 bit host data width, 64 deep fifo
+[    6.464007] dwmmc_exynos 12200000.mmc: No vqmmc regulator found
+[    6.469187] dwmmc_exynos 12200000.mmc: GPIO lookup for consumer cd
+[    6.475327] dwmmc_exynos 12200000.mmc: using device tree for GPIO lookup
+[    6.481993] of_get_named_gpiod_flags: can't parse 'cd-gpios' property of node '/mmc@12200000[0]'
+[    6.490771] of_get_named_gpiod_flags: can't parse 'cd-gpio' property of node '/mmc@12200000[0]'
+[    6.499414] dwmmc_exynos 12200000.mmc: using lookup tables for GPIO lookup
+[    6.506264] dwmmc_exynos 12200000.mmc: lookup for GPIO cd failed
+[    6.512270] dwmmc_exynos 12200000.mmc: GPIO lookup for consumer wp
+[    6.518413] dwmmc_exynos 12200000.mmc: using device tree for GPIO lookup
+[    6.525082] of_get_named_gpiod_flags: can't parse 'wp-gpios' property of node '/mmc@12200000[0]'
+[    6.533838] of_get_named_gpiod_flags: can't parse 'wp-gpio' property of node '/mmc@12200000[0]'
+[    6.542479] dwmmc_exynos 12200000.mmc: using lookup tables for GPIO lookup
+[    6.549322] dwmmc_exynos 12200000.mmc: lookup for GPIO wp failed
+[    6.585435] dwmmc_exynos 12200000.mmc: 1 slots initialized
+[    6.589743] dwmmc_exynos 12220000.mmc: num-slots property not found, assuming 1 slot is available
+[    6.600418] dwmmc_exynos 12220000.mmc: Using internal DMA controller.
+[    6.605415] dwmmc_exynos 12220000.mmc: Version ID is 250a
+[    6.611192] dwmmc_exynos 12220000.mmc: DW MMC controller at irq 109, 64 bit host data width, 64 deep fifo
+[    6.615754] usb 1-1.4: new high-speed USB device number 3 using exynos-ehci
+[    6.627951] dwmmc_exynos 12220000.mmc: No vqmmc regulator found
+[    6.633182] dwmmc_exynos 12220000.mmc: GPIO lookup for consumer cd
+[    6.639357] mmc0: BKOPS_EN bit is not set
+[    6.643302] dwmmc_exynos 12220000.mmc: using device tree for GPIO lookup
+[    6.650015] of_get_named_gpiod_flags: can't parse 'cd-gpios' property of node '/mmc@12220000[0]'
+[    6.658747] of_get_named_gpiod_flags: can't parse 'cd-gpio' property of node '/mmc@12220000[0]'
+[    6.667421] dwmmc_exynos 12220000.mmc: using lookup tables for GPIO lookup
+[    6.674275] mmc_host mmc0: Bus speed (slot 0) = 50000000Hz (slot req 52000000Hz, actual 50000000HZ div = 0)
+[    6.683935] dwmmc_exynos 12220000.mmc: lookup for GPIO cd failed
+[    6.689899] dwmmc_exynos 12220000.mmc: GPIO lookup for consumer wp
+[    6.696191] dwmmc_exynos 12220000.mmc: using device tree for GPIO lookup
+[    6.702885] mmc_host mmc0: Bus speed (slot 0) = 100000000Hz (slot req 52000000Hz, actual 50000000HZ div = 1)
+[    6.712550] of_get_named_gpiod_flags: can't parse 'wp-gpios' property of node '/mmc@12220000[0]'
+[    6.721403] mmc0: new DDR MMC card at address 0001
+[    6.726589] of_get_named_gpiod_flags: can't parse 'wp-gpio' property of node '/mmc@12220000[0]'
+[    6.726632] mmcblk0: mmc0:0001 M4G1FB 3.64 GiB 
+[    6.734891] mmcblk0boot0: mmc0:0001 M4G1FB partition 1 1.00 MiB
+[    6.735195] mmcblk0boot1: mmc0:0001 M4G1FB partition 2 1.00 MiB
+[    6.735541] mmcblk0rpmb: mmc0:0001 M4G1FB partition 3 128 KiB
+[    6.742570]  mmcblk0: p1 p2 p3 p4
+[    6.742892] random: nonblocking pool is initialized
+[    6.750794] asix 1-1.4:1.0 (unnamed net_device) (uninitialized): invalid hw address, using random
+[    6.773721] dwmmc_exynos 12220000.mmc: using lookup tables for GPIO lookup
+[    6.780611] dwmmc_exynos 12220000.mmc: lookup for GPIO wp failed
+[    6.815402] dwmmc_exynos 12220000.mmc: 1 slots initialized
+[    6.822363] usbcore: registered new interface driver usbhid
+[    6.826517] usbhid: USB HID core driver
+[    6.832875] TCP: cubic registered
+[    6.834739] NET: Registered protocol family 17
+[    6.839179] dwmmc_exynos 12220000.mmc: no support for card's volts
+[    6.839274] NET: Registered protocol family 15
+[    6.839382] Registering SWP/SWPB emulation handler
+[    6.839416] big.LITTLE switcher initializing
+[    6.839425] bL_switcher_halve_cpus: no CPU pairing possible
+[    6.839433] big.LITTLE switcher initialization failed
+[    6.847773] power-domain: Power-off latency exceeded, new value 325792 ns
+[    6.848010] power-domain: Power-off latency exceeded, new value 318541 ns
+[    6.848091] power-domain: Power-off latency exceeded, new value 290125 ns
+[    6.848339] power-domain: Power-off latency exceeded, new value 300292 ns
+[    6.848792] of_get_named_gpiod_flags: parsed 'gpios' property of node '/gpio_keys/wakeup[0]' - status (0)
+[    6.848874] gpio-31 (SW-TACT1): gpiod_set_debounce: missing set() or set_debounce() operations
+[    6.850001] input: gpio_keys as /devices/gpio_keys/input/input0
+[    6.851208] ../drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
+[    6.926856] mmc1: error -22 whilst initialising SD card
+[    6.944172] PVDD_G3D_1V0: disabling
+[    6.950792] PVDD_G3DS_1V0: disabling
+[    6.957926] PVDD_APIO_MMCOFF_2V8: disabling
+[    6.961850] PVDD_HSIC_1V8: disabling
+[    6.965641] PVDD_ABB_1V8: disabling
+[    6.969088] PVDD_ANAIP_1V8: disabling
+[    6.972739] PVDD_ANAIP_1V0: disabling
+[    6.976368] PVDD_ADC_1V8: disabling
+[    6.979830] PVDD_APIO_1V8: disabling
+[    6.986046] ALSA device list:
+[    6.987533]   No soundcards found.
+[    6.991976] Freeing unused kernel memory: 28
+# PYBOOT: kernel: finished booting, starting userspace.
+0K (c059f000 - c05e5000)
+[    7.004712] Unhandled fault: imprecise external abort (0x406) at 0x00000000
+
+# PYBOOT: kernel: Unhandled fault: imprecise external abort (0x406) at 0x00000000
+
+Starting logging: OK
+Initializing random number generator... done.
+Starting network...
+[    7.062525] asix 1-1.4:1.0 eth0: register 'asix' at usb-12110000.usb-1.4, ASIX AX88772 USB 2.0 Ethernet, 0e:d0:14:a0:04:60
+/bin/sh: can't access tty; job control turned off
+/ # 
+# PYBOOT: userspace: at root shell
+cat /proc/cmdline
+cat /proc/cmdline
+console=ttySAC3,115200n8 debug earlyprintk ip=192.168.1.196:192.168.1.2:192.168.1.254:255.255.255.0:::none:192.168.1.254
+/ # uname -r
+uname -r
+3.17.0-rc4-next-20140910
+/ # cat /proc/cpuinfo
+cat /proc/cpuinfo
+processor: 0
+model name: ARMv7 Processor rev 3 (v7l)
+Features: half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae 
+CPU implementer: 0x41
+CPU architecture: 7
+CPU variant: 0x2
+CPU part: 0xc0f
+CPU revision: 3
+
+processor: 1
+model name: ARMv7 Processor rev 3 (v7l)
+Features: half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae 
+CPU implementer: 0x41
+CPU architecture: 7
+CPU variant: 0x2
+CPU part: 0xc0f
+CPU revision: 3
+
+processor: 2
+model name: ARMv7 Processor rev 3 (v7l)
+Features: half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae 
+CPU implementer: 0x41
+CPU architecture: 7
+CPU variant: 0x2
+CPU part: 0xc0f
+CPU revision: 3
+
+processor: 3
+model name: ARMv7 Processor rev 3 (v7l)
+Features: half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae 
+CPU implementer: 0x41
+CPU architecture: 7
+CPU variant: 0x2
+CPU part: 0xc0f
+CPU revision: 3
+
+Hardware: SAMSUNG EXYNOS (Flattened Device Tree)
+Revision: 0000
+Serial: 0000000000000000
+/ # dmesg -n 1
+dmesg -n 1
+/ # DMESG=$(readlink -f /bin/dmesg)
+DMESG=$(readlink -f /bin/dmesg)
+/ # [[ $DMESG = "/bin/dmesg" ]] && dmesg -l warn | awk '{ print "[WARN] " $0 }'
+[[ $DMESG = "/bin/dmesg" ]] && dmesg -l warn | awk '{ print "[WARN] " $0 }'
+/ # [[ $DMESG = "/bin/dmesg" ]] && dmesg -l err | awk '{ print "[ERR] " $0 }'
+[[ $DMESG = "/bin/dmesg" ]] && dmesg -l err | awk '{ print "[ERR] " $0 }'
+/ # [[ $DMESG = "/bin/dmesg" ]] && dmesg -l alert | awk '{ print "[ERR] " $0 }'
+[[ $DMESG = "/bin/dmesg" ]] && dmesg -l alert | awk '{ print "[ERR] " $0 }'
+/ # [[ -e /var/log/messages ]] && grep kern.warn /var/log/messages | awk '{ print "[WARN] " $0 }'
+[[ -e /var/log/messages ]] && grep kern.warn /var/log/messages | awk '{ prin
+t "[WARN] " $0 }'
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 517136
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    0.000000] Memory: 1984312K/2074624K available (4273K kernel code, 273K rwdata, 1448K rodata, 283K init, 275K bss, 90312K reserved, 1239040K highmem)
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    0.030479] CPU1: Booted secondary processor
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    0.040461] CPU2: Booted secondary processor
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    0.050467] CPU3: Booted secondary processor
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    4.090119] CPU: WARNING: CPU(s) started in wrong/inconsistent modes (primary CPU mode 0x13)
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    4.090128] CPU: This may indicate a broken bootloader or firmware.
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    4.291344] 12100000.phy supply vbus not found, using dummy regulator
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    4.291891] 12500000.phy supply vbus not found, using dummy regulator
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    5.415353] usb@12000000 supply vdd33 not found, using dummy regulator
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    5.420941] usb@12000000 supply vdd10 not found, using dummy regulator
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    5.629327] usb@12400000 supply vdd33 not found, using dummy regulator
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    5.634471] usb@12400000 supply vdd10 not found, using dummy regulator
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    6.104310] s3c-rtc: probe of 101e0000.rtc failed with error -2
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    6.197071] PVDD_MIFS_1V1: ramp_delay not set
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    6.224315] PVDD_G3DS_1V0: ramp_delay not set
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    6.324415] 10060000.tmu supply vtmu not found, using dummy regulator
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    6.337007] 10064000.tmu supply vtmu not found, using dummy regulator
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    6.839179] dwmmc_exynos 12220000.mmc: no support for card's volts
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    6.839433] big.LITTLE switcher initialization failed
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    6.847773] power-domain: Power-off latency exceeded, new value 325792 ns
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    6.848010] power-domain: Power-off latency exceeded, new value 318541 ns
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    6.848091] power-domain: Power-off latency exceeded, new value 290125 ns
+[WARN] Jan  1 00:00:07 buildroot kern.warn kernel: [    6.848339] power-domain: Power-off latency exceeded, new value 300292 ns
+/ # [[ -e /var/log/messages ]] && grep kern.err /var/log/messages | awk '{ print "[ERR] " $0 }'
+[[ -e /var/log/messages ]] && grep kern.err /var/log/messages | awk '{ print
+ "[ERR] " $0 }'
+[ERR] Jan  1 00:00:07 buildroot kern.err kernel: [    0.000000] L2C: failed to init: -19
+[ERR] Jan  1 00:00:07 buildroot kern.err kernel: [    6.099167] s3c-rtc 101e0000.rtc: failed to find rtc source clock
+[ERR] Jan  1 00:00:07 buildroot kern.err kernel: [    6.839425] bL_switcher_halve_cpus: no CPU pairing possible
+[ERR] Jan  1 00:00:07 buildroot kern.err kernel: [    6.851208] ../drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
+[ERR] Jan  1 00:00:07 buildroot kern.err kernel: [    6.926856] mmc1: error -22 whilst initialising SD card
+/ # [[ -e /var/log/messages ]] && grep kern.alert /var/log/messages | awk '{ print "[ERR] " $0 }'
+[[ -e /var/log/messages ]] && grep kern.alert /var/log/messages | awk '{ pri
+nt "[ERR] " $0 }'
+[ERR] Jan  1 00:00:07 buildroot kern.alert kernel: [    7.004712] Unhandled fault: imprecise external abort (0x406) at 0x00000000
+/ # sleep 0.2
+sleep 0.2
+sleep: invalid number '0.2'
+/ # 
+# PYBOOT: userspace: shutting down
+halt
+~$off
