@@ -220,6 +220,9 @@ static inline void __flush_icache_all(void)
  */
 #define flush_cache_louis()		__cpuc_flush_kern_louis()
 
+// 2014년 11월 01일
+// mm/cache-v7.S 파일의 ENTRY(v7_flush_kern_cache_all)로 연결
+// 자세히 보지 않음 
 #define flush_cache_all()		__cpuc_flush_kern_all()
 
 static inline void vivt_flush_cache_mm(struct mm_struct *mm)

@@ -41,7 +41,8 @@
  * The vmalloc() routines leaves a hole of 4kB between each vmalloced
  * area for the same reason. ;)
  */
-#define VMALLOC_OFFSET		(8*1024*1024)
+#define VMALLOC_OFFSET		(8*1024*1024) // 0x0080_0000, 8MB
+// sanity_check_meminfo() 함수에서 high_memory에 값을 저장
 #define VMALLOC_START		(((unsigned long)high_memory + VMALLOC_OFFSET) & ~(VMALLOC_OFFSET-1))
 #define VMALLOC_END		0xff000000UL
 

@@ -178,6 +178,7 @@ static int __init setup_tcm_bank(u8 type, u8 bank, u8 banks,
 /*
  * This initializes the TCM memory
  */
+// Tightly Coupled Memory
 void __init tcm_init(void)
 {
 	u32 tcm_status;
@@ -195,6 +196,7 @@ void __init tcm_init(void)
 	 * Prior to ARMv5 there is no TCM, and trying to read the status
 	 * register will hang the processor.
 	 */
+	// armv4까지는 크기 조사를 함
 	if (cpu_architecture() < CPU_ARCH_ARMv5) {
 		if (dtcm_code_sz || itcm_code_sz)
 			pr_info("CPU TCM: %u bytes of DTCM and %u bytes of "
@@ -203,9 +205,11 @@ void __init tcm_init(void)
 		return;
 	}
 
+	// Cortex A15 TCM 지원 안함
 	tcm_status = read_cpuid_tcmstatus();
 	dtcm_banks = (tcm_status >> 16) & 0x03;
 	itcm_banks = (tcm_status & 0x03);
+	// TCM 미 지원으로 아래의 작업은 수행 안함
 
 	/* Values greater than 2 for D/ITCM banks are "reserved" */
 	if (dtcm_banks > 2)

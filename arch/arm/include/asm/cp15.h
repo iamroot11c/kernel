@@ -42,6 +42,9 @@
 #ifndef __ASSEMBLY__
 
 #if __LINUX_ARM_ARCH__ >= 4
+// static int early_cachepolicy(char*) 함수에서 
+// cr_alignment 변수에 값을 저장하며
+// kernel/entry-armv.S에 정의됨
 #define vectors_high()	(cr_alignment & CR_V)
 #else
 #define vectors_high()	(0)

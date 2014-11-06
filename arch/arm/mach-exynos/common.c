@@ -359,6 +359,9 @@ static void __init exynos4_map_io(void)
 		iotable_init(exynos4x12_iodesc, ARRAY_SIZE(exynos4x12_iodesc));
 }
 
+// 2014년 11월 01일 
+// void devicemaps_init(const struct machine_desc*) 함수에서
+// map_io에 아래의 함수가 등록되어 호출됨
 static void __init exynos5_map_io(void)
 {
 	iotable_init(exynos5_iodesc, ARRAY_SIZE(exynos5_iodesc));

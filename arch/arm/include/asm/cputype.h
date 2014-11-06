@@ -187,7 +187,7 @@ static inline unsigned int __attribute_const__ read_cpuid_cachetype(void)
 
 static inline unsigned int __attribute_const__ read_cpuid_tcmstatus(void)
 {
-	return read_cpuid(CPUID_TCM);
+	return read_cpuid(CPUID_TCM); // CPUID_TCM = 2
 }
 
 static inline unsigned int __attribute_const__ read_cpuid_mpidr(void)

@@ -139,6 +139,12 @@ IS_SAMSUNG_CPU(exynos5440, EXYNOS5440_SOC_ID, EXYNOS5_SOC_MASK)
 #define EXYNOS4210_REV_1_1	(0x11)
 
 #if defined(CONFIG_SOC_EXYNOS5250)
+// 2014년 11월 01월
+// static inline int is_samsung_##name(void)
+// {
+//     return ((samsung_cpu_id & mask) == (id & mask));
+// }
+// IS_SAMSUNG_CPU(exynos5420, EXYNOS5420_SOC_ID, EXYNOS5_SOC_MASK)
 # define soc_is_exynos5250()	is_samsung_exynos5250()
 #else
 # define soc_is_exynos5250()	0

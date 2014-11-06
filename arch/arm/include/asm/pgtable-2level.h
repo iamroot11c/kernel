@@ -83,17 +83,17 @@
 #define PMD_SHIFT		21
 #define PGDIR_SHIFT		21
 
-#define PMD_SIZE		(1UL << PMD_SHIFT)
-#define PMD_MASK		(~(PMD_SIZE-1))
-#define PGDIR_SIZE		(1UL << PGDIR_SHIFT)
-#define PGDIR_MASK		(~(PGDIR_SIZE-1))
+#define PMD_SIZE		(1UL << PMD_SHIFT)   // 0x0020_0000, 2MB
+#define PMD_MASK		(~(PMD_SIZE-1))      // 0xFFE0_0000 = !0x1F_FFFF
+#define PGDIR_SIZE		(1UL << PGDIR_SHIFT) // 0x0020_0000, 2MB 
+#define PGDIR_MASK		(~(PGDIR_SIZE-1))    // 0xFFE0_0000 = !0x001F_FFFF
 
 /*
  * section address mask and size definitions.
  */
 #define SECTION_SHIFT		20
-#define SECTION_SIZE		(1UL << SECTION_SHIFT)
-#define SECTION_MASK		(~(SECTION_SIZE-1))
+#define SECTION_SIZE		(1UL << SECTION_SHIFT) // 0x0010_0000, 1MB
+#define SECTION_MASK		(~(SECTION_SIZE-1))    // 0xFFF0_0000 = !0x000F_FFFF
 
 /*
  * ARMv6 supersection address mask and size definitions.
@@ -170,9 +170,19 @@ static inline pmd_t *pmd_offset(pud_t *pud, unsigned long addr)
 		pmdpd[1] = pmdps[1];	\
 		flush_pmd_entry(pmdpd);	\
 	} while (0)
+
 /*
  * pmd의 단위는 원래 1Mb인데 arm용은 2Mb이라서 배열 0,1을 써서 1Mb를
  * 2Mb로 변환
+ *
+ * 2014-11-01 추가
+ * ARM에서는 PMD를 사용하지 않아 이 함수는 PGD(페이지 디렉토리)의
+ * 각 엔트리를 초기화하며 엔트리 2개를 동시에 초기화하여 2MB 단위로
+ * 처리되도록 함
+ *
+ * 초기화후 변환참조버퍼(TLB - Translation Lookaside Buffer)를 클리어
+ *  >> 플러시(flush) - 캐시를 바로 비움
+ *  >> 클리어(clear) - 더티 비트를 참조하여 메모리에 쓴 후 비움
  * */
 #define pmd_clear(pmdp)			\
 	do {				\

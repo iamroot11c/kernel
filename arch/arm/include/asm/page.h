@@ -12,8 +12,8 @@
 
 /* PAGE_SHIFT determines the page size */
 #define PAGE_SHIFT		12
-#define PAGE_SIZE		(_AC(1,UL) << PAGE_SHIFT)
-#define PAGE_MASK		(~((1 << PAGE_SHIFT) - 1))
+#define PAGE_SIZE		(_AC(1,UL) << PAGE_SHIFT)  // 4KB, 0x0000_1000
+#define PAGE_MASK		(~((1 << PAGE_SHIFT) - 1)) // 0xFFFF_F000 = !0x0000_0FFF
 
 #ifndef __ASSEMBLY__
 

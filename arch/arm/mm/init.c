@@ -138,6 +138,9 @@ void show_mem(unsigned int filter)
 	printk("%d pages swap cached\n", cached);
 }
 
+// 2014-11-01
+// 페이지 프레임 번호를 찾음
+//
 static void __init find_limits(unsigned long *min, unsigned long *max_low,
 			       unsigned long *max_high)
 {
@@ -145,14 +148,25 @@ static void __init find_limits(unsigned long *min, unsigned long *max_low,
 	int i;
 
 	/* This assumes the meminfo array is properly sorted */
+	// #define bank_pfn_start(bank)    __phys_to_pfn((bank)->start)
+	//  membank 배열에서 첫 번째 요소의 시작 주소에 대한 
+	//  페이지 프레임 번호를 min에 저장
 	*min = bank_pfn_start(&mi->bank[0]);
+	
+	// membank 배열에서 하이메모리를 찾음
 	for_each_bank (i, mi)
-		if (mi->bank[i].highmem)
+		if (mi->bank[i].highmem) 
 				break;
+	
+	// membank 배열에서 하이메모리의 시작 주소에 대한 
+	// 페이지 프레임 번호를 max_low에 저장
 	*max_low = bank_pfn_end(&mi->bank[i - 1]);
+	// membank 배열의 마지막 요소의 시작 주소에 대한
+	// 페이지 프레임 번호를 max_high에 저장
 	*max_high = bank_pfn_end(&mi->bank[mi->nr_banks - 1]);
 }
 
+// end_pft = max_low
 static void __init arm_bootmem_init(unsigned long start_pfn,
 	unsigned long end_pfn)
 {
@@ -166,6 +180,8 @@ static void __init arm_bootmem_init(unsigned long start_pfn,
 	 * of memory which has already been mapped.
 	 */
 	boot_pages = bootmem_bootmap_pages(end_pfn - start_pfn);
+	// 2014-11-01 여기까지 함.
+	
 	bitmap = memblock_alloc_base(boot_pages << PAGE_SHIFT, L1_CACHE_BYTES,
 				__pfn_to_phys(end_pfn));
 
@@ -411,8 +427,11 @@ void __init bootmem_init(void)
 
 	max_low = max_high = 0;
 
+	// 하이메모리의 시작과 끝을 찾음
+	// 페이지 프레임 번호를 찾음
 	find_limits(&min, &max_low, &max_high);
 
+	// 2014-11-01 시작
 	arm_bootmem_init(min, max_low);
 
 	/*

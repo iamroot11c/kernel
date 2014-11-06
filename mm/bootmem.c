@@ -65,10 +65,16 @@ static unsigned long __init bootmap_bytes(unsigned long pages)
  * bootmem_bootmap_pages - calculate bitmap size in pages
  * @pages: number of pages the bitmap has to represent
  */
+// http://www.iamroot.org/lxr/http/source/mm/bootmem.c#L71
+// 정리할 것. 2014-11-06 iamroot 홈페이지 접속이 안됨
 unsigned long __init bootmem_bootmap_pages(unsigned long pages)
 {
 	unsigned long bytes = bootmap_bytes(pages);
 
+	// #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+	// bytes = ALIGN((pages + 7) / 8)
+	// return ALIGN(bytes) >> 12
+	// 12번 오른쪽 쉬프트하면 최대 0xFFFFE 
 	return PAGE_ALIGN(bytes) >> PAGE_SHIFT;
 }
 

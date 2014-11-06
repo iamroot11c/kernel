@@ -341,7 +341,8 @@ extern struct cpu_tlb_fns cpu_tlb;
 		if (always_tlb_flags & (f))				\
 			asm("mcr " insnarg				\
 			    : : "r" (arg) : "cc");			\
-		else if (possible_tlb_flags & (f))			\
+		else if (possible_tlb_flags & (f))      \
+            /* '__tlb_flag'와 'f'가 같은지 먼저 확인 */ \
 			asm("tst %1, %2\n\t"				\
 			    "mcrne " insnarg				\
 			    : : "r" (arg), "r" (__tlb_flag), "Ir" (f)	\
@@ -356,24 +357,38 @@ static inline void __local_flush_tlb_all(void)
 	const int zero = 0;
 	const unsigned int __tlb_flag = __cpu_tlb_flags;
 
+    // #define TLB_V4_U_FULL   (1 << 9)
+    // #define TLB_V4_D_FULL   (1 << 10)
+    // #define TLB_V4_I_FULL   (1 << 11)
+    // #define TLB_V6_U_FULL   (1 << 12)
+    // #define TLB_V6_D_FULL   (1 << 13)
+    // #define TLB_V6_I_FULL   (1 << 14)
 	tlb_op(TLB_V4_U_FULL | TLB_V6_U_FULL, "c8, c7, 0", zero);
 	tlb_op(TLB_V4_D_FULL | TLB_V6_D_FULL, "c8, c6, 0", zero);
 	tlb_op(TLB_V4_I_FULL | TLB_V6_I_FULL, "c8, c5, 0", zero);
 }
 
+// 2014년 11월 01일
 static inline void local_flush_tlb_all(void)
 {
 	const int zero = 0;
+    // #define __cpu_tlb_flags         cpu_tlb.tlb_flags
 	const unsigned int __tlb_flag = __cpu_tlb_flags;
 
+    // write back을 지원하면 캐쉬에 남아 있는 데이터(명령어)를 
+    // 모두 쓸때까지 대기
+    // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0204ik/CIHJFGFE.html
 	if (tlb_flag(TLB_WB))
-		dsb(nshst);
+		dsb(nshst); // dsb 명령어의 nshst 옵션
 
 	__local_flush_tlb_all();
+    // #define TLB_V7_UIS_FULL (1 << 21)
 	tlb_op(TLB_V7_UIS_FULL, "c8, c7, 0", zero);
 
+    // #define TLB_BARRIER (1 << 28)
 	if (tlb_flag(TLB_BARRIER)) {
 		dsb(nsh);
+        // 파이프를 비움
 		isb();
 	}
 }
@@ -636,26 +651,43 @@ static inline void dummy_flush_tlb_a15_erratum(void)
  *	these operations.  This is typically used when we are removing
  *	PMD entries.
  */
+// [flush] 캐시라인을 비움(0으로 초기화)
 static inline void flush_pmd_entry(void *pmd)
 {
 	const unsigned int __tlb_flag = __cpu_tlb_flags;
-	// 
+	// mcr p15, 0, pmd, c7, c10, 1  @ flush_pmd
+    // clean data cache 
 	tlb_op(TLB_DCLEAN, "c7, c10, 1	@ flush_pmd", pmd);
+
 	// TLB_L2CLEAN_FR에 해당 명령어는 실행되지 않는다.
+    // mcr p15, 1, pmd, c15, c9, 1  @ L2 flush_pmd
 	tlb_l2_op(TLB_L2CLEAN_FR, "c15, c9, 1  @ L2 flush_pmd", pmd);
 
 	if (tlb_flag(TLB_WB))
 		// 저장이 완료될 때까지만 기다리고 공유 가능한 내부 도메인까지 수행되는 dsb 작업
 		// 캐시 내 명령어가 완수될 때까지 대기
+        // 보충 - 2014-11-03, 양만철
+        // 참고:  http://goo.gl/pcO5xq
+        // 함수 이름에 접두어로 'flush'가 붙어있으며 아래는 'clean'이 붙어있는데
+        // 접두어와 상관없이 캐기라인을 비우기 전 더티비트를 검사하여 
+        // 강제로 메모리에 쓰기를 완료할 때까지 기다리는것으로 보임
 		dsb(ishst);
 }
 
+// [clean] 캐시라인에서 더티비트를 검사하여 주 메모리에
+// 강제로 쓴 후 캐시라인을 비움(0으로 초기화)
 static inline void clean_pmd_entry(void *pmd)
 {
 	const unsigned int __tlb_flag = __cpu_tlb_flags;
 
+    //          2        1    3   4
+    // mcr p15, 0, pmd,  c7, c10, 1  @ flush_pmd
+    // clean data cache
 	tlb_op(TLB_DCLEAN, "c7, c10, 1	@ flush_pmd", pmd);
 	// 2014.09.27 end
+   
+    // mcr p15, 1, pmd, c15, c9, 1  @ L2 flush_pmd
+    // ? 
 	tlb_l2_op(TLB_L2CLEAN_FR, "c15, c9, 1  @ L2 flush_pmd", pmd);
 
 }

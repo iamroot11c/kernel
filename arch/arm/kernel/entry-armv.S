@@ -931,6 +931,7 @@ __kuser_get_tls:				@ 0xffff0fe0
 	ldr	r0, [pc, #(16 - 8)]	@ read TLS, set in kuser_get_tls_init
 	usr_ret	lr
 	mrc	p15, 0, r0, c13, c0, 3	@ 0xffff0fe8 hardware TLS code
+					// <읽기전용> 쓰레드 ID
 	kuser_pad __kuser_get_tls, 16
 	.rep	3
 	.word	0			@ 0xffff0ff0 software TLS value, then

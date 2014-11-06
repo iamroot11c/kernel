@@ -1016,12 +1016,14 @@ void __init vm_reserve_area_early(unsigned long addr, unsigned long size,
  * Let's avoid the issue by inserting dummy vm entries covering the unused
  * PMD halves once the static mappings are in place.
  */
-
+// 2014년 11월 01일
 static void __init pmd_empty_section_gap(unsigned long addr)
 {
+	// 아래의 함수는 바로 위에 있음
 	vm_reserve_area_early(addr, SECTION_SIZE, pmd_empty_section_gap);
 }
 
+// 2014년 11월 01일 완료
 static void __init fill_pmd_gaps(void)
 {
 	struct static_vm *svm;
@@ -1029,6 +1031,12 @@ static void __init fill_pmd_gaps(void)
 	unsigned long addr, next = 0;
 	pmd_t *pmd;
 
+	//#define list_for_each_entry(pos, head, member)              \
+	//    for (pos = list_entry((head)->next, typeof(*pos), member);  \
+	//             &pos->member != (head);    \
+	//                      pos = list_entry(pos->member.next, typeof(*pos), member))
+	//
+	//for (svn =  
 	list_for_each_entry(svm, &static_vmlist, list) {
 		vm = &svm->vm;
 		addr = (unsigned long)vm->addr;
@@ -1040,6 +1048,13 @@ static void __init fill_pmd_gaps(void)
 		 * If so and the first section entry for this PMD is free
 		 * then we block the corresponding virtual address.
 		 */
+		// #define PMD_SIZE        (1UL << PMD_SHIFT)
+		// #define PMD_MASK        (~(PMD_SIZE-1))
+		// #define SECTION_SHIFT       20
+		// #define SECTION_SIZE        (1UL << SECTION_SHIFT)
+		// (addr & ((1UL << 21) -1)) == (1UL << 20)
+		// (addr & (0x1FFFFF)) == 0x100000
+		// 
 		if ((addr & ~PMD_MASK) == SECTION_SIZE) {
 			pmd = pmd_off_k(addr);
 			if (pmd_none(*pmd))
@@ -1053,12 +1068,14 @@ static void __init fill_pmd_gaps(void)
 		 */
 		addr += vm->size;
 		if ((addr & ~PMD_MASK) == SECTION_SIZE) {
-			pmd = pmd_off_k(addr) + 1;
+			pmd = pmd_off_k(addr) + 1; // <- 확인 할 것
 			if (pmd_none(*pmd))
 				pmd_empty_section_gap(addr);
 		}
 
 		/* no need to look at any vm entry until we hit the next PMD */
+		// 2M 단위로 이동
+		// (addr + 0x1FFFFF) & 0xFFE00000
 		next = (addr + PMD_SIZE - 1) & PMD_MASK;
 	}
 }
@@ -1067,6 +1084,8 @@ static void __init fill_pmd_gaps(void)
 #define fill_pmd_gaps() do { } while (0)
 #endif
 
+// 2014년 11월 01일
+// PIC를 사용하지 않음
 #if defined(CONFIG_PCI) && !defined(CONFIG_NEED_MACH_IO_H)
 static void __init pci_reserve_io(void)
 {
@@ -1390,7 +1409,6 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 	unsigned long addr;
 	void *vectors;
 
-    //
 	/*
 	 * Allocate the vector page early.
 	 */
@@ -1399,6 +1417,17 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 	// 2014-10-25, 분석중
 	early_trap_init(vectors);
 
+	// 2014-11-01, 분석 시작
+	// 페이지 디렉토리(PGD)의 각 엔트리를 순회하여 초기화를 함.
+	// 먼저 PGD 엔트리의 인덱스를 구하기 위해 상위 11 비트(31:23)를 
+	// 제외한 하위 비트를 모두 클리어하며
+	// 이 때 시작 인덱스는 high_memory에서 0x800000를 더해서 구함
+	// 
+	// pmd_clear() 함수는 2개의 엔트리를 클리어하므로 인덱스를
+	// 구하기 위해 0x20_0000(2MB)를 더함
+	// for (add = (high_memory + 0x80_0000) & (!(0x80_0000 - 1)); 
+	//      addr;
+	//      addr += 0x20_0000[2MB])  
 	for (addr = VMALLOC_START; addr; addr += PMD_SIZE)
 		pmd_clear(pmd_off_k(addr));
 
@@ -1406,7 +1435,7 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 	 * Map the kernel if it is XIP.
 	 * It is always first in the modulearea.
 	 */
-#ifdef CONFIG_XIP_KERNEL
+#ifdef CONFIG_XIP_KERNEL // 정의 안됨
 	map.pfn = __phys_to_pfn(CONFIG_XIP_PHYS_ADDR & SECTION_MASK);
 	map.virtual = MODULES_VADDR;
 	map.length = ((unsigned long)_etext - map.virtual + ~SECTION_MASK) & SECTION_MASK;
@@ -1417,6 +1446,12 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 	/*
 	 * Map the cache flushing regions.
 	 */
+	// mach-shark/include/mach/memory.h:24:#define FLUSH_BASE		0xdf000000
+	// mach-footbridge/include/mach/memory.h:60:#define FLUSH_BASE		0xf9000000
+	// mach-sa1100/include/mach/memory.h:38:#define FLUSH_BASE		0xf5000000
+	// mach-rpc/include/mach/memory.h:30:#define FLUSH_BASE		        0xdf000000
+	// mach-ebsa110/include/mach/memory.h:28:#define FLUSH_BASE		0xdf000000
+	// 나머지는 사용안하는 것으로 보임
 #ifdef FLUSH_BASE
 	map.pfn = __phys_to_pfn(FLUSH_BASE_PHYS);
 	map.virtual = FLUSH_BASE;
@@ -1424,6 +1459,8 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 	map.type = MT_CACHECLEAN;
 	create_mapping(&map);
 #endif
+	// mach-sa1100/include/mach/memory.h:39:#define FLUSH_BASE_MINICACHE	0xf5100000
+	// 나머지는 사용안하는 것으로 보임
 #ifdef FLUSH_BASE_MINICACHE
 	map.pfn = __phys_to_pfn(FLUSH_BASE_PHYS + SZ_1M);
 	map.virtual = FLUSH_BASE_MINICACHE;
@@ -1437,16 +1474,26 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 	 * location (0xffff0000).  If we aren't using high-vectors, also
 	 * create a mapping at the low-vectors virtual address.
 	 */
-	map.pfn = __phys_to_pfn(virt_to_phys(vectors));
+	// PFN - Page Frame Number(or Node)
+	// pfn을 구하기 위해 가상주소를 물리 주소를 먼저 변경 
+	// 물리 주소의 상위 20 비트(31:12)인 4KB 범위만으로 
+	// 페이지 프레임 인덱스를 구함
+	// map.pfn = (virt_to_phys(vectors)) >> 12
+	map.pfn = __phys_to_pfn(virt_to_phys(vectors)); 
+	// vectors를 가상주소 0xffff_0000로 연결
 	map.virtual = 0xffff0000;
-	map.length = PAGE_SIZE;
+	map.length = PAGE_SIZE; // 4KB
 #ifdef CONFIG_KUSER_HELPERS
+	// vectors를 HIGH_VECTORS로 지정
 	map.type = MT_HIGH_VECTORS;
 #else
 	map.type = MT_LOW_VECTORS;
 #endif
 	create_mapping(&map);
 
+	// #define vectors_high()  (cr_alignment & 13)
+	// vectors를 0xFFFF_0000로 연결하지 못하면 0x00으로 연결
+	// cr_alignment 변수?
 	if (!vectors_high()) {
 		map.virtual = 0;
 		map.length = PAGE_SIZE * 2;
@@ -1455,15 +1502,24 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 	}
 
 	/* Now create a kernel read-only mapping */
+	// vectors의 다음 페이지 프레임을 0xFFFF_0000으로 연결
 	map.pfn += 1;
 	map.virtual = 0xffff0000 + PAGE_SIZE;
 	map.length = PAGE_SIZE;
 	map.type = MT_LOW_VECTORS;
 	create_mapping(&map);
 
+	// 가상주소 0xFFFF_0000에 각 각 high vector와 low vector를 
+	// 페이지 프레임에 연결
+
 	/*
 	 * Ask the machine support to map in the statically mapped devices.
 	 */
+	// map_io 콜백함수가 아래와 같이 지정
+	// arch/arm/mach-exynos/common.c: 91:		.map_io		= exynos5_map_io,
+	// exynos5_map_io() 함수는 struct map_desc exynos5_iodesc[] 구조체와
+	// 구조체 크기를 인자로 iotable_init(struct map_desc*, int) 함수를 호출
+	//
 	if (mdesc->map_io)
 		mdesc->map_io();
 	else
@@ -1471,6 +1527,7 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 	fill_pmd_gaps();
 
 	/* Reserve fixed i/o space in VMALLOC region */
+	// ARM arch PCI 미 지원
 	pci_reserve_io();
 
 	/*
@@ -1480,12 +1537,40 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 	 * back.  After this point, we can start to touch devices again.
 	 */
 	local_flush_tlb_all();
+	
+	// mm/cache-v7.S 파일의 ENTRY(v7_flush_kern_cache_all)로 연결
 	flush_cache_all();
 }
 
 static void __init kmap_init(void)
 {
 #ifdef CONFIG_HIGHMEM	//y
+	// include/uapi/linux/const.h:21:#define _AT(T,X)  ((T)(X))
+	//
+	// pmd_off_k(PAGE_OFFSET - PMD_SIZE)
+	//
+	// #define PMD_TYPE_TABLE      (_AT(pmdval_t, 1) << 0)
+	// #define PMD_BIT4        (_AT(pmdval_t, 1) << 4)
+	//
+	// #define PMD_DOMAIN(x)       (_AT(pmdval_t, (x)) << 5) 
+	// DOMAIN_KERNEL   0
+	// PMD_DOMAIN(0)
+	// #define _PAGE_KERNEL_TABLE  (PMD_TYPE_TABLE | PMD_BIT4 | PMD_DOMAIN(DOMAIN_KERNEL)) 
+	// pkmap(persistent kernel map)
+	//
+	// pkmap_page_table = early_pte_alloc(
+	//			pmd_off_k(0xC000_0000 + 0x0020_0000),
+	//			0xC000_0000 + 0x0020_0000,
+	//			0b0001_0001) // L1 코어스 페이지 테이블
+	//			             // 도메인 사용 안함
+	//
+	// pkmap 하이 메모리의 페이지를 커널이 접근 가능하도록  정해진
+	// 공간에 매핑제공
+	// 메모리가 페이지 오프셋부터 2M에 위치에 있으며 여기는 유저 공간이지만
+	// 유저에서는 접근 불가하며 커널에서만 접근가능하도록 되어있다 
+	//
+	// 코드로 알아보는 ARM 리눅스 커널 215쪽
+	// PTE 마지막 엔트리를 하이 메모리를 관리하는데 할당
 	pkmap_page_table = early_pte_alloc(pmd_off_k(PKMAP_BASE),
 		PKMAP_BASE, _PAGE_KERNEL_TABLE);
 #endif
@@ -1538,16 +1623,22 @@ void __init paging_init(const struct machine_desc *mdesc)
 
 	// 2014-10-25, start
 	devicemaps_init(mdesc);
-	//
+	// 2014-11-01, end
 
+	// 2014-11-01, start, end
 	kmap_init();
+
+	// 2014-11-01, start, end
+	// Cortex A15 TCM 지원 안함	
 	tcm_init();
 
+	// 가상주소를 0xFFFF_0000의 페이지 디렉토리(PGD)의 인덱스를 구함
 	top_pmd = pmd_off_k(0xffff0000);
 
 	/* allocate the zero page. */
 	zero_page = early_alloc(PAGE_SIZE);
 
+	// 2014-11-01, start
 	bootmem_init();
 
 	empty_zero_page = virt_to_page(zero_page);
