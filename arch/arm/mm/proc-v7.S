@@ -361,6 +361,30 @@ __v7_setup:
 	//I + D TLBs의 dirty bit를 무효화한다.
 	v7_ttb_setup r10, r4, r8, r5		@ TTBCR, TTBRx setup
 	//2단계로 가정. mm/proc-v7-2level.S 147
+	/* r4 : 0x4000_5000 r5: tmp
+	 * r8: 0x4000_5000
+	 */
+	/* 0x4000_4000: 0
+	 * 0x4000_4004: pv offset save addr
+	 * 0x4000_4008: 0x1000
+	 * 0x4000_400c: pv offset save addr
+	 * 0x4000_4010: 0x2000
+	 * 0x4000_4014: pv offset save addr
+	 * 0x4000_4018: 0x3000
+	 * 0x4000_401c: pv offset save addr
+	 * 0x4000_4020: 0
+	 * 0x4000_4024: 0
+	 *    ..
+	 * 0x4000_5000+__turn_mmu_on addr(2:13): kernel base(turn_mmu-on addr(20:30) + mmu_flags
+	 * 0x4000_5000+__turn_mmu_on addr(2:13)+1: kernel base(turn_mmu-on addr(20:30+1) + mmu_flags
+	 *     ..
+	 * 0x4000_5000+__turn_mmu_on addr(2:13)+end: kernel base(turn_mmu-on addr(20:30+end) + mmu_flags
+	 *    ...
+	 * 0x4000_7ffc: 0
+	 * 0x4000_8000: 0x4000_0000|mmu_flag
+	 * 0x4000_8001: 0x4100_0001|mmu_flag
+	 * 0x4000_8000+(end of .bss -1 >> 18): 0x??0_0000|mmu_flag
+	 */
 	/*
 	r4: ttbr0, r8: ttbr1
 	1. Translation Table Base Control Register

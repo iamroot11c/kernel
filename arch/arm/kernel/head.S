@@ -193,6 +193,9 @@ ENDPROC(stext)
  *  r0, r3, r5-r7 corrupted
  *  r4 = page table (see ARCH_PGD_SHIFT in asm/memory.h)
  */
+/*r0 : x r3 : vp offset r4 : tbl_saddr r5: tbl_eaddr 
+ * r6 : r3>>24 r7: pv offset save addr (r7 + 4 : vp offset >>24 
+ */
 __create_page_tables:
 	pgtbl	r4, r8				@ page table address
 
@@ -209,6 +212,12 @@ __create_page_tables:
 	str	r3, [r0], #4
 	teq	r0, r6
 	bne	1b
+	/*r0 : tbl_saddr(0x4000_4000) x r3 : 0 r4 : tbl_saddr r5: tbl_eaddr 
+	 * r6 : r3>>24 r7: pv offset save addr r8: 0x4000_0000
+	 * (r7 + 4 : vp offset >>24 ) 
+	 */
+	//0x4000_4000~0x4000_8000 : 0
+	//
 
 #ifdef CONFIG_ARM_LPAE
 	/*
@@ -216,7 +225,7 @@ __create_page_tables:
 	 * entry is 64-bit wide.
 	 */
 	mov	r0, r4
-	add	r3, r4, #0x1000			@ first PMD table address
+	/add	r3, r4, #0x1000			@ first PMD table address
 	orr	r3, r3, #3			@ PGD block type
 	mov	r6, #4				@ PTRS_PER_PGD
 	mov	r7, #1 << (55 - 32)		@ L_PGD_SWAPPER
@@ -233,6 +242,24 @@ __create_page_tables:
 	bne	1b
 
 	add	r4, r4, #0x1000			@ point to the PMD tables
+	/*r0 : tbl_saddr(0x4000_4000) x r3 : 0x4000 r4 : tbl_saddr+0x1000 r5: tbl_eaddr 
+	 * r6 : 0 r7: pv offset save addr r8: 0x4000_0000
+	 * (r7 + 4 : vp offset >>24 ) 
+	 */
+	/* 0x4000_4000: 0
+	 * 0x4000_4004: pv offset save addr
+	 * 0x4000_4008: 0x1000
+	 * 0x4000_400c: pv offset save addr
+	 * 0x4000_4010: 0x2000
+	 * 0x4000_4014: pv offset save addr
+	 * 0x4000_4018: 0x3000
+	 * 0x4000_401c: pv offset save addr
+	 * 0x4000_4020: 0
+	 * 0x4000_4024: 0
+	 *     ..
+	 * 0x4000_7ffc: 0
+	 * 0x4000_8000: 0 
+	 */
 #ifdef CONFIG_CPU_ENDIAN_BE8
 	add	r4, r4, #4			@ we only write the bottom word
 #endif
@@ -279,10 +306,28 @@ __create_page_tables:
 	     __v7_proc __v7_ca15mp_setup
 	     .size   __v7_ca15mp_proc_info, . - __v7_ca15mp_proc_info
 	*/
+	/*r0 : vp_offset r3 : 0x __turn_mmu_on_loc vaddr r4 : tbl_saddr+0x1000 r5: turn_mmu_on addr>>20
+	 * r6 : turn_mmu_on_end addr>>20 r7: mmu_flags r8: 0x4000_0000
+	 * (r7 + 4 : vp offset >>24 ) 
+	 */
+	/* 0x4000_4000: 0
+	 * 0x4000_4004: pv offset save addr
+	 * 0x4000_4008: 0x1000
+	 * 0x4000_400c: pv offset save addr
+	 * 0x4000_4010: 0x2000
+	 * 0x4000_4014: pv offset save addr
+	 * 0x4000_4018: 0x3000
+	 * 0x4000_401c: pv offset save addr
+	 * 0x4000_4020: 0
+	 * 0x4000_4024: 0
+	 *     ..
+	 * 0x4000_7ffc: 0
+	 * 0x4000_8000: 0 
+	 */
 1:	orr	r3, r7, r5, lsl #SECTION_SHIFT	@ flags + kernel base
 										// r3(#0), r7(mmu_flags), r5(phys of turn_mmu_on)
 										// r3 = r7 | r5(cur addr + 1MB)
-	str	r3, [r4, r5, lsl #PMD_ORDER]	@ identity mapping:
+	str	r3, [r4, r5, lsl #PMD_ORDER]	@ identity mapping: 
 										// #PMD_ORDER : 2
 										// r4 : page_table_addr(ex. 0x4000_O000) 
 										// r5 : addr of turn_mmu_on in phys
@@ -296,6 +341,30 @@ __create_page_tables:
 	addlo	r5, r5, #1			@ next section
 	blo	1b
 
+	/*r0 : vp_offset r3 : __turn_mmu_on_loc vaddr(20:31) | mmu_flags r4 : tbl_saddr+0x1000 r5: turn_mmu_on addr>>20
+	 * r6 : turn_mmu_on_end addr>>20 r7: mmu_flags r8: 0x4000_0000
+	 * (r7 + 4 : vp offset >>24 ) 
+	 */
+	/* 0x4000_4000: 0
+	 * 0x4000_4004: pv offset save addr
+	 * 0x4000_4008: 0x1000
+	 * 0x4000_400c: pv offset save addr
+	 * 0x4000_4010: 0x2000
+	 * 0x4000_4014: pv offset save addr
+	 * 0x4000_4018: 0x3000
+	 * 0x4000_401c: pv offset save addr
+	 * 0x4000_4020: 0
+	 * 0x4000_4024: 0
+	 *    ..
+	 * 0x4000_5000+__turn_mmu_on addr(2:13): kernel base(turn_mmu-on addr(20:30) + mmu_flags
+	 * 0x4000_5000+__turn_mmu_on addr(2:13)+1: kernel base(turn_mmu-on addr(20:30+1) + mmu_flags
+	 *     ..
+	 * 0x4000_5000+__turn_mmu_on addr(2:13)+end: kernel base(turn_mmu-on addr(20:30+end) + mmu_flags
+	 *    ...
+	 * 0x4000_7ffc: 0
+	 * 0x4000_8000: 0
+	 * 0x4000_5000
+	 */
 	/*
 	 * Map our RAM from the start to the end of the kernel .bss section.
 	 */
@@ -309,12 +378,60 @@ __create_page_tables:
 	add	r6, r4, r6, lsr #(SECTION_SHIFT - PMD_ORDER)			// r6 : end of .bss
 																// r6 = r4(0x4000_4000) + r6(mmu_on_end) >> (20-2)
 																// 
+	/*r0 : 0x4000_8000 r3 : 0x4000_0000|mmu_flag | mmu_flags r4 : tbl_saddr+0x1000 r5: turn_mmu_on addr>>20
+	 * r6 : tbl_saddr+0x1000 + end of .bss -1>>18 r7: mmu_flags r8: 0x4000_0000
+	 * (r7 + 4 : vp offset >>24 ) 
+	 */
+	/* 0x4000_4000: 0
+	 * 0x4000_4004: pv offset save addr
+	 * 0x4000_4008: 0x1000
+	 * 0x4000_400c: pv offset save addr
+	 * 0x4000_4010: 0x2000
+	 * 0x4000_4014: pv offset save addr
+	 * 0x4000_4018: 0x3000
+	 * 0x4000_401c: pv offset save addr
+	 * 0x4000_4020: 0
+	 * 0x4000_4024: 0
+	 *    ..
+	 * 0x4000_5000+__turn_mmu_on addr(2:13): kernel base(turn_mmu-on addr(20:30) + mmu_flags
+	 * 0x4000_5000+__turn_mmu_on addr(2:13)+1: kernel base(turn_mmu-on addr(20:30+1) + mmu_flags
+	 *     ..
+	 * 0x4000_5000+__turn_mmu_on addr(2:13)+end: kernel base(turn_mmu-on addr(20:30+end) + mmu_flags
+	 *    ...
+	 * 0x4000_7ffc: 0
+	 * 0x4000_8000: 0
+	 */
 1:	str	r3, [r0], #1 << PMD_ORDER								// *(r0 + 1 << 2) = r3	; offset 4
 	add	r3, r3, #1 << SECTION_SHIFT								// r3 = r3 + #1 << 20	; 1MB
 	cmp	r0, r6													// r0 : 0x4000_40c0
 																// r6 : Updated of addr of mmu_on_end by L298
 	bls	1b
 
+	/*r0 : 0x4000_8000 r3 : 0x4000_0000|mmu_flag | mmu_flags r4 : tbl_saddr+0x1000 r5: turn_mmu_on addr>>20
+	 * r6 : 0x4000_8000 + end of .bss -1>>18 r7: mmu_flags r8: 0x4000_0000
+	 * (r7 + 4 : vp offset >>24 ) 
+	 */
+	/* 0x4000_4000: 0
+	 * 0x4000_4004: pv offset save addr
+	 * 0x4000_4008: 0x1000
+	 * 0x4000_400c: pv offset save addr
+	 * 0x4000_4010: 0x2000
+	 * 0x4000_4014: pv offset save addr
+	 * 0x4000_4018: 0x3000
+	 * 0x4000_401c: pv offset save addr
+	 * 0x4000_4020: 0
+	 * 0x4000_4024: 0
+	 *    ..
+	 * 0x4000_5000+__turn_mmu_on addr(2:13): kernel base(turn_mmu-on addr(20:30) + mmu_flags
+	 * 0x4000_5000+__turn_mmu_on addr(2:13)+1: kernel base(turn_mmu-on addr(20:30+1) + mmu_flags
+	 *     ..
+	 * 0x4000_5000+__turn_mmu_on addr(2:13)+end: kernel base(turn_mmu-on addr(20:30+end) + mmu_flags
+	 *    ...
+	 * 0x4000_7ffc: 0
+	 * 0x4000_8000: 0x4000_0000|mmu_flag
+	 * 0x4000_8001: 0x4100_0001|mmu_flag
+	 * 0x4000_8000+(end of .bss -1 >> 18): 0x??0_0000|mmu_flag
+	 */
 #ifdef CONFIG_XIP_KERNEL
 	/*
 	 * Map the kernel image separately as it is not located in RAM.
@@ -348,12 +465,12 @@ __create_page_tables:
 	// Base Address만 남기고, Offset을 삭제하는 기능이다.
 	
 	// if r0 != 0 {
-	subne	r3, r0, r8									// r3 = r0 - r8(phys_offset: 0x4000_0000)
-	addne	r3, r3, #PAGE_OFFSET						// r3 = r3 + 0xc000_0000
+	subne	r3, r0, r8	// r3 = r0 - r8(phys_offset: 0x4000_0000)
+	addne	r3, r3, #PAGE_OFFSET	// r3 = r3 + 0xc000_0000
 	addne	r3, r4, r3, lsr #(SECTION_SHIFT - PMD_ORDER)	// r3 = r4 + (r3 >> 18)
-	orrne	r6, r7, r0										// r6 = r7 | r0
-	strne	r6, [r3], #1 << PMD_ORDER						// *(r3 + 1 << 2) = r6
-	addne	r6, r6, #1 << SECTION_SHIFT						// r6 = r6 + (1<<20)
+	orrne	r6, r7, r0		// r6 = r7 | r0
+	strne	r6, [r3], #1 << PMD_ORDER	// *(r3 + 1 << 2) = r6
+	addne	r6, r6, #1 << SECTION_SHIFT	// r6 = r6 + (1<<20)
 	strne	r6, [r3]										// *r3 = r6
 	// }
 #if defined(CONFIG_ARM_LPAE) && defined(CONFIG_CPU_ENDIAN_BE8)
