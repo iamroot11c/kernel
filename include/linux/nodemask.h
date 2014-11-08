@@ -405,6 +405,7 @@ enum node_states {
 
 extern nodemask_t node_states[NR_NODE_STATES];
 
+// 2014-11-08, MAX_NUMNODES == 1 
 #if MAX_NUMNODES > 1
 static inline int node_state(int node, enum node_states state)
 {

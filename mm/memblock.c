@@ -856,6 +856,9 @@ phys_addr_t __init __memblock_alloc_base(phys_addr_t size, phys_addr_t align, ph
 	return memblock_alloc_base_nid(size, align, max_addr, MAX_NUMNODES);
 }
 
+// 2014-11-08
+// bitmap = memblock_alloc_base(boot_pages << PAGE_SHIFT, L1_CACHE_BYTES, __pfn_to_phys(end_pfn));
+
 phys_addr_t __init memblock_alloc_base(phys_addr_t size, phys_addr_t align, phys_addr_t max_addr)
 {
 	phys_addr_t alloc;

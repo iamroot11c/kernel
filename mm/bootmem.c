@@ -23,6 +23,7 @@
 
 #include "internal.h"
 
+// CONFIG_NEED_MULTIPLE_NODES=n
 #ifndef CONFIG_NEED_MULTIPLE_NODES
 struct pglist_data __refdata contig_page_data = {
 	.bdata = &bootmem_node_data[0]
@@ -34,6 +35,7 @@ unsigned long max_low_pfn;
 unsigned long min_low_pfn;
 unsigned long max_pfn;
 
+// MAX_NUMNODES == 1
 bootmem_data_t bootmem_node_data[MAX_NUMNODES] __initdata;
 
 static struct list_head bdata_list __initdata = LIST_HEAD_INIT(bdata_list);
@@ -81,39 +83,51 @@ unsigned long __init bootmem_bootmap_pages(unsigned long pages)
 /*
  * link bdata in order
  */
+// 2014-11-08
 static void __init link_bootmem(bootmem_data_t *bdata)
 {
 	bootmem_data_t *ent;
 
 	list_for_each_entry(ent, &bdata_list, list) {
+		// 중간에 삽입
 		if (bdata->node_min_pfn < ent->node_min_pfn) {
 			list_add_tail(&bdata->list, &ent->list);
 			return;
 		}
 	}
-
+	
+	// 그 외에는, 맨끝에 삽입한다.
 	list_add_tail(&bdata->list, &bdata_list);
 }
 
 /*
  * Called once to set up the allocator itself.
  */
+
+// 2014-11-08
+// bootmem_data 구성 후, bdata_list에 insert
+// bitmap을 0xff로 set함으로서, reserved 상태로 설정
+// (end - size)를 ulong단위로 align한 값을 return.
 static unsigned long __init init_bootmem_core(bootmem_data_t *bdata,
 	unsigned long mapstart, unsigned long start, unsigned long end)
 {
 	unsigned long mapsize;
 
-	mminit_validate_memmodel_limits(&start, &end);
+	mminit_validate_memmodel_limits(&start, &end);	// 유효성 체크 후, 필요시 값 보정
 	bdata->node_bootmem_map = phys_to_virt(PFN_PHYS(mapstart));
 	bdata->node_min_pfn = start;
 	bdata->node_low_pfn = end;
+
+	// bdata_list에 insert 한다.
 	link_bootmem(bdata);
 
 	/*
 	 * Initially all pages are reserved - setup_arch() has to
 	 * register free RAM areas explicitly.
 	 */
-	mapsize = bootmap_bytes(end - start);
+	
+	// bitmap을 0xff로 set, 즉 예약된 상태가 될 것이다.
+	mapsize = bootmap_bytes(end - start);	// 4byte(ulong)단위로 align
 	memset(bdata->node_bootmem_map, 0xff, mapsize);
 
 	bdebug("nid=%td start=%lx map=%lx end=%lx mapsize=%lx\n",

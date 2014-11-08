@@ -139,10 +139,11 @@ static inline int sparse_early_nid(struct mem_section *section)
 }
 
 /* Validate the physical addressing limitations of the model */
+// 2014-11-08, 어떤 경우라도 max_sparsemem_pfn보다 클 수 없다.
 void __meminit mminit_validate_memmodel_limits(unsigned long *start_pfn,
 						unsigned long *end_pfn)
 {
-	unsigned long max_sparsemem_pfn = 1UL << (MAX_PHYSMEM_BITS-PAGE_SHIFT);
+	unsigned long max_sparsemem_pfn = 1UL << (MAX_PHYSMEM_BITS-PAGE_SHIFT);	// 32 - 12 = 20, 1MB(0x0010_0000)
 
 	/*
 	 * Sanity checks - do not allow an architecture to pass

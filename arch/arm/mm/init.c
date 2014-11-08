@@ -181,7 +181,9 @@ static void __init arm_bootmem_init(unsigned long start_pfn,
 	 */
 	boot_pages = bootmem_bootmap_pages(end_pfn - start_pfn);
 	// 2014-11-01 여기까지 함.
-	
+
+	// 2014-11-08 시작.
+	// L1_CACHE_BYTES == 64
 	bitmap = memblock_alloc_base(boot_pages << PAGE_SHIFT, L1_CACHE_BYTES,
 				__pfn_to_phys(end_pfn));
 
@@ -189,10 +191,16 @@ static void __init arm_bootmem_init(unsigned long start_pfn,
 	 * Initialise the bootmem allocator, handing the
 	 * memory banks over to bootmem.
 	 */
-	node_set_online(0);
-	pgdat = NODE_DATA(0);
-	init_bootmem_node(pgdat, __phys_to_pfn(bitmap), start_pfn, end_pfn);
 
+	// bootmam allocator 초기화, memory banks를 bootmem에게 양도한다(넘겨준다.)
+	node_set_online(0);		// MAX_NUMNODES == 1임으로 특별히 하는 일이 없음.
+	pgdat = NODE_DATA(0);	// (&contig_page_data)
+
+	// 2014-11-08, Start
+	init_bootmem_node(pgdat, __phys_to_pfn(bitmap), start_pfn, end_pfn);
+	// 2014-11-08, end
+
+	// 2014-11-08, Start, 여기까지
 	/* Free the lowmem regions from memblock into bootmem. */
 	for_each_memblock(memory, reg) {
 		unsigned long start = memblock_region_memory_base_pfn(reg);

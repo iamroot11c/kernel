@@ -6,8 +6,8 @@
 #endif
 
 #define PFN_ALIGN(x)	(((unsigned long)(x) + (PAGE_SIZE - 1)) & PAGE_MASK)
-#define PFN_UP(x)	(((x) + PAGE_SIZE-1) >> PAGE_SHIFT)
-#define PFN_DOWN(x)	((x) >> PAGE_SHIFT)
+#define PFN_UP(x)	(((x) + PAGE_SIZE-1) >> PAGE_SHIFT)	// 다음 PFN을 가져올 것이다.
+#define PFN_DOWN(x)	((x) >> PAGE_SHIFT)					// 현재 PFN을 가져올 것이다.
 #define PFN_PHYS(x)	((phys_addr_t)(x) << PAGE_SHIFT)
 
 #endif
