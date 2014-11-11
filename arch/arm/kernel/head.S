@@ -81,9 +81,9 @@
  */
 	.arm
 
-	__HEAD					// [20140615][blomdhal],
-							// 	.section	".head.text","ax"
-							// "ax" : allocatable and executable section
+	__HEAD				// [20140615][blomdhal],
+					// 	.section	".head.text","ax"
+					// "ax" : allocatable and executable section
 ENTRY(stext)				
 	// decompressed kernel의 시작
 	// 가상주소로 0Xc0008000이다. 아래를 통해서 확인 가능.
