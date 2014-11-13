@@ -7,10 +7,31 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
+//kkr 14-11-13
+/*
+ *출력 아키텍처를 정한다. 아규먼트는 BFD 라이브러리에서 사용하는 이름중 하나
+ *가능한 아키텍쳐는 objdump -f 옵션으로 확인가능하다.
+ */
 OUTPUT_ARCH(arm)
+/*
+ * 진입점을 설정한다. 아규먼트는 심볼이름이다.
+ * 스크립터에 ETNRY를 사용하는것은 진입점을 사용하는것방법중에 하나며,
+ * 진입점을 설정하는방법에는 다음과 같은것이 있다.
+ * 1. -e entry 옵션
+ * 2. 링커 스크립트의 ENTRY(symbol) 명령어
+ * 3. start 심볼이 정의되있다면 심볼 값
+ * 4 .text 섹션이 있다면 첫 바이트 주소
+ * 5 주소 0
+ */
 ENTRY(_start)
 SECTIONS
 {
+    /*
+     * 출력 섹션 : 입력 섹션 의 구조에서, 출력 섹션 DISCARD는
+     * 입력 섹션을 버리기 위해 사용한다. 즉
+     * 이름이 DISCARD인 출력 섹션에 입력 섹션을 대입하면 출력파일에 
+     * 포함되지 않는다.
+     */
   /DISCARD/ : {
     *(.ARM.exidx*)
     *(.ARM.extab*)
@@ -22,10 +43,40 @@ SECTIONS
      */
     *(.data)
   }
-
+  /*
+   * 심볼에 값을 대입하는 방법은 다음과 같이 있다.
+   * 1. symbol = expression;
+   * 2. symbol += expression;
+   * 3. symbol -= expression;
+   * 4. symbol /= expression;
+   * 5. symbol <<= expression;
+   * 6. symbol >>= expression;
+   * 7. symbol &= expression;
+   * 8. symbol |= expression;
+   * C언어와 똑같다고 생각하면된다.
+   */
+  /*
+   * .은 항상 현재 위치 카운터를 저장한다. .은 항상 출력 섹션의 장소를 
+   * 참조하기 때문에 SECTION명령어 안의 표현식에서만 사용할 수 있다.
+   * 값을 . 에 대입하면 위치카운터가 변경된다. 아래의 경우 .엔 TEXT_START
+   * 가 대입되는데, Makefile에서 보면 TEXT_START = ZTEXTADDR이며 이는 0으로
+   * 정의되있다.
+   */
   . = TEXT_START;
+  /*
+   * .은 0이므로 _text는 0이된다.
+   */
+  /*
+   *"을 하지 않으면 심볼 이름은 문자 '_', '.'로 시작하여 문자 '_'. '.' '_'
+   *을 포함하고 어떤 키워드와 같은 이름을 하면 안된다.
+   * 주로 .은 섹션, _은 주소같은 상수를 의미한다.
+   */
   _text = .;
-
+/*
+ * *:와일드카드. 어떤 파일명에도 대응
+ * *(.start)의 의미 : 모든 입력섹션 .start를 포함
+ * 아래 처럼 연속적으로 올경우 순서대로 넣어진다.
+ */
   .text : {
     _start = .;
     *(.start)
@@ -52,6 +103,8 @@ SECTIONS
   .got			: { *(.got) }
   _got_end = .;
 
+  /* BYTE(n) : n을 한 바이트에 저장*/
+  /* ALIGN은 현재 위치 카운터를 지정한 값으로 (큰 쪽으로) 정렬한다*/
   /* ensure the zImage file size is always a multiple of 64 bits */
   /* (without a dummy byte, ld just ignores the empty section) */
   .pad			: { BYTE(0); . = ALIGN(8); }
@@ -64,7 +117,7 @@ SECTIONS
 
   . = ALIGN(8);		/* the stack must be 64-bit aligned */
   .stack		: { *(.stack) }
-
+  /* 0번주소에서 시작 */
   .stab 0		: { *(.stab) }
   .stabstr 0		: { *(.stabstr) }
   .stab.excl 0		: { *(.stab.excl) }
