@@ -26,8 +26,12 @@
  * strex/ldrex monitor on some implementations. The reason we can use it for
  * atomic_set() is the clrex or dummy strex done on every exception return.
  */
+// volatile의 의미: Cache의 값을 가져오지 않고, 직접 Memory에 접근해서 가져온다.
 #define atomic_read(v)	(*(volatile int *)&(v)->counter)
 #define atomic_set(v,i)	(((v)->counter) = (i))
+
+// atomic_set 매크로가 ldrex/strex 대신 단일 str 명령으로 구현된 이유조회 수 
+// http://goo.gl/eo9Tt6
 
 #if __LINUX_ARM_ARCH__ >= 6
 

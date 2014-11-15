@@ -397,6 +397,7 @@ static void dump_object_info(struct kmemleak_object *object)
  * beginning of the memory block are allowed. The kmemleak_lock must be held
  * when calling this function.
  */
+// 2014-11-15
 static struct kmemleak_object *lookup_object(unsigned long ptr, int alias)
 {
 	struct rb_node *rb = object_tree_root.rb_node;
@@ -473,11 +474,15 @@ static void put_object(struct kmemleak_object *object)
 /*
  * Look up an object in the object search tree and increase its use_count.
  */
+ // 2014-11-15
 static struct kmemleak_object *find_and_get_object(unsigned long ptr, int alias)
 {
 	unsigned long flags;
 	struct kmemleak_object *object = NULL;
 
+	// rb_tree를 건드릴때는, 신중히
+	// 기본적으로 코드 최적화 방지를 위해, 1. barrier() 사용
+	// 그 외, irqsave(), irqrestore() 사용
 	rcu_read_lock();
 	read_lock_irqsave(&kmemleak_lock, flags);
 	if (ptr >= min_addr && ptr < max_addr)
@@ -645,6 +650,7 @@ static void delete_object_full(unsigned long ptr)
  * delete it. If the memory block is partially freed, the function may create
  * additional metadata for the remaining parts of the block.
  */
+// 2014-11-15
 static void delete_object_part(unsigned long ptr, size_t size)
 {
 	struct kmemleak_object *object;
@@ -658,6 +664,8 @@ static void delete_object_part(unsigned long ptr, size_t size)
 #endif
 		return;
 	}
+	// 2014-11-15, 여기까지
+
 	__delete_object(object);
 
 	/*

@@ -10,6 +10,28 @@
 # define __force	__attribute__((force))
 # define __nocast	__attribute__((nocast))
 # define __iomem	__attribute__((noderef, address_space(2)))
+
+ /****************************************************************************
+  2014-11-15, iamroot 6차 분석 내용에서 발췌
+
+  2011.02.15 23:47:20 
+  __attribute__((context(x,0,1))) 은 무슨뜻일까??
+  __attribute__() 만을보고 gcc manual을 뒤져도 소용이 없다.
+  __context__ 는 리누즈 토발즈가만든 정적 분석도구이다. 
+  자세한것은 wikipedia에서 Sparse로 검색하면 나온다.
+  (http://en.wikipedia.org/wiki/Sparse#cite_note-3)
+  
+  간략히 설명을하면..
+  Sparse는 정적분석도구이다. 정적분석도구라하면.. 소프트웨어를 실행시키지 않고,
+  소스코드만을 가지고 분석해내는것을 말한다. 하지만 Sparse가 다른
+  정적분석도구들과 차이점이 있다면. Sparse는 소스코드내에 문제가 될법한 위치에
+  '특별한 코드'를 추가시켜야한다. 즉, 아래의 경우와같이 __context__가 해당된다.
+  이렇게 삽입된 코드를 통해서 컴파일러는 컴파일타임에 
+  '포인터가 어떤 어드레스 스페이스에 속하는가?' 혹은
+  '함수가 어떤 lock을 얻고 반환했는가?' 에 대한 정보를 개발자에게 제공한다.
+  ****************************************************************************/ 
+  // ref: http://pinocc.tistory.com/144
+
 # define __must_hold(x)	__attribute__((context(x,1,1)))
 # define __acquires(x)	__attribute__((context(x,0,1)))
 # define __releases(x)	__attribute__((context(x,1,0)))

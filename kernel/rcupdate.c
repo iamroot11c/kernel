@@ -55,6 +55,7 @@
 
 module_param(rcu_expedited, int, 0);
 
+// CONFIG_PREEMPT_RCU=y
 #ifdef CONFIG_PREEMPT_RCU
 
 /*
@@ -64,7 +65,11 @@ module_param(rcu_expedited, int, 0);
  */
 void __rcu_read_lock(void)
 {
+	// #define get_current() (current_thread_info()->task)
+	// #define current get_current()
+	// struct task_struct의 멤버 
 	current->rcu_read_lock_nesting++;
+	// http://www.iamroot.org/xe/QnA/45841
 	barrier();  /* critical section after entry code. */
 }
 EXPORT_SYMBOL_GPL(__rcu_read_lock);
