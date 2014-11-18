@@ -861,6 +861,10 @@ static void __init kuser_init(void *vectors)
 	* c04f63dc t __kuser_helper_version
 	* c04f63e0 T __kuser_helper_end
 	*/
+	/*
+	 * kuser_helper_start : arch/arm/kernel/entry-armv.S 에 있음.
+	 * System.map에서 보이는 함수들이 다나옴
+	 */
 	extern char __kuser_helper_start[], __kuser_helper_end[];
 	int kuser_sz = __kuser_helper_end - __kuser_helper_start;
 
@@ -871,6 +875,7 @@ static void __init kuser_init(void *vectors)
 	/*
 	 * vectors + 0xfe0 = __kuser_get_tls
 	 * vectors + 0xfe8 = hardware TLS instruction at 0xffff0fe8
+	 * 0xfe0 : ldr r0, [pc, #(16 - 8)]을 mrc p15, 0, r0, c13, c0 ,3 으로 대체
 	 */
 	/* iamroot
 	  #elif defined(CONFIG_CPU_32v6K) // CONFIG_CPU_32v6K=y

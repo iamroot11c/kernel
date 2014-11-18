@@ -931,6 +931,10 @@ static void __init create_mapping(struct map_desc *md)
 	}
 
 	//pgd base addr(0xc000_8000(ram+text) - 0x4000(pgdir size) + pgd_offset(addr))
+	/*
+	 * pgt 는 16kb, pgd는 4096개이지만 리눅스에서는 pgd를 두개씩 묶어서
+	 * 사용 한다. pgd[2] * 2048로 사용하며 pgd[2]는 section으로접근?
+	 * */
 	pgd = pgd_offset_k(addr);
 	//이때당시 addr은 startstart이므로 length를 add하면 end가 나온다
 	end = addr + length;

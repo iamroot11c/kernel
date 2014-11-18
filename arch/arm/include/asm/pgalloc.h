@@ -126,14 +126,23 @@ static inline void pte_free(struct mm_struct *mm, pgtable_t pte)
 	__free_page(pte);
 }
 
+//small page setting
 static inline void __pmd_populate(pmd_t *pmdp, phys_addr_t pte,
 				  pmdval_t prot)
 {
 	// + 11bit add 후  2bit setting
 	pmdval_t pmdval = (pte + PTE_HWTABLE_OFF) | prot;
+    /*
+     * pgd[0] = pte+ 2048 | prot 
+     * */
 	pmdp[0] = __pmd(pmdval);
 #ifndef CONFIG_ARM_LPAE
 	// pmd[1] = pmd[0] + 10bit add
+    /*
+     *  왜 10bit를 더했을가?
+     *  pgd[2][2048] 이므로 pgd 1개당 1MB를 관리.
+     *  pmdp[1]은 pmdp[0]+1MB에서의 1MB를 관리해야하므로 1MB를 더한것?
+     */
 	pmdp[1] = __pmd(pmdval + 256 * sizeof(pte_t));
 #endif
 	flush_pmd_entry(pmdp);
