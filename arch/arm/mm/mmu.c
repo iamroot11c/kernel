@@ -681,7 +681,30 @@ static void __init __map_init_section(pmd_t *pmd, unsigned long addr,
 		// pmd : 4kb aligned address 
 		// -> 10bit(AP(0x01)), 2bit(B bit Setting) 페이지 테이블 세팅
 		// read/write privileged only 설정
+		/*
+		 * pgd는 0xc000_4000~0xc000_8000이다.
+		 * pgd한개당 2MB를 관리하는데 결국 pgd는 pmd두개를 묶는
+		 * 역할만을 할 뿐이며, pgd가 2MB때문에 이 루프를 최소 두번
+		 * 실행한다. (pgd_t = pgd[0] , pgd[1] -> pmd 2개) 
+		 * */
 		*pmd = __pmd(phys | type->prot_sect);
+		/*
+		 * pmd_size란게 아닌 SECTION_SIZE인 이유는 리눅스에서 1MB
+		 * 단위를 SECTION으로 보기때문.(? 1MB는 phys적인 측면에서
+		 * section이고 soft적인 측면에서는 pmd인가?)
+		 * *pmd의 값은 크게 다음과 같이 입력, 출력되는거 같음
+		 * 1. 4001_1c0e -> 4001_140e, 4011_1c0e -> 4011_140e
+		 *	입력:11c0e ,출력 1140e고정
+		 * 2. 0 -> 40a1_140e, 0 -> 40b1_140e
+		 *	입력:0 , 출력 1140e고정
+		 * 3. 0 -> 6f7f_e821, 0 -> 6f7fec21(high mem 할때 단한번, pte할때임)
+		 * 4. 0 -> 6f7f_c841
+		 *	출력 841 고정 pgd[0]의 부분 pte할때
+		 * 5. 0 -> 6f7fac41, ? -> 6f7f9c41
+		 *	출력 c41 고정 pgd[1]의 부분 pte할때
+		 *
+		 * 이 루프는 1, 2번에 해당
+		 * */
 		phys += SECTION_SIZE;
 	} while (pmd++, addr += SECTION_SIZE, addr != end);
 
@@ -728,6 +751,13 @@ static void __init alloc_init_pmd(pud_t *pud, unsigned long addr,
 		  * (addr == 0인경우와 addr = 0xffff_0000인 경우등등이
 		  * 있었음을 상기. 그렇다면 addr = 0인 경우는 그렇다쳐도 
 		  * 다른경우는 왜 map 초기화를 할필요가 없을까?)
+		  * addr == 0인경우 0xc000_4000 이고 
+		  * addr == 0xffff_0000인 경우 0xc000_7ff8이다.
+		  * 즉 addr == 0xffff_0000은 pgd_end를 의미.
+		  * addr == 0xffff_0000인 경우는 MT_HIGH_VECTORS를 세팅할때다.
+		  * high_vectors를 세팅할때는 alloc_init_pte로 넘어가서
+		  * pte 1개만 초기화를 하는거 같다.(?)
+		  * pgd는 2MB 단위, pmd는 1MB 단위라는 것을 유념.
 		  * */
 		if (type->prot_sect &&
 				((addr | next | phys) & ~SECTION_MASK) == 0) {
