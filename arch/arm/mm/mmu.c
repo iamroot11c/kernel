@@ -704,6 +704,27 @@ static void __init __map_init_section(pmd_t *pmd, unsigned long addr,
 		 *	출력 c41 고정 pgd[1]의 부분 pte할때
 		 *
 		 * 이 루프는 1, 2번에 해당
+		 * 1번 : 0001_0001_1100_0000_1110 
+		 *    -> 0001_0001_0100_0000_1110
+		 * 2번 : 0 
+		 *    -> 0001_0001_0100_0000_1110
+		 *
+		 * FLPD(First Level Page Descriptor Fomart)에서 1MB PAGE는
+		 * 31:20 -> 1MB page base address
+		 * 이고 뒤를 보면 
+		 * 1번의 경우 접근권한이 수정됬고
+		 * 2번의 경우는 아에 새로 할당된것 
+		 * 
+		 * 3번 : 1000_0010_0001
+		 *    -> 1100_0010_0001
+		 * 4번 : 1000_0100_0001
+		 * 5번 : 1100_0100_0001
+		 * SLPD(Second ...)에서 4KB page base는
+		 * 31:16 -> 4KB page base address 
+		 * /// Format에 AP가 2개있는데 한비트를 사용하는 AP(접근권한)와
+		 * /// 2비트를 사용하는 AP의 각각의 용도는 뭐지?
+		 * /// pte에서는 S비트가 다S는 뭐지?
+		 * /// 1번비트가 1아닌 0인데 이경우 64KB page인거 같은데?
 		 * */
 		phys += SECTION_SIZE;
 	} while (pmd++, addr += SECTION_SIZE, addr != end);
