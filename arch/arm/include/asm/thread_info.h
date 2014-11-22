@@ -16,7 +16,7 @@
 #include <asm/fpstate.h>
 
 #define THREAD_SIZE_ORDER	1
-#define THREAD_SIZE		8192
+#define THREAD_SIZE		8192 // 8KB
 #define THREAD_START_SP		(THREAD_SIZE - 8)
 
 #ifndef __ASSEMBLY__

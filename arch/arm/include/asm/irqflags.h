@@ -20,13 +20,16 @@
 
 #if __LINUX_ARM_ARCH__ >= 6
 
+// 2014-11-22
 static inline unsigned long arch_local_irq_save(void)
 {
 	unsigned long flags;
 
+    // PSR(Program Status Register)를 flags 변수에 저장
+    // mrs 명령어에서는 R15레지스터 사용 못함
 	asm volatile(
 		"	mrs	%0, " IRQMASK_REG_NAME_R "	@ arch_local_irq_save\n"
-		"	cpsid	i"
+		"	cpsid	i"                      // 인터럽트 비 활성화
 		: "=r" (flags) : : "memory", "cc");
 	return flags;
 }
