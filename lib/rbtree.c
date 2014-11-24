@@ -389,10 +389,13 @@ void rb_insert_color(struct rb_node *node, struct rb_root *root)
 }
 EXPORT_SYMBOL(rb_insert_color);
 
+// 2014-11-22, 29일 다시 학습 예정
 void rb_erase(struct rb_node *node, struct rb_root *root)
 {
 	struct rb_node *rebalance;
+	// 노드를 삭제
 	rebalance = __rb_erase_augmented(node, root, &dummy_callbacks);
+	// 노드 삭제후 트리 균형이 맞지않으면 균형을 맞춤
 	if (rebalance)
 		____rb_erase_color(rebalance, root, dummy_rotate);
 }

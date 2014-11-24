@@ -435,10 +435,12 @@ static int get_object(struct kmemleak_object *object)
 /*
  * RCU callback to free a kmemleak_object.
  */
+// 2014-11-22
 static void free_object_rcu(struct rcu_head *rcu)
 {
 	struct hlist_node *tmp;
 	struct kmemleak_scan_area *area;
+	// rcu를 멤버로 갖는 kmemleak_object 인스턴스를 찾음
 	struct kmemleak_object *object =
 		container_of(rcu, struct kmemleak_object, rcu);
 
@@ -446,10 +448,12 @@ static void free_object_rcu(struct rcu_head *rcu)
 	 * Once use_count is 0 (guaranteed by put_object), there is no other
 	 * code accessing this object, hence no need for locking.
 	 */
+	// kmemleak_object 구조체의 area_list 멤버가 갖는 데이터(메모리)를 삭제
 	hlist_for_each_entry_safe(area, tmp, &object->area_list, node) {
 		hlist_del(&area->node);
 		kmem_cache_free(scan_area_cache, area);
 	}
+	// kmemleak_object 인스턴스를 삭제
 	kmem_cache_free(object_cache, object);
 }
 
@@ -460,8 +464,13 @@ static void free_object_rcu(struct rcu_head *rcu)
  * recursive call to the kernel allocator. Lock-less RCU object_list traversal
  * is also possible.
  */
+// 2014-11-22
+// 슬랩, RCU 등을 알아야 이 함수의 동작을 이해할 수 있을것 같음
 static void put_object(struct kmemleak_object *object)
 {
+	// kmemleak_object 인스턴스의 use_count 변수를 1감소 후
+	// 결과가 0이면 참을 반환
+	// 감소 결과가 0이면 이전으로 돌아감
 	if (!atomic_dec_and_test(&object->use_count))
 		return;
 
@@ -504,7 +513,7 @@ static int __save_stack_trace(unsigned long *trace)
 {
 	struct stack_trace stack_trace;
 
-	stack_trace.max_entries = MAX_TRACE;
+	stack_trace.max_entries = MAX_TRACE; //16
 	stack_trace.nr_entries = 0;
 	stack_trace.entries = trace;
 	stack_trace.skip = 2;
@@ -517,6 +526,8 @@ static int __save_stack_trace(unsigned long *trace)
  * Create the metadata (struct kmemleak_object) corresponding to an allocated
  * memory block and add it to the object_list and object_tree_root.
  */
+// 2014-11-22
+// object->pointer, ptr - start, object->min_count, 0xD0
 static struct kmemleak_object *create_object(unsigned long ptr, size_t size,
 					     int min_count, gfp_t gfp)
 {
@@ -545,6 +556,7 @@ static struct kmemleak_object *create_object(unsigned long ptr, size_t size,
 	object->checksum = 0;
 
 	/* task information */
+	// kmemleak_object 구조체의 comm 멤버 배열으의 크기는 16
 	if (in_irq()) {
 		object->pid = 0;
 		strncpy(object->comm, "hardirq", sizeof(object->comm));
@@ -603,15 +615,19 @@ out:
  * Remove the metadata (struct kmemleak_object) for a memory block from the
  * object_list and object_tree_root and decrement its use_count.
  */
+// 2014-11-22 
 static void __delete_object(struct kmemleak_object *object)
 {
 	unsigned long flags;
 
+	// 현재의 쓰레드의 인터럽트를 비활성화하고 락을 걸음
 	write_lock_irqsave(&kmemleak_lock, flags);
 	rb_erase(&object->rb_node, &object_tree_root);
 	list_del_rcu(&object->object_list);
+	// 현재의 쓰레드의 인터럽트를 활성화하고 락을 해제
 	write_unlock_irqrestore(&kmemleak_lock, flags);
 
+	// 경고 출력
 	WARN_ON(!(object->flags & OBJECT_ALLOCATED));
 	WARN_ON(atomic_read(&object->use_count) < 2);
 
@@ -620,6 +636,7 @@ static void __delete_object(struct kmemleak_object *object)
 	 * cannot be freed when it is being scanned.
 	 */
 	spin_lock_irqsave(&object->lock, flags);
+	// 할당 상태를 해제
 	object->flags &= ~OBJECT_ALLOCATED;
 	spin_unlock_irqrestore(&object->lock, flags);
 	put_object(object);
@@ -666,6 +683,7 @@ static void delete_object_part(unsigned long ptr, size_t size)
 	}
 	// 2014-11-15, 여기까지
 
+	// 2014-11-22 시작
 	__delete_object(object);
 
 	/*
@@ -677,9 +695,11 @@ static void delete_object_part(unsigned long ptr, size_t size)
 	 */
 	start = object->pointer;
 	end = object->pointer + object->size;
+	// 2014-11-22, create_object() 함수를 간략히 훑어봄
+	// 29일 자세히 봐야함
 	if (ptr > start)
 		create_object(start, ptr - start, object->min_count,
-			      GFP_KERNEL);
+			      GFP_KERNEL/*0xD0; 0b1101_0000*/);
 	if (ptr + size < end)
 		create_object(ptr + size, end - ptr - size, object->min_count,
 			      GFP_KERNEL);

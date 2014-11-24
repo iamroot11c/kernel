@@ -19,6 +19,7 @@
  * under normal circumstances, used to verify that nobody uses
  * non-initialized list entries.
  */
+// CONFIG_ILLEGAL_POINTER_VALUE 미 정의로 POISON_POINTER_DELTA는 0
 #define LIST_POISON1  ((void *) 0x00100100 + POISON_POINTER_DELTA)
 #define LIST_POISON2  ((void *) 0x00200200 + POISON_POINTER_DELTA)
 
