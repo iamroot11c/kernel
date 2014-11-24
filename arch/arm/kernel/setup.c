@@ -887,6 +887,17 @@ void __init setup_arch(char **cmdline_p)
 	const struct machine_desc *mdesc;
 
 	setup_processor();	//함수 내부 진행중 20140712
+	/*
+	 * dt_phys = __atags_pointer -> arch/arm/kernel/head-common.S에서
+	 * start_kernel로 오기전에 저장을 해놓는다.
+	 * 이 파일에 __atags_pointer가 unsigned int __intdata로 정의 되있는데,
+	 * arch/arm/kernel/head-common.S에서도 __atags_pointer가 .long으로 정의되 있다.
+	 * 이것은 컴파일러에의해 .long __atags_pointer가 이 파일의
+	 * unsigned int __atags_pointer __initdata로 링크된다.
+	 * 즉 원래 __atags_pointer의 정의는 이 파일의 전역변수인
+	 * unsigned int __atags_pointer __intdata이고, head-common.S에서
+	 * __atags_pointer를 바꾸는것이다.
+	 */
 	mdesc = setup_machine_fdt(__atags_pointer);
 	if (!mdesc)
 		mdesc = setup_machine_tags(__atags_pointer, __machine_arch_type);

@@ -197,7 +197,7 @@ const struct machine_desc * __init setup_machine_fdt(unsigned int dt_phys)
 	unsigned long dt_root;
 	const char *model;
 
-#ifdef CONFIG_ARCH_MULTIPLATFORM
+#ifdef CONFIG_ARCH_MULTIPLATFORM	//not set
 	DT_MACHINE_START(GENERIC_DT, "Generic DT based system")
 	MACHINE_END
 
@@ -207,8 +207,14 @@ const struct machine_desc * __init setup_machine_fdt(unsigned int dt_phys)
 	if (!dt_phys)
 		return NULL;
 
+	//atgs_pointer를 가상주소로 변환해서 devtrr에 저장
+	//devtree 는 atags_pointer의 가상주소임을 기억
 	devtree = phys_to_virt(dt_phys);
 
+	/*
+	 * xxd arch/arm/boot/dts/exynos5420-smdk5420.dtb 로 열어보면
+	 * 0번지에 0xd00dfeed로 저장되있고 이는 big endian형식이다.
+	 * */
 	/* check device tree validity */
 	if (be32_to_cpu(devtree->magic) != OF_DT_HEADER)
 		return NULL;

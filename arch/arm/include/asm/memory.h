@@ -165,7 +165,7 @@
  * files.  Use virt_to_phys/phys_to_virt/__pa/__va instead.
  */
 #ifndef __virt_to_phys
-#ifdef CONFIG_ARM_PATCH_PHYS_VIRT
+#ifdef CONFIG_ARM_PATCH_PHYS_VIRT   //set
 
 /*
  * Constants used to force the right instruction encodings and shifts
@@ -175,7 +175,16 @@
 
 extern unsigned long __pv_phys_offset;
 #define PHYS_OFFSET __pv_phys_offset
-
+/* phys_to_virt기준 : phy, virt, "sub", __PV_BITS_31_24
+ * virt_to_phys는 sub->add가 된다
+ * 1:   sub virt phy 0x81000000
+ *      .pushsection .pv_table, "a"
+ *      .long 1b
+ *      .popsection
+ */
+/* 11차 A조 분들꺼 참고
+ * http://www.iamroot.org/xe/FreeBoard/216101
+ */
 #define __pv_stub(from,to,instr,type)			\
 	__asm__("@ __pv_stub\n"				\
 	"1:	" instr "	%0, %1, %2\n"		\
@@ -238,6 +247,7 @@ static inline phys_addr_t virt_to_phys(const volatile void *x)
 
 static inline void *phys_to_virt(phys_addr_t x)
 {
+    //ARM_PATCH_PHYS_VIRT = y, 1번으로 감
 	return (void *)(__phys_to_virt((unsigned long)(x)));
 }
 
