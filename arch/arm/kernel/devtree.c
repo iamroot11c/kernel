@@ -222,6 +222,7 @@ const struct machine_desc * __init setup_machine_fdt(unsigned int dt_phys)
 
 	/* Search the mdescs for the 'best' compatible value match */
 	initial_boot_params = devtree;
+	/*dt_root = 0x4B(편의상 dtb파일의 offset 물리주소로 썻지만 커널상에서는 가상주소임을 기억)*/
 	dt_root = of_get_flat_dt_root();
 	for_each_machine_desc(mdesc) {
 		score = of_flat_dt_match(dt_root, mdesc->dt_compat);

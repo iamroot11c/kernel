@@ -42,6 +42,13 @@ void *of_fdt_get_property(struct boot_param_header *blob,
 {
 	unsigned long p = node;
 
+	/*
+	 * 0x03값을 찾아서 while을 돈ㄷ. 0x03은 property를 의미하며 그 다음
+	 * 4바이트는 name size를, 그 다음 4바이트는 name offset을  의미한다.
+	 * 즉 *(0x70) = 0x03, *(0x74) = 0x24, *(0x78) = 0x2c라면
+	 * name size = 0x24, name offset = 0x2c이다.ㅑ
+	 * 그다음 8byte는 건너뛰는데 거기에 name이 
+	 * */
 	do {
 		u32 tag = be32_to_cpup((__be32 *)p);
 		u32 sz, noff;
@@ -108,6 +115,12 @@ int of_fdt_is_compatible(struct boot_param_header *blob,
 /**
  * of_fdt_match - Return true if node matches a list of compatible values
  */
+/*
+ * blob = dtb시작주소, dtb파일기준으로는 0x0.(이제부터 여기서쓰는 dtb 주소는 다 파일기준으로 정의)
+ * node = dt struct의 시작주소. 0x4B
+ * compat = mdesc->compat에서 가져온 string
+ * mdesc->compat과 dtb의 compat과 일치하는지를 검사해서 score를 반환.
+ * */
 int of_fdt_match(struct boot_param_header *blob, unsigned long node,
                  const char *const *compat)
 {
@@ -502,13 +515,26 @@ int __init of_scan_flat_dt(int (*it)(unsigned long node,
  */
 unsigned long __init of_get_flat_dt_root(void)
 {
+	/*
+	 * xxd .dtb로 보면서 진행. off_dt_struct = 0x38이다
+	 * */
 	unsigned long p = ((unsigned long)initial_boot_params) +
 		be32_to_cpu(initial_boot_params->off_dt_struct);
-
+	/*
+	 * be32_to_cpup : dtb는 기본으로 big endian이기때문에 cpu에 따라 변환하기 위함
+	 * 0x44의 0x0004를 찾음. 
+	 * */
 	while (be32_to_cpup((__be32 *)p) == OF_DT_NOP)
 		p += 4;
+	/*
+	 * 바로 0x01이 있으면 BUG_ON을 하고 아니면 주소를 +4를함. 즉 0x48됨 
+	 * */
 	BUG_ON(be32_to_cpup((__be32 *)p) != OF_DT_BEGIN_NODE);
 	p += 4;
+	/* 0x48의 값을 보면 0x0000이다. 이는 dtb에서 root node는 null string
+	 * 이나 '/'이 오게 되있다고 한다. 또한 ALGIN을 한 이유는 코드의 일관성,
+	 * 및 잘못된 dtb에 대한 오류를 방지하기 위함이라고 한다.
+	 * */
 	return ALIGN(p + strlen((char *)p) + 1, 4);
 }
 

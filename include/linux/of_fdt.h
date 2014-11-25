@@ -42,19 +42,19 @@
  * ends when size is 0
  */
 struct boot_param_header {
-	__be32	magic;			/* magic word OF_DT_HEADER */
-	__be32	totalsize;		/* total size of DT block */
-	__be32	off_dt_struct;		/* offset to structure */
-	__be32	off_dt_strings;		/* offset to strings */
-	__be32	off_mem_rsvmap;		/* offset to memory reserve map */
-	__be32	version;		/* format version */
-	__be32	last_comp_version;	/* last compatible version */
+	__be32	magic;			/* magic word OF_DT_HEADER 0xd00dfeed*/
+	__be32	totalsize;		/* total size of DT block 0x3c9e*/
+	__be32	off_dt_struct;		/* offset to structure 0x38*/
+	__be32	off_dt_strings;		/* offset to strings 0x39b0*/
+	__be32	off_mem_rsvmap;		/* offset to memory reserve map 0x28*/
+	__be32	version;		/* format version 0x11*/
+	__be32	last_comp_version;	/* last compatible version 0x10*/
 	/* version 2 fields below */
-	__be32	boot_cpuid_phys;	/* Physical CPU id we're booting on */
+	__be32	boot_cpuid_phys;	/* Physical CPU id we're booting on 0x0*/
 	/* version 3 fields below */
-	__be32	dt_strings_size;	/* size of the DT strings block */
+	__be32	dt_strings_size;	/* size of the DT strings block 0x2ee*/
 	/* version 17 fields below */
-	__be32	dt_struct_size;		/* size of the DT structure block */
+	__be32	dt_struct_size;		/* size of the DT structure block 0x3978*/
 };
 
 #if defined(CONFIG_OF_FLATTREE)
