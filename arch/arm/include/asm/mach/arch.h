@@ -88,6 +88,14 @@ static const struct machine_desc __mach_desc_##_type	\
 #define MACHINE_END				\
 };
 
+/*
+ * DT_MACHINE_START(EXYNOS5_DT, "SAMSUNG EXYNOS5 (Flattened Device Tree)")
+ * 풀면
+ * static const struct machine_desc __mach_desc_EXYNOS5_DT
+ * __used __attribute__((__section__(".arch.info.init))) = {
+ * .nr = ~0,
+ * .name ="SAMSUNG EXYNOS5 (Flattened Device Tree)"
+ */
 #define DT_MACHINE_START(_name, _namestr)		\
 static const struct machine_desc __mach_desc_##_name	\
  __used							\

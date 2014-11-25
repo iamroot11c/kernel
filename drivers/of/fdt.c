@@ -42,30 +42,37 @@ void *of_fdt_get_property(struct boot_param_header *blob,
 {
 	unsigned long p = node;
 
-	/*
-	 * 0x03값을 찾아서 while을 돈ㄷ. 0x03은 property를 의미하며 그 다음
-	 * 4바이트는 name size를, 그 다음 4바이트는 name offset을  의미한다.
-	 * 즉 *(0x70) = 0x03, *(0x74) = 0x24, *(0x78) = 0x2c라면
-	 * name size = 0x24, name offset = 0x2c이다.ㅑ
-	 * 그다음 8byte는 건너뛰는데 거기에 name이 
-	 * */
 	do {
+		//p는 0x40에서 시작
 		u32 tag = be32_to_cpup((__be32 *)p);
 		u32 sz, noff;
 		const char *nstr;
-
+	//p = 0x40 + 4 = 0x44
 		p += 4;
+	//0x03값을 찾아서 while을 돈다. 0x03은 property를 의미
 		if (tag == OF_DT_NOP)
 			continue;
+	// tag = 0x40, *0x40 = 0x3 맨처음에 여기서 걸리네요
 		if (tag != OF_DT_PROP)
 			return NULL;
-
+//수정필요 kkr 14-11-25
+	 /*이전에 p+4를 했다. 이 4바이트는 name size를, 그 다음 4바이트는 name offset을  의미한다.
+	 * 즉 *(0x70) = 0x03, *(0x74) = 0x24, *(0x78) = 0x2c라면
+	 * name size = 0x24, name offset = 0x2c이다.
+	 * 그다음 8byte는 건너뛰는데 거기에 무언가가 있을것이고
+	 * */
 		sz = be32_to_cpup((__be32 *)p);
 		noff = be32_to_cpup((__be32 *)(p + 4));
 		p += 8;
+		//우리껀 0x11이다. 그전에껀 align해줘야되나 보다.
 		if (be32_to_cpu(blob->version) < 0x10)
 			p = ALIGN(p, sz >= 8 ? 8 : 4);
-
+		/*
+		 * off_dt_strings + noff 값을 반환한다. 
+		 * 0x39b0 + 0x2c = 0x39dc
+		 * 이주소에 가보면 compatible이 보인다.
+		 * 0x39dc[] = "compatible.model.bootargs.pinctrl0 ....."
+		 * */
 		nstr = of_fdt_get_string(blob, noff);
 		if (nstr == NULL) {
 			pr_warning("Can't find property index name !\n");
@@ -74,6 +81,7 @@ void *of_fdt_get_property(struct boot_param_header *blob,
 		if (strcmp(name, nstr) == 0) {
 			if (size)
 				*size = sz;
+			//size에 name size를 저장하고, 
 			return (void *)p;
 		}
 		p += sz;
@@ -522,18 +530,19 @@ unsigned long __init of_get_flat_dt_root(void)
 		be32_to_cpu(initial_boot_params->off_dt_struct);
 	/*
 	 * be32_to_cpup : dtb는 기본으로 big endian이기때문에 cpu에 따라 변환하기 위함
-	 * 0x44의 0x0004를 찾음. 
 	 * */
 	while (be32_to_cpup((__be32 *)p) == OF_DT_NOP)
 		p += 4;
 	/*
-	 * 바로 0x01이 있으면 BUG_ON을 하고 아니면 주소를 +4를함. 즉 0x48됨 
+	 * 바로 0x01이 없으면 BUG_ON을 한다. *0x38 = 0x01을 확인하고
+	 * 0x38 + 4 = 0x3B가된다.
 	 * */
 	BUG_ON(be32_to_cpup((__be32 *)p) != OF_DT_BEGIN_NODE);
 	p += 4;
-	/* 0x48의 값을 보면 0x0000이다. 이는 dtb에서 root node는 null string
+	/* 0x3B의 값을 보면 0x0000이다. 이는 dtb에서 root node는 null string
 	 * 이나 '/'이 오게 되있다고 한다. 또한 ALGIN을 한 이유는 코드의 일관성,
 	 * 및 잘못된 dtb에 대한 오류를 방지하기 위함이라고 한다.
+	 * return 0x40이 된다.
 	 * */
 	return ALIGN(p + strlen((char *)p) + 1, 4);
 }

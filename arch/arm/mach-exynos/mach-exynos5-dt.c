@@ -70,6 +70,7 @@ static void __init exynos5_reserve(void)
 #endif
 }
 
+/*여기값들이 전부 arch.info.init에 들어가게되는것. 구조체는 machine_desc*/
 DT_MACHINE_START(EXYNOS5_DT, "SAMSUNG EXYNOS5 (Flattened Device Tree)")
 	/* Maintainer: Kukjin Kim <kgene.kim@samsung.com> */
 	.smp		= smp_ops(exynos_smp_ops),
