@@ -233,7 +233,16 @@ const struct machine_desc * __init setup_machine_fdt(unsigned int dt_phys)
 	DT_MACHINE_START(EXYNOS5_DT, "SAMSUNG EXYNOS5 (Flattened Device Tree)")
 	 * */
 	for_each_machine_desc(mdesc) {
+		/*
+		 * 커널상에 등록된 compat과 dtb compat 일치비교 검사. 존재하면
+		 *  dtb에 등록된 compat의 offset(score)을 저장
+		 * */
 		score = of_flat_dt_match(dt_root, mdesc->dt_compat);
+		/*
+		 * 커널에 등록된 mdesc중에 score가 가장 낮게 책정된것을 best
+		 * 로서 저장한다. 지금은은 mdesc_best = mach-exynos5-dt의 
+		 * samsung,exynos5420을 기준으로하여 score = 2라고 가정
+		 * */
 		if (score > 0 && score < mdesc_score) {
 			mdesc_best = mdesc;
 			mdesc_score = score;
@@ -257,14 +266,20 @@ const struct machine_desc * __init setup_machine_fdt(unsigned int dt_phys)
 		dump_machine_table(); /* does not return */
 	}
 
+	// compatible일때와 동일하게 분석하면 다음과 같이 나옴을 알 수 있다.
+	// model = 0xac
 	model = of_get_flat_dt_prop(dt_root, "model", NULL);
 	if (!model)
 		model = of_get_flat_dt_prop(dt_root, "compatible", NULL);
 	if (!model)
 		model = "<unknown>";
+	//찾아가보면 다음과 같이 나올것임을 예측할수 있다.
+	//mdesc_best->name : SAMSUNG exynos5 (Flattened Device Tree)
+	//mode : Samsung SMDK5420 Board Based on EXYNOS5420
 	pr_info("Machine: %s, model: %s\n", mdesc_best->name, model);
 
 	/* Retrieve various information from the /chosen node */
+	//우리거는 bootargs 밖에없다
 	of_scan_flat_dt(early_init_dt_scan_chosen, boot_command_line);
 	/* Initialize {size,address}-cells info */
 	of_scan_flat_dt(early_init_dt_scan_root, NULL);

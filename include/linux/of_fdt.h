@@ -44,7 +44,9 @@
 struct boot_param_header {
 	__be32	magic;			/* magic word OF_DT_HEADER 0xd00dfeed*/
 	__be32	totalsize;		/* total size of DT block 0x3c9e*/
+    //root node의 시작 위치. node들이 저장된곳의 처음위치
 	__be32	off_dt_struct;		/* offset to structure 0x38*/
+    //string들이 저장되있는 최초 주소
 	__be32	off_dt_strings;		/* offset to strings 0x39b0*/
 	__be32	off_mem_rsvmap;		/* offset to memory reserve map 0x28*/
 	__be32	version;		/* format version 0x11*/

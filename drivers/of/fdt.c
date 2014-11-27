@@ -43,35 +43,54 @@ void *of_fdt_get_property(struct boot_param_header *blob,
 	unsigned long p = node;
 
 	do {
-		//p는 0x40에서 시작
+		//이 함수를 처음 사용하는 시점의 node는 0x40에서 시작
 		u32 tag = be32_to_cpup((__be32 *)p);
 		u32 sz, noff;
 		const char *nstr;
-	//p = 0x40 + 4 = 0x44
 		p += 4;
-	//0x03값을 찾아서 while을 돈다. 0x03은 property를 의미
+	/*
+	 * tag가 NOP이면 +4bytes후 다시 검사,tag가 property(0x3)인지를 확인.
+	 * dtb를 보면 0x40, 0x50, 0x60, 0x70이 property 값인것을 확인가능
+	 * 앞으로 코드를 볼때 0x40~4f, 0x50~5f, 0x60~6f, 0x70~7f를 묶어서 본다
+	*/
 		if (tag == OF_DT_NOP)
 			continue;
-	// tag = 0x40, *0x40 = 0x3 맨처음에 여기서 걸리네요
 		if (tag != OF_DT_PROP)
 			return NULL;
-//수정필요 kkr 14-11-25
-	 /*이전에 p+4를 했다. 이 4바이트는 name size를, 그 다음 4바이트는 name offset을  의미한다.
-	 * 즉 *(0x70) = 0x03, *(0x74) = 0x24, *(0x78) = 0x2c라면
-	 * name size = 0x24, name offset = 0x2c이다.
-	 * 그다음 8byte는 건너뛰는데 거기에 무언가가 있을것이고
-	 * */
+	 /*이전에 p+4를 했다. 이 4바이트는 sz를, 그 다음 4바이트는 name offset을  의미한다.
+	  * sz는 0x44 = 4, 0x54 = 4, 0x64 = 4, 0x74 = 4
+	  * name off는 0x48 = 0, 0x58 = f, 0x68 = 1b, 0x78 = 2c
+	  * */
 		sz = be32_to_cpup((__be32 *)p);
 		noff = be32_to_cpup((__be32 *)(p + 4));
+		/* 
+		 * 여기까지 봤을때, root node이후로의 구조는 다음과 같다
+		 * root node이후에 byte배치는
+		 * 0x38 : begin -> root node(0x1) -> null ->
+		 * 0x40 : tag(property) -> sz(0x4) -> noff(0x0) -> property(0x1) ->
+		 * 0x50 : tag(property) -> sz(0x4) -> noff(0xf) -> property(0x1) ->
+		 * 0x60 : tag(property) -> sz(0x4) -> noff(0x1b) -> property(0x1)->
+		 * 0x70 : tag(property) -> sz(0x24) -> noff(0x1b) -> 
+		 *		samsung,smdk5420.samsung,exynos5420(0x24크기의 문자열)
+		 * 0xa0 : property -> sz(0x2b) -> noff(0x37) -> ....
+		 * 추측컨데 property 이후의 sz는 해당 property의
+		 * size를 나타내며, noff는 해당 property의 name이 저장되있는
+		 * 곳을 의미함을 알수있고,
+		 * property의 name은 base주소인 off_dt_strings에 noff를 
+		 * 더함으로써 계산이 된다. 
+		 * 즉 함수의 목적은 인자 name에 맞는 property를 찾아
+		 * property가 저장된 pointer와 그 size(length)를 반환하는것이다.
+		 */
 		p += 8;
 		//우리껀 0x11이다. 그전에껀 align해줘야되나 보다.
 		if (be32_to_cpu(blob->version) < 0x10)
 			p = ALIGN(p, sz >= 8 ? 8 : 4);
 		/*
-		 * off_dt_strings + noff 값을 반환한다. 
-		 * 0x39b0 + 0x2c = 0x39dc
-		 * 이주소에 가보면 compatible이 보인다.
-		 * 0x39dc[] = "compatible.model.bootargs.pinctrl0 ....."
+		 * off_dt_strings + noff 값을 반환한다.
+		 * 0x4X 인경우 39b0. nstr = #address-cells
+		 * 0x5X 는 39bf. nstr = #size-cells
+		 * 0x6X 는 39cb. nstr = interrupt-parent
+		 * 0x7X 는 39dc, nstr = compatilbe
 		 * */
 		nstr = of_fdt_get_string(blob, noff);
 		if (nstr == NULL) {
@@ -81,7 +100,9 @@ void *of_fdt_get_property(struct boot_param_header *blob,
 		if (strcmp(name, nstr) == 0) {
 			if (size)
 				*size = sz;
-			//size에 name size를 저장하고, 
+			/*size에 name size를 저장하고, 포인터를 넘긴다.
+			 * 위치는 0x7c이며 samusng, smdk.. 가 시작하는부분
+			 */
 			return (void *)p;
 		}
 		p += sz;
@@ -105,10 +126,21 @@ int of_fdt_is_compatible(struct boot_param_header *blob,
 	const char *cp;
 	unsigned long cplen, l, score = 0;
 
+	/*
+	 * name(compatible)에 property와 property size(length) 찾아서 반환. 
+	 * cplen : 24, cp : 7c
+	 */
 	cp = of_fdt_get_property(blob, node, "compatible", &cplen);
 	if (cp == NULL)
 		return 0;
 	while (cplen > 0) {
+		/*
+		 * mdesc->dt_compat와 cp와 비교한다. 
+		 * cp = "samsung,smdk5420(NULL)samsung,exynos5420"
+		 * 이런 모양이므로 score = 2;
+		 * (현재 mach-exynos5420-dt.c를 기준으로 하고있음.
+		 * mdesc->dt_compat이 samsung,smdk5420이라면 score = 1일것이다.)
+		 */
 		score++;
 		if (of_compat_cmp(cp, compat, strlen(compat)) == 0)
 			return score;
@@ -125,9 +157,8 @@ int of_fdt_is_compatible(struct boot_param_header *blob,
  */
 /*
  * blob = dtb시작주소, dtb파일기준으로는 0x0.(이제부터 여기서쓰는 dtb 주소는 다 파일기준으로 정의)
- * node = dt struct의 시작주소. 0x4B
+ * node = of_dt_begin_node바로 root node주소 0x40
  * compat = mdesc->compat에서 가져온 string
- * mdesc->compat과 dtb의 compat과 일치하는지를 검사해서 score를 반환.
  * */
 int of_fdt_match(struct boot_param_header *blob, unsigned long node,
                  const char *const *compat)
@@ -138,6 +169,12 @@ int of_fdt_match(struct boot_param_header *blob, unsigned long node,
 		return 0;
 
 	while (*compat) {
+		/*
+		 * mdesc->dt_compat = { "samsung,exynos5250",
+		 *	"samsung,exynos5420","samsung,exynos5440"}
+		 *	에서 compat++하면서 위 3개가 있는지 검사.
+		 *	반환된 score(tmp)중에 가장 작은것을 적용.
+		 * */
 		tmp = of_fdt_is_compatible(blob, node, *compat);
 		if (tmp && (score == 0 || (tmp < score)))
 			score = tmp;
@@ -469,6 +506,14 @@ struct boot_param_header *initial_boot_params;
  * used to extract the memory information at boot before we can
  * unflatten the tree
  */
+/*
+ of_scan_flat_dt(early_init_dt_scan_chosen, boot_command_line);
+ of_scan_flat_dt(early_init_dt_scan_root, NULL);
+ of_scan_flat_dt(early_init_dt_scan_memory, NULL);
+
+ root_node부터 de_end까지 tag를 처리, 인수로 넘어온 함수를 실행한다.
+ 3번있으니 3바퀴를 도는것.
+*/
 int __init of_scan_flat_dt(int (*it)(unsigned long node,
 				     const char *uname, int depth,
 				     void *data),
@@ -479,21 +524,29 @@ int __init of_scan_flat_dt(int (*it)(unsigned long node,
 	int rc = 0;
 	int depth = -1;
 
+	//root node부터 시작
 	do {
 		u32 tag = be32_to_cpup((__be32 *)p);
 		const char *pathp;
 
 		p += 4;
+		/*
+		 * OF_DT_BEGIN_NODE가 아닌 tag들은 전부 처리해 넘김
+		 * */
+		//0x2
 		if (tag == OF_DT_END_NODE) {
 			depth--;
 			continue;
 		}
+		//0x4
 		if (tag == OF_DT_NOP)
 			continue;
+		//0x9
 		if (tag == OF_DT_END)
 			break;
 		if (tag == OF_DT_PROP) {
 			u32 sz = be32_to_cpup((__be32 *)p);
+			//sz만 가져오고 offset은 안씀. 넘기만 하면되기때문
 			p += 8;
 			if (be32_to_cpu(initial_boot_params->version) < 0x10)
 				p = ALIGN(p, sz >= 8 ? 8 : 4);
@@ -501,15 +554,29 @@ int __init of_scan_flat_dt(int (*it)(unsigned long node,
 			p = ALIGN(p, 4);
 			continue;
 		}
+		//0x1
 		if (tag != OF_DT_BEGIN_NODE) {
 			pr_err("Invalid tag %x in flat device tree!\n", tag);
 			return -EINVAL;
 		}
 		depth++;
+		/*
+		 * OF_DT_BEGIN_NODE 바로 앞의 값을 사용함을 확인.
+		 * chosen, aliases, memory, chipid@10000000, inter...
+		 * 같은 문자열들이 존재함.
+		 */
 		pathp = (char *)p;
 		p = ALIGN(p + strlen(pathp) + 1, 4);
+		/*
+		 * '/'가 맨처음에 위치했을때, 뒤에 '/'가 더 있는지를  검사.
+		 * 맨처음에만 위치한다면  '/'의 다음 byte주소 값을, 아니면 그냥 넘김
+		 * ex) pathp = "/abc" -> pathp+1 반환
+		 *     pathp = "/ab/cd../../" -> pathp 반환
+		 * 아마 dtb의 문법상 /이 먼저 오는경우에 대해 처리하는법인듯
+		 * */
 		if (*pathp == '/')
 			pathp = kbasename(pathp);
+		//early_init_dt_scan_chosen,만 data를 boot_command_line를 가져가고 나머진 NULL 
 		rc = it(p, pathp, depth, data);
 		if (rc != 0)
 			break;
@@ -535,11 +602,11 @@ unsigned long __init of_get_flat_dt_root(void)
 		p += 4;
 	/*
 	 * 바로 0x01이 없으면 BUG_ON을 한다. *0x38 = 0x01을 확인하고
-	 * 0x38 + 4 = 0x3B가된다.
+	 * 0x38 + 4 = 0x3C가된다.
 	 * */
 	BUG_ON(be32_to_cpup((__be32 *)p) != OF_DT_BEGIN_NODE);
 	p += 4;
-	/* 0x3B의 값을 보면 0x0000이다. 이는 dtb에서 root node는 null string
+	/* 0x3C의 값을 보면 0x0000이다. 이는 dtb에서 root node는 null string
 	 * 이나 '/'이 오게 되있다고 한다. 또한 ALGIN을 한 이유는 코드의 일관성,
 	 * 및 잘못된 dtb에 대한 오류를 방지하기 위함이라고 한다.
 	 * return 0x40이 된다.
@@ -653,7 +720,7 @@ int __init of_scan_flat_dt_by_path(const char *path,
 		return ret;
 }
 
-#ifdef CONFIG_BLK_DEV_INITRD
+#ifdef CONFIG_BLK_DEV_INITRD //set
 /**
  * early_init_dt_check_for_initrd - Decode initrd location from flat tree
  * @node: reference to node containing initrd location ('chosen')
@@ -666,11 +733,13 @@ void __init early_init_dt_check_for_initrd(unsigned long node)
 
 	pr_debug("Looking for initrd properties... ");
 
+	//없다
 	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &len);
 	if (!prop)
 		return;
 	start = of_read_number(prop, len/4);
 
+	//없다
 	prop = of_get_flat_dt_prop(node, "linux,initrd-end", &len);
 	if (!prop)
 		return;
@@ -683,6 +752,7 @@ void __init early_init_dt_check_for_initrd(unsigned long node)
 #else
 inline void early_init_dt_check_for_initrd(unsigned long node)
 {
+	//위에꺼 입니다.
 }
 #endif /* CONFIG_BLK_DEV_INITRD */
 
@@ -694,22 +764,32 @@ int __init early_init_dt_scan_root(unsigned long node, const char *uname,
 {
 	__be32 *prop;
 
+	/* depth가 0인경우만을 넘기는것을 확인.
+	 * #size-cells과 #address-cells은 depth 여기저기 있지만
+	 * depth가 0인경우는 맨처음 root node일때 한번임
+	 */
 	if (depth != 0)
 		return 0;
 
+	//둘다 0x1
 	dt_root_size_cells = OF_ROOT_NODE_SIZE_CELLS_DEFAULT;
 	dt_root_addr_cells = OF_ROOT_NODE_ADDR_CELLS_DEFAULT;
 
+	//prop = 0x4c
 	prop = of_get_flat_dt_prop(node, "#size-cells", NULL);
+	// 1저장
 	if (prop)
 		dt_root_size_cells = be32_to_cpup(prop);
 	pr_debug("dt_root_size_cells = %x\n", dt_root_size_cells);
 
+	//prop = 0x5c
 	prop = of_get_flat_dt_prop(node, "#address-cells", NULL);
+	// 1저장
 	if (prop)
 		dt_root_addr_cells = be32_to_cpup(prop);
 	pr_debug("dt_root_addr_cells = %x\n", dt_root_addr_cells);
 
+	// default 랑 똑같네..
 	/* break now */
 	return 1;
 }
@@ -728,6 +808,9 @@ u64 __init dt_mem_next_cell(int s, __be32 **cellp)
 int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
 				     int depth, void *data)
 {
+	/*
+	 * kkr 11-27 계속
+	 * */
 	char *type = of_get_flat_dt_prop(node, "device_type", NULL);
 	__be32 *reg, *endp;
 	unsigned long l;
@@ -771,6 +854,11 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
 	return 0;
 }
 
+/*
+ * data =  boot_command_line = CONFIG_CMDLINE 
+ * "root=/dev/ram0 rw ramdisk=8192 initrd=0x41000000,8M 
+ * console=ttySAC1,115200 init=/linuxrc mem=256M"
+ * */
 int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
 				     int depth, void *data)
 {
@@ -779,14 +867,28 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
 
 	pr_debug("search \"chosen\", depth: %d, uname: %s\n", depth, uname);
 
+	/*
+	 * depth가 1이 아닌경우 chosen을 검사한다.
+	 * chosen의 depth는 1이다. 
+	 * depth == 1인데 chosen이 아닌경우도 많다. 하지만 아래서 쓰는건 업엇다.
+	 * */
 	if (depth != 1 || !data ||
 	    (strcmp(uname, "chosen") != 0 && strcmp(uname, "chosen@0") != 0))
 		return 0;
 
+	//함수실행에 필요한 name이 dtb에 없어 안함.
 	early_init_dt_check_for_initrd(node);
 
+	/*
+	 * 이건 실행함
+	 * p = f0
+	 * property : console=ttySAC2,115200 init=/linuxrc
+	 */
 	/* Retrieve command line */
 	p = of_get_flat_dt_prop(node, "bootargs", &l);
+	/*
+	 * data에 복붙을 하지만..
+	 * */
 	if (p != NULL && l > 0)
 		strlcpy(data, p, min((int)l, COMMAND_LINE_SIZE));
 
@@ -795,8 +897,9 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
 	 * managed to set the command line, unless CONFIG_CMDLINE_FORCE
 	 * is set in which case we override whatever was found earlier.
 	 */
-#ifdef CONFIG_CMDLINE
-#ifndef CONFIG_CMDLINE_FORCE
+	//설정에 따라 CONFIG_CMDLINE이 우선순위가 댈수도 있는것이 확인
+#ifdef CONFIG_CMDLINE //set
+#ifndef CONFIG_CMDLINE_FORCE //not set 
 	if (!((char *)data)[0])
 #endif
 		strlcpy(data, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
