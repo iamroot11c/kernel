@@ -626,9 +626,10 @@ void __init dump_machine_table(void)
 	while (true)
 		/* can't use cpu_relax() here as it may require MMU setup */;
 }
-
+//kkr : start = 0x2000_0000, size = 0x8000_0000이라 가정후 진행
 int __init arm_add_memory(phys_addr_t start, phys_addr_t size)
 {
+	//처음진입시 nr_banks =0 일거임
 	struct membank *bank = &meminfo.bank[meminfo.nr_banks];
 	u64 aligned_start;
 
@@ -642,10 +643,11 @@ int __init arm_add_memory(phys_addr_t start, phys_addr_t size)
 	 * Ensure that start/size are aligned to a page boundary.
 	 * Size is appropriately rounded down, start is rounded up.
 	 */
+	//kkr : aligned_start = 0x2000_0000, size = 0x8000_0000
 	size -= start & ~PAGE_MASK;
 	aligned_start = PAGE_ALIGN(start);
 
-#ifndef CONFIG_ARCH_PHYS_ADDR_T_64BIT
+#ifndef CONFIG_ARCH_PHYS_ADDR_T_64BIT	//not set
 	if (aligned_start > ULONG_MAX) {
 		printk(KERN_CRIT "Ignoring memory at 0x%08llx outside "
 		       "32-bit physical address space\n", (long long)start);
@@ -664,7 +666,7 @@ int __init arm_add_memory(phys_addr_t start, phys_addr_t size)
 	}
 #endif
 
-	if (aligned_start < PHYS_OFFSET) { //PHYS_OFFSET = 0x40000000
+	if (aligned_start < PHYS_OFFSET) { //PHYS_OFFSET = 0x4000_0000
 		if (aligned_start + size <= PHYS_OFFSET) {
 			pr_info("Ignoring memory below PHYS_OFFSET: 0x%08llx-0x%08llx\n",
 				aligned_start, aligned_start + size);
@@ -674,11 +676,15 @@ int __init arm_add_memory(phys_addr_t start, phys_addr_t size)
 		pr_info("Ignoring memory below PHYS_OFFSET: 0x%08llx-0x%08llx\n",
 			aligned_start, (u64)PHYS_OFFSET);
 
+		//kkr : 0x8000_0000 - 0x4000_0000 - 0x2000_0000 = 0x2000_0000 
 		size -= PHYS_OFFSET - aligned_start;
+		//kkr : 0x4000_0000
 		aligned_start = PHYS_OFFSET;
 	}
 
+	//kkr : aligned_start = 0x4000_0000 (== PHYS_OFFSET);
 	bank->start = aligned_start;
+	//kkr : size = 0x2000_0000
 	bank->size = size & ~(phys_addr_t)(PAGE_SIZE - 1);
 
 	/*
@@ -688,6 +694,7 @@ int __init arm_add_memory(phys_addr_t start, phys_addr_t size)
 	if (bank->size == 0)
 		return -EINVAL;
 
+	//kkr : nr_banks = 1 
 	meminfo.nr_banks++;
 	return 0;
 }
@@ -901,7 +908,9 @@ void __init setup_arch(char **cmdline_p)
 	mdesc = setup_machine_fdt(__atags_pointer);
 	if (!mdesc)
 		mdesc = setup_machine_tags(__atags_pointer, __machine_arch_type);
+	//전역변수로 옴김 여기가 최초로 machine_desc 등록된곳.
 	machine_desc = mdesc;
+	//name = SAMSUNG EXYNOS5 (Flattened Device Tree)
 	machine_name = mdesc->name;
 
 	setup_dma_zone(mdesc); 

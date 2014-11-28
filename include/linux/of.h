@@ -121,6 +121,8 @@ extern struct device_node *of_find_all_nodes(struct device_node *prev);
  */
 
 /* Helper to read a big number; size is in cells (not bytes) */
+//base로 올때 : cell = 0x1f8
+//size로 올때 : cell = 0x1fc
 static inline u64 of_read_number(const __be32 *cell, int size)
 {
 	u64 r = 0;

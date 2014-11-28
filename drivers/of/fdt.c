@@ -510,8 +510,9 @@ struct boot_param_header *initial_boot_params;
  of_scan_flat_dt(early_init_dt_scan_chosen, boot_command_line);
  of_scan_flat_dt(early_init_dt_scan_root, NULL);
  of_scan_flat_dt(early_init_dt_scan_memory, NULL);
-
- root_node부터 de_end까지 tag를 처리, 인수로 넘어온 함수를 실행한다.
+ 
+ dtb전체의 node를 스캔해서 인자로 넘어온 함수로 넘긴다.
+ root_node부터 de_end까지 tag를 처리.
  3번있으니 3바퀴를 도는것.
 */
 int __init of_scan_flat_dt(int (*it)(unsigned long node,
@@ -563,7 +564,7 @@ int __init of_scan_flat_dt(int (*it)(unsigned long node,
 		/*
 		 * OF_DT_BEGIN_NODE 바로 앞의 값을 사용함을 확인.
 		 * chosen, aliases, memory, chipid@10000000, inter...
-		 * 같은 문자열들이 존재함.
+		 * 같은 문자열들이 존재함. <--이게 node name이다.
 		 */
 		pathp = (char *)p;
 		p = ALIGN(p + strlen(pathp) + 1, 4);
@@ -794,10 +795,14 @@ int __init early_init_dt_scan_root(unsigned long node, const char *uname,
 	return 1;
 }
 
+//base로 올때 : 1 , &0x1f8
+//size로 올떄 : 1 , &0x1fc
 u64 __init dt_mem_next_cell(int s, __be32 **cellp)
 {
 	__be32 *p = *cellp;
 
+	//base로 올때 : reg = 0x1fc
+	//size로 올때 : reg = 0x200
 	*cellp = p + s;
 	return of_read_number(p, s);
 }
@@ -809,7 +814,11 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
 				     int depth, void *data)
 {
 	/*
-	 * kkr 11-27 계속
+	 * node : memory, depth : 1, res : 0x1e4, property : memory
+	 * node : cpu@1, depth : 2, res : 0x307c, property : cpu
+	 * node : cpu@2, depth : 2, res : 0x30d8, property : cpu
+	 * node : cpu@3, depth : 2, res : 0x3134, property : cpu
+	 * node : cpu@3, depth : 2, res : 0x3190, property : cpu
 	 * */
 	char *type = of_get_flat_dt_prop(node, "device_type", NULL);
 	__be32 *reg, *endp;
@@ -823,10 +832,15 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
 		 */
 		if (depth != 1 || strcmp(uname, "memory@0") != 0)
 			return 0;
+		//memory node만 골라냄
 	} else if (strcmp(type, "memory") != 0)
 		return 0;
-
+	//없음
 	reg = of_get_flat_dt_prop(node, "linux,usable-memory", &l);
+	/*
+	 * 여기저기서 꽤 보이나, 위에서 잡힌 memory노드만을 보면
+	 * reg = 0x1f8, l = 8
+	 * */
 	if (reg == NULL)
 		reg = of_get_flat_dt_prop(node, "reg", &l);
 	if (reg == NULL)
@@ -837,9 +851,11 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
 	pr_debug("memory scan node %s, reg size %ld, data: %x %x %x %x,\n",
 	    uname, l, reg[0], reg[1], reg[2], reg[3]);
 
+	//2 >= 2
 	while ((endp - reg) >= (dt_root_addr_cells + dt_root_size_cells)) {
 		u64 base, size;
 
+		//base = 0x2000_0000, size = 0x8000_0000
 		base = dt_mem_next_cell(dt_root_addr_cells, &reg);
 		size = dt_mem_next_cell(dt_root_size_cells, &reg);
 

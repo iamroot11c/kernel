@@ -223,6 +223,9 @@ const struct machine_desc * __init setup_machine_fdt(unsigned int dt_phys)
 	/* Search the mdescs for the 'best' compatible value match */
 	initial_boot_params = devtree;
 	/*dt_root = 0x40(편의상 dtb파일의 offset 물리주소로 썻지만 커널상에서는 가상주소임을 기억)*/
+	/*
+	 * dt_root_node 의 어드레스를 가져옴.
+	 * */
 	dt_root = of_get_flat_dt_root();
 	/*
 	 * __arch_info_begin : vmlinux.lds.S에서 확인 가능. 해당 섹션은.
@@ -234,7 +237,7 @@ const struct machine_desc * __init setup_machine_fdt(unsigned int dt_phys)
 	 * */
 	for_each_machine_desc(mdesc) {
 		/*
-		 * 커널상에 등록된 compat과 dtb compat 일치비교 검사. 존재하면
+		 * 커널상에 등록된 machine compat들과 dtb root node의 compat 일치비교 검사. 존재하면
 		 *  dtb에 등록된 compat의 offset(score)을 저장
 		 * */
 		score = of_flat_dt_match(dt_root, mdesc->dt_compat);
@@ -273,20 +276,36 @@ const struct machine_desc * __init setup_machine_fdt(unsigned int dt_phys)
 		model = of_get_flat_dt_prop(dt_root, "compatible", NULL);
 	if (!model)
 		model = "<unknown>";
-	//찾아가보면 다음과 같이 나올것임을 예측할수 있다.
-	//mdesc_best->name : SAMSUNG exynos5 (Flattened Device Tree)
-	//mode : Samsung SMDK5420 Board Based on EXYNOS5420
+	/*
+	 * 찾아가보면 다음과 같이 나올것임을 예측할수 있다. 따로 등록은
+	 * 안하고 부팅시 print만 함
+	 * mdesc_best->name : SAMSUNG exynos5 (Flattened Device Tree)
+	 * model : Samsung SMDK5420 Board Based on EXYNOS5420
+	 */
 	pr_info("Machine: %s, model: %s\n", mdesc_best->name, model);
 
 	/* Retrieve various information from the /chosen node */
-	//우리거는 bootargs 밖에없다
+	/*
+	 * 우리거는 bootargs 밖에없다
+	 * dtb에 저장된 bootargs가 있는지 검사 및 kernel의 CMDLINE을 쓸지
+	 * bootargs를 쓸지를 결정
+	 */
 	of_scan_flat_dt(early_init_dt_scan_chosen, boot_command_line);
 	/* Initialize {size,address}-cells info */
+	/*
+	 * root node에 있는 machine 메모리영역의 base addr, size의 크기가
+	 * 32bit인지 64bit인지 저장되있는데 그걸 가져옴
+	 */
 	of_scan_flat_dt(early_init_dt_scan_root, NULL);
 	/* Setup memory, calling early_init_dt_add_memory_arch */
+	/*
+	 * 위에서 가져온 정보+memory 노드검색, memory base addr, size를 
+	 * dtb에서 가져와 커널에 등록
+	 * */
 	of_scan_flat_dt(early_init_dt_scan_memory, NULL);
 
 	/* Change machine number to match the mdesc we're using */
+	//mdesc_best->nr = ~0
 	__machine_arch_type = mdesc_best->nr;
 
 	return mdesc_best;
