@@ -108,6 +108,30 @@ static inline struct thread_info *current_thread_info(void)
 {
 	register unsigned long sp asm ("sp");
 	return (struct thread_info *)(sp & ~(THREAD_SIZE - 1));
+//                                    hight address       
+//              +-+-+ +--------------------+                                               
+//                |   |  k                 |              +-------------------------+      
+//                |   |  e                 |              |                         |      
+//                |   |  r                 |              |  task_struct            |      
+//                |   |  n                 |              |                         |      
+//                |   |  e                 |              |                         | +---+
+//                |   |  l                 | thread_info. |                         |     |
+//                |   |                    |    task      |                         |     |
+//                +   |  s                 |     +------> +-------------------------+     |
+//               8KB  |  t                 |     |                                        |
+//                +   |  a                 |     |          task_struct.stack             |
+//                |   |  c                 |     |   +------------------------------------+
+//                |   |  k                 |     |   |                                     
+//                |   |     +--------------+     |   |                                     
+//                |   |     |              |     |   |                                     
+//                |   |     | thread_info  |  +--+   |                                     
+//                |   |     |              |         |                                     
+//                |   |     |              |         |                                     
+//                |   |     |              |         |                                     
+//                |   |     |              |         |                                     
+//         ---> +-+-+ +-----+--------------+  <------+                                     
+// SP & ~(THREAD_SIZE - 1)             low address 
+//
 }
 
 #define thread_saved_pc(tsk)	\

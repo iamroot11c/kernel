@@ -634,6 +634,7 @@ static void slab_set_debugobj_lock_classes(struct kmem_cache *cachep)
 
 static DEFINE_PER_CPU(struct delayed_work, slab_reap_work);
 
+// 2014-11-29 시작; kmem_cache.array[3]; 
 static inline struct array_cache *cpu_cache_get(struct kmem_cache *cachep)
 {
 	return cachep->array[smp_processor_id()];
@@ -3054,6 +3055,7 @@ force_grow:
 	return ac_get_obj(cachep, ac, flags, force_refill);
 }
 
+// 2014-11-29; 디버깅을 하기 위함이며, 디버깅을 하지 않으면 아무 처리 않음
 static inline void cache_alloc_debugcheck_before(struct kmem_cache *cachep,
 						gfp_t flags)
 {
@@ -3121,14 +3123,26 @@ static void *cache_alloc_debugcheck_after(struct kmem_cache *cachep,
 #define cache_alloc_debugcheck_after(a,b,objp,d) (objp)
 #endif
 
+// 2014-11-29
 static bool slab_should_failslab(struct kmem_cache *cachep, gfp_t flags)
 {
-	if (cachep == kmem_cache)
+	// kmem_cache_init() 함수에서 아래와 같이 초기화
+	// `kmem_cache = &kmem_cache_boot;`
+	// struct kmem_cache 구초체 인스턴스 kmem_cache는 kmem_cache 구초체의 헤더로
+	// 사용하기 위해 가장 kmem_cache_init() 함수에서 생성
+	// 
+	// kmem_cache_init() 함수는 아래의 순서대로 호출  
+	// init/main.c start_kernel() -> init/main.c mm_init() 
+	//                                    -> mm/slab.c kmem_cache_init()
+	if (cachep == kmem_cache) // 검사대상이 없는지 확인
 		return false;
 
+	// CONFIG_FAILSLAB 비 활성화이며 kmem_cache 인스턴스와 같지 않아도
+	// 항상 false 
 	return should_failslab(cachep->object_size, flags, cachep->flags);
 }
 
+// 2014-11-29 시작;
 static inline void *____cache_alloc(struct kmem_cache *cachep, gfp_t flags)
 {
 	void *objp;
@@ -3136,7 +3150,8 @@ static inline void *____cache_alloc(struct kmem_cache *cachep, gfp_t flags)
 	bool force_refill = false;
 
 	check_irq_off();
-
+	
+	// 2014-11-29 cpu_cache_get() 함수 분석 중;
 	ac = cpu_cache_get(cachep);
 	if (likely(ac->avail)) {
 		ac->touched = 1;
@@ -3424,7 +3439,8 @@ __do_cache_alloc(struct kmem_cache *cache, gfp_t flags)
 	return objp;
 }
 #else
-
+// UMA 구조 사용
+// 2014-11-29;
 static __always_inline void *
 __do_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
 {
@@ -3433,23 +3449,35 @@ __do_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
 
 #endif /* CONFIG_NUMA */
 
+// 2014-11-29; 시작
 static __always_inline void *
 slab_alloc(struct kmem_cache *cachep, gfp_t flags, unsigned long caller)
 {
 	unsigned long save_flags;
 	void *objp;
 
-	flags &= gfp_allowed_mask;
+	// 
+	flags &= gfp_allowed_mask; //__GFP_WAIT, __GFP_IO, __GFP_FS 비트를 클리어
 
+	// CONFIG_TRACE_IRQFLAGS와  CONFIG_PROVE_LOCKING 비 활성화로
+	// lockdep_trace_alloc() 함수는 무시됨
 	lockdep_trace_alloc(flags);
 
+	// CONFIG_FAILSLAB 비 활성화로 항상 false를 리턴
 	if (slab_should_failslab(cachep, flags))
 		return NULL;
 
+	// CONFIG_MEMCG_KMEM 비 활성화로 memcg_kmem_get_cache() 함수는
+	// cachep를 그대로 리턴
 	cachep = memcg_kmem_get_cache(cachep, flags);
 
+	// 디버깅이 활성화되지 않으면 아래 함수는 무시됨
 	cache_alloc_debugcheck_before(cachep, flags);
-	local_irq_save(save_flags);
+
+	// CONFIG_TRACE_IRQFLAGS_SUPPORT 활성화
+	local_irq_save(save_flags); // raw_local_irq_save(save_flags);
+
+	// 2014-11-29 __do_cache_alloc() 함수 진행 중;
 	objp = __do_cache_alloc(cachep, flags);
 	local_irq_restore(save_flags);
 	objp = cache_alloc_debugcheck_after(cachep, flags, objp, caller);
@@ -3610,8 +3638,10 @@ static inline void __cache_free(struct kmem_cache *cachep, void *objp,
  * Allocate an object from this cache.  The flags are only relevant
  * if the cache has no available objects.
  */
+// 2014-11-29; 시작
 void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
 {
+	// 2014-11-29 slab_alloc 분석 중;
 	void *ret = slab_alloc(cachep, flags, _RET_IP_);
 
 	trace_kmem_cache_alloc(_RET_IP_, ret,

@@ -1922,6 +1922,7 @@ extern struct exec_domain	default_exec_domain;
 
 union thread_union {
 	struct thread_info thread_info;
+    //                 [8192(8KB)/4]
 	unsigned long stack[THREAD_SIZE/sizeof(long)];
 };
 

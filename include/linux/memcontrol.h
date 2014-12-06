@@ -656,6 +656,7 @@ static inline void memcg_cache_list_add(struct mem_cgroup *memcg,
 {
 }
 
+// 2014-11-29; MEMCG_KMEM 미 정의로 cachep를 바로 리턴
 static inline struct kmem_cache *
 memcg_kmem_get_cache(struct kmem_cache *cachep, gfp_t gfp)
 {

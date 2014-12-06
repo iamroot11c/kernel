@@ -104,7 +104,10 @@
 )
 
 // 2014-11-22
-// __builtin_return_address는 gcc 확장 옵션
+// __builtin_return_address는 gcc 확장기능으로
+// 함수 호출 위치의 주소를 반환, ARM에서 LR(R14) 레지스터의 값을 구함
+// 백트레이스(backtrace)을 지원
+// 참고: http://forum.falinux.com/zbxe/index.php?document_srl=550242&mid=lecture_tip
 #define _RET_IP_		(unsigned long)__builtin_return_address(0)
 #define _THIS_IP_  ({ __label__ __here; __here: (unsigned long)&&__here; })
 
@@ -790,6 +793,12 @@ static inline void ftrace_dump(enum ftrace_dump_mode oops_dump_mode) { }
  * @member:	the name of the member within the struct.
  *
  */
+// typeof 매크로는 type의 member 타입을 조사
+// offsetof 매크로는 type의 주소가 0x00 일 때 
+// member의 오프셋을 구함
+// 힙(heap)은 주소가 작은값에서 큰값으로 증가하며
+// member의 주소에서 오프셋만큼 빼면 type의 인스턴스
+// 주소를 구할 수 있음
 #define container_of(ptr, type, member) ({			\
 	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
 	(type *)( (char *)__mptr - offsetof(type,member) );})

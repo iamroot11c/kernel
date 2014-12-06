@@ -7,10 +7,14 @@
 #include <linux/kallsyms.h>
 #include <linux/sched.h>
 
+// 2014-11-29 시작;
 notrace unsigned int debug_smp_processor_id(void)
 {
 	unsigned long preempt_count = preempt_count();
+	//                            current_thread_info()->preempt_count
+	
 	int this_cpu = raw_smp_processor_id();
+	//             current_thread_info()->cpu
 
 	if (likely(preempt_count))
 		goto out;
@@ -22,6 +26,8 @@ notrace unsigned int debug_smp_processor_id(void)
 	 * Kernel threads bound to a single CPU can safely use
 	 * smp_processor_id():
 	 */
+	// if (cpumask_equal(&(tsk)->cpus_allowed, get_cpu_mask(this_cpu)) )
+	// 프로세서가 같은지 확인
 	if (cpumask_equal(tsk_cpus_allowed(current), cpumask_of(this_cpu)))
 		goto out;
 
@@ -34,7 +40,9 @@ notrace unsigned int debug_smp_processor_id(void)
 	/*
 	 * Avoid recursion:
 	 */
+	// preempt 증가후 컴파일러 barrier 추가
 	preempt_disable_notrace();
+	// 2014-11-29; 여기까지
 
 	if (!printk_ratelimit())
 		goto out_enable;

@@ -153,6 +153,8 @@ static inline unsigned long arch_local_save_flags(void)
  */
 static inline void arch_local_irq_restore(unsigned long flags)
 {
+    // flags에 저장한 PSR(Program Status Register)의 값을 
+    // 레지스터에 저장
 	asm volatile(
 		"	msr	" IRQMASK_REG_NAME_W ", %0	@ local_irq_restore"
 		:

@@ -214,7 +214,7 @@ static inline void do_raw_spin_unlock(raw_spinlock_t *lock) __releases(lock)
 #endif
 
 #else
-
+// CONFIG_DEBUG_LOCK_ALLOC 비 활성화
 #define raw_spin_lock_irqsave(lock, flags)		\
 	do {						\
 		typecheck(unsigned long, flags);	\
@@ -318,6 +318,12 @@ static inline void spin_lock_irq(spinlock_t *lock)
 	raw_spin_lock_irq(&lock->rlock);
 }
 
+// spinlock_check() 함수는 spinlock 구조체의 rlock 멤버의 주소를 리턴
+// spin_lock_irqsave 매크로는 아래와 같이 바뀜
+// flags = arch_local_irq_save(); __LOCK(lock);
+//
+// 함수 수행후 flags 변수에는 PSR(Program Status Register)이 저장후
+// 락을 잠금
 #define spin_lock_irqsave(lock, flags)				\
 do {								\
 	raw_spin_lock_irqsave(spinlock_check(lock), flags);	\
@@ -345,6 +351,11 @@ static inline void spin_unlock_irq(spinlock_t *lock)
 
 static inline void spin_unlock_irqrestore(spinlock_t *lock, unsigned long flags)
 {
+    // raw_spin_unlock_irqrestore 매크로는 아래와 같이 바뀜
+    // local_irq_restore(flags); __UNLOCK(lock);
+    //
+    // flags에 저장한 PSR(Program Status Register) 값을 
+    // 레지스터에 저장후 락을 해제
 	raw_spin_unlock_irqrestore(&lock->rlock, flags);
 }
 

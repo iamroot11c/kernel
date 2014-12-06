@@ -114,9 +114,13 @@
 #define BYTES_PER_POINTER	sizeof(void *)
 
 /* GFP bitmask for kmemleak internal allocations */
+// GFP(GetFreePage)
 #define gfp_kmemleak_mask(gfp)	(((gfp) & (GFP_KERNEL | GFP_ATOMIC)) | \
 				 __GFP_NORETRY | __GFP_NOMEMALLOC | \
 				 __GFP_NOWARN)
+                               // __GFP_WAIT | __GFP_IO | __GFP_FS) |
+			       // __GFP_NORETRY | __GFP_NOMEMALLOC |
+			       // __GFP_NOWARN
 
 /* scanning area inside a memory block */
 struct kmemleak_scan_area {
@@ -155,11 +159,12 @@ struct kmemleak_object {
 	u32 checksum;
 	/* memory ranges to be scanned inside an object (empty for all) */
 	struct hlist_head area_list;
-	unsigned long trace[MAX_TRACE];
+	unsigned long trace[MAX_TRACE]; // MAX_TRACE = 16
 	unsigned int trace_len;
 	unsigned long jiffies;		/* creation timestamp */
 	pid_t pid;			/* pid of the current task */
 	char comm[TASK_COMM_LEN];	/* executable name */
+                                        // TASK_COMM_LEN = 16 	
 };
 
 /* flag representing the memory block allocation status */
@@ -203,7 +208,7 @@ static atomic_t kmemleak_warning = ATOMIC_INIT(0);
 static atomic_t kmemleak_error = ATOMIC_INIT(0);
 
 /* minimum and maximum address that may be valid pointers */
-static unsigned long min_addr = ULONG_MAX;
+static unsigned long min_addr = ULONG_MAX; // (~0UL)
 static unsigned long max_addr;
 
 static struct task_struct *scan_thread;
@@ -440,7 +445,8 @@ static void free_object_rcu(struct rcu_head *rcu)
 {
 	struct hlist_node *tmp;
 	struct kmemleak_scan_area *area;
-	// rcu를 멤버로 갖는 kmemleak_object 인스턴스를 찾음
+	// kmemleak_object 구조체의 ruc 멤버 주소를 이용하여
+	// kmemleak_object 인스턴스의 주소를 구함
 	struct kmemleak_object *object =
 		container_of(rcu, struct kmemleak_object, rcu);
 
@@ -448,12 +454,12 @@ static void free_object_rcu(struct rcu_head *rcu)
 	 * Once use_count is 0 (guaranteed by put_object), there is no other
 	 * code accessing this object, hence no need for locking.
 	 */
-	// kmemleak_object 구조체의 area_list 멤버가 갖는 데이터(메모리)를 삭제
+	// kmemleak_object 인스턴스의 area_list 멤버가 갖는 데이터(메모리)를 해제
 	hlist_for_each_entry_safe(area, tmp, &object->area_list, node) {
 		hlist_del(&area->node);
 		kmem_cache_free(scan_area_cache, area);
 	}
-	// kmemleak_object 인스턴스를 삭제
+	// kmemleak_object 인스턴스를 해제
 	kmem_cache_free(object_cache, object);
 }
 
@@ -465,7 +471,6 @@ static void free_object_rcu(struct rcu_head *rcu)
  * is also possible.
  */
 // 2014-11-22
-// 슬랩, RCU 등을 알아야 이 함수의 동작을 이해할 수 있을것 같음
 static void put_object(struct kmemleak_object *object)
 {
 	// kmemleak_object 인스턴스의 use_count 변수를 1감소 후
@@ -477,6 +482,14 @@ static void put_object(struct kmemleak_object *object)
 	/* should only get here after delete_object was called */
 	WARN_ON(object->flags & OBJECT_ALLOCATED);
 
+	// rcu의 비 동기 콜백 함수 등록
+	//
+	// 두번째 인자의 타입은 void(*)(struct rcu_head*)이며, 
+	// 첫 번째 인자는 콜백함수의 인자로 전달됨
+	//
+	// 즉 free_object_rcu 함수 포인터를 두번째 인자로 전달하며,
+	// free_object_rcu() 함수의 인자로 kmemleak_object 구조체의 
+	// 인스턴스의 rcu 멤버를 전달
 	call_rcu(&object->rcu, free_object_rcu);
 }
 
@@ -526,7 +539,8 @@ static int __save_stack_trace(unsigned long *trace)
  * Create the metadata (struct kmemleak_object) corresponding to an allocated
  * memory block and add it to the object_list and object_tree_root.
  */
-// 2014-11-22
+// 2014-11-22; 훑어봄
+// 2014-11-29; 분석 시작
 // object->pointer, ptr - start, object->min_count, 0xD0
 static struct kmemleak_object *create_object(unsigned long ptr, size_t size,
 					     int min_count, gfp_t gfp)
@@ -535,6 +549,9 @@ static struct kmemleak_object *create_object(unsigned long ptr, size_t size,
 	struct kmemleak_object *object, *parent;
 	struct rb_node **link, *rb_parent;
 
+	// 2014-11-29 kmem_cache_alloc() 함수 분석 중;
+	// slab / slub / slob 구분해야하며 slab 분석
+	// 참고: http://studyfoss.egloos.com/5332580
 	object = kmem_cache_alloc(object_cache, gfp_kmemleak_mask(gfp));
 	if (!object) {
 		pr_warning("Cannot allocate a kmemleak_object structure\n");
@@ -556,7 +573,7 @@ static struct kmemleak_object *create_object(unsigned long ptr, size_t size,
 	object->checksum = 0;
 
 	/* task information */
-	// kmemleak_object 구조체의 comm 멤버 배열으의 크기는 16
+	// kmemleak_object 구조체의 comm 멤버 배열의 최대 15 글자 입력(널문자 제외)
 	if (in_irq()) {
 		object->pid = 0;
 		strncpy(object->comm, "hardirq", sizeof(object->comm));
@@ -564,6 +581,8 @@ static struct kmemleak_object *create_object(unsigned long ptr, size_t size,
 		object->pid = 0;
 		strncpy(object->comm, "softirq", sizeof(object->comm));
 	} else {
+		// current는 매크로이며
+		// 쓰레드의 task_struct 구조체의 포인터를 구함
 		object->pid = current->pid;
 		/*
 		 * There is a small chance of a race with set_task_comm(),
@@ -635,10 +654,15 @@ static void __delete_object(struct kmemleak_object *object)
 	 * Locking here also ensures that the corresponding memory block
 	 * cannot be freed when it is being scanned.
 	 */
+	// PSR(Program Status Register)를 flags 변수에 저장
 	spin_lock_irqsave(&object->lock, flags);
 	// 할당 상태를 해제
 	object->flags &= ~OBJECT_ALLOCATED;
+	// flags 변수에 저장된 PSR(Program Status Register)을 
+	// 레지스터에 저장
 	spin_unlock_irqrestore(&object->lock, flags);
+
+	// kmemleak_object 구조체의 rcu 멤버 메모리 해제
 	put_object(object);
 }
 
@@ -695,11 +719,12 @@ static void delete_object_part(unsigned long ptr, size_t size)
 	 */
 	start = object->pointer;
 	end = object->pointer + object->size;
-	// 2014-11-22, create_object() 함수를 간략히 훑어봄
-	// 29일 자세히 봐야함
+	// 2014-11-22, create_object() 함수를 간략히 훑어봄, 29일 자세히 봐야함
+	// 2014-11-29 create_object() 함수 분석 중;
 	if (ptr > start)
 		create_object(start, ptr - start, object->min_count,
-			      GFP_KERNEL/*0xD0; 0b1101_0000*/);
+			      GFP_KERNEL/*(__GFP_WAIT | __GFP_IO | __GFP_FS);
+				          0xD0; 0b1101_0000*/);
 	if (ptr + size < end)
 		create_object(ptr + size, end - ptr - size, object->min_count,
 			      GFP_KERNEL);
@@ -985,6 +1010,7 @@ void __ref kmemleak_free_part(const void *ptr, size_t size)
 {
 	pr_debug("%s(0x%p)\n", __func__, ptr);
 
+	// 2014-11-15 시작
 	if (atomic_read(&kmemleak_enabled) && ptr && !IS_ERR(ptr))
 		delete_object_part((unsigned long)ptr, size);
 	else if (atomic_read(&kmemleak_early_log))

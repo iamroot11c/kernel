@@ -434,7 +434,8 @@ void __init free_bootmem(unsigned long physaddr, unsigned long size)
 {
 	unsigned long start, end;
 
-	//CONFIG_DEBUG_KEMLEAK = y 이면 실행
+	// 2014-11-15 시작
+	// CONFIG_DEBUG_KEMLEAK = y 이면 실행
 	kmemleak_free_part(__va(physaddr), size);
 
 	start = PFN_UP(physaddr);

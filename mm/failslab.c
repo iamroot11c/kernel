@@ -7,10 +7,18 @@ static struct {
 	int cache_filter;
 } failslab = {
 	.attr = FAULT_ATTR_INITIALIZER,
+//	.attr = {                \
+//	    .interval = 1,                  \
+//	    .times = ATOMIC_INIT(1),            \
+//	    .require_end = ULONG_MAX,           \
+//	    .stacktrace_depth = 32,             \
+//	    .verbose = 2,                   \
+//	}
 	.ignore_gfp_wait = 1,
 	.cache_filter = 0,
 };
 
+// 2014-11-29; CONFIG_FAILSLAB 비 활성화로 이 함수는 수행되지 않고 항상 false
 bool should_failslab(size_t size, gfp_t gfpflags, unsigned long cache_flags)
 {
 	if (gfpflags & __GFP_NOFAIL)

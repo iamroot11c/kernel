@@ -147,12 +147,20 @@ extern void bitmap_copy_le(void *dst, const unsigned long *src, int nbits);
 extern int bitmap_ord_to_pos(const unsigned long *bitmap, int n, int bits);
 
 #define BITMAP_FIRST_WORD_MASK(start) (~0UL << ((start) % BITS_PER_LONG))
+
+// (2 % 32) ? (1 << (2%32)) - 1 : !0
+//
+// cpu 상태를 표시하는데 필요한 비트수를 십진수로 계산
+// 즉 cpu가 2개일 때 비트 2개로 표현할 수 있으며 이를 
+// 십진수로 표시하면 '3'이다
 #define BITMAP_LAST_WORD_MASK(nbits)					\
 (									\
 	((nbits) % BITS_PER_LONG) ?					\
 		(1UL<<((nbits) % BITS_PER_LONG))-1 : ~0UL		\
 )
 
+// BITS_PER_LONG - 32bit: 32
+// __builtin_constant_p() 함수는 컴파일 타임에 nbits가 상수인지 검사
 #define small_const_nbits(nbits) \
 	(__builtin_constant_p(nbits) && (nbits) <= BITS_PER_LONG)
 
@@ -230,9 +238,11 @@ static inline void bitmap_complement(unsigned long *dst, const unsigned long *sr
 		__bitmap_complement(dst, src, nbits);
 }
 
+// 2014-11-29;
 static inline int bitmap_equal(const unsigned long *src1,
 			const unsigned long *src2, int nbits)
 {
+//  if (small_const_nbits(2))    
 	if (small_const_nbits(nbits))
 		return ! ((*src1 ^ *src2) & BITMAP_LAST_WORD_MASK(nbits));
 	else

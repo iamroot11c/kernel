@@ -86,7 +86,7 @@ static bool fail_stacktrace(struct fault_attr *attr)
 }
 
 #else
-
+// 2014-11-29; CONFIG_FAULT_INJECTION_STACKTRACE_FILTER 비 활성화로 항상 참
 static inline bool fail_stacktrace(struct fault_attr *attr)
 {
 	return true;
@@ -98,7 +98,7 @@ static inline bool fail_stacktrace(struct fault_attr *attr)
  * This code is stolen from failmalloc-1.0
  * http://www.nongnu.org/failmalloc/
  */
-
+// 2014-11-29; CONFIG_FAILSLAB 비 활성화로 이 함수 호출 되지 않음 
 bool should_fail(struct fault_attr *attr, ssize_t size)
 {
 	/* No need to check any other properties if the probability is 0 */
@@ -122,9 +122,11 @@ bool should_fail(struct fault_attr *attr, ssize_t size)
 			return false;
 	}
 
+	// 임의의 숫자를 만들어 98 보다 크면 false 리턴
 	if (attr->probability <= prandom_u32() % 100)
 		return false;
 
+	// CONFIG_FAULT_INJECTION_STACKTRACE_FILTER 비 활성화로 항상 false
 	if (!fail_stacktrace(attr))
 		return false;
 
@@ -133,6 +135,8 @@ bool should_fail(struct fault_attr *attr, ssize_t size)
 	if (atomic_read(&attr->times) != -1)
 		atomic_dec_not_zero(&attr->times);
 
+	// 조건이 만족하면 계속 false를 리턴하며 
+	// 문제가 있다고 판단되어 true를 리턴
 	return true;
 }
 EXPORT_SYMBOL_GPL(should_fail);
