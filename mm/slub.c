@@ -261,7 +261,8 @@ static inline void *get_freepointer(struct kmem_cache *s, void *object)
 }
 
 static void prefetch_freepointer(const struct kmem_cache *s, void *object)
-{
+{ 
+	// 아키텍처에 로드 작업을 예고, 실제 데이터를 가져 오지 않음
 	prefetch(object + s->offset);
 }
 
@@ -272,6 +273,7 @@ static inline void *get_freepointer_safe(struct kmem_cache *s, void *object)
 #ifdef CONFIG_DEBUG_PAGEALLOC
 	probe_kernel_read(&p, (void **)(object + s->offset), sizeof(p));
 #else
+	// CONFIG_DEBUG_PAGEALLOC 비 활성화
 	p = get_freepointer(s, object);
 #endif
 	return p;
@@ -935,17 +937,28 @@ static void trace(struct kmem_cache *s, struct page *page, void *object,
  */
 static inline int slab_pre_alloc_hook(struct kmem_cache *s, gfp_t flags)
 {
-	flags &= gfp_allowed_mask;
-	lockdep_trace_alloc(flags);
-	might_sleep_if(flags & __GFP_WAIT);
+	flags &= gfp_allowed_mask; // All GFP bitmasks mask(0x1FF_FFFF)
+	                           // GFP bitmasks(0 ~ 21번 비트)를 제외한 
+				   // 나머지 비트 클리어
+	lockdep_trace_alloc(flags); // CONFIG_LOCKDEP 비 활성화로 무시
+	might_sleep_if(flags & __GFP_WAIT); // CONFIG_DEBUG_ATOMIC_SLEEP 비 활성화로
+                                            // 기다리지 않고 바로 다음 진행
 
+	// CONFIG_FAILSLAB 비 활성화로 항상 false
 	return should_failslab(s->object_size, flags, s->flags);
 }
 
 static inline void slab_post_alloc_hook(struct kmem_cache *s,
 					gfp_t flags, void *object)
 {
-	flags &= gfp_allowed_mask;
+	flags &= gfp_allowed_mask; // GFP bitmasks(0 ~ 21번 비트)를 제외한
+				   // 나머지 비트 클리어
+
+	// flags를 검사하여 inuse 또는 size를 구함
+	// CONFIG_SLUB_DEBUG 활성화되어 있으면 object_size를
+	// 구할 수 있음
+	//
+	// CONFIG_KMEMCHECK 비 활성화로 kmemcheck_slab_alloc() 함수는 무시
 	kmemcheck_slab_alloc(s, flags, object, slab_ksize(s));
 	kmemleak_alloc_recursive(object, s->object_size, 1, s->flags, flags);
 }
@@ -2352,9 +2365,15 @@ static __always_inline void *slab_alloc_node(struct kmem_cache *s,
 	struct page *page;
 	unsigned long tid;
 
+	// CONFIG_SLUB_DEBUG 활성화되어 있으며 
+	// slab_pre_alloc_hook(), slab_post_alloc_hook() 함수를
+	// 분석할 때 주의 해야함
+
+	// CONFIG_FAILSLAB 비 활성화로 항상 false
 	if (slab_pre_alloc_hook(s, gfpflags))
 		return NULL;
 
+	// CONFIG_MEMCG_KMEM 비 활성화로 gfpflags 바로 리턴
 	s = memcg_kmem_get_cache(s, gfpflags);
 redo:
 	/*
@@ -2368,7 +2387,10 @@ redo:
 	 * on a different processor between the determination of the pointer
 	 * and the retrieval of the tid.
 	 */
-	preempt_disable();
+	preempt_disable(); // 선점 비 활성화
+                           // TID를 검색하는 동안 다른 프로세서의 의해
+			   // 선점당하지 않기 위해 비 활성화
+			   // TID: Transaction ID
 	c = __this_cpu_ptr(s->cpu_slab);
 
 	/*
@@ -2378,7 +2400,7 @@ redo:
 	 * linked list in between.
 	 */
 	tid = c->tid;
-	preempt_enable();
+	preempt_enable(); // 검색이 완료되어 선점을 활성화
 
 	object = c->freelist;
 	page = c->page;
@@ -2387,6 +2409,7 @@ redo:
 
 	else {
 		void *next_object = get_freepointer_safe(s, object);
+		//void *next_object = *(void **)(object + s->offset);
 
 		/*
 		 * The cmpxchg will only match if there was no additional
@@ -2431,6 +2454,9 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
 void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
 {
 	void *ret = slab_alloc(s, gfpflags, _RET_IP_);
+	// 2014-12-12 
+	// slab과 slub 차이를 확인하며 여기까지 훑어봤으며,
+	// 주석을 그대로 옮기기에는 과정이 많이 달라 하지 못함.
 
 	trace_kmem_cache_alloc(_RET_IP_, ret, s->object_size,
 				s->size, gfpflags);

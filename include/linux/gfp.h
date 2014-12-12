@@ -9,6 +9,11 @@
 
 struct vm_area_struct;
 
+// 2014-12-06, GFP(Get Free Pages)
+// ref: 
+//  http://lwn.net/Articles/274971/
+//  http://lwn.net/Articles/23042/
+
 /* Plain integer GFP bitmasks. Do not use this directly. */
 #define ___GFP_DMA		0x01u
 #define ___GFP_HIGHMEM		0x02u
@@ -37,6 +42,7 @@ struct vm_area_struct;
 #define ___GFP_WRITE		0x1000000u
 /* If the above are modified, __GFP_BITS_SHIFT may need updating */
 
+// GFP - Get Free Page
 /*
  * GFP bitmasks..
  *
@@ -317,6 +323,7 @@ static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
 	return __alloc_pages(gfp_mask, order, node_zonelist(nid, gfp_mask));
 }
 
+//14-12-06 구경만 하고 돌아감
 static inline struct page *alloc_pages_exact_node(int nid, gfp_t gfp_mask,
 						unsigned int order)
 {

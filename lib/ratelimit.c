@@ -25,6 +25,7 @@
  * 0 means callbacks will be suppressed.
  * 1 means go ahead and do it.
  */
+// 2014-12-06
 int ___ratelimit(struct ratelimit_state *rs, const char *func)
 {
 	unsigned long flags;
@@ -45,6 +46,8 @@ int ___ratelimit(struct ratelimit_state *rs, const char *func)
 	if (!rs->begin)
 		rs->begin = jiffies;
 
+	// jiffies 보다 이전 확인
+	// 아주 짧은 시간동안 printk() 함수가 집중적으로 호출되었는지 판단
 	if (time_is_before_jiffies(rs->begin + rs->interval)) {
 		if (rs->missed)
 			printk(KERN_WARNING "%s: %d callbacks suppressed\n",

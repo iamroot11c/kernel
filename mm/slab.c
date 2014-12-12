@@ -866,21 +866,39 @@ out:
 	spin_unlock_irqrestore(&n->list_lock, flags);
 }
 
+// 2014-12-06
+/*
+ * objp가 pfmemalloc인지 아닌지를 check해서, pfmemalloc을 안하면 바로 리턴,
+ * pfmemalloc이 되있으면 array_cache에서 pfmemalloc이 안되있는것을 최대한
+ * 찾아서 리턴을하고, 그래도 못찾으면 ac->availl원래대로 돌려놓고 NULL을 리턴
+ * */
 static void *__ac_get_obj(struct kmem_cache *cachep, struct array_cache *ac,
 						gfp_t flags, bool force_refill)
 {
 	int i;
+	/* ac->avail aray cache를 사용할수 있는 개수라고 추측
+	 * 0번부터 보기위해 --를 미리함
+	 */
 	void *objp = ac->entry[--ac->avail];
 
 	/* Ensure the caller is allowed to use objects from PFMEMALLOC slab */
+	// 1번째, 비트의 값을 조사함
+	// kmem init() 시, obj 생성, 이 후에, array cache의 obj등록 시, 해당 비트 셋팅
+	// ref : http://osinside.net/linuxMM/zonealloc_k.html
+	// PF_MEMALLOC flag는 할당이 재귀적인 할당일 때 설정됩니다 
+	// - 즉, 만약 free 블록을 가지려는 동안, 어떤 이유로 메모리에 대한 필요가 
+	// 끝나버렸고 __alloc_pages()에 다시 들어왔다면, PF_MEMALLOC은 설정됩니다
+	//ac->entry[ac->avail]를(맨마지막?) 검사 
 	if (unlikely(is_obj_pfmemalloc(objp))) {
 		struct kmem_cache_node *n;
 
+		// ALLOC_NO_WATERMARKS값을 기준으로 조사
 		if (gfp_pfmemalloc_allowed(flags)) {
 			clear_obj_pfmemalloc(&objp);
 			return objp;
 		}
 
+		// 2014-12-06, 식사전
 		/* The caller cannot use PFMEMALLOC objects, find another one */
 		for (i = 0; i < ac->avail; i++) {
 			/* If a !PFMEMALLOC object is found, swap them */
@@ -888,6 +906,11 @@ static void *__ac_get_obj(struct kmem_cache *cachep, struct array_cache *ac,
 				objp = ac->entry[i];
 				ac->entry[i] = ac->entry[ac->avail];
 				ac->entry[ac->avail] = objp;
+				/*
+				 * pfmalloc이 false인것을 찾아서
+				 * pfmalloc이 true것(ac->avail)과 교체후
+				 * pfmalloc이 false인 obj를 return
+				 */
 				return objp;
 			}
 		}
@@ -897,6 +920,7 @@ static void *__ac_get_obj(struct kmem_cache *cachep, struct array_cache *ac,
 		 * being forced to refill the cache, mark this one !pfmemalloc.
 		 */
 		n = cachep->node[numa_mem_id()];
+		//n->slabs_free는 list, force_refill = false
 		if (!list_empty(&n->slabs_free) && force_refill) {
 			struct slab *slabp = virt_to_slab(objp);
 			ClearPageSlabPfmemalloc(virt_to_head_page(slabp->s_mem));
@@ -913,6 +937,8 @@ static void *__ac_get_obj(struct kmem_cache *cachep, struct array_cache *ac,
 	return objp;
 }
 
+// 2014-12-06
+// ac_get_obj(cachep, ac, flags, false);
 static inline void *ac_get_obj(struct kmem_cache *cachep,
 			struct array_cache *ac, gfp_t flags, bool force_refill)
 {
@@ -2611,6 +2637,7 @@ static struct slab *alloc_slabmgmt(struct kmem_cache *cachep, void *objp,
 
 	if (OFF_SLAB(cachep)) {
 		/* Slab management obj is off-slab. */
+		//cache에 slabp를 할당
 		slabp = kmem_cache_alloc_node(cachep->slabp_cache,
 					      local_flags, nodeid);
 		/*
@@ -2620,7 +2647,7 @@ static struct slab *alloc_slabmgmt(struct kmem_cache *cachep, void *objp,
 		 * to the object. Otherwise we will not report the leak.
 		 */
 		kmemleak_scan_area(&slabp->list, sizeof(struct list_head),
-				   local_flags);
+				   local_flags);//debug code
 		if (!slabp)
 			return NULL;
 	} else {
@@ -2762,6 +2789,7 @@ static void slab_map_pages(struct kmem_cache *cache, struct slab *slab,
  * Grow (by 1) the number of slabs within a cache.  This is called by
  * kmem_cache_alloc() when there are no active objs left in a cache.
  */
+//우리가 이 함수를 최초로 본시점에서 objp == NULL
 static int cache_grow(struct kmem_cache *cachep,
 		gfp_t flags, int nodeid, void *objp)
 {
@@ -2785,12 +2813,15 @@ static int cache_grow(struct kmem_cache *cachep,
 	/* Get colour for the slab, and cal the next value. */
 	offset = n->colour_next;
 	n->colour_next++;
+	//colour : cache colour range를 의미. 
+	//넘으면 0으로 초기화?
 	if (n->colour_next >= cachep->colour)
 		n->colour_next = 0;
 	spin_unlock(&n->list_lock);
-
+	//colour_off : 단위 cache colour의 크기?
 	offset *= cachep->colour_off;
 
+	//__GFP_WAIT : GFP_RECLAIM_MASK측에 있는 flag
 	if (local_flags & __GFP_WAIT)
 		local_irq_enable();
 
@@ -2812,11 +2843,19 @@ static int cache_grow(struct kmem_cache *cachep,
 		goto failed;
 
 	/* Get slab management. */
+	/*
+	 * cachep에 OFF_SLAB flag 에 따라  slabp alloc하고 그에 따른 
+	 * slap의 초기화
+	 */
 	slabp = alloc_slabmgmt(cachep, objp, offset,
 			local_flags & ~GFP_CONSTRAINT_MASK, nodeid);
 	if (!slabp)
 		goto opps1;
 
+	/*
+	 * page compound에 따라 page nr을 설정, nr만큼의 page에 cache와 slab의
+	 * 정보를 등록 
+	 * */
 	slab_map_pages(cachep, slabp, objp);
 
 	cache_init_objs(cachep, slabp);
@@ -2954,6 +2993,10 @@ bad:
 #define check_slabp(x,y) do { } while(0)
 #endif
 
+/*
+ * 우리가 제일 처음 이 함수를 만난시점에선 force_refill = true.
+ * objp가 pfmemalloc인게 아닌것을 못찾은 상황
+ * */
 static void *cache_alloc_refill(struct kmem_cache *cachep, gfp_t flags,
 							bool force_refill)
 {
@@ -2964,6 +3007,7 @@ static void *cache_alloc_refill(struct kmem_cache *cachep, gfp_t flags,
 
 	check_irq_off();
 	node = numa_mem_id();
+	//true이므로 실행
 	if (unlikely(force_refill))
 		goto force_grow;
 retry:
@@ -3044,9 +3088,10 @@ force_grow:
 		node = numa_mem_id();
 
 		/* no objects in sight? abort */
+		//cache가 제대로 늘어났는지 검사
 		if (!x && (ac->avail == 0 || force_refill))
 			return NULL;
-
+		//ac->avail이 0이면 사용할 수 있는게 없으므로 다시 요청
 		if (!ac->avail)		/* objects refilled by interrupt? */
 			goto retry;
 	}
@@ -3151,8 +3196,10 @@ static inline void *____cache_alloc(struct kmem_cache *cachep, gfp_t flags)
 
 	check_irq_off();
 	
-	// 2014-11-29 cpu_cache_get() 함수 분석 중;
+	// 2014-11-29; cpu_cache_get() 함수 분석 중;
 	ac = cpu_cache_get(cachep);
+	// 2014-12-06; cpu_cache_get() 함수 분석 완료
+
 	if (likely(ac->avail)) {
 		ac->touched = 1;
 		objp = ac_get_obj(cachep, ac, flags, false);
@@ -3162,13 +3209,20 @@ static inline void *____cache_alloc(struct kmem_cache *cachep, gfp_t flags)
 		 * by the current flags
 		 */
 		if (objp) {
-			STATS_INC_ALLOCHIT(cachep);
+			STATS_INC_ALLOCHIT(cachep);//debug 용
 			goto out;
 		}
+		/*
+		 * objp == NULL일경우 force_refill = true가 된다.
+		 * objp = NULL인경우는 위 ac_get_obj에서 모든 objp의 
+		 * pfmalloc이 되있어서(?) pfmalloc이 안된걸 못가져왔기때문 
+		 * */
 		force_refill = true;
 	}
 
-	STATS_INC_ALLOCMISS(cachep);
+	STATS_INC_ALLOCMISS(cachep);//debug 용
+	//objp = NULL인경우 오게되고, force_refill == true라는 점을 기억
+	//위에서 obj를 못구해왔으므로 다시한번 구하러 간다
 	objp = cache_alloc_refill(cachep, flags, force_refill);
 	/*
 	 * the 'ac' may be updated by cache_alloc_refill(),
@@ -3456,7 +3510,7 @@ slab_alloc(struct kmem_cache *cachep, gfp_t flags, unsigned long caller)
 	unsigned long save_flags;
 	void *objp;
 
-	// 
+	// init/main.c  
 	flags &= gfp_allowed_mask; //__GFP_WAIT, __GFP_IO, __GFP_FS 비트를 클리어
 
 	// CONFIG_TRACE_IRQFLAGS와  CONFIG_PROVE_LOCKING 비 활성화로
@@ -3468,7 +3522,7 @@ slab_alloc(struct kmem_cache *cachep, gfp_t flags, unsigned long caller)
 		return NULL;
 
 	// CONFIG_MEMCG_KMEM 비 활성화로 memcg_kmem_get_cache() 함수는
-	// cachep를 그대로 리턴
+	// flags 바로 리턴
 	cachep = memcg_kmem_get_cache(cachep, flags);
 
 	// 디버깅이 활성화되지 않으면 아래 함수는 무시됨
@@ -3479,6 +3533,7 @@ slab_alloc(struct kmem_cache *cachep, gfp_t flags, unsigned long caller)
 
 	// 2014-11-29 __do_cache_alloc() 함수 진행 중;
 	objp = __do_cache_alloc(cachep, flags);
+	//14-12-06 여기까지
 	local_irq_restore(save_flags);
 	objp = cache_alloc_debugcheck_after(cachep, flags, objp, caller);
 	kmemleak_alloc_recursive(objp, cachep->object_size, 1, cachep->flags,

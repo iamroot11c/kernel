@@ -44,6 +44,7 @@ notrace unsigned int debug_smp_processor_id(void)
 	preempt_disable_notrace();
 	// 2014-11-29; 여기까지
 
+	// 2014-12-06; 시작
 	if (!printk_ratelimit())
 		goto out_enable;
 

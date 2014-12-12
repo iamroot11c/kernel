@@ -95,6 +95,8 @@ unsigned long get_wchan(struct task_struct *p);
 #define ARCH_HAS_PREFETCH
 static inline void prefetch(const void *ptr)
 {
+    // 아키텍처에 로드 작업 예고, 실제 데이터를 로드하지 않음
+    // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0204ik/CJADCFDC.html
 	__asm__ __volatile__(
 		"pld\t%a0"
 		:

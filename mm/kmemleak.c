@@ -552,6 +552,14 @@ static struct kmemleak_object *create_object(unsigned long ptr, size_t size,
 	// 2014-11-29 kmem_cache_alloc() 함수 분석 중;
 	// slab / slub / slob 구분해야하며 slab 분석
 	// 참고: http://studyfoss.egloos.com/5332580
+	//
+	// 2014-12-08 
+	// kernel v2.6.23부터는 slub을 기본으로 사용
+	// exynos_defconfig에서도 slub 사용을 확인
+	// make menuconfig -> General Setup -> Choos SLAB allocator
+	// slab 분석 진행? 아니면 
+	// free_bootmem() 함수(mm/bootmem.c) 다음부터 진행?
+	//
 	object = kmem_cache_alloc(object_cache, gfp_kmemleak_mask(gfp));
 	if (!object) {
 		pr_warning("Cannot allocate a kmemleak_object structure\n");

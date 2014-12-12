@@ -2497,6 +2497,8 @@ int printk_sched(const char *fmt, ...)
  * This enforces a rate limit: not more than 10 kernel messages
  * every 5s to make a denial-of-service attack impossible.
  */
+// printk() 함수가 아주 짧은 시간동안 집중되었을 때 처리를 무시하기
+// 위한 전역 변수
 DEFINE_RATELIMIT_STATE(printk_ratelimit_state, 5 * HZ, 10);
 
 int __printk_ratelimit(const char *func)

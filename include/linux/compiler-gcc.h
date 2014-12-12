@@ -32,6 +32,13 @@
  * the inline assembly constraint from =g to =r, in this particular
  * case either is valid.
  */
+/* 14-12-06
+ * studyfoss.egloos.com/viewer/5374731
+ * 모기향 518page
+ * typeof(ptr+(off)로 그냥 사용한경우, ptr에 대한 원래의 type이
+ * 컴파일러에 남아있어 이에 대해 컴파일러가 개발자가 의도한 바와는 다르게
+ * 작업을 할 수 있기 때문에 아래와같이 한다.
+ */
 #define RELOC_HIDE(ptr, off)					\
   ({ unsigned long __ptr;					\
     __asm__ ("" : "=r"(__ptr) : "0"(ptr));		\

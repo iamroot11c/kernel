@@ -324,13 +324,14 @@ static inline void set_page_writeback(struct page *page)
 	test_set_page_writeback(page);
 }
 
-#ifdef CONFIG_PAGEFLAGS_EXTENDED
+#ifdef CONFIG_PAGEFLAGS_EXTENDED//not set
 /*
  * System with lots of page flags available. This allows separate
  * flags for PageHead() and PageTail() checks of compound pages so that bit
  * tests can be used in performance sensitive paths. PageCompound is
  * generally not used in hot code paths.
  */
+//not set 이기 때문에 여기로 안오고 PG_compound로 
 __PAGEFLAG(Head, head) CLEARPAGEFLAG(Head, head)
 __PAGEFLAG(Tail, tail)
 
@@ -353,6 +354,7 @@ static inline void ClearPageCompound(struct page *page)
  * because PageCompound is always set for compound pages and not for
  * pages on the LRU and/or pagecache.
  */
+//PG_compound
 TESTPAGEFLAG(Compound, compound)
 __SETPAGEFLAG(Head, compound)  __CLEARPAGEFLAG(Head, compound)
 

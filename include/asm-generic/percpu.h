@@ -53,6 +53,7 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
  * established ways to produce a usable pointer from the percpu variable
  * offset.
  */
+//numa_node,cpu
 #define per_cpu(var, cpu) \
 	(*SHIFT_PERCPU_PTR(&(var), per_cpu_offset(cpu)))
 

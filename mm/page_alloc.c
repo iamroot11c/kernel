@@ -2672,6 +2672,7 @@ got_pg:
 /*
  * This is the 'heart' of the zoned buddy allocator.
  */
+//14-12-06 구경만 하고 돌아감
 struct page *
 __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
 			struct zonelist *zonelist, nodemask_t *nodemask)

@@ -146,12 +146,29 @@ static inline u64 get_jiffies_64(void)
 /*
  * These four macros compare jiffies and 'a' for convenience.
  */
+// 2014-12-06
+//
+// 계산을 할 때 혼란스러원 시간순으로 나열
+// *** 'before' & 'after' 매우 주의 ***
+//
+// ---------|------------|--------
+//          a         jiffies         a is before jiffies; a < jiffies
+//
+// ---------|------------|--------
+//       jiffies         a            jiffies is before a; jiffies < a
+//
+// 32-bit Architecture 일 경우 unsigned long 으로 선언 되어 있는 jiffies 값은 
+// Tick Rate인 HZ가 1000으로 설정 되어 있을 경우 49.7 일 만에 Wrap-around 발생
+// 이를 고려한 time_after 매크로가 설계됨 
+// 참고: http://letsgetstartedbydavid.blogspot.kr/2013/01/jiffies-wraparound-timeafter-macro.html?m=1
 
 /* time_is_before_jiffies(a) return true if a is before jiffies */
 #define time_is_before_jiffies(a) time_after(jiffies, a)
+//                                ((long)(a - jiffies) < 0) ? true : false
 
 /* time_is_after_jiffies(a) return true if a is after jiffies */
-#define time_is_after_jiffies(a) time_before(jiffies, a)
+#define time_is_after_jiffies(a) time_before(jiffies, a) // time_after(a, jiffies)
+//                                ((long)(jiffies - a) < 0) ? true : false
 
 /* time_is_before_eq_jiffies(a) return true if a is before or equal to jiffies*/
 #define time_is_before_eq_jiffies(a) time_after_eq(jiffies, a)

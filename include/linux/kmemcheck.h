@@ -86,7 +86,7 @@ bool kmemcheck_is_obj_initialized(unsigned long addr, size_t size);
 		kmemcheck_mark_initialized(&(var), sizeof(var));	\
 	} while (0)							\
 
-#else
+#else // CONFIG_KMEMCHECK 비 활성화
 #define kmemcheck_enabled 0
 
 static inline void
