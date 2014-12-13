@@ -822,7 +822,7 @@ static inline struct zone *lruvec_zone(struct lruvec *lruvec)
 #endif
 }
 
-#ifdef CONFIG_HAVE_MEMORY_PRESENT
+#ifdef CONFIG_HAVE_MEMORY_PRESENT	// CONFIG_HAVE_MEMORY_PRESENT=y
 void memory_present(int nid, unsigned long start, unsigned long end);
 #else
 static inline void memory_present(int nid, unsigned long start, unsigned long end) {}
@@ -1062,12 +1062,16 @@ static inline unsigned long early_pfn_to_nid(unsigned long pfn)
  * PFN_SECTION_SHIFT		pfn to/from section number
  */
 #define PA_SECTION_SHIFT	(SECTION_SIZE_BITS)
+// 2014-12-13,
+// #define SECTION_SIZE_BITS   28
+// #define PAGE_SHIFT      12
+// PFN_SECTION_SHIFT 16
 #define PFN_SECTION_SHIFT	(SECTION_SIZE_BITS - PAGE_SHIFT)
 
 #define NR_MEM_SECTIONS		(1UL << SECTIONS_SHIFT)
 
-#define PAGES_PER_SECTION       (1UL << PFN_SECTION_SHIFT)
-#define PAGE_SECTION_MASK	(~(PAGES_PER_SECTION-1))
+#define PAGES_PER_SECTION       (1UL << PFN_SECTION_SHIFT)	// 0x0001_0000
+#define PAGE_SECTION_MASK	(~(PAGES_PER_SECTION-1))		// 0xFFFF_0000
 
 #define SECTION_BLOCKFLAGS_BITS \
 	((1UL << (PFN_SECTION_SHIFT - pageblock_order)) * NR_PAGEBLOCK_BITS)
@@ -1076,7 +1080,7 @@ static inline unsigned long early_pfn_to_nid(unsigned long pfn)
 #error Allocator MAX_ORDER exceeds SECTION_SIZE
 #endif
 
-#define pfn_to_section_nr(pfn) ((pfn) >> PFN_SECTION_SHIFT)
+#define pfn_to_section_nr(pfn) ((pfn) >> PFN_SECTION_SHIFT)	// PFN_SECTION_SHIFT(16)
 #define section_nr_to_pfn(sec) ((sec) << PFN_SECTION_SHIFT)
 
 #define SECTION_ALIGN_UP(pfn)	(((pfn) + PAGES_PER_SECTION - 1) & PAGE_SECTION_MASK)
@@ -1101,7 +1105,7 @@ struct mem_section {
 
 	/* See declaration of similar field in struct zone */
 	unsigned long *pageblock_flags;
-#ifdef CONFIG_MEMCG
+#ifdef CONFIG_MEMCG	// CONFIG_MEMCG=N
 	/*
 	 * If !SPARSEMEM, pgdat doesn't have page_cgroup pointer. We use
 	 * section. (see memcontrol.h/page_cgroup.h about this.)
@@ -1116,6 +1120,11 @@ struct mem_section {
 };
 
 #ifdef CONFIG_SPARSEMEM_EXTREME
+// 2014-12-13
+// SECTIONS_PER_ROOT는 하나의 PAGE를 몇개의 mem_section로 다룰지를 결정
+// 예를 들어, PAGE_SIZE가 10이고, sizeof (struct mem_section)이 2라면
+// 5개로, 하나의 PAGE를 다룰 것이다.
+// 512개로 예상됨.
 #define SECTIONS_PER_ROOT       (PAGE_SIZE / sizeof (struct mem_section))
 #else
 #define SECTIONS_PER_ROOT	1

@@ -19,7 +19,7 @@
  *
  * 1) mem_section	- memory sections, mem_map's for valid memory
  */
-#ifdef CONFIG_SPARSEMEM_EXTREME
+#ifdef CONFIG_SPARSEMEM_EXTREME	// CONFIG_SPARSEMEM_EXTREME=y
 struct mem_section *mem_section[NR_SECTION_ROOTS]
 	____cacheline_internodealigned_in_smp;
 #else
@@ -56,7 +56,8 @@ static inline void set_section_nid(unsigned long section_nr, int nid)
 }
 #endif
 
-#ifdef CONFIG_SPARSEMEM_EXTREME
+#ifdef CONFIG_SPARSEMEM_EXTREME	// CONFIG_SPARSEMEM_EXTREME=y
+// 2014-12-13, 여기까지, To do 차주
 static struct mem_section noinline __init_refok *sparse_index_alloc(int nid)
 {
 	struct mem_section *section = NULL;
@@ -75,6 +76,8 @@ static struct mem_section noinline __init_refok *sparse_index_alloc(int nid)
 	return section;
 }
 
+// 2014-12-13
+// nid = 0
 static int __meminit sparse_index_init(unsigned long section_nr, int nid)
 {
 	unsigned long root = SECTION_NR_TO_ROOT(section_nr);
@@ -83,6 +86,7 @@ static int __meminit sparse_index_init(unsigned long section_nr, int nid)
 	if (mem_section[root])
 		return -EEXIST;
 
+	// 2014-12-13, start
 	section = sparse_index_alloc(nid);
 	if (!section)
 		return -ENOMEM;
@@ -165,17 +169,24 @@ void __meminit mminit_validate_memmodel_limits(unsigned long *start_pfn,
 	}
 }
 
+// 2014-12-13
 /* Record a memory area against a node. */
+// memory_present(0, memblock_region_memory_base_pfn(reg),
+//          memblock_region_memory_end_pfn(reg));
 void __init memory_present(int nid, unsigned long start, unsigned long end)
 {
 	unsigned long pfn;
 
-	start &= PAGE_SECTION_MASK;
+	start &= PAGE_SECTION_MASK;		// PAGE_SECTION_MASK(0xFFFF_0000)
+	// 2014-12-13
+	// 오류가 있을 경우, start, end에 대한 값보정이 이루어진다.
 	mminit_validate_memmodel_limits(&start, &end);
+	// PAGES_PER_SECTION(0x0001_0000)
 	for (pfn = start; pfn < end; pfn += PAGES_PER_SECTION) {
 		unsigned long section = pfn_to_section_nr(pfn);
 		struct mem_section *ms;
 
+		// 2014-12-13, start
 		sparse_index_init(section, nid);
 		set_section_nid(section, nid);
 

@@ -12,4 +12,5 @@
 #include "bitops.h"
                 .text
 
+/* 2014-12-13 */
 testop	_test_and_set_bit, orreq, streq

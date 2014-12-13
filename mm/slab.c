@@ -3534,6 +3534,9 @@ slab_alloc(struct kmem_cache *cachep, gfp_t flags, unsigned long caller)
 	// 2014-11-29 __do_cache_alloc() 함수 진행 중;
 	objp = __do_cache_alloc(cachep, flags);
 	//14-12-06 여기까지
+	// 2014-12-13, SLUB을 사용하고, kmemleack은 디버그용임으로, 이쪽은 잘못된 루틴을 타고 분석한 예
+	// 그러므로, 다시 정상적인 루틴으로 복귀함. 
+	// ===> free_bootmem()
 	local_irq_restore(save_flags);
 	objp = cache_alloc_debugcheck_after(cachep, flags, objp, caller);
 	kmemleak_alloc_recursive(objp, cachep->object_size, 1, cachep->flags,

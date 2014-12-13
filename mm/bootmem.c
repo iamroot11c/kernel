@@ -316,15 +316,20 @@ static void __init __free(bootmem_data_t *bdata,
 		bdata->hint_idx = sidx;
 
 	for (idx = sidx; idx < eidx; idx++)
-		if (!test_and_clear_bit(idx, bdata->node_bootmem_map))
+		// test_and_clear_bit은 bdata->node_bootmem_map의 idx번째 비트의
+		// old값을 리턴한다. old값이 0이면 Bug?
+		// => free()함수임으로, old값이 0이라는 것은 free해서는 안된다는 것을
+		// 의미하는 것으로 보인다.
+		if (!test_and_clear_bit(idx, bdata->node_bootmem_map))	// 2014-12-13
 			BUG();
 }
 
+// 2014-12-13
 static int __init __reserve(bootmem_data_t *bdata, unsigned long sidx,
 			unsigned long eidx, int flags)
 {
 	unsigned long idx;
-	int exclusive = flags & BOOTMEM_EXCLUSIVE;
+	int exclusive = flags & BOOTMEM_EXCLUSIVE;	// reserve_bootmem()인 경우, flag 0
 
 	bdebug("nid=%td start=%lx end=%lx flags=%x\n",
 		bdata - bootmem_node_data,
@@ -333,7 +338,10 @@ static int __init __reserve(bootmem_data_t *bdata, unsigned long sidx,
 		flags);
 
 	for (idx = sidx; idx < eidx; idx++)
+		// test_and_set_bit의 리턴값은 해당 idx 비트의 old value
 		if (test_and_set_bit(idx, bdata->node_bootmem_map)) {
+			// 이미 할당된 상태에서, 또 다시 set하려고 하니,
+			// 에러 처리를 해야하는 상황.
 			if (exclusive) {
 				__free(bdata, sidx, idx);
 				return -EBUSY;
@@ -344,6 +352,7 @@ static int __init __reserve(bootmem_data_t *bdata, unsigned long sidx,
 	return 0;
 }
 
+// reserve_bootmem()인 경우, reserve은 1
 static int __init mark_bootmem_node(bootmem_data_t *bdata,
 				unsigned long start, unsigned long end,
 				int reserve, int flags)
@@ -360,12 +369,15 @@ static int __init mark_bootmem_node(bootmem_data_t *bdata,
 	eidx = end - bdata->node_min_pfn;
 
 	if (reserve)
-		return __reserve(bdata, sidx, eidx, flags);
+		return __reserve(bdata, sidx, eidx, flags); // 2014-12-13
 	else
-		__free(bdata, sidx, eidx);
+		__free(bdata, sidx, eidx);	// 2014-12-13
 	return 0;
 }
 
+// 2014-12-13
+// free_bootmem() -> mark_bootmem(start, end, 0, 0);
+// reserve_bootmem() -> mark_bootmem(start, end, 1, 0);
 static int __init mark_bootmem(unsigned long start, unsigned long end,
 				int reserve, int flags)
 {
@@ -385,6 +397,8 @@ static int __init mark_bootmem(unsigned long start, unsigned long end,
 
 		max = min(bdata->node_low_pfn, end);
 
+		// 2014-12-13
+		// err은 free_bootmem()인 경우 reserve가 0임으로, 항상 0 이다.
 		err = mark_bootmem_node(bdata, pos, max, reserve, flags);
 		if (reserve && err) {
 			mark_bootmem(start, pos, 0, 0);
@@ -438,10 +452,13 @@ void __init free_bootmem(unsigned long physaddr, unsigned long size)
 	// CONFIG_DEBUG_KEMLEAK = y 이면 실행
 	kmemleak_free_part(__va(physaddr), size);
 
+	// 2014-12-13, 시작
+	// 이전까지는 잘못된 루틴을 타고 분석했었다.
 	start = PFN_UP(physaddr);
 	end = PFN_DOWN(physaddr + size);
 
 	mark_bootmem(start, end, 0, 0);
+	// 2014-12-13
 }
 
 /**
@@ -476,6 +493,9 @@ int __init reserve_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
  *
  * The range must be contiguous but may span node boundaries.
  */
+ // 2014-12-13
+ // reserve_bootmem(__pfn_to_phys(start),
+ //         (end - start) << PAGE_SHIFT, BOOTMEM_DEFAULT /* 0 */);
 int __init reserve_bootmem(unsigned long addr, unsigned long size,
 			    int flags)
 {

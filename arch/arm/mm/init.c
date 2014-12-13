@@ -212,8 +212,10 @@ static void __init arm_bootmem_init(unsigned long start_pfn,
 			break;
 
 		free_bootmem(__pfn_to_phys(start), (end - start) << PAGE_SHIFT);
+		// 2014-12-13, free_bootmem
 	}
 
+	// 2014-12-13, start
 	/* Reserve the lowmem memblock reserved regions in bootmem. */
 	for_each_memblock(reserved, reg) {
 		unsigned long start = memblock_region_reserved_base_pfn(reg);
@@ -224,8 +226,10 @@ static void __init arm_bootmem_init(unsigned long start_pfn,
 		if (start >= end)
 			break;
 
+		// 2014-12-13, start
 		reserve_bootmem(__pfn_to_phys(start),
-			        (end - start) << PAGE_SHIFT, BOOTMEM_DEFAULT);
+			        (end - start) << PAGE_SHIFT, BOOTMEM_DEFAULT /* 0 */);
+		// 2014-12-13, end
 	}
 }
 
@@ -329,11 +333,13 @@ int pfn_valid(unsigned long pfn)
 EXPORT_SYMBOL(pfn_valid);
 #endif
 
-#ifndef CONFIG_SPARSEMEM
+#ifndef CONFIG_SPARSEMEM	// CONFIG_SPARSEMEM=y
 static void __init arm_memory_present(void)
 {
 }
 #else
+// 2014-12-13, flat memory, discontiguous memory, sparse memory?
+// http://www.iamroot.org/xe/QnA/13649 - 백창우, 김남형 참고.
 static void __init arm_memory_present(void)
 {
 	struct memblock_region *reg;
@@ -441,11 +447,13 @@ void __init bootmem_init(void)
 
 	// 2014-11-01 시작
 	arm_bootmem_init(min, max_low);
+	// 2014-12-13, end
 
 	/*
 	 * Sparsemem tries to allocate bootmem in memory_present(),
 	 * so must be done after the fixed reservations
 	 */
+	// 2014-12-13, start
 	arm_memory_present();
 
 	/*
