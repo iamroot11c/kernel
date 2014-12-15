@@ -35,21 +35,27 @@ UNWIND(	.fnstart	)
 		CPSR 업데이트
 
 		정렬되어 있다면 0이므로 z가 1, 정렬되어 있지 않다면 z가 0
+		곧, 4byte align을 의미함.
 	*/
 	ands	ip, r1, #3
 
-	/*
-	NE(Z clear) - 정렬 되어 있지 않다면 실행된다.
-	*/
+	// NE(Z clear) - 정렬 되어 있지 않다면 실행된다.
+	// 4byte align이 되지 않았다면, assert를 발생시킨다.
+	// ex) 0x1234_123F   // assert
 	strneb	r1, [ip]		@ assert word-aligned
 	mov	r2, #1
 	// #31(0x1F - 하위 5비트) - 31이라는 것은, 한 word 32bit와 연관된 것 아닐까?
 	// 특정 word 상의 offset으로 삼기 위함
+	// 32bit 머신, 하나의 word에 대해서, 0 ~ 31bit까지 컨트롤 할 수 있다.
 	and	r3, r0, #31		@ Get bit offset
-	// 하위 5비트를 제외한 값만 r0에 유지
 	// r0를 32로 나눈 인덱스로 변환. 몇 번째 word를 찾아내야 하는지 구함
+	// 이렇게 함으로써, r0가 31을 넘는 경우도 bit set/clear가 가능하다
+	// ex) _test_and_clear_bit(32, p), r0 = 1
 	mov	r0, r0, lsr #5
 	// r1을 r0이 가리키는 워드로 변경함
+	// r1 = r1 << r0;
+	// ex) r1 = 0x1234_1240, r0 = 1 
+	// => 0x1234_1244(offset만큼, 다음 word로 이동한다)
 	add	r1, r1, r0, lsl #2	@ Get word offset
 	// 실제 clear할 bit에대한 mask값, 16번째를 클리어 하려 했다면, 1 << 16(0x0001_0000)
 	mov	r3, r2, lsl r3		@ create mask
@@ -67,7 +73,7 @@ UNWIND(	.fnstart	)
 	bne	1b
 	smp_dmb
 	// 호출 규약(AAPCS)에 의해서 r0에는 리턴값인데
-	// 이 경우, old값을 리턴하는 것으로 보임
+	// 이 경우, old(bit)값을 리턴하는 것으로 보임
 	cmp	r0, #0
 	movne	r0, #1
 2:	bx	lr
