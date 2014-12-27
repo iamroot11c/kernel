@@ -111,7 +111,8 @@ extern void *__alloc_bootmem_low_node(pg_data_t *pgdat,
 /* We are using top down, so it is safe to use 0 here */
 #define BOOTMEM_LOW_LIMIT 0
 #else
-#define BOOTMEM_LOW_LIMIT __pa(MAX_DMA_ADDRESS)
+#define BOOTMEM_LOW_LIMIT __pa(MAX_DMA_ADDRESS) 
+//                        __pa(0xffffffffUL)
 #endif
 
 #define alloc_bootmem(x) \
@@ -124,8 +125,12 @@ extern void *__alloc_bootmem_low_node(pg_data_t *pgdat,
 	__alloc_bootmem(x, PAGE_SIZE, BOOTMEM_LOW_LIMIT)
 #define alloc_bootmem_pages_nopanic(x) \
 	__alloc_bootmem_nopanic(x, PAGE_SIZE, BOOTMEM_LOW_LIMIT)
+
+// SMP_CACHE_BYTES = 0x40(64)
+// BOOTMEM_LOW_LIMIT = __pa(0xffffffffUL)
 #define alloc_bootmem_node(pgdat, x) \
-	__alloc_bootmem_node(pgdat, x, SMP_CACHE_BYTES, BOOTMEM_LOW_LIMIT)
+	__alloc_bootmem_node(pgdat, x, SMP_CACHE_BYTES, BOOTMEM_LOW_LIMIT) 
+
 #define alloc_bootmem_node_nopanic(pgdat, x) \
 	__alloc_bootmem_node_nopanic(pgdat, x, SMP_CACHE_BYTES, BOOTMEM_LOW_LIMIT)
 #define alloc_bootmem_pages_node(pgdat, x) \

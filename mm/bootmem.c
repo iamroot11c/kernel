@@ -56,9 +56,26 @@ early_param("bootmem_debug", bootmem_debug_setup);
 			__func__, ## args);		\
 })
 
+// 2014-11-01
+// 페이지 하나를 비트 1개로 표현하려고 할 때
+// 필요한 총 바이트를 계산
+//
+// 사용되는 페이지수가 32개 일 때 필요한 바이트를 아래와 같이 계산하면
+//  4 = (32 + 8 - 1) / 8 
+// 4를 구할 수 있으며 32비트를 표현하려면 4byte가 필요
+//
+// 만약 페이지수가 37개 일 때는 5가 나오며 37비트를 
+// 표현하는데 5byte가 필요함을 알 수 있음
+//
+// 나누고자하는 값(page)이 나누는 값(8)보다 작을 때에도 필요할 바이트를
+// 구하기 위해 나누는 값을 더한 후 계산
+// 즉 페이지가 1개일 때 1 byte가 필요하며 이를 계산하기 위해 나누는 값을 더함
+//
+// 구해진 바이트수는 4byte 단위로 다시 정렬
+//
 static unsigned long __init bootmap_bytes(unsigned long pages)
 {
-	unsigned long bytes = DIV_ROUND_UP(pages, 8);
+	unsigned long bytes = DIV_ROUND_UP(pages, 8); // ((pages + 8 -1) / 8;
 
 	return ALIGN(bytes, sizeof(long));
 }
@@ -67,8 +84,9 @@ static unsigned long __init bootmap_bytes(unsigned long pages)
  * bootmem_bootmap_pages - calculate bitmap size in pages
  * @pages: number of pages the bitmap has to represent
  */
-// http://www.iamroot.org/lxr/http/source/mm/bootmem.c#L71
-// 정리할 것. 2014-11-06 iamroot 홈페이지 접속이 안됨
+// 참고: http://www.iamroot.org/lxr/http/source/mm/bootmem.c#L71
+// 필요한 바이트수를 구한 후 PAGE_SIZE 단위로 정렬
+// (구한 바이트 수를 PAGE_SIZE(12) 단위로 묶어서 다시 계산)
 unsigned long __init bootmem_bootmap_pages(unsigned long pages)
 {
 	unsigned long bytes = bootmap_bytes(pages);
@@ -330,6 +348,7 @@ static int __init __reserve(bootmem_data_t *bdata, unsigned long sidx,
 {
 	unsigned long idx;
 	int exclusive = flags & BOOTMEM_EXCLUSIVE;	// reserve_bootmem()인 경우, flag 0
+	                                                // 
 
 	bdebug("nid=%td start=%lx end=%lx flags=%x\n",
 		bdata - bootmem_node_data,
@@ -507,10 +526,11 @@ int __init reserve_bootmem(unsigned long addr, unsigned long size,
 	return mark_bootmem(start, end, 1, flags);
 }
 
+// 2014-12-20
 static unsigned long __init align_idx(struct bootmem_data *bdata,
 				      unsigned long idx, unsigned long step)
 {
-	unsigned long base = bdata->node_min_pfn;
+	unsigned long base = bdata->node_min_pfn; // 페이지 프레임 번호
 
 	/*
 	 * Align the index with respect to the node start so that the
@@ -520,16 +540,21 @@ static unsigned long __init align_idx(struct bootmem_data *bdata,
 	return ALIGN(base + idx, step) - base;
 }
 
+// 2014-12-20
 static unsigned long __init align_off(struct bootmem_data *bdata,
 				      unsigned long off, unsigned long align)
 {
-	unsigned long base = PFN_PHYS(bdata->node_min_pfn);
+	unsigned long base = PFN_PHYS(bdata->node_min_pfn); // 물리주소를 구함
 
 	/* Same as align_idx for byte offsets */
 
-	return ALIGN(base + off, align) - base;
+	return ALIGN(base + off, align) - base; // 물리주소를 정렬
 }
 
+// 2014-12-20;
+// alloc_bootmem_bdata((&contig_page_data)->bdata,
+//                     4096, 64,
+//                      __pa(0xffffffffUL), 0)
 static void * __init alloc_bootmem_bdata(struct bootmem_data *bdata,
 					unsigned long size, unsigned long align,
 					unsigned long goal, unsigned long limit)
@@ -545,22 +570,41 @@ static void * __init alloc_bootmem_bdata(struct bootmem_data *bdata,
 	BUG_ON(align & (align - 1));
 	BUG_ON(limit && goal + size > limit);
 
+	//
+	// 비트맵을 arm_bootmem_init() 함수에서 생성하여 
+	// init_bootmem_node() 함수를 호출,  내부의 init_bootmem_core()를
+	// 호출하여 struct bootmem_data 인스턴스의 node_bootmem_map 멤버에
+	// 저장
+	//
+	// 각 함수의 정의는 아래와 같음
+	//  arch/arm/mm/init.c:void arm_bootmem_init(unsigned long start_pfn,
+	//						unsigned long end_pfn);
+	//
+	// unsigned long init_bootmem_node(pg_data_t*, unsigned long,
+	//                                 unsigned long, unsigned long);
+	//
+	// unsigned long init_bootmem_core(bootmem_data_t*, unsigned long,
+	//                                 unsigned long, unsigned long);
+	//
+	//
 	if (!bdata->node_bootmem_map)
 		return NULL;
 
 	min = bdata->node_min_pfn;
 	max = bdata->node_low_pfn;
 
-	goal >>= PAGE_SHIFT;
-	limit >>= PAGE_SHIFT;
+	goal >>= PAGE_SHIFT;  // 0xF_FFFF = 0xFFFF_FFFF >> 12
+	limit >>= PAGE_SHIFT; // 0 = 0 >> 12
 
 	if (limit && max > limit)
 		max = limit;
 	if (max <= min)
 		return NULL;
 
-	step = max(align >> PAGE_SHIFT, 1UL);
+	step = max(align >> PAGE_SHIFT, 1UL); // align 값이 64일 때 
+	                                      // step은 1
 
+	// goal 값이 가상주소의 최대값일 때 max보다 작을수 없을것 같음
 	if (goal && min < goal && goal < max)
 		start = ALIGN(goal, step);
 	else
@@ -578,11 +622,13 @@ static void * __init alloc_bootmem_bdata(struct bootmem_data *bdata,
 		sidx = align_idx(bdata, bdata->hint_idx, step);
 	}
 
+	// 2014-12-20 식사전, 훑어보고 있음
 	while (1) {
 		int merge;
 		void *region;
 		unsigned long eidx, i, start_off, end_off;
 find_block:
+		// 비트맵에서 제로비트를 검색
 		sidx = find_next_zero_bit(bdata->node_bootmem_map, midx, sidx);
 		sidx = align_idx(bdata, sidx, step);
 		eidx = sidx + PFN_UP(size);
@@ -591,6 +637,7 @@ find_block:
 			break;
 
 		for (i = sidx; i < eidx; i++)
+			// 비트가 1인지 검사
 			if (test_bit(i, bdata->node_bootmem_map)) {
 				sidx = align_idx(bdata, i, step);
 				if (sidx == i)
@@ -600,7 +647,7 @@ find_block:
 
 		if (bdata->last_end_off & (PAGE_SIZE - 1) &&
 				PFN_DOWN(bdata->last_end_off) + 1 == sidx)
-			start_off = align_off(bdata, bdata->last_end_off, align);
+			start_off = align_off(bdata, bdata->last_end_off, align); // 64의 배수로 정렬
 		else
 			start_off = PFN_PHYS(sidx);
 
@@ -613,12 +660,14 @@ find_block:
 		/*
 		 * Reserve the area now:
 		 */
+		// 비트맵을 셋팅
 		if (__reserve(bdata, PFN_DOWN(start_off) + merge,
 				PFN_UP(end_off), BOOTMEM_EXCLUSIVE))
 			BUG();
 
 		region = phys_to_virt(PFN_PHYS(bdata->node_min_pfn) +
 				start_off);
+		// 메모리영역을 초기화
 		memset(region, 0, size);
 		/*
 		 * The min_count is set to 0 so that bootmem allocated blocks
@@ -738,6 +787,8 @@ void * __init __alloc_bootmem(unsigned long size, unsigned long align,
 	return ___alloc_bootmem(size, align, goal, limit);
 }
 
+// 2014-12-20 시작;
+// ___alloc_bootmem_node_nopanic(&contig_page_data, 4096, 64, __pa(0xffffffffUL), 0);
 void * __init ___alloc_bootmem_node_nopanic(pg_data_t *pgdat,
 				unsigned long size, unsigned long align,
 				unsigned long goal, unsigned long limit)
@@ -749,12 +800,14 @@ void * __init ___alloc_bootmem_node_nopanic(pg_data_t *pgdat,
 again:
 
 	/* do not panic in alloc_bootmem_bdata() */
+	// 모기향 216 ~ 218쪽
 	if (limit && goal + size > limit)
 		limit = 0;
 
 	ptr = alloc_bootmem_bdata(pgdat->bdata, size, align, goal, limit);
 	if (ptr)
 		return ptr;
+	// 2014-12-20 여기까지;
 
 	ptr = alloc_bootmem_core(size, align, goal, limit);
 	if (ptr)
@@ -777,6 +830,8 @@ void * __init __alloc_bootmem_node_nopanic(pg_data_t *pgdat, unsigned long size,
 	return ___alloc_bootmem_node_nopanic(pgdat, size, align, goal, 0);
 }
 
+// 2014-12-20 시작;
+// ___alloc_bootmem_node(&contig_page_data, 4096, 64, __pa(0xffffffffUL), 0)
 void * __init ___alloc_bootmem_node(pg_data_t *pgdat, unsigned long size,
 				    unsigned long align, unsigned long goal,
 				    unsigned long limit)
@@ -807,6 +862,9 @@ void * __init ___alloc_bootmem_node(pg_data_t *pgdat, unsigned long size,
  *
  * The function panics if the request can not be satisfied.
  */
+// 2014-12-20 시작;
+// alloc_bootmem_node(&contig_page_data, 4096) -> 
+//   __alloc_bootmem_node(&contig_page_data, 4096, 64, __pa(0xffffffffUL)) 
 void * __init __alloc_bootmem_node(pg_data_t *pgdat, unsigned long size,
 				   unsigned long align, unsigned long goal)
 {

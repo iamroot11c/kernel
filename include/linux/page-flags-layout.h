@@ -11,6 +11,7 @@
  * are used to select a priority ordered list of memory zones which
  * match the requested limits. See gfp_zone() in include/linux/gfp.h
  */
+// MAX_NR_ZONES = 3;
 #if MAX_NR_ZONES < 2
 #define ZONES_SHIFT 0
 #elif MAX_NR_ZONES <= 2
@@ -26,6 +27,7 @@
 
 /* SECTION_SHIFT	#bits space required to store a section # */
 #define SECTIONS_SHIFT	(MAX_PHYSMEM_BITS - SECTION_SIZE_BITS)
+//                      4(=32 - 28)
 
 #endif /* CONFIG_SPARSEMEM */
 
@@ -45,14 +47,15 @@
  * classic sparse no space for node:  | SECTION |     ZONE    | ... | FLAGS |
  */
 #if defined(CONFIG_SPARSEMEM) && !defined(CONFIG_SPARSEMEM_VMEMMAP)
-#define SECTIONS_WIDTH		SECTIONS_SHIFT
+#define SECTIONS_WIDTH		SECTIONS_SHIFT // 4
 #else
 #define SECTIONS_WIDTH		0
 #endif
 
-#define ZONES_WIDTH		ZONES_SHIFT
+#define ZONES_WIDTH		ZONES_SHIFT // 2
 
 #if SECTIONS_WIDTH+ZONES_WIDTH+NODES_SHIFT <= BITS_PER_LONG - NR_PAGEFLAGS
+//  6(4 + 2 + 0) <= 11(32 - 21)
 #define NODES_WIDTH		NODES_SHIFT
 #else
 #ifdef CONFIG_SPARSEMEM_VMEMMAP
@@ -77,8 +80,8 @@
  * We are going to use the flags for the page to node mapping if its in
  * there.  This includes the case where there is no node, so it is implicit.
  */
-#if !(NODES_WIDTH > 0 || NODES_SHIFT == 0)
-#define NODE_NOT_IN_PAGE_FLAGS
+#if !(NODES_WIDTH > 0 || NODES_SHIFT == 0)  
+#define NODE_NOT_IN_PAGE_FLAGS // 정의 안함
 #endif
 
 #if defined(CONFIG_NUMA_BALANCING) && LAST_NID_WIDTH == 0

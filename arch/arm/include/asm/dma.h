@@ -4,7 +4,7 @@
 /*
  * This is the maximum virtual address which can be DMA'd from.
  */
-#ifndef CONFIG_ZONE_DMA
+#ifndef CONFIG_ZONE_DMA // CONFIG_ZONE_DMA 미 정의
 #define MAX_DMA_ADDRESS	0xffffffffUL
 #else
 #define MAX_DMA_ADDRESS	({ \

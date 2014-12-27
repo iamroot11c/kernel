@@ -42,16 +42,24 @@ ENDPROC(_find_first_zero_bit_le)
  * Purpose  : Find next 'zero' bit
  * Prototype: int find_next_zero_bit(void *addr, unsigned int maxbit, int offset)
  */
+/* 
+ * 참고: http://u-city.tistory.com/143
+ *       http://pinocc.tistory.com/archive/201305
+ *       모기향: 261 ~ 263쪽
+ * bdata->node_bootmem_map, midx, sidx
+ */
 ENTRY(_find_next_zero_bit_le)
 		teq	r1, #0
-		beq	3b
-		ands	ip, r2, #7
+		beq	3b                      @// 레이블 3으로 이동하여 종료
+		ands	ip, r2, #7              @ ip = r2 & #7 
 		beq	1b			@ If new byte, goto old routine
- ARM(		ldrb	r3, [r0, r2, lsr #3]	)
+ ARM(		ldrb	r3, [r0, r2, lsr #3]	) @// 주소가 8의 배수로 구성됨
  THUMB(		lsr	r3, r2, #3		)
  THUMB(		ldrb	r3, [r0, r3]		)
 		eor	r3, r3, #0xff		@ now looking for a 1 bit
-		movs	r3, r3, lsr ip		@ shift off unused bits
+		                                @// 1byte만 비트를 바꿈
+		movs	r3, r3, lsr ip		@ shift off unused bits 
+		                                @// 최대 우측 쉬프트
 		bne	.L_found
 		orr	r2, r2, #7		@ if zero, then no bits here
 		add	r2, r2, #1		@ align bit pointer
@@ -172,13 +180,17 @@ ENDPROC(_find_next_bit_be)
 /*
  * One or more bits in the LSB of r3 are assumed to be set.
  */
+/*
+ * 참고: http://forum.falinux.com/zbxe/index.php?document_srl=574399&mid=lecture_tip
+ */
 .L_found:
 #if __LINUX_ARM_ARCH__ >= 5
-		rsb	r0, r3, #0
-		and	r3, r3, r0
-		clz	r3, r3
-		rsb	r3, r3, #31
-		add	r0, r2, r3
+		rsb	r0, r3, #0            @// r0 = #0 - r3
+		and	r3, r3, r0             
+		clz	r3, r3                @// 최상위 비트에서 최초로 1이 나올때까지의
+		                              @// 비트개수
+		rsb	r3, r3, #31           @// r3 -= #31; 0 <= r3 < 31
+		add	r0, r2, r3            @// r0 = r2 + r3
 #else
 		tst	r3, #0x0f
 		addeq	r2, r2, #4
@@ -191,6 +203,7 @@ ENDPROC(_find_next_bit_be)
 		mov	r0, r2
 #endif
 		cmp	r1, r0			@ Clamp to maxbit
-		movlo	r0, r1
+		movlo	r0, r1                  @// if (r1 < r0)
+		                                @//  r0 = r1
 		mov	pc, lr
 

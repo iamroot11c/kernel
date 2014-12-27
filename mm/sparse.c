@@ -51,6 +51,7 @@ static void set_section_nid(unsigned long section_nr, int nid)
 	section_to_node_table[section_nr] = nid;
 }
 #else /* !NODE_NOT_IN_PAGE_FLAGS */
+// 2014-12-20
 static inline void set_section_nid(unsigned long section_nr, int nid)
 {
 }
@@ -58,18 +59,42 @@ static inline void set_section_nid(unsigned long section_nr, int nid)
 
 #ifdef CONFIG_SPARSEMEM_EXTREME	// CONFIG_SPARSEMEM_EXTREME=y
 // 2014-12-13, 여기까지, To do 차주
+// 2014-12-20 분석중; 
 static struct mem_section noinline __init_refok *sparse_index_alloc(int nid)
 {
 	struct mem_section *section = NULL;
 	unsigned long array_size = SECTIONS_PER_ROOT *
 				   sizeof(struct mem_section);
+                                   // 4096 = 512 * sizeof(struct mem_section);
 
+	// 2014-12-20;
+	// slab_is_available() 함수에서 slab_state의 상태를 조사하며
+	// UP 또는 FULL 일 때만 사용(이용)가능함
+	// 
+	// slab_state의 상태를 변경은 아래의 두 함수에서 이루어짐
+	//  mm/slub.c:void kmem_cache_init()
+	//  mm/slab_common.c:void create_kmalloc_caches(int)
+	// 
+	// kmem_cache_init() 함수에서 'PARTIAL'로 설정 후 
+	// create_kmalloc_caches() 함수를 호출하며
+	// 이 함수에서 slab_state의 상태를 'UP'으로 변경
+	//
+	// kmem_cache_init() 함수는 init/main.c mm_init(),
+	// mm_init() 함수는 init/main.c start_kernel() 에서 
+	// 호출됨
+	//
+	// 그런데 아직 init/main.c에서 mm_init() 함수를 호출하기 전이므로 
+	// slab_state의 상태가 확정되지 않아 조건을 만족하지 못함
+	//
 	if (slab_is_available()) {
 		if (node_state(nid, N_HIGH_MEMORY))
 			section = kzalloc_node(array_size, GFP_KERNEL, nid);
 		else
 			section = kzalloc(array_size, GFP_KERNEL);
 	} else {
+		// 2014-12-20 시작;
+		// struct pglist_data의 전역변수인 contig_page_data의 주소를
+		// 첫 번째 인자로 전달
 		section = alloc_bootmem_node(NODE_DATA(nid), array_size);
 	}
 

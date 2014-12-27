@@ -284,9 +284,12 @@ void kmem_cache_destroy(struct kmem_cache *s)
 }
 EXPORT_SYMBOL(kmem_cache_destroy);
 
+// 2014-12-20;
 int slab_is_available(void)
 {
-	return slab_state >= UP;
+	return slab_state >= UP; // slab_state::UP 또는 
+	                         // slab_state::FULL 일 때만
+				 // 사용가능
 }
 
 #ifndef CONFIG_SLOB

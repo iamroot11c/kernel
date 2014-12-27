@@ -133,6 +133,7 @@ extern void warn_slowpath_null(const char *file, const int line);
 
 #endif
 
+// 2014-12-20;
 #define WARN_ON_ONCE(condition)	({				\
 	static bool __section(.data.unlikely) __warned;		\
 	int __ret_warn_once = !!(condition);			\

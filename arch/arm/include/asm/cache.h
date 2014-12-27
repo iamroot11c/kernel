@@ -7,7 +7,7 @@
 /* CONFIG_ARM_L1_CACHE_SHIFT=6 */
 #define L1_CACHE_SHIFT		CONFIG_ARM_L1_CACHE_SHIFT
 /* L1_CACHE_BYTES == 64 */
-#define L1_CACHE_BYTES		(1 << L1_CACHE_SHIFT)
+#define L1_CACHE_BYTES		(1 << L1_CACHE_SHIFT) // 0x40 = 1 << 6
 
 /*
  * Memory returned by kmalloc() may be used for DMA, so we must make

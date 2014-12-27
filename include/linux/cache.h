@@ -9,7 +9,7 @@
 #endif
 
 #ifndef SMP_CACHE_BYTES
-#define SMP_CACHE_BYTES L1_CACHE_BYTES
+#define SMP_CACHE_BYTES L1_CACHE_BYTES // 64
 #endif
 
 #ifndef __read_mostly
