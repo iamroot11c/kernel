@@ -107,7 +107,7 @@ extern void *__alloc_bootmem_low_node(pg_data_t *pgdat,
 				      unsigned long align,
 				      unsigned long goal);
 
-#ifdef CONFIG_NO_BOOTMEM
+#ifdef CONFIG_NO_BOOTMEM // 미 정의
 /* We are using top down, so it is safe to use 0 here */
 #define BOOTMEM_LOW_LIMIT 0
 #else

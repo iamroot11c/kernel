@@ -686,6 +686,10 @@ find_block:
 	return NULL;
 }
 
+// 2014-12-27 시작;
+// alloc_bootmem_core(size, align, goal, limit);
+// 
+// alloc_bootmem_core(x, 64, __pa(0xffffffffUL), 0);
 static void * __init alloc_bootmem_core(unsigned long size,
 					unsigned long align,
 					unsigned long goal,
@@ -711,6 +715,8 @@ static void * __init alloc_bootmem_core(unsigned long size,
 	return NULL;
 }
 
+// 2014-12-27;
+// ___alloc_bootmem_nopanic(x, 64, __pa(0xffffffffUL), 0);
 static void * __init ___alloc_bootmem_nopanic(unsigned long size,
 					      unsigned long align,
 					      unsigned long goal,
@@ -723,6 +729,8 @@ restart:
 	if (ptr)
 		return ptr;
 	if (goal) {
+		// goal 값을 0xffffffff일 때 실패하면 0으로 
+		// 바꾸어 다시 시도
 		goal = 0;
 		goto restart;
 	}
@@ -751,6 +759,8 @@ void * __init __alloc_bootmem_nopanic(unsigned long size, unsigned long align,
 	return ___alloc_bootmem_nopanic(size, align, goal, limit);
 }
 
+// 2014-12-27;
+// ___alloc_bootmem(x, 64, __pa(0xffffffffUL), 0);
 static void * __init ___alloc_bootmem(unsigned long size, unsigned long align,
 					unsigned long goal, unsigned long limit)
 {
@@ -779,6 +789,8 @@ static void * __init ___alloc_bootmem(unsigned long size, unsigned long align,
  *
  * The function panics if the request can not be satisfied.
  */
+// __alloc_bootmem(x, SMP_CACHE_BYTES, BOOTMEM_LOW_LIMIT);
+//                 x, 64, __pa(0xffffffffUL));
 void * __init __alloc_bootmem(unsigned long size, unsigned long align,
 			      unsigned long goal)
 {
@@ -788,6 +800,7 @@ void * __init __alloc_bootmem(unsigned long size, unsigned long align,
 }
 
 // 2014-12-20 시작;
+// 2014-12-27 종료;
 // ___alloc_bootmem_node_nopanic(&contig_page_data, 4096, 64, __pa(0xffffffffUL), 0);
 void * __init ___alloc_bootmem_node_nopanic(pg_data_t *pgdat,
 				unsigned long size, unsigned long align,
@@ -809,11 +822,13 @@ again:
 		return ptr;
 	// 2014-12-20 여기까지;
 
+	// 할당이 실패하여 다시 시도
 	ptr = alloc_bootmem_core(size, align, goal, limit);
 	if (ptr)
 		return ptr;
 
 	if (goal) {
+		// 시작 주소를 0으로 변경하여 다시 시도
 		goal = 0;
 		goto again;
 	}

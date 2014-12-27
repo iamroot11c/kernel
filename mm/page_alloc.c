@@ -4707,6 +4707,8 @@ void __paginginit set_pageblock_order(void)
  * include/linux/pageblock-flags.h for the values of pageblock_order based on
  * the kernel config
  */
+// 2014-12-27;
+// CONFIG_HUGETLB_PAGE_SIZE_VARIABLE 비 활성화
 void __paginginit set_pageblock_order(void)
 {
 }

@@ -1068,7 +1068,7 @@ static inline unsigned long early_pfn_to_nid(unsigned long pfn)
 // PFN_SECTION_SHIFT 16
 #define PFN_SECTION_SHIFT	(SECTION_SIZE_BITS - PAGE_SHIFT)
 
-#define NR_MEM_SECTIONS		(1UL << SECTIONS_SHIFT)
+#define NR_MEM_SECTIONS		(1UL << SECTIONS_SHIFT) // 16 = 1 << 4;
 
 #define PAGES_PER_SECTION       (1UL << PFN_SECTION_SHIFT)	// 0x0001_0000
 #define PAGE_SECTION_MASK	(~(PAGES_PER_SECTION-1))		// 0xFFFF_0000
@@ -1080,6 +1080,8 @@ static inline unsigned long early_pfn_to_nid(unsigned long pfn)
 #error Allocator MAX_ORDER exceeds SECTION_SIZE
 #endif
 
+// PFN 값에서 상위 4비트로 섹션 구분
+// 페이지(page) 하나에 512개의 섹션(section)이 존재
 #define pfn_to_section_nr(pfn) ((pfn) >> PFN_SECTION_SHIFT)	// PFN_SECTION_SHIFT(16)
 #define section_nr_to_pfn(sec) ((sec) << PFN_SECTION_SHIFT)
 
@@ -1132,6 +1134,8 @@ struct mem_section {
 
 #define SECTION_NR_TO_ROOT(sec)	((sec) / SECTIONS_PER_ROOT)
 #define NR_SECTION_ROOTS	DIV_ROUND_UP(NR_MEM_SECTIONS, SECTIONS_PER_ROOT)
+// #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+//                         1 = ((16 + 512 - 1) / 512)
 #define SECTION_ROOT_MASK	(SECTIONS_PER_ROOT - 1)
 
 #ifdef CONFIG_SPARSEMEM_EXTREME
@@ -1140,6 +1144,7 @@ extern struct mem_section *mem_section[NR_SECTION_ROOTS];
 extern struct mem_section mem_section[NR_SECTION_ROOTS][SECTIONS_PER_ROOT];
 #endif
 
+// 2014-12-27;
 static inline struct mem_section *__nr_to_section(unsigned long nr)
 {
 	if (!mem_section[SECTION_NR_TO_ROOT(nr)])
@@ -1167,13 +1172,16 @@ static inline struct page *__section_mem_map_addr(struct mem_section *section)
 	return (struct page *)map;
 }
 
+// 2014-12-27
 static inline int present_section(struct mem_section *section)
 {
 	return (section && (section->section_mem_map & SECTION_MARKED_PRESENT));
 }
 
+// 2014-12-27
 static inline int present_section_nr(unsigned long nr)
 {
+    // SECTION_MARKED_PRESENT 상태인지 조사
 	return present_section(__nr_to_section(nr));
 }
 

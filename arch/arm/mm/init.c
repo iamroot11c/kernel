@@ -455,6 +455,7 @@ void __init bootmem_init(void)
 	 */
 	// 2014-12-13, start
 	arm_memory_present();
+	// 2014-12-27 종료;
 
 	/*
 	 * sparse_init() needs the bootmem allocator up and running.

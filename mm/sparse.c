@@ -20,7 +20,7 @@
  * 1) mem_section	- memory sections, mem_map's for valid memory
  */
 #ifdef CONFIG_SPARSEMEM_EXTREME	// CONFIG_SPARSEMEM_EXTREME=y
-struct mem_section *mem_section[NR_SECTION_ROOTS]
+struct mem_section *mem_section[NR_SECTION_ROOTS] // NR_SECTION_ROOTS = 1
 	____cacheline_internodealigned_in_smp;
 #else
 struct mem_section mem_section[NR_SECTION_ROOTS][SECTIONS_PER_ROOT]
@@ -51,7 +51,7 @@ static void set_section_nid(unsigned long section_nr, int nid)
 	section_to_node_table[section_nr] = nid;
 }
 #else /* !NODE_NOT_IN_PAGE_FLAGS */
-// 2014-12-20
+// 2014-12-27
 static inline void set_section_nid(unsigned long section_nr, int nid)
 {
 }
@@ -59,7 +59,8 @@ static inline void set_section_nid(unsigned long section_nr, int nid)
 
 #ifdef CONFIG_SPARSEMEM_EXTREME	// CONFIG_SPARSEMEM_EXTREME=y
 // 2014-12-13, 여기까지, To do 차주
-// 2014-12-20 분석중; 
+// 2014-12-20 분석중;
+// 2014-12-27 종료; 
 static struct mem_section noinline __init_refok *sparse_index_alloc(int nid)
 {
 	struct mem_section *section = NULL;
@@ -96,6 +97,7 @@ static struct mem_section noinline __init_refok *sparse_index_alloc(int nid)
 		// struct pglist_data의 전역변수인 contig_page_data의 주소를
 		// 첫 번째 인자로 전달
 		section = alloc_bootmem_node(NODE_DATA(nid), array_size);
+		// 2014-12-27 종료;
 	}
 
 	return section;
@@ -157,11 +159,13 @@ int __section_nr(struct mem_section* ms)
  * node.  This keeps us from having to use another data structure.  The
  * node information is cleared just before we store the real mem_map.
  */
+// 2014-12-27;
 static inline unsigned long sparse_encode_early_nid(int nid)
 {
-	return (nid << SECTION_NID_SHIFT);
+	return (nid << SECTION_NID_SHIFT/*2*/); 
 }
 
+// 2014-12-27;
 static inline int sparse_early_nid(struct mem_section *section)
 {
 	return (section->section_mem_map >> SECTION_NID_SHIFT);
@@ -194,7 +198,8 @@ void __meminit mminit_validate_memmodel_limits(unsigned long *start_pfn,
 	}
 }
 
-// 2014-12-13
+// 2014-12-13 시작;
+// 2014-12-27 종료;
 /* Record a memory area against a node. */
 // memory_present(0, memblock_region_memory_base_pfn(reg),
 //          memblock_region_memory_end_pfn(reg));
@@ -219,6 +224,7 @@ void __init memory_present(int nid, unsigned long start, unsigned long end)
 		if (!ms->section_mem_map)
 			ms->section_mem_map = sparse_encode_early_nid(nid) |
 							SECTION_MARKED_PRESENT;
+                                              // (nid << 2) | 1
 	}
 }
 
@@ -503,6 +509,8 @@ void __attribute__((weak)) __meminit vmemmap_populate_print_last(void)
  *  alloc_usemap_and_memmap - memory alloction for pageblock flags and vmemmap
  *  @map: usemap_map for pageblock flags or mmap_map for vmemmap
  */
+// 2014-12-27 흝어봄; map_count의 값과 nodeid_begin에 대해 특이사항이 있음;
+// alloc_usemap_and_memmap(sparse_early_usemaps_alloc_node, (void *)usemap_map);
 static void __init alloc_usemap_and_memmap(void (*alloc_func)
 					(void *, unsigned long, unsigned long,
 					unsigned long, int), void *data)
@@ -512,13 +520,15 @@ static void __init alloc_usemap_and_memmap(void (*alloc_func)
 	int nodeid_begin = 0;
 	unsigned long pnum_begin = 0;
 
-	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
+	for (pnum = 0; pnum < NR_MEM_SECTIONS/*16*/; pnum++) {
 		struct mem_section *ms;
 
+		// SECTION_MARKED_PRESENT 상태인것을 찾음
 		if (!present_section_nr(pnum))
 			continue;
 		ms = __nr_to_section(pnum);
 		nodeid_begin = sparse_early_nid(ms);
+		//             ms->section_mem_map >> SECTION_NID_SHIFT
 		pnum_begin = pnum;
 		break;
 	}
@@ -552,6 +562,7 @@ static void __init alloc_usemap_and_memmap(void (*alloc_func)
  * Allocate the accumulated non-linear sections, allocate a mem_map
  * for each and record the physical to section mapping.
  */
+// 2014-12-27 시작;
 void __init sparse_init(void)
 {
 	unsigned long pnum;
@@ -559,7 +570,7 @@ void __init sparse_init(void)
 	unsigned long *usemap;
 	unsigned long **usemap_map;
 	int size;
-#ifdef CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER
+#ifdef CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER // 비활성화
 	int size2;
 	struct page **map_map;
 #endif
@@ -581,7 +592,7 @@ void __init sparse_init(void)
 	 * powerpc need to call sparse_init_one_section right after each
 	 * sparse_early_mem_map_alloc, so allocate usemap_map at first.
 	 */
-	size = sizeof(unsigned long *) * NR_MEM_SECTIONS;
+	size = sizeof(unsigned long *) * NR_MEM_SECTIONS; // 64 = 4 * 16;
 	usemap_map = alloc_bootmem(size);
 	if (!usemap_map)
 		panic("can not allocate usemap_map\n");
