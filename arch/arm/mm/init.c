@@ -460,6 +460,7 @@ void __init bootmem_init(void)
 	/*
 	 * sparse_init() needs the bootmem allocator up and running.
 	 */
+	// 2014-12-27, start
 	sparse_init();
 
 	/*
