@@ -47,7 +47,8 @@ int __ilog2_u64(u64 n)
  *  Determine whether some value is a power of two, where zero is
  * *not* considered a power of two.
  */
-
+//2의 배수 : 0x10 -> 0x0f, 0x100 -> 0x0ff ==> & 하면 무조건 0
+//그외 : 0x30 -> 0x2f, 0x123 -> 0x122 ==> &하면 not 0
 static inline __attribute__((const))
 bool is_power_of_2(unsigned long n)
 {

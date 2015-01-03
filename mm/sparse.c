@@ -255,8 +255,17 @@ unsigned long __init node_memmap_size_bytes(int nid, unsigned long start_pfn,
  * the identity pfn - section_mem_map will return the actual
  * physical page frame number.
  */
+// 2015-01-03
+/*
+ * sparse_encode_mem_map함수와 sparse_decode_mem_map함수를 같이 보도록한다.
+ * mem_section strcut에서 section_mem_map에 대한 주석을 보면
+ * 주소를 보호하기위 한 수단으로 아래와 같은 방법을 사용했다고한다.
+ * (예를 들어서 해킹과같은 이유로 멤버를 참조해서 직접 접근해서
+ * 알아낼 수 있으므로 이를 방지)
+ * */
 static unsigned long sparse_encode_mem_map(struct page *mem_map, unsigned long pnum)
 {
+	//sec : 0 1 2 3 , << 16  ==> 0x0 0x10000 0x20000 0x30000
 	return (unsigned long)(mem_map - (section_nr_to_pfn(pnum)));
 }
 
@@ -270,6 +279,7 @@ struct page *sparse_decode_mem_map(unsigned long coded_mem_map, unsigned long pn
 	return ((struct page *)coded_mem_map) + section_nr_to_pfn(pnum);
 }
 
+// 2015-01-03
 static int __meminit sparse_init_one_section(struct mem_section *ms,
 		unsigned long pnum, struct page *mem_map,
 		unsigned long *pageblock_bitmap)
@@ -277,6 +287,7 @@ static int __meminit sparse_init_one_section(struct mem_section *ms,
 	if (!present_section(ms))
 		return -EINVAL;
 
+	//하위 2비트만 가져옴
 	ms->section_mem_map &= ~SECTION_MAP_MASK;
 	ms->section_mem_map |= sparse_encode_mem_map(mem_map, pnum) |
 							SECTION_HAS_MEM_MAP;
@@ -288,6 +299,7 @@ static int __meminit sparse_init_one_section(struct mem_section *ms,
 unsigned long usemap_size(void)
 {
 	unsigned long size_bytes;
+	// (256) /8 = 32
 	size_bytes = roundup(SECTION_BLOCKFLAGS_BITS, 8) / 8;
 	size_bytes = roundup(size_bytes, sizeof(unsigned long));
 	return size_bytes;
@@ -300,7 +312,7 @@ static unsigned long *__kmalloc_section_usemap(void)
 }
 #endif /* CONFIG_MEMORY_HOTPLUG */
 
-#ifdef CONFIG_MEMORY_HOTREMOVE
+#ifdef CONFIG_MEMORY_HOTREMOVE // not set
 static unsigned long * __init
 sparse_early_usemaps_alloc_pgdat_section(struct pglist_data *pgdat,
 					 unsigned long size)
@@ -382,6 +394,15 @@ static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
 }
 #endif /* CONFIG_MEMORY_HOTREMOVE */
 
+/* 
+ * data = usemap, pnum_begin = nodeid를 처음으로 가진 ms
+ * pnum_end = nodeid를 마지막으로 가진 ms
+ * usemap_count = nodeid를 가진 ms 개수
+ */
+/*
+ * 1. usemap_map에 대한 전체 크기를 할당 (ms cnt * usemap_size)
+ * 2. 검색해놓은 ms에 할당한 usemap을 mapping
+ * */
 static void __init sparse_early_usemaps_alloc_node(void *data,
 				 unsigned long pnum_begin,
 				 unsigned long pnum_end,
@@ -390,7 +411,15 @@ static void __init sparse_early_usemaps_alloc_node(void *data,
 	void *usemap;
 	unsigned long pnum;
 	unsigned long **usemap_map = (unsigned long **)data;
-	int size = usemap_size();
+	/*
+	 * pageblock이란것은 하나당 1024개의 page를 관리한다.
+	 * pageblock은 코드를 따라가면 4bit로 표현된다는 것을 알 수 있고
+	 * section 1개가 256MB를 관리하므로 그에 대한 연산을 하면
+	 * section 1개당 64개의 pageblock을 사용해야하므로 이 pageblock을
+	 * 표현하기 위해산 pageblock1개의 크기 4bit * 64 = 32byte가 필요
+	 * 하다는 것을 알 수 있다.
+	 * */
+	int size = usemap_size(); // 32
 
 	usemap = sparse_early_usemaps_alloc_pgdat_section(NODE_DATA(nodeid),
 							  size * usemap_count);
@@ -404,20 +433,25 @@ static void __init sparse_early_usemaps_alloc_node(void *data,
 			continue;
 		usemap_map[pnum] = usemap;
 		usemap += size;
-		check_usemap_section_nr(nodeid, usemap_map[pnum]);
+		check_usemap_section_nr(nodeid, usemap_map[pnum]); //undef
 	}
 }
 
-#ifndef CONFIG_SPARSEMEM_VMEMMAP
+#ifndef CONFIG_SPARSEMEM_VMEMMAP // CONFIG_SPARSEMEM_VMEMMAP = n
+/*
+ * 섹션 한개가 관리하는 pages(64k 개)에 대한 정보들을 저장하기위한 
+ * page를 할당한다.
+ */
 struct page __init *sparse_mem_map_populate(unsigned long pnum, int nid)
 {
 	struct page *map;
 	unsigned long size;
 
+	//not set
 	map = alloc_remap(nid, sizeof(struct page) * PAGES_PER_SECTION);
 	if (map)
 		return map;
-
+	//
 	size = PAGE_ALIGN(sizeof(struct page) * PAGES_PER_SECTION);
 	map = __alloc_bootmem_node_high(NODE_DATA(nid), size,
 					 PAGE_SIZE, __pa(MAX_DMA_ADDRESS));
@@ -473,7 +507,7 @@ void __init sparse_mem_maps_populate_node(struct page **map_map,
 }
 #endif /* !CONFIG_SPARSEMEM_VMEMMAP */
 
-#ifdef CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER
+#ifdef CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER //not set
 static void __init sparse_early_mem_maps_alloc_node(void *data,
 				 unsigned long pnum_begin,
 				 unsigned long pnum_end,
@@ -511,6 +545,12 @@ void __attribute__((weak)) __meminit vmemmap_populate_print_last(void)
  */
 // 2014-12-27 흝어봄; map_count의 값과 nodeid_begin에 대해 특이사항이 있음;
 // alloc_usemap_and_memmap(sparse_early_usemaps_alloc_node, (void *)usemap_map);
+/*
+ * 1. present된 section을 찾음, nodeid 저장
+ * 2. present되잇으면서 같은 nodeid인것을 찾아
+ *	nodeid가 같으면 => mem cnt ++,
+ *	nodeid가 다르면 => 그 전에꺼까지의 메모리 할당, 1부터 다시시작
+ * */
 static void __init alloc_usemap_and_memmap(void (*alloc_func)
 					(void *, unsigned long, unsigned long,
 					unsigned long, int), void *data)
@@ -529,10 +569,18 @@ static void __init alloc_usemap_and_memmap(void (*alloc_func)
 		ms = __nr_to_section(pnum);
 		nodeid_begin = sparse_early_nid(ms);
 		//             ms->section_mem_map >> SECTION_NID_SHIFT
+		/*
+		 * 하위 2비트는 section_map에대한 속성을 나타내고, 3번비트는
+		 * nid를 의미한다.
+		 */
 		pnum_begin = pnum;
 		break;
 	}
 	map_count = 1;
+	/*
+	 * 1. present 된 ms를 먼저 찾는다.
+	 * 2. 같은 nodeid끼리를 묶어서 alloc_func를 실행한다. 
+	 * */
 	for (pnum = pnum_begin + 1; pnum < NR_MEM_SECTIONS; pnum++) {
 		struct mem_section *ms;
 		int nodeid;
@@ -563,6 +611,13 @@ static void __init alloc_usemap_and_memmap(void (*alloc_func)
  * for each and record the physical to section mapping.
  */
 // 2014-12-27 시작;
+/*
+ * 1. section갯수만큼의 필요한  usemap_map 생성
+ * 2. present된 ms에 대한 메모리 생성 및 usemap_map에 등록
+ * 3. section에 대한 usemap_map을
+ *	 각 section의 pageblock_flags에 등록 및 초기화
+ * 4. usemap_map 해제
+ * */
 void __init sparse_init(void)
 {
 	unsigned long pnum;
@@ -579,7 +634,7 @@ void __init sparse_init(void)
 	BUILD_BUG_ON(!is_power_of_2(sizeof(struct mem_section)));
 
 	/* Setup pageblock_order for HUGETLB_PAGE_SIZE_VARIABLE */
-	set_pageblock_order();
+	set_pageblock_order();//not define
 
 	/*
 	 * map is using big page (aka 2M in x86 64 bit)
@@ -592,6 +647,7 @@ void __init sparse_init(void)
 	 * powerpc need to call sparse_init_one_section right after each
 	 * sparse_early_mem_map_alloc, so allocate usemap_map at first.
 	 */
+	//section 개수는 총 16개.
 	size = sizeof(unsigned long *) * NR_MEM_SECTIONS; // 64 = 4 * 16;
 	usemap_map = alloc_bootmem(size);
 	if (!usemap_map)
@@ -599,7 +655,7 @@ void __init sparse_init(void)
 	alloc_usemap_and_memmap(sparse_early_usemaps_alloc_node,
 							(void *)usemap_map);
 
-#ifdef CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER
+#ifdef CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER //not set
 	size2 = sizeof(struct page *) * NR_MEM_SECTIONS;
 	map_map = alloc_bootmem(size2);
 	if (!map_map)
@@ -609,16 +665,18 @@ void __init sparse_init(void)
 #endif
 
 	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
+
 		if (!present_section_nr(pnum))
 			continue;
-
+		//present section은 null인지를 검사
 		usemap = usemap_map[pnum];
 		if (!usemap)
 			continue;
-
-#ifdef CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER
+#ifdef CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER //not set
 		map = map_map[pnum];
 #else
+		//null아니면 pum에 대한 section의 pages를 관리하기 위한
+		//page를 할당
 		map = sparse_early_mem_map_alloc(pnum);
 #endif
 		if (!map)
@@ -630,7 +688,7 @@ void __init sparse_init(void)
 
 	vmemmap_populate_print_last();
 
-#ifdef CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER
+#ifdef CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER //not set
 	free_bootmem(__pa(map_map), size2);
 #endif
 	free_bootmem(__pa(usemap_map), size);

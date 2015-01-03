@@ -175,7 +175,7 @@ int arch_update_cpu_topology(void);
 #endif
 #endif /* CONFIG_SCHED_BOOK */
 
-#ifdef CONFIG_USE_PERCPU_NUMA_NODE_ID
+#ifdef CONFIG_USE_PERCPU_NUMA_NODE_ID //not set
 DECLARE_PER_CPU(int, numa_node);
 
 #ifndef numa_node_id
@@ -211,6 +211,7 @@ static inline void set_cpu_numa_node(int cpu, int node)
 
 /* Returns the number of the current Node. */
 #ifndef numa_node_id
+//여기
 static inline int numa_node_id(void)
 {
 	return cpu_to_node(raw_smp_processor_id());
@@ -261,6 +262,7 @@ static inline void set_cpu_numa_mem(int cpu, int node)
 
 #ifndef numa_mem_id
 /* Returns the number of the nearest Node with memory */
+//여길탄다
 static inline int numa_mem_id(void)
 {
 	return numa_node_id();

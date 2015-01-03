@@ -1073,6 +1073,8 @@ static inline unsigned long early_pfn_to_nid(unsigned long pfn)
 #define PAGES_PER_SECTION       (1UL << PFN_SECTION_SHIFT)	// 0x0001_0000
 #define PAGE_SECTION_MASK	(~(PAGES_PER_SECTION-1))		// 0xFFFF_0000
 
+// pageblock_order = 10, PFN_SECTION_SHIFT = 16, NR_PAGEBLOCK_BITS = 4
+// (1 << (16 - 10) ) * 4 = 256(0x0100)
 #define SECTION_BLOCKFLAGS_BITS \
 	((1UL << (PFN_SECTION_SHIFT - pageblock_order)) * NR_PAGEBLOCK_BITS)
 
@@ -1083,6 +1085,7 @@ static inline unsigned long early_pfn_to_nid(unsigned long pfn)
 // PFN 값에서 상위 4비트로 섹션 구분
 // 페이지(page) 하나에 512개의 섹션(section)이 존재
 #define pfn_to_section_nr(pfn) ((pfn) >> PFN_SECTION_SHIFT)	// PFN_SECTION_SHIFT(16)
+//sec : 0 1 2 3 , << 16  ==> 0x0 0x10000 0x20000 0x30000
 #define section_nr_to_pfn(sec) ((sec) << PFN_SECTION_SHIFT)
 
 #define SECTION_ALIGN_UP(pfn)	(((pfn) + PAGES_PER_SECTION - 1) & PAGE_SECTION_MASK)

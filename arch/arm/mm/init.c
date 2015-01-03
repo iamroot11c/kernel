@@ -270,9 +270,11 @@ void __init setup_dma_zone(const struct machine_desc *mdesc)
 #endif
 }
 
+// 2015-01-03
 static void __init arm_bootmem_free(unsigned long min, unsigned long max_low,
 	unsigned long max_high)
 {
+	//ZONE_NORMAL, ZONE_HIGHMEM, ZONE_MOVABLE 이렇게 3개 존재
 	unsigned long zone_size[MAX_NR_ZONES], zhole_size[MAX_NR_ZONES];
 	struct memblock_region *reg;
 
@@ -304,7 +306,7 @@ static void __init arm_bootmem_free(unsigned long min, unsigned long max_low,
 			unsigned long low_end = min(end, max_low);
 			zhole_size[0] -= low_end - start;
 		}
-#ifdef CONFIG_HIGHMEM
+#ifdef CONFIG_HIGHMEM // set
 		if (end > max_low) {
 			unsigned long high_start = max(start, max_low);
 			zhole_size[ZONE_HIGHMEM] -= end - high_start;
@@ -312,7 +314,7 @@ static void __init arm_bootmem_free(unsigned long min, unsigned long max_low,
 #endif
 	}
 
-#ifdef CONFIG_ZONE_DMA
+#ifdef CONFIG_ZONE_DMA // not set
 	/*
 	 * Adjust the sizes according to any special requirements for
 	 * this machine type.
@@ -462,12 +464,14 @@ void __init bootmem_init(void)
 	 */
 	// 2014-12-27, start
 	sparse_init();
+	// 2015-01-03, end
 
 	/*
 	 * Now free the memory - free_area_init_node needs
 	 * the sparse mem_map arrays initialized by sparse_init()
 	 * for memmap_init_zone(), otherwise all PFNs are invalid.
 	 */
+	// 2015-01-03, start
 	arm_bootmem_free(min, max_low, max_high);
 
 	/*

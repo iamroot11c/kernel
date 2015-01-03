@@ -30,15 +30,15 @@ enum pageblock_bits {
 	PB_migrate,
 	PB_migrate_end = PB_migrate + 3 - 1,
 			/* 3 bits required for migrate types */
-#ifdef CONFIG_COMPACTION
+#ifdef CONFIG_COMPACTION // CONFIG_COMPACTION = y 
 	PB_migrate_skip,/* If set the block is skipped by compaction */
 #endif /* CONFIG_COMPACTION */
-	NR_PAGEBLOCK_BITS
+	NR_PAGEBLOCK_BITS // 4
 };
 
 #ifdef CONFIG_HUGETLB_PAGE
 
-#ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
+#ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE // not set
 
 /* Huge page sizes are variable */
 extern int pageblock_order;
@@ -53,7 +53,7 @@ extern int pageblock_order;
 #else /* CONFIG_HUGETLB_PAGE */
 
 /* If huge pages are not used, group by MAX_ORDER_NR_PAGES */
-#define pageblock_order		(MAX_ORDER-1)
+#define pageblock_order		(MAX_ORDER-1) // 11 - 1 = 10
 
 #endif /* CONFIG_HUGETLB_PAGE */
 

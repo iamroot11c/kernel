@@ -892,7 +892,7 @@ void * __init __alloc_bootmem_node(pg_data_t *pgdat, unsigned long size,
 void * __init __alloc_bootmem_node_high(pg_data_t *pgdat, unsigned long size,
 				   unsigned long align, unsigned long goal)
 {
-#ifdef MAX_DMA32_PFN
+#ifdef MAX_DMA32_PFN //not set
 	unsigned long end_pfn;
 
 	if (WARN_ON_ONCE(slab_is_available()))
