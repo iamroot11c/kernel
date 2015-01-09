@@ -11,7 +11,7 @@ typedef struct {
 	union {
 		u32 slock;
 		struct __raw_tickets {
-#ifdef __ARMEB__
+#ifdef __ARMEB__	// not set
 			u16 next;
 			u16 owner;
 #else
