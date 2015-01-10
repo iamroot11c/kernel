@@ -15,7 +15,7 @@
  * some arches have their own ways of determining the offset (x86_64, s390).
  */
 #ifndef __per_cpu_offset
-extern unsigned long __per_cpu_offset[NR_CPUS];
+extern unsigned long __per_cpu_offset[NR_CPUS]; // NR_CPUS = 2;
 
 #define per_cpu_offset(x) (__per_cpu_offset[x])
 #endif
@@ -42,6 +42,7 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
  */
 #ifndef SHIFT_PERCPU_PTR
 /* Weird cast keeps both GCC and sparse happy. */
+// 참고: http://egloos.zum.com/studyfoss/v/5375570
 #define SHIFT_PERCPU_PTR(__p, __offset)	({				\
 	__verify_pcpu_ptr((__p));					\
 	RELOC_HIDE((typeof(*(__p)) __kernel __force *)(__p), (__offset)); \

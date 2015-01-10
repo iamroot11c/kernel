@@ -212,6 +212,7 @@ static inline int zone_span_seqretry(struct zone *zone, unsigned iv)
 }
 static inline void zone_span_writelock(struct zone *zone) {}
 static inline void zone_span_writeunlock(struct zone *zone) {}
+// 2015-01-10
 static inline void zone_seqlock_init(struct zone *zone) {}
 
 static inline int mhp_notimplemented(const char *func)

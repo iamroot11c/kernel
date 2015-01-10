@@ -3727,6 +3727,8 @@ static void build_zonelist_cache(pg_data_t *pgdat)
  * Other parts of the kernel may not check if the zone is available.
  */
 static void setup_pageset(struct per_cpu_pageset *p, unsigned long batch);
+
+// struct per_cpu_pageset boot_pageset;
 static DEFINE_PER_CPU(struct per_cpu_pageset, boot_pageset);
 static void setup_zone_pageset(struct zone *zone);
 
@@ -4082,6 +4084,7 @@ static void __meminit zone_init_free_lists(struct zone *zone)
 	memmap_init_zone((size), (nid), (zone), (start_pfn), MEMMAP_EARLY)
 #endif
 
+// 2015-01-10
 static int __meminit zone_batchsize(struct zone *zone)
 {
 #ifdef CONFIG_MMU
@@ -4280,6 +4283,7 @@ int zone_wait_table_init(struct zone *zone, unsigned long zone_size_pages)
 	return 0;
 }
 
+// 2015-01-10
 static __meminit void zone_pcp_init(struct zone *zone)
 {
 	/*
@@ -4287,6 +4291,7 @@ static __meminit void zone_pcp_init(struct zone *zone)
 	 * relies on the ability of the linker to provide the
 	 * offset of a (static) per cpu variable into the per cpu area.
 	 */
+	// struct per_cpu_pageset boot_pageset;
 	zone->pageset = &boot_pageset;
 
 	if (zone->present_pages)
@@ -4590,6 +4595,7 @@ static unsigned long __meminit zone_absent_pages_in_node(int nid,
 
 #else /* CONFIG_HAVE_MEMBLOCK_NODE_MAP */ 
 // 2015-01-03
+// zone_spanned_pages_in_node(nid, j, node_start_pfn, node_end_pfn, zones_size);
 static inline unsigned long __meminit zone_spanned_pages_in_node(int nid,
 					unsigned long zone_type,
 					unsigned long node_start_pfn,
@@ -4600,6 +4606,7 @@ static inline unsigned long __meminit zone_spanned_pages_in_node(int nid,
 }
 
 // 2015-01-03
+// zone_absent_pages_in_node(nid, j, node_start_pfn, node_end_pfn, zholes_size);
 static inline unsigned long __meminit zone_absent_pages_in_node(int nid,
 						unsigned long zone_type,
 						unsigned long node_start_pfn,
@@ -4723,6 +4730,8 @@ void __paginginit set_pageblock_order(void)
 
 #endif /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
 
+// 2015-01-10
+// calc_memmap_size(zones_size[j], (size - zholes_size[j]));
 static unsigned long __paginginit calc_memmap_size(unsigned long spanned_pages,
 						   unsigned long present_pages)
 {
@@ -4736,6 +4745,7 @@ static unsigned long __paginginit calc_memmap_size(unsigned long spanned_pages,
 	 * populated regions may not naturally algined on page boundary.
 	 * So the (present_pages >> 4) heuristic is a tradeoff for that.
 	 */
+	// zones_size[j] > ((size - zholes_size[j]) + ((size - zholes_size[j]) >> 4))
 	if (spanned_pages > present_pages + (present_pages >> 4) &&
 	    IS_ENABLED(CONFIG_SPARSEMEM))
 		pages = present_pages;
@@ -4775,14 +4785,19 @@ static void __paginginit free_area_init_core(struct pglist_data *pgdat,
 	init_waitqueue_head(&pgdat->kswapd_wait);
 	init_waitqueue_head(&pgdat->pfmemalloc_wait);
 	// 2015-01-03 여기까지
-	pgdat_page_cgroup_init(pgdat);
+	
+	// 2015-01-10 시작
+	pgdat_page_cgroup_init(pgdat); // 아무 일도 하지 않음
 
 	for (j = 0; j < MAX_NR_ZONES; j++) {
 		struct zone *zone = pgdat->node_zones + j;
 		unsigned long size, realsize, freesize, memmap_pages;
 
+		// size = zones_size[j]
 		size = zone_spanned_pages_in_node(nid, j, node_start_pfn,
 						  node_end_pfn, zones_size);
+
+		// realsize = freesize = size - zholes_size[j];
 		realsize = freesize = size - zone_absent_pages_in_node(nid, j,
 								node_start_pfn,
 								node_end_pfn,
@@ -4793,8 +4808,9 @@ static void __paginginit free_area_init_core(struct pglist_data *pgdat,
 		 * is used by this zone for memmap. This affects the watermark
 		 * and per-cpu initialisations
 		 */
+		// 함수가 호출되기 전 넘어온 인자에 대해 분석을 해야 알 수 있을것 같음
 		memmap_pages = calc_memmap_size(size, realsize);
-		if (freesize >= memmap_pages) {
+		if (freesize >= memmap_pages) { 
 			freesize -= memmap_pages;
 			if (memmap_pages)
 				printk(KERN_DEBUG
@@ -4806,16 +4822,19 @@ static void __paginginit free_area_init_core(struct pglist_data *pgdat,
 				zone_names[j], memmap_pages, freesize);
 
 		/* Account for reserved pages */
+		// set_dma_reserve() 함수에서  dma_reserve 전역변수를 설정하며
+		// 이 함수는 사용되지 않으나 다른 아키텍처에서는 사용
 		if (j == 0 && freesize > dma_reserve) {
 			freesize -= dma_reserve;
 			printk(KERN_DEBUG "  %s zone: %lu pages reserved\n",
 					zone_names[0], dma_reserve);
 		}
 
+		// 하이 메모리가 아닐때만 nr_kernel_pages를 수정
 		if (!is_highmem_idx(j))
 			nr_kernel_pages += freesize;
 		/* Charge for highmem memmap if there are enough kernel pages */
-		else if (nr_kernel_pages > memmap_pages * 2)
+		else if (nr_kernel_pages > memmap_pages * 2) // 2를 곱함?
 			nr_kernel_pages -= memmap_pages;
 		nr_all_pages += freesize;
 
@@ -4836,12 +4855,16 @@ static void __paginginit free_area_init_core(struct pglist_data *pgdat,
 		zone->name = zone_names[j];
 		spin_lock_init(&zone->lock);
 		spin_lock_init(&zone->lru_lock);
-		zone_seqlock_init(zone);
+		zone_seqlock_init(zone); // CONFIG_MEMORY_HOTPLUG 미 설정으로
+		                         // 아무작업도 안함
 		zone->zone_pgdat = pgdat;
+		
+		// struct per_cpu_pageset boot_pageset 전역변수의 포인터를 얻음
 		zone_pcp_init(zone);
 
 		/* For bootup, initialized properly in watermark setup */
 		mod_zone_page_state(zone, NR_ALLOC_BATCH, zone->managed_pages);
+		// 2015-01-10 여기까지;
 
 		lruvec_init(&zone->lruvec);
 		if (!size)

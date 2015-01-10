@@ -27,6 +27,12 @@
  * 0 otherwise.
  *
  */
+// CONFIG_SPARSEMEM
+// __config_enabled(__ARG_PLACEHOLDER_1 1, 0)
+// ___config_enabled(0, 1, 0)
+
+// __config_enabled(__ARG_PLACEHOLDER_0 1, 0)
+// ___config_enabled(1, 0)
 #define IS_ENABLED(option) \
 	(config_enabled(option) || config_enabled(option##_MODULE))
 

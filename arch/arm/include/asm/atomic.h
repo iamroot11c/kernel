@@ -298,18 +298,20 @@ static inline void atomic64_set(atomic64_t *v, u64 i)
 }
 #endif
 
+// 2015-01-10
 static inline void atomic64_add(u64 i, atomic64_t *v)
 {
 	u64 result;
 	unsigned long tmp;
 
 	__asm__ __volatile__("@ atomic64_add\n"
-"1:	ldrexd	%0, %H0, [%3]\n"
-"	adds	%0, %0, %4\n"
-"	adc	%H0, %H0, %H4\n"
-"	strexd	%1, %0, %H0, [%3]\n"
-"	teq	%1, #0\n"
-"	bne	1b"
+"1:	ldrexd	%0, %H0, [%3]\n" @// result = v->counter;
+"	adds	%0, %0, %4\n"    @// result += i; // 하위 32비트
+"	adc	%H0, %H0, %H4\n"     @// result += i; // 상위 32비트, 캐리 발생
+"	strexd	%1, %0, %H0, [%3]\n" @// v->count = result;
+""                               @// strex 명령어를 실행하면 tmp에 결과를 저장(성공은 0)
+"	teq	%1, #0\n"                @// tmp가 0인지 검사)
+"	bne	1b"                      @// 저장이 실패하면 다시 시도
 	: "=&r" (result), "=&r" (tmp), "+Qo" (v->counter)
 	: "r" (&v->counter), "r" (i)
 	: "cc");

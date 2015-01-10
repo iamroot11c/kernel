@@ -172,6 +172,12 @@ extern phys_addr_t per_cpu_ptr_to_phys(void *addr);
 
 extern void __bad_size_call_parameter(void);
 
+// 2015-01-10 
+// __this_cpu_read_ 
+// stem__this_cpu_read_1
+// stem__this_cpu_read_2
+// stem__this_cpu_read_4
+// stem__this_cpu_read_8
 #define __pcpu_size_call_return(stem, variable)				\
 ({	typeof(variable) pscr_ret__;					\
 	__verify_pcpu_ptr(&(variable));					\

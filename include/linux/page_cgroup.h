@@ -85,6 +85,7 @@ static inline void unlock_page_cgroup(struct page_cgroup *pc)
 #else /* CONFIG_MEMCG */
 struct page_cgroup;
 
+// 2015-01-10;
 static inline void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat)
 {
 }

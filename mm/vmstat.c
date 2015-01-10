@@ -209,6 +209,8 @@ void set_pgdat_percpu_threshold(pg_data_t *pgdat,
 /*
  * For use when we know that interrupts are disabled.
  */
+// 2015-01-10
+// __mod_zone_page_state(zone, NR_ALLOC_BATCH/*1*/, zone->managed_pages)
 void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
 				int delta)
 {
@@ -219,12 +221,17 @@ void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
 
 	x = delta + __this_cpu_read(*p);
 
+	// cpu마다 데이터가 존재할 수 있으며 사용하는 cpu를 찾아서
+	// 값을 읽어옴
+	// 참고: http://egloos.zum.com/studyfoss/v/5375570
 	t = __this_cpu_read(pcp->stat_threshold);
 
 	if (unlikely(x > t || x < -t)) {
 		zone_page_state_add(x, zone, item);
 		x = 0;
 	}
+	
+	// *p = x;
 	__this_cpu_write(*p, x);
 }
 EXPORT_SYMBOL(__mod_zone_page_state);
@@ -370,18 +377,20 @@ void dec_zone_page_state(struct page *page, enum zone_stat_item item)
 	mod_state(page_zone(page), item, -1, -1);
 }
 EXPORT_SYMBOL(dec_zone_page_state);
-#else
+#else // CONFIG_HAVE_CMPXCHG_LOCAL not defined 
 /*
  * Use interrupt disable to serialize counter updates
  */
+// 2015-01-10
+// mod_zone_page_state(zone, NR_ALLOC_BATCH, zone->managed_pages);
 void mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
 					int delta)
 {
 	unsigned long flags;
 
-	local_irq_save(flags);
+	local_irq_save(flags); // 인터럽트 중지
 	__mod_zone_page_state(zone, item, delta);
-	local_irq_restore(flags);
+	local_irq_restore(flags); // 인터럽트 해제
 }
 EXPORT_SYMBOL(mod_zone_page_state);
 
