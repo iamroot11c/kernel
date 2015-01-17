@@ -592,20 +592,20 @@ static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
  */
 
 /* Page flags: | [SECTION] | [NODE] | ZONE | [LAST_NID] | ... | FLAGS | */
-#define SECTIONS_PGOFF		((sizeof(unsigned long)*8) - SECTIONS_WIDTH)
-#define NODES_PGOFF		(SECTIONS_PGOFF - NODES_WIDTH)
-#define ZONES_PGOFF		(NODES_PGOFF - ZONES_WIDTH)
-#define LAST_NID_PGOFF		(ZONES_PGOFF - LAST_NID_WIDTH)
+#define SECTIONS_PGOFF		((sizeof(unsigned long)*8) - SECTIONS_WIDTH)    // 32 - 4 = 28
+#define NODES_PGOFF		(SECTIONS_PGOFF - NODES_WIDTH/*0*/)  // 28 - 0 = 28
+#define ZONES_PGOFF		(NODES_PGOFF - ZONES_WIDTH)     // 28 - 2 = 26
+#define LAST_NID_PGOFF		(ZONES_PGOFF - LAST_NID_WIDTH) // (26 - 0) = 26
 
 /*
  * Define the bit shifts to access each section.  For non-existent
  * sections we define the shift as 0; that plus a 0 mask ensures
  * the compiler will optimise away reference to them.
  */
-#define SECTIONS_PGSHIFT	(SECTIONS_PGOFF * (SECTIONS_WIDTH != 0))
-#define NODES_PGSHIFT		(NODES_PGOFF * (NODES_WIDTH != 0))
-#define ZONES_PGSHIFT		(ZONES_PGOFF * (ZONES_WIDTH != 0))
-#define LAST_NID_PGSHIFT	(LAST_NID_PGOFF * (LAST_NID_WIDTH != 0))
+#define SECTIONS_PGSHIFT	(SECTIONS_PGOFF * (SECTIONS_WIDTH != 0)) // 28 * 1 == 28
+#define NODES_PGSHIFT		(NODES_PGOFF * (NODES_WIDTH != 0))  // 28 * 0 == 0
+#define ZONES_PGSHIFT		(ZONES_PGOFF * (ZONES_WIDTH != 0))  // 26 * 1 == 26
+#define LAST_NID_PGSHIFT	(LAST_NID_PGOFF * (LAST_NID_WIDTH != 0)) // 26 * 0 == 0
 
 /* NODE:ZONE or SECTION:ZONE is used to ID a zone for the buddy allocator */
 #ifdef NODE_NOT_IN_PAGE_FLAGS
@@ -624,9 +624,9 @@ static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
 #error SECTIONS_WIDTH+NODES_WIDTH+ZONES_WIDTH > BITS_PER_LONG - NR_PAGEFLAGS
 #endif
 
-#define ZONES_MASK		((1UL << ZONES_WIDTH) - 1)
-#define NODES_MASK		((1UL << NODES_WIDTH) - 1)
-#define SECTIONS_MASK		((1UL << SECTIONS_WIDTH) - 1)
+#define ZONES_MASK		((1UL << ZONES_WIDTH) - 1) // ((1<<2)-1) == 0b11
+#define NODES_MASK		((1UL << NODES_WIDTH) - 1) // ((1<<0)-1) == 0
+#define SECTIONS_MASK		((1UL << SECTIONS_WIDTH) - 1) // ((1<<4)-1) == 0b1111
 #define LAST_NID_MASK		((1UL << LAST_NID_WIDTH) - 1)
 #define ZONEID_MASK		((1UL << ZONEID_SHIFT) - 1)
 
@@ -636,7 +636,7 @@ static inline enum zone_type page_zonenum(const struct page *page)
 }
 
 #if defined(CONFIG_SPARSEMEM) && !defined(CONFIG_SPARSEMEM_VMEMMAP)
-#define SECTION_IN_PAGE_FLAGS
+#define SECTION_IN_PAGE_FLAGS   // set
 #endif
 
 /*
@@ -670,7 +670,7 @@ static inline int page_to_nid(const struct page *page)
 }
 #endif
 
-#ifdef CONFIG_NUMA_BALANCING
+#ifdef CONFIG_NUMA_BALANCING // not set
 #ifdef LAST_NID_NOT_IN_PAGE_FLAGS
 static inline int page_nid_xchg_last(struct page *page, int nid)
 {
@@ -695,7 +695,7 @@ extern int page_nid_xchg_last(struct page *page, int nid);
 
 static inline void page_nid_reset_last(struct page *page)
 {
-	int nid = (1 << LAST_NID_SHIFT) - 1;
+	int nid = (1 << LAST_NID_SHIFT/*0*/) - 1;
 
 	page->flags &= ~(LAST_NID_MASK << LAST_NID_PGSHIFT);
 	page->flags |= (nid & LAST_NID_MASK) << LAST_NID_PGSHIFT;
@@ -712,6 +712,7 @@ static inline int page_nid_last(struct page *page)
 	return page_to_nid(page);
 }
 
+// 2015-01-17
 static inline void page_nid_reset_last(struct page *page)
 {
 }
@@ -722,10 +723,12 @@ static inline struct zone *page_zone(const struct page *page)
 	return &NODE_DATA(page_to_nid(page))->node_zones[page_zonenum(page)];
 }
 
-#ifdef SECTION_IN_PAGE_FLAGS
+#ifdef SECTION_IN_PAGE_FLAGS // set
 static inline void set_page_section(struct page *page, unsigned long section)
 {
-	page->flags &= ~(SECTIONS_MASK << SECTIONS_PGSHIFT);
+    // 이전값 clear
+	page->flags &= ~(SECTIONS_MASK/*0b1111*/ << SECTIONS_PGSHIFT/*28*/);
+    // value set
 	page->flags |= (section & SECTIONS_MASK) << SECTIONS_PGSHIFT;
 }
 
@@ -735,24 +738,29 @@ static inline unsigned long page_to_section(const struct page *page)
 }
 #endif
 
+// 2015-01-17
 static inline void set_page_zone(struct page *page, enum zone_type zone)
 {
-	page->flags &= ~(ZONES_MASK << ZONES_PGSHIFT);
+    // 설정하기 전, clear
+	page->flags &= ~(ZONES_MASK << ZONES_PGSHIFT/* 26 */); // ~(0x03 << )
 	page->flags |= (zone & ZONES_MASK) << ZONES_PGSHIFT;
 }
 
 static inline void set_page_node(struct page *page, unsigned long node)
 {
-	page->flags &= ~(NODES_MASK << NODES_PGSHIFT);
-	page->flags |= (node & NODES_MASK) << NODES_PGSHIFT;
+	page->flags &= ~(NODES_MASK << NODES_PGSHIFT/*0*/);
+	page->flags |= (node & NODES_MASK) << NODES_PGSHIFT; // 0
 }
 
+// 2015-01-17
 static inline void set_page_links(struct page *page, enum zone_type zone,
 	unsigned long node, unsigned long pfn)
 {
+    // page->flags는 node, section, zone등에 대한 layout을 가지고 있으며,
+    // 이를 셋팅한다.
 	set_page_zone(page, zone);
 	set_page_node(page, node);
-#ifdef SECTION_IN_PAGE_FLAGS
+#ifdef SECTION_IN_PAGE_FLAGS    // set
 	set_page_section(page, pfn_to_section_nr(pfn));
 #endif
 }

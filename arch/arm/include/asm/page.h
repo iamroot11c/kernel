@@ -156,7 +156,7 @@ extern void copy_page(void *to, const void *from);
 
 typedef struct page *pgtable_t;
 
-#ifdef CONFIG_HAVE_ARCH_PFN_VALID
+#ifdef CONFIG_HAVE_ARCH_PFN_VALID // true
 extern int pfn_valid(unsigned long);
 #endif
 

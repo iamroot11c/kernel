@@ -262,6 +262,9 @@ static inline int constant_fls(int x)
  * the clz instruction for much better code efficiency.
  */
 
+// 2015-01-17
+// x : 4096 -> return 13;
+// 처음으로 1이 나온 비트 number를 리턴
 static inline int fls(int x)
 {
 	int ret;
@@ -277,6 +280,8 @@ static inline int fls(int x)
 #define __fls(x) (fls(x) - 1)
 #define ffs(x) ({ unsigned long __t = (x); fls(__t & -__t); })
 #define __ffs(x) (ffs(x) - 1)
+// find first zero
+// 첫번째 1이 나오기까지 0의 개수를 구함
 #define ffz(x) __ffs( ~(x) )
 
 #endif

@@ -25,12 +25,12 @@
 /*
  * supports 3 memory models.
  */
-#if defined(CONFIG_FLATMEM)
+#if defined(CONFIG_FLATMEM) // not set
 
 #define __pfn_to_page(pfn)	(mem_map + ((pfn) - ARCH_PFN_OFFSET))
 #define __page_to_pfn(page)	((unsigned long)((page) - mem_map) + \
 				 ARCH_PFN_OFFSET)
-#elif defined(CONFIG_DISCONTIGMEM)
+#elif defined(CONFIG_DISCONTIGMEM)  // not set
 
 #define __pfn_to_page(pfn)			\
 ({	unsigned long __pfn = (pfn);		\
@@ -45,13 +45,13 @@
 	 __pgdat->node_start_pfn;					\
 })
 
-#elif defined(CONFIG_SPARSEMEM_VMEMMAP)
+#elif defined(CONFIG_SPARSEMEM_VMEMMAP) // not set
 
 /* memmap is virtually contiguous.  */
 #define __pfn_to_page(pfn)	(vmemmap + (pfn))
 #define __page_to_pfn(page)	(unsigned long)((page) - vmemmap)
 
-#elif defined(CONFIG_SPARSEMEM)
+#elif defined(CONFIG_SPARSEMEM) // set
 /*
  * Note: section's mem_map is encorded to reflect its start_pfn.
  * section[i].section_mem_map == mem_map's address - start_pfn;

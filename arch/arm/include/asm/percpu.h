@@ -27,9 +27,11 @@ static inline void set_my_cpu_offset(unsigned long off)
 	asm volatile("mcr p15, 0, %0, c13, c0, 4" : : "r" (off) : "memory");
 }
 
+// 2015-01-17
 static inline unsigned long __my_cpu_offset(void)
 {
 	unsigned long off;
+    // 쉽게 생각해서, cache된 값을 읽어 오기위해서, sp를 이용함.
 	register unsigned long *sp asm ("sp");
 
 	/*

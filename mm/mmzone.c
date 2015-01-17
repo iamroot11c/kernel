@@ -87,6 +87,8 @@ int memmap_valid_within(unsigned long pfn,
 }
 #endif /* CONFIG_ARCH_HAS_HOLES_MEMORYMODEL */
 
+// 2015-01-17
+// 구조체 0초기화, list-head 초기화
 void lruvec_init(struct lruvec *lruvec)
 {
 	enum lru_list lru;

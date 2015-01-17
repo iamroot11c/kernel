@@ -286,7 +286,7 @@ enum mminit_level {
 	MMINIT_TRACE
 };
 
-#ifdef CONFIG_DEBUG_MEMORY_INIT
+#ifdef CONFIG_DEBUG_MEMORY_INIT // set
 
 extern int mminit_loglevel;
 

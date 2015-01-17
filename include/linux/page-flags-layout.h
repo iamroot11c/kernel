@@ -56,7 +56,7 @@
 
 #if SECTIONS_WIDTH+ZONES_WIDTH+NODES_SHIFT <= BITS_PER_LONG - NR_PAGEFLAGS
 //  6(4 + 2 + 0) <= 11(32 - 21)
-#define NODES_WIDTH		NODES_SHIFT
+#define NODES_WIDTH		NODES_SHIFT // 0
 #else
 #ifdef CONFIG_SPARSEMEM_VMEMMAP
 #error "Vmemmap: No space for nodes field in page flags"
@@ -64,7 +64,7 @@
 #define NODES_WIDTH		0
 #endif
 
-#ifdef CONFIG_NUMA_BALANCING
+#ifdef CONFIG_NUMA_BALANCING // not set
 #define LAST_NID_SHIFT NODES_SHIFT
 #else
 #define LAST_NID_SHIFT 0
@@ -84,7 +84,7 @@
 #define NODE_NOT_IN_PAGE_FLAGS // 정의 안함
 #endif
 
-#if defined(CONFIG_NUMA_BALANCING) && LAST_NID_WIDTH == 0
+#if defined(CONFIG_NUMA_BALANCING) && LAST_NID_WIDTH == 0 // not set
 #define LAST_NID_NOT_IN_PAGE_FLAGS
 #endif
 

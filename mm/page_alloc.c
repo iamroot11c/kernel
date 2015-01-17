@@ -3853,12 +3853,12 @@ void __ref build_all_zonelists(pg_data_t *pgdat, struct zone *zone)
  */
 #define PAGES_PER_WAITQUEUE	256
 
-#ifndef CONFIG_MEMORY_HOTPLUG
+#ifndef CONFIG_MEMORY_HOTPLUG	// not set
 static inline unsigned long wait_table_hash_nr_entries(unsigned long pages)
 {
 	unsigned long size = 1;
 
-	pages /= PAGES_PER_WAITQUEUE;
+	pages /= PAGES_PER_WAITQUEUE; // 256으로 나눈다.
 
 	while (size < pages)
 		size <<= 1;
@@ -3869,7 +3869,8 @@ static inline unsigned long wait_table_hash_nr_entries(unsigned long pages)
 	 * Limit the size of the wait table to a reasonable size.
 	 */
 	size = min(size, 4096UL);
-
+	
+	// 4 ~ 4096 사이의 값을 리턴
 	return max(size, 4UL);
 }
 #else
@@ -3903,7 +3904,8 @@ static inline unsigned long wait_table_hash_nr_entries(unsigned long pages)
  */
 static inline unsigned long wait_table_bits(unsigned long size)
 {
-	return ffz(~size);
+	// ffz : find first zero?
+	return ffz(~size); // 4096인 경우, 13
 }
 
 #define LONG_ALIGN(x) (((x)+(sizeof(long))-1)&~((sizeof(long))-1))
@@ -4011,6 +4013,8 @@ static void setup_zone_migrate_reserve(struct zone *zone)
  * up by free_all_bootmem() once the early boot process is
  * done. Non-atomic initialization, single-pass.
  */
+// 2015-01-17
+// context : MEMMAP_EARLY
 void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
 		unsigned long start_pfn, enum memmap_context context)
 {
@@ -4029,19 +4033,30 @@ void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
 		 * handed to this function.  They do not
 		 * exist on hotplugged memory.
 		 */
+		// 2015-01-17
+		// memory block이 등록된 경우만, MEMMAP_EARLY를 사용할 수 있다.
 		if (context == MEMMAP_EARLY) {
 			if (!early_pfn_valid(pfn))
 				continue;
 			if (!early_pfn_in_nid(pfn, nid))
 				continue;
 		}
+
+		// get page pointer
 		page = pfn_to_page(pfn);
+		// page->flags setting
 		set_page_links(page, zone, nid, pfn);
+		// page->flags를 이용해서 verify
 		mminit_verify_page_links(page, zone, nid, pfn);
+		// page->_count의 초기값은 1이다.
 		init_page_count(page);
+		// page->_mapcount 초기값은 -1
 		page_mapcount_reset(page);
+		// do nothing
 		page_nid_reset_last(page);
+		// reserve flag setting
 		SetPageReserved(page);
+		// 2015-01-17, 여기까지
 		/*
 		 * Mark the block movable so that blocks are reserved for
 		 * movable at startup. This will force kernel allocations
@@ -4070,6 +4085,9 @@ void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
 	}
 }
 
+// 2015-01-17
+// zone->free_area 초기화, 2중 loop를 이용해서
+// nr_free의 의미가 무엇일까? 초기화시에는 0으로 한다.
 static void __meminit zone_init_free_lists(struct zone *zone)
 {
 	int order, t;
@@ -4240,6 +4258,7 @@ void __init setup_per_cpu_pageset(void)
 		setup_zone_pageset(zone);
 }
 
+// 2015-01-17
 static noinline __init_refok
 int zone_wait_table_init(struct zone *zone, unsigned long zone_size_pages)
 {
@@ -4251,14 +4270,21 @@ int zone_wait_table_init(struct zone *zone, unsigned long zone_size_pages)
 	 * The per-page waitqueue mechanism uses hashed waitqueues
 	 * per zone.
 	 */
+	// 4 ~ 4096 사이의 값이 리턴될 것이다.
 	zone->wait_table_hash_nr_entries =
 		 wait_table_hash_nr_entries(zone_size_pages);
+	// entry 값이 4096으로 가정.
+	// 13값을 가지고 있을 것이다.
 	zone->wait_table_bits =
 		wait_table_bits(zone->wait_table_hash_nr_entries);
+	// entry 한개당, wait_queue_head_t를 관리
 	alloc_size = zone->wait_table_hash_nr_entries
 					* sizeof(wait_queue_head_t);
 
+	// slab 비활성 상태에서는 vmalloc을 사용할 수 없기때문에,
+	// boot memory로 부터 할당받는 것이다.
 	if (!slab_is_available()) {
+		// 2015-01-17
 		zone->wait_table = (wait_queue_head_t *)
 			alloc_bootmem_node_nopanic(pgdat, alloc_size);
 	} else {
@@ -4277,6 +4303,7 @@ int zone_wait_table_init(struct zone *zone, unsigned long zone_size_pages)
 	if (!zone->wait_table)
 		return -ENOMEM;
 
+	// init waitqueue_head
 	for (i = 0; i < zone->wait_table_hash_nr_entries; ++i)
 		init_waitqueue_head(zone->wait_table + i);
 
@@ -4300,6 +4327,8 @@ static __meminit void zone_pcp_init(struct zone *zone)
 					 zone_batchsize(zone));
 }
 
+// 2015-01-17
+// context = MEMMAP_EARLY
 int __meminit init_currently_empty_zone(struct zone *zone,
 					unsigned long zone_start_pfn,
 					unsigned long size,
@@ -4307,11 +4336,15 @@ int __meminit init_currently_empty_zone(struct zone *zone,
 {
 	struct pglist_data *pgdat = zone->zone_pgdat;
 	int ret;
+	// wait queue 메모리 할당
 	ret = zone_wait_table_init(zone, size);
 	if (ret)
 		return ret;
+
+	// pgdat의 nr_zones를 업데이트
 	pgdat->nr_zones = zone_idx(zone) + 1;
 
+	// start_pfn 설정
 	zone->zone_start_pfn = zone_start_pfn;
 
 	mminit_dprintk(MMINIT_TRACE, "memmap_init",
@@ -4320,6 +4353,7 @@ int __meminit init_currently_empty_zone(struct zone *zone,
 			(unsigned long)zone_idx(zone),
 			zone_start_pfn, (zone_start_pfn + size));
 
+	// zone->free_area 초기화
 	zone_init_free_lists(zone);
 
 	return 0;
@@ -4662,19 +4696,26 @@ static void __meminit calculate_node_totalpages(struct pglist_data *pgdat,
  * round what is now in bits to nearest long in bits, then return it in
  * bytes.
  */
+// 2015-01-17
+// TO DO: iamroot 분석 내용 추가할 것.
 static unsigned long __init usemap_size(unsigned long zone_start_pfn, unsigned long zonesize)
 {
 	unsigned long usemapsize;
 
-	zonesize += zone_start_pfn & (pageblock_nr_pages-1);
+	zonesize += zone_start_pfn & (pageblock_nr_pages-1);	// pageblock_nr_pages(1024)
 	usemapsize = roundup(zonesize, pageblock_nr_pages);
 	usemapsize = usemapsize >> pageblock_order;
-	usemapsize *= NR_PAGEBLOCK_BITS;
+	usemapsize *= NR_PAGEBLOCK_BITS;	// *= 4;
 	usemapsize = roundup(usemapsize, 8 * sizeof(unsigned long));
-
-	return usemapsize / 8;
+        
+	// 1. 의견: return 값은, zone에서 메모리 관리를 위한 비트맵 크기를 의미하는 것이다?
+	// 2. 의견: zone size는 8K단위로 값이 다르게 리턴될 것이다.
+	// 이 애기는, 4, 8, 16, 32 ... 이러한 단위로 리턴될 것이고...
+	return usemapsize / 8;	// bytes
 }
 
+// 2015-01-17
+// zone의 pageblock_flags에 usemapsize만큼 boot memory를 할당하여 저장
 static void __init setup_usemap(struct pglist_data *pgdat,
 				struct zone *zone,
 				unsigned long zone_start_pfn,
@@ -4682,6 +4723,8 @@ static void __init setup_usemap(struct pglist_data *pgdat,
 {
 	unsigned long usemapsize = usemap_size(zone_start_pfn, zonesize);
 	zone->pageblock_flags = NULL;
+
+	// pageblock_flags은 boot memory에서 할당 받은 메모리를 가리킨다. 
 	if (usemapsize)
 		zone->pageblock_flags = alloc_bootmem_node_nopanic(pgdat,
 								   usemapsize);
@@ -4691,7 +4734,7 @@ static inline void setup_usemap(struct pglist_data *pgdat, struct zone *zone,
 				unsigned long zone_start_pfn, unsigned long zonesize) {}
 #endif /* CONFIG_SPARSEMEM */
 
-#ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
+#ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE // not set
 
 /* Initialise the number of pages represented by NR_PAGEBLOCK_BITS */
 void __paginginit set_pageblock_order(void)
@@ -4866,15 +4909,22 @@ static void __paginginit free_area_init_core(struct pglist_data *pgdat,
 		mod_zone_page_state(zone, NR_ALLOC_BATCH, zone->managed_pages);
 		// 2015-01-10 여기까지;
 
+		// 2015-01-17, start
 		lruvec_init(&zone->lruvec);
 		if (!size)
 			continue;
 
+		// 2015-01-17, do nothing
 		set_pageblock_order();
+		// zone->pageblock_flags 설정
 		setup_usemap(pgdat, zone, zone_start_pfn, size);
+
+		// 2015-01-17, start
 		ret = init_currently_empty_zone(zone, zone_start_pfn,
 						size, MEMMAP_EARLY);
+		// 2015-01-17, end
 		BUG_ON(ret);
+		// 2015-01-17, start
 		memmap_init(size, nid, j, zone_start_pfn);
 		zone_start_pfn += size;
 	}

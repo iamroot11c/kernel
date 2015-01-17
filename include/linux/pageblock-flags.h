@@ -36,7 +36,7 @@ enum pageblock_bits {
 	NR_PAGEBLOCK_BITS // 4
 };
 
-#ifdef CONFIG_HUGETLB_PAGE
+#ifdef CONFIG_HUGETLB_PAGE  // not set
 
 #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE // not set
 
@@ -57,7 +57,7 @@ extern int pageblock_order;
 
 #endif /* CONFIG_HUGETLB_PAGE */
 
-#define pageblock_nr_pages	(1UL << pageblock_order)
+#define pageblock_nr_pages	(1UL << pageblock_order) // 1 << 10, 1024
 
 /* Forward declaration */
 struct page;

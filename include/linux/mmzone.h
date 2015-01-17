@@ -23,7 +23,7 @@
 #ifndef CONFIG_FORCE_MAX_ZONEORDER
 #define MAX_ORDER 11
 #else
-#define MAX_ORDER CONFIG_FORCE_MAX_ZONEORDER
+#define MAX_ORDER CONFIG_FORCE_MAX_ZONEORDER // 11
 #endif
 #define MAX_ORDER_NR_PAGES (1 << (MAX_ORDER - 1))
 
@@ -41,7 +41,7 @@ enum {
 	MIGRATE_MOVABLE,
 	MIGRATE_PCPTYPES,	/* the number of types on the pcp lists */
 	MIGRATE_RESERVE = MIGRATE_PCPTYPES,
-#ifdef CONFIG_CMA
+#ifdef CONFIG_CMA // not set
 	/*
 	 * MIGRATE_CMA migration type is designed to mimic the way
 	 * ZONE_MOVABLE works.  Only movable pages can be allocated
@@ -57,10 +57,10 @@ enum {
 	 */
 	MIGRATE_CMA,
 #endif
-#ifdef CONFIG_MEMORY_ISOLATION
+#ifdef CONFIG_MEMORY_ISOLATION // not set
 	MIGRATE_ISOLATE,	/* can't allocate from here */
 #endif
-	MIGRATE_TYPES
+	MIGRATE_TYPES   // 4
 };
 
 #ifdef CONFIG_CMA
@@ -69,6 +69,9 @@ enum {
 #  define is_migrate_cma(migratetype) false
 #endif
 
+// 2015-01-17
+// MAX_ORDER 11
+// MIGRATE_TYPES 4
 #define for_each_migratetype_order(order, type) \
 	for (order = 0; order < MAX_ORDER; order++) \
 		for (type = 0; type < MIGRATE_TYPES; type++)
@@ -196,6 +199,7 @@ struct zone_reclaim_stat {
 	 *
 	 * The anon LRU stats live in [0], file LRU stats in [1]
 	 */
+    // anon - 추측컨데, anonymous, : file LRU state와 반대개념 아닐까?
 	unsigned long		recent_rotated[2];
 	unsigned long		recent_scanned[2];
 };
@@ -259,7 +263,7 @@ struct per_cpu_pageset {
 #endif /* !__GENERATING_BOUNDS.H */
 
 enum zone_type {
-#ifdef CONFIG_ZONE_DMA
+#ifdef CONFIG_ZONE_DMA // not set
 	/*
 	 * ZONE_DMA is used when there are devices that are not able
 	 * to do DMA to all of addressable memory (ZONE_NORMAL). Then we
@@ -280,7 +284,7 @@ enum zone_type {
 	 */
 	ZONE_DMA,
 #endif
-#ifdef CONFIG_ZONE_DMA32
+#ifdef CONFIG_ZONE_DMA32 // not set
 	/*
 	 * x86_64 needs two ZONE_DMAs because it supports devices that are
 	 * only able to do DMA to the lower 16M but also 32 bit devices that
@@ -294,7 +298,7 @@ enum zone_type {
 	 * transfers to all addressable memory.
 	 */
 	ZONE_NORMAL,
-#ifdef CONFIG_HIGHMEM
+#ifdef CONFIG_HIGHMEM // set
 	/*
 	 * A memory area that is only addressable by the kernel through
 	 * mapping portions into its own address space. This is for example
@@ -1168,10 +1172,14 @@ extern unsigned long usemap_size(void);
 #define SECTION_MAP_MASK	(~(SECTION_MAP_LAST_BIT-1))
 #define SECTION_NID_SHIFT	2
 
+// 2015-01-17
 static inline struct page *__section_mem_map_addr(struct mem_section *section)
 {
 	unsigned long map = section->section_mem_map;
+    // 하위 2비트를 제외한 값을 취하고
 	map &= SECTION_MAP_MASK;
+    // 이를 struct page *로 type casting한다.
+    // 그것이 struct page *이다.
 	return (struct page *)map;
 }
 
@@ -1241,7 +1249,7 @@ void sparse_init(void);
 #define sparse_index_init(_sec, _nid)  do {} while (0)
 #endif /* CONFIG_SPARSEMEM */
 
-#ifdef CONFIG_NODES_SPAN_OTHER_NODES
+#ifdef CONFIG_NODES_SPAN_OTHER_NODES // not set
 bool early_pfn_in_nid(unsigned long pfn, int nid);
 #else
 #define early_pfn_in_nid(pfn, nid)	(1)
