@@ -36,6 +36,7 @@ void kunmap(struct page *page)
 }
 EXPORT_SYMBOL(kunmap);
 
+// 2015-01-24, 시작
 void *kmap_atomic(struct page *page)
 {
 	unsigned int idx;
@@ -52,6 +53,9 @@ void *kmap_atomic(struct page *page)
 	 * There is no cache coherency issue when non VIVT, so force the
 	 * dedicated kmap usage for better debugging purposes in that case.
 	 */
+	// Booting_kernel_exynos5420.log 참고하여 캐시가
+	// PIPT / VIPT nonaliasing data cache로 확인
+	// 2015-01-24, 여기까지
 	if (!cache_is_vivt())
 		kmap = NULL;
 	else

@@ -396,18 +396,18 @@ ENDPROC(v7_coherent_user_range)
  *	- size	- region size
  */
 ENTRY(v7_flush_kern_dcache_area)
-	dcache_line_size r2, r3
-	add	r1, r0, r1
-	sub	r3, r2, #1
-	bic	r0, r0, r3
+	dcache_line_size r2, r3  /* r2 = 64, r3 = 4 */
+	add	r1, r0, r1 /* r1 += r0*/
+	sub	r3, r2, #1 /* r3 = 64 - 1 */
+	bic	r0, r0, r3 /* r0 = r0 & (!r3) */
 #ifdef CONFIG_ARM_ERRATA_764369
 	ALT_SMP(W(dsb))
 	ALT_UP(W(nop))
 #endif
 1:
 	mcr	p15, 0, r0, c7, c14, 1		@ clean & invalidate D line / unified line
-	add	r0, r0, r2
-	cmp	r0, r1
+	add	r0, r0, r2             /* r0 += r2*/
+	cmp	r0, r1                 /* if (r0 > r1) goto 1; */
 	blo	1b
 	dsb
 	mov	pc, lr

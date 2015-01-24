@@ -605,7 +605,7 @@ static inline void __ftrace_enabled_restore(int enabled)
 #endif
 }
 
-#ifndef HAVE_ARCH_CALLER_ADDR
+#ifndef HAVE_ARCH_CALLER_ADDR // defined 
 # ifdef CONFIG_FRAME_POINTER
 #  define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
 #  define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
@@ -633,7 +633,7 @@ static inline void __ftrace_enabled_restore(int enabled)
   static inline void time_hardirqs_off(unsigned long a0, unsigned long a1) { }
 #endif
 
-#ifdef CONFIG_PREEMPT_TRACER
+#ifdef CONFIG_PREEMPT_TRACER // not define
   extern void trace_preempt_on(unsigned long a0, unsigned long a1);
   extern void trace_preempt_off(unsigned long a0, unsigned long a1);
 #else

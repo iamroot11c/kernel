@@ -70,11 +70,15 @@
  * on ARMv7.
  */
 	.macro	dcache_line_size, reg, tmp
-	mrc	p15, 0, \tmp, c0, c0, 1		@ read ctr
-	lsr	\tmp, \tmp, #16
+	mrc	p15, 0, \tmp, c0, c0, 1		@ read ctr 
+	                                        /* L1lp: PIPT */ 
+	lsr	\tmp, \tmp, #16                 /* DminLine */
+	                                        /* 0x4 Smallest data cache line size is 16 words. */
 	and	\tmp, \tmp, #0xf		@ cache line size encoding
 	mov	\reg, #4			@ bytes per word
 	mov	\reg, \reg, lsl \tmp		@ actual cache line size
+                                                /* reg = 4 << 4 */
+	                                        /* reg = 64; */
 	.endm
 
 /*

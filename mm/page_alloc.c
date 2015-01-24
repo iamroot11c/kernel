@@ -234,9 +234,16 @@ EXPORT_SYMBOL(nr_online_nodes);
 
 int page_group_by_mobility_disabled __read_mostly;
 
+// 2015-01-24;
+// set_pageblock_migratetype(page, MIGRATE_MOVABLE);
 void set_pageblock_migratetype(struct page *page, int migratetype)
 {
-
+	// page_group_by_mobility_disabled 변수는 
+        // build_all_zonelists() 함수에서 설정하며
+	// 이 함수가 호출되직 전이므로 migratetype를
+	// MIGRATE_UNMOVABLE으로 변경하지 않음
+	// 즉 build_all_zonelists() 함수 호출전까지는
+	// 이동 가능
 	if (unlikely(page_group_by_mobility_disabled))
 		migratetype = MIGRATE_UNMOVABLE;
 
@@ -4013,7 +4020,7 @@ static void setup_zone_migrate_reserve(struct zone *zone)
  * up by free_all_bootmem() once the early boot process is
  * done. Non-atomic initialization, single-pass.
  */
-// 2015-01-17
+// 2015-01-17; 2015-01-25 완료
 // context : MEMMAP_EARLY
 void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
 		unsigned long start_pfn, enum memmap_context context)
@@ -4071,13 +4078,14 @@ void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
 		 * check here not to call set_pageblock_migratetype() against
 		 * pfn out of zone.
 		 */
+		// 2015-01-24, 시작
 		if ((z->zone_start_pfn <= pfn)
 		    && (pfn < zone_end_pfn(z))
 		    && !(pfn & (pageblock_nr_pages - 1)))
 			set_pageblock_migratetype(page, MIGRATE_MOVABLE);
 
 		INIT_LIST_HEAD(&page->lru);
-#ifdef WANT_PAGE_VIRTUAL
+#ifdef WANT_PAGE_VIRTUAL // not defined
 		/* The shift won't overflow because ZONE_NORMAL is below 4G. */
 		if (!is_highmem_idx(zone))
 			set_page_address(page, __va(pfn << PAGE_SHIFT));
@@ -4809,6 +4817,7 @@ static unsigned long __paginginit calc_memmap_size(unsigned long spanned_pages,
 	free_area_init_core(pgdat, 0, 0,
 			    zones_size, zholes_size);
 */
+// 2015-01-24 완료
 static void __paginginit free_area_init_core(struct pglist_data *pgdat,
 		unsigned long node_start_pfn, unsigned long node_end_pfn,
 		unsigned long *zones_size, unsigned long *zholes_size)
@@ -4926,6 +4935,7 @@ static void __paginginit free_area_init_core(struct pglist_data *pgdat,
 		BUG_ON(ret);
 		// 2015-01-17, start
 		memmap_init(size, nid, j, zone_start_pfn);
+                // 2015-01-24, 완료
 		zone_start_pfn += size;
 	}
 }
@@ -6014,11 +6024,13 @@ void *__init alloc_large_system_hash(const char *tablename,
 	return table;
 }
 
+// 2015-01-24
 /* Return a pointer to the bitmap storing bits affecting a block of pages */
 static inline unsigned long *get_pageblock_bitmap(struct zone *zone,
 							unsigned long pfn)
 {
-#ifdef CONFIG_SPARSEMEM
+#ifdef CONFIG_SPARSEMEM // set
+	// struct mem_section을 구해서 pageblock_flags를 반환
 	return __pfn_to_section(pfn)->pageblock_flags;
 #else
 	return zone->pageblock_flags;
@@ -6028,8 +6040,9 @@ static inline unsigned long *get_pageblock_bitmap(struct zone *zone,
 static inline int pfn_to_bitidx(struct zone *zone, unsigned long pfn)
 {
 #ifdef CONFIG_SPARSEMEM
-	pfn &= (PAGES_PER_SECTION-1);
-	return (pfn >> pageblock_order) * NR_PAGEBLOCK_BITS;
+	pfn &= (PAGES_PER_SECTION-1); // pfn &= (0x0001_0000 -1)
+	//     (pfn >> 10) * 4;
+	return (pfn >> pageblock_order) * NR_PAGEBLOCK_BITS; 
 #else
 	pfn = pfn - round_down(zone->zone_start_pfn, pageblock_nr_pages);
 	return (pfn >> pageblock_order) * NR_PAGEBLOCK_BITS;
@@ -6071,6 +6084,10 @@ unsigned long get_pageblock_flags_group(struct page *page,
  * @end_bitidx: The last bit of interest
  * @flags: The flags to set
  */
+// 2015-01-24 
+//  set_pageblock_flags_group(page, (unsigned long)migratetype,
+//                           PB_migrate, PB_migrate_end);
+//
 void set_pageblock_flags_group(struct page *page, unsigned long flags,
 					int start_bitidx, int end_bitidx)
 {
@@ -6081,12 +6098,13 @@ void set_pageblock_flags_group(struct page *page, unsigned long flags,
 
 	zone = page_zone(page);
 	pfn = page_to_pfn(page);
+	// struct mem_section을 구해서 pageblock_flags를 얻음
 	bitmap = get_pageblock_bitmap(zone, pfn);
 	bitidx = pfn_to_bitidx(zone, pfn);
 	VM_BUG_ON(!zone_spans_pfn(zone, pfn));
 
 	for (; start_bitidx <= end_bitidx; start_bitidx++, value <<= 1)
-		if (flags & value)
+		if (flags & value) // 2 & value
 			__set_bit(bitidx + start_bitidx, bitmap);
 		else
 			__clear_bit(bitidx + start_bitidx, bitmap);

@@ -12,6 +12,7 @@
  * If it's called on the same region of memory simultaneously, the effect
  * may be that only one operation succeeds.
  */
+// 2015-01-25
 static inline void __set_bit(int nr, volatile unsigned long *addr)
 {
 	unsigned long mask = BIT_MASK(nr);
@@ -20,6 +21,7 @@ static inline void __set_bit(int nr, volatile unsigned long *addr)
 	*p  |= mask;
 }
 
+// 2015-01-25
 static inline void __clear_bit(int nr, volatile unsigned long *addr)
 {
 	unsigned long mask = BIT_MASK(nr);

@@ -2202,6 +2202,7 @@ u64 scheduler_tick_max_deferment(void)
 }
 #endif
 
+// 2015-01-24
 notrace unsigned long get_parent_ip(unsigned long addr)
 {
 	if (in_lock_functions(addr)) {
@@ -2215,6 +2216,8 @@ notrace unsigned long get_parent_ip(unsigned long addr)
 #if defined(CONFIG_PREEMPT) && (defined(CONFIG_DEBUG_PREEMPT) || \
 				defined(CONFIG_PREEMPT_TRACER))
 
+// 2015-01-24
+// add_preempt_count(1)
 void __kprobes add_preempt_count(int val)
 {
 #ifdef CONFIG_DEBUG_PREEMPT
@@ -2224,7 +2227,7 @@ void __kprobes add_preempt_count(int val)
 	if (DEBUG_LOCKS_WARN_ON((preempt_count() < 0)))
 		return;
 #endif
-	preempt_count() += val;
+	preempt_count() += val; // current_thread_info()->preempt_count += val;
 #ifdef CONFIG_DEBUG_PREEMPT
 	/*
 	 * Spinlock count overflowing soon?
@@ -2232,7 +2235,7 @@ void __kprobes add_preempt_count(int val)
 	DEBUG_LOCKS_WARN_ON((preempt_count() & PREEMPT_MASK) >=
 				PREEMPT_MASK - 10);
 #endif
-	if (preempt_count() == val)
+	if (preempt_count() == val) 
 		trace_preempt_off(CALLER_ADDR0, get_parent_ip(CALLER_ADDR1));
 }
 EXPORT_SYMBOL(add_preempt_count);

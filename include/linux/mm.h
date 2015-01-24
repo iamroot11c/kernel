@@ -499,6 +499,7 @@ static inline compound_page_dtor *get_compound_page_dtor(struct page *page)
 	return (compound_page_dtor *)page[1].lru.next;
 }
 
+// 2015-01-24
 static inline int compound_order(struct page *page)
 {
 	if (!PageHead(page))
@@ -630,8 +631,10 @@ static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
 #define LAST_NID_MASK		((1UL << LAST_NID_WIDTH) - 1)
 #define ZONEID_MASK		((1UL << ZONEID_SHIFT) - 1)
 
+// 2015-01-24
 static inline enum zone_type page_zonenum(const struct page *page)
 {
+    //     (page->flags >> 26) & 0b11 
 	return (page->flags >> ZONES_PGSHIFT) & ZONES_MASK;
 }
 
@@ -661,12 +664,13 @@ static inline int zone_to_nid(struct zone *zone)
 #endif
 }
 
-#ifdef NODE_NOT_IN_PAGE_FLAGS
+#ifdef NODE_NOT_IN_PAGE_FLAGS // not defined
 extern int page_to_nid(const struct page *page);
 #else
 static inline int page_to_nid(const struct page *page)
 {
 	return (page->flags >> NODES_PGSHIFT) & NODES_MASK;
+    // return (page->flags >> 0) & 0 
 }
 #endif
 
@@ -718,9 +722,11 @@ static inline void page_nid_reset_last(struct page *page)
 }
 #endif
 
+// 2015-01-24
 static inline struct zone *page_zone(const struct page *page)
 {
 	return &NODE_DATA(page_to_nid(page))->node_zones[page_zonenum(page)];
+    // return &(&contig_page_data)->node_zones[(page->flags >> 26) & 0b11]
 }
 
 #ifdef SECTION_IN_PAGE_FLAGS // set
@@ -770,6 +776,9 @@ static inline void set_page_links(struct page *page, enum zone_type zone,
  */
 #include <linux/vmstat.h>
 
+// 2015-01-24
+// high 메모리가 아니므로 메모리에 직접 매핑되어
+// 가상 주소를 바로 구할 수 있음
 static __always_inline void *lowmem_page_address(const struct page *page)
 {
 	return __va(PFN_PHYS(page_to_pfn(page)));
@@ -791,7 +800,7 @@ static inline void set_page_address(struct page *page, void *address)
 #define page_address_init()  do { } while(0)
 #endif
 
-#if defined(HASHED_PAGE_VIRTUAL)
+#if defined(HASHED_PAGE_VIRTUAL) // defined
 void *page_address(const struct page *page);
 void set_page_address(struct page *page, void *virtual);
 void page_address_init(void);

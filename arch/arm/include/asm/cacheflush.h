@@ -121,7 +121,7 @@ struct cpu_cache_fns {
 /*
  * Select the calling method
  */
-#ifdef MULTI_CACHE
+#ifdef MULTI_CACHE // not defined
 
 extern struct cpu_cache_fns cpu_cache;
 

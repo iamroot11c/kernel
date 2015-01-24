@@ -10,6 +10,7 @@
 #include <linux/linkage.h>
 #include <linux/list.h>
 
+// CONFIG_DEBUG_PREEMPT defined
 #if defined(CONFIG_DEBUG_PREEMPT) || defined(CONFIG_PREEMPT_TRACER)
   extern void add_preempt_count(int val);
   extern void sub_preempt_count(int val);

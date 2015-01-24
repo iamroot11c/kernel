@@ -40,6 +40,10 @@
  * empty_zero_page is a special page that is used for
  * zero-initialized data and COW.
  */
+// 2015-01-24
+// 새로운 page를 요청하면 할당하지 않고 
+// 이 페이지의 주소를 제공하여
+// 값을 쓸때 실제 page를 할당함
 struct page *empty_zero_page;
 EXPORT_SYMBOL(empty_zero_page);
 
@@ -1695,7 +1699,10 @@ void __init paging_init(const struct machine_desc *mdesc)
 
 	// 2014-11-01, start
 	bootmem_init();
+	// 2015-01-24, 완료
 
+	// 2015-02-24, 시작
+	// 가상주소의 page를 구함
 	empty_zero_page = virt_to_page(zero_page);
 	__flush_dcache_page(NULL, empty_zero_page);
 }

@@ -473,6 +473,7 @@ void __init bootmem_init(void)
 	 */
 	// 2015-01-03, start
 	arm_bootmem_free(min, max_low, max_high);
+	// 2015-01-24, 완료
 
 	/*
 	 * This doesn't seem to be used by the Linux memory manager any
@@ -484,6 +485,7 @@ void __init bootmem_init(void)
 	 */
 	max_low_pfn = max_low - PHYS_PFN_OFFSET;
 	max_pfn = max_high - PHYS_PFN_OFFSET;
+	// 2015-01-24, 완료
 }
 
 /*

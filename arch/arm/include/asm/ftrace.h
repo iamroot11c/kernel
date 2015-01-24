@@ -32,6 +32,7 @@ extern void ftrace_call_old(void);
 
 #ifndef __ASSEMBLY__
 
+// CONFIG_FRAME_POINTER not define
 #if defined(CONFIG_FRAME_POINTER) && !defined(CONFIG_ARM_UNWIND)
 /*
  * return_address uses walk_stackframe to do it's work.  If both

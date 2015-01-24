@@ -332,8 +332,9 @@ static struct page_address_map page_address_maps[LAST_PKMAP];
 static struct page_address_slot {
 	struct list_head lh;			/* List of page_address_maps */
 	spinlock_t lock;			/* Protect this bucket's list */
-} ____cacheline_aligned_in_smp page_address_htable[1<<PA_HASH_ORDER];
+} ____cacheline_aligned_in_smp page_address_htable[1<<PA_HASH_ORDER]; // 128(1 << 7)
 
+// 2015-01-24
 static struct page_address_slot *page_slot(const struct page *page)
 {
 	return &page_address_htable[hash_ptr(page, PA_HASH_ORDER)];
@@ -345,6 +346,7 @@ static struct page_address_slot *page_slot(const struct page *page)
  *
  * Returns the page's virtual address.
  */
+// 2015-01-24, 시작
 void *page_address(const struct page *page)
 {
 	unsigned long flags;

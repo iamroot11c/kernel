@@ -161,6 +161,8 @@ void copy_to_user_page(struct vm_area_struct *vma, struct page *page,
 #endif
 }
 
+// 2015-01-25, 시작
+// __flush_dcache_page(NULL, empty_zero_page);
 void __flush_dcache_page(struct address_space *mapping, struct page *page)
 {
 	/*
@@ -171,9 +173,12 @@ void __flush_dcache_page(struct address_space *mapping, struct page *page)
 	if (!PageHighMem(page)) {
 		size_t page_size = PAGE_SIZE << compound_order(page);
 		__cpuc_flush_dcache_area(page_address(page), page_size);
+		// v7_flush_kern_dcache_area(page_address(page), page_size));
 	} else {
 		unsigned long i;
 		if (cache_is_vipt_nonaliasing()) {
+			// Booting_kernel_exynos5420.log 참고하여 
+			// PIPT / VIPT nonaliasing data cache 확인
 			for (i = 0; i < (1 << compound_order(page)); i++) {
 				void *addr = kmap_atomic(page + i);
 				__cpuc_flush_dcache_area(addr, PAGE_SIZE);

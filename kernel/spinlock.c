@@ -388,6 +388,8 @@ EXPORT_SYMBOL(_raw_spin_lock_nest_lock);
 
 #endif
 
+// 2015-01-24
+// __lock_text_start와 __lock_text_end영역에 spinlock을 배치
 notrace int in_lock_functions(unsigned long addr)
 {
 	/* Linker adds these: start and end of __lockfunc functions */

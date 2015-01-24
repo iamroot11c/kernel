@@ -854,8 +854,11 @@ static inline int populated_zone(struct zone *zone)
 
 extern int movable_zone;
 
+// 2015-01-24
 static inline int zone_movable_is_highmem(void)
 {
+// CONFIG_HIGHMEM defined
+// CONFIG_HAVE_MEMBLOCK_NODE_MAP not defined
 #if defined(CONFIG_HIGHMEM) && defined(CONFIG_HAVE_MEMBLOCK_NODE_MAP)
 	return movable_zone == ZONE_HIGHMEM;
 #else
@@ -879,10 +882,13 @@ static inline int is_highmem_idx(enum zone_type idx)
  *              to ZONE_{DMA/NORMAL/HIGHMEM/etc} in general code to a minimum.
  * @zone - pointer to struct zone variable
  */
+// 2015-01-24
 static inline int is_highmem(struct zone *zone)
 {
-#ifdef CONFIG_HIGHMEM
+#ifdef CONFIG_HIGHMEM // defined
 	int zone_off = (char *)zone - (char *)zone->zone_pgdat->node_zones;
+    // zone_off가 ZONE_HIGHMEM * sizeof(*zone) 연산결과와 같은지에 따라
+    // high 메모리 판단
 	return zone_off == ZONE_HIGHMEM * sizeof(*zone) ||
 	       (zone_off == ZONE_MOVABLE * sizeof(*zone) &&
 		zone_movable_is_highmem());
@@ -1206,6 +1212,7 @@ static inline int valid_section_nr(unsigned long nr)
 	return valid_section(__nr_to_section(nr));
 }
 
+// 2015-01-24;
 static inline struct mem_section *__pfn_to_section(unsigned long pfn)
 {
 	return __nr_to_section(pfn_to_section_nr(pfn));

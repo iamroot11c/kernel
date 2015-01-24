@@ -55,15 +55,21 @@ static __always_inline u64 hash_64(u64 val, unsigned int bits)
 	return hash >> (64 - bits);
 }
 
+// 2015-01-24
 static inline u32 hash_32(u32 val, unsigned int bits)
 {
 	/* On some cpus multiply is faster, on others gcc will do shifts */
 	u32 hash = val * GOLDEN_RATIO_PRIME_32;
 
 	/* High bits are more random, so use them. */
-	return hash >> (32 - bits);
+	return hash >> (32 - bits); // bits수 만큼 상위 비트를 구함
+                                // bits가 7이면 하위 25비트는 버리고
+                                // 상위 7비트만 구함
 }
 
+// 2015-01-24
+// bits = 7
+// 주소에대해 hash 값을 구하여 상위 bits 수 만큼만 취함 
 static inline unsigned long hash_ptr(const void *ptr, unsigned int bits)
 {
 	return hash_long((unsigned long)ptr, bits);
