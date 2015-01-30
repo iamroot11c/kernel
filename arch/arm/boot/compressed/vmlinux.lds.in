@@ -7,10 +7,10 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
-//kkr 14-11-13
 /*
- *출력 아키텍처를 정한다. 아규먼트는 BFD 라이브러리에서 사용하는 이름중 하나
- *가능한 아키텍쳐는 objdump -f 옵션으로 확인가능하다.
+ * kkr 14-11-13
+ * 출력 아키텍처를 정한다. 아규먼트는 BFD 라이브러리에서 사용하는 이름중 하나
+ * 가능한 아키텍쳐는 objdump -f 옵션으로 확인가능하다.
  */
 OUTPUT_ARCH(arm)
 /*

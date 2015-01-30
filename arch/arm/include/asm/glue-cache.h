@@ -112,9 +112,7 @@
 #if defined(CONFIG_CPU_V7)
 # ifdef _CACHE
 #  define MULTI_CACHE 1
-#define1111"
 # else
-#define2222"
 #  define _CACHE v7
 # endif
 #endif
