@@ -26,7 +26,7 @@ typedef u32 pmdval_t;
 
 #undef STRICT_MM_TYPECHECKS
 
-#ifdef STRICT_MM_TYPECHECKS
+#ifdef STRICT_MM_TYPECHECKS // 항상 undef, 바로 위 때문에
 /*
  * These are used to make use of C type-checking..
  */
@@ -56,11 +56,11 @@ typedef pteval_t pgprot_t;
 #define pte_val(x)      (x)
 #define pmd_val(x)      (x)
 #define pgd_val(x)	((x)[0])
-#define pgprot_val(x)   (x)
+#define pgprot_val(x)   (x) // 2015-01-31
 
 #define __pte(x)        (x)
 #define __pmd(x)        (x)
-#define __pgprot(x)     (x)
+#define __pgprot(x)     (x) // 2015-01-31
 
 #endif /* STRICT_MM_TYPECHECKS */
 

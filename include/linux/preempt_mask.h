@@ -34,7 +34,7 @@
 #define MAX_HARDIRQ_BITS 10
 
 #ifndef HARDIRQ_BITS
-# define HARDIRQ_BITS	MAX_HARDIRQ_BITS
+# define HARDIRQ_BITS	MAX_HARDIRQ_BITS    // 10
 #endif
 
 #if HARDIRQ_BITS > MAX_HARDIRQ_BITS
@@ -42,9 +42,9 @@
 #endif
 
 #define PREEMPT_SHIFT	0
-#define SOFTIRQ_SHIFT	(PREEMPT_SHIFT + PREEMPT_BITS)
-#define HARDIRQ_SHIFT	(SOFTIRQ_SHIFT + SOFTIRQ_BITS)
-#define NMI_SHIFT	(HARDIRQ_SHIFT + HARDIRQ_BITS)
+#define SOFTIRQ_SHIFT	(PREEMPT_SHIFT/*0*/ + PREEMPT_BITS/*8*/)    // 8
+#define HARDIRQ_SHIFT	(SOFTIRQ_SHIFT/*8*/ + SOFTIRQ_BITS/*8*/)    // 16
+#define NMI_SHIFT	(HARDIRQ_SHIFT/*16*/ + HARDIRQ_BITS/*10*/)      // 26
 
 #define __IRQ_MASK(x)	((1UL << (x))-1)
 
@@ -60,10 +60,11 @@
 
 #define SOFTIRQ_DISABLE_OFFSET	(2 * SOFTIRQ_OFFSET)
 
-#ifndef PREEMPT_ACTIVE
+// thread_info.h에서 정의된다.
+#ifndef PREEMPT_ACTIVE  // 여기 안 들어온다. 이미 다른 곳에 정의
 #define PREEMPT_ACTIVE_BITS	1
-#define PREEMPT_ACTIVE_SHIFT	(NMI_SHIFT + NMI_BITS)
-#define PREEMPT_ACTIVE	(__IRQ_MASK(PREEMPT_ACTIVE_BITS) << PREEMPT_ACTIVE_SHIFT)
+#define PREEMPT_ACTIVE_SHIFT	(NMI_SHIFT/*26*/ + NMI_BITS/*1*/)       // 27
+#define PREEMPT_ACTIVE	(__IRQ_MASK(PREEMPT_ACTIVE_BITS/* 1 */)/* 1 */ << PREEMPT_ACTIVE_SHIFT/*27*/)   // 0x0800_0000
 #endif
 
 #if PREEMPT_ACTIVE < (1 << (NMI_SHIFT + NMI_BITS))
@@ -113,7 +114,8 @@
 #define in_atomic_preempt_off() \
 		((preempt_count() & ~PREEMPT_ACTIVE) != PREEMPT_CHECK_OFFSET)
 
-#ifdef CONFIG_PREEMPT_COUNT
+#ifdef CONFIG_PREEMPT_COUNT // set
+// 아래 애기는, preempt_count()가 0이라면, 현재 자신이 irq라면 true를 리턴
 # define preemptible()	(preempt_count() == 0 && !irqs_disabled())
 #else
 # define preemptible()	0

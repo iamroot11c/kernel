@@ -67,7 +67,7 @@ unsigned int nr_free_highpages (void)
 	return pages;
 }
 
-static int pkmap_count[LAST_PKMAP];
+static int pkmap_count[LAST_PKMAP];	// LAST_PKMAP(512)
 static unsigned int last_pkmap_nr;
 static  __cacheline_aligned_in_smp DEFINE_SPINLOCK(kmap_lock);
 
@@ -246,17 +246,20 @@ EXPORT_SYMBOL(kmap_high);
  *
  * This can be called from any context.
  */
+// 2015-01-31
+// struct page *로 virtual address를 구하는 것이 주된 기능
+// return value가 null이 아니라면, kunmap_high()을 반드시 호출해줘야 한다.
 void *kmap_high_get(struct page *page)
 {
 	unsigned long vaddr, flags;
 
-	lock_kmap_any(flags);
+	lock_kmap_any(flags);	// spin lock irq save
 	vaddr = (unsigned long)page_address(page);
 	if (vaddr) {
 		BUG_ON(pkmap_count[PKMAP_NR(vaddr)] < 1);
-		pkmap_count[PKMAP_NR(vaddr)]++;
+		pkmap_count[PKMAP_NR(vaddr)]++;	// 호출 및 할당 횟수 저장
 	}
-	unlock_kmap_any(flags);
+	unlock_kmap_any(flags);	// spin unlock irq restore
 	return (void*) vaddr;
 }
 #endif
@@ -268,6 +271,8 @@ void *kmap_high_get(struct page *page)
  * If ARCH_NEEDS_KMAP_HIGH_GET is not defined then this may be called
  * only from user context.
  */
+// 2015-01-31
+// pkmap_count를 -1 더한다.
 void kunmap_high(struct page *page)
 {
 	unsigned long vaddr;
@@ -275,7 +280,7 @@ void kunmap_high(struct page *page)
 	unsigned long flags;
 	int need_wakeup;
 
-	lock_kmap_any(flags);
+	lock_kmap_any(flags);	// spin_lock_irqsave(&kmap_lock, flags)
 	vaddr = (unsigned long)page_address(page);
 	BUG_ON(!vaddr);
 	nr = PKMAP_NR(vaddr);
@@ -299,9 +304,10 @@ void kunmap_high(struct page *page)
 		 * no need for the wait-queue-head's lock.  Simply
 		 * test if the queue is empty.
 		 */
+		// 대기큐가 비어있지 않다면, wake flag 셋팅.
 		need_wakeup = waitqueue_active(&pkmap_map_wait);
 	}
-	unlock_kmap_any(flags);
+	unlock_kmap_any(flags);		// restore
 
 	/* do wake-up, if needed, race-free outside of the spin lock */
 	if (need_wakeup)
@@ -347,6 +353,7 @@ static struct page_address_slot *page_slot(const struct page *page)
  * Returns the page's virtual address.
  */
 // 2015-01-24, 시작
+// 2015-01-31
 void *page_address(const struct page *page)
 {
 	unsigned long flags;

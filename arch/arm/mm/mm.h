@@ -18,10 +18,12 @@ extern pmd_t *top_pmd;
 /* PFN alias flushing, for VIPT caches */
 #define FLUSH_ALIAS_START	0xffff4000
 
+// 2015-01-31
 static inline void set_top_pte(unsigned long va, pte_t pte)
 {
 	pte_t *ptep = pte_offset_kernel(top_pmd, va);
-	set_pte_ext(ptep, pte, 0);
+    // Set and Data Cache Clean, DCCMVAC 
+	set_pte_ext(ptep, pte, 0);  // call cpu_v7_set_pte_ext()
 	local_flush_tlb_kernel_page(va);
 }
 

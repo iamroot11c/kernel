@@ -788,7 +788,7 @@ static __always_inline void *lowmem_page_address(const struct page *page)
 #define HASHED_PAGE_VIRTUAL
 #endif
 
-#if defined(WANT_PAGE_VIRTUAL)
+#if defined(WANT_PAGE_VIRTUAL)  // not set
 static inline void *page_address(const struct page *page)
 {
 	return page->virtual;

@@ -3,13 +3,13 @@
 
 #include <asm/kmap_types.h>
 
-#define PKMAP_BASE		(PAGE_OFFSET - PMD_SIZE)
-#define LAST_PKMAP		PTRS_PER_PTE
+#define PKMAP_BASE		(PAGE_OFFSET - PMD_SIZE)    // 0xC000_0000 - 0x0020_0000(2MB) = 0xbfe00000
+#define LAST_PKMAP		PTRS_PER_PTE    // 512
 #define LAST_PKMAP_MASK		(LAST_PKMAP - 1)
 #define PKMAP_NR(virt)		(((virt) - PKMAP_BASE) >> PAGE_SHIFT)
 #define PKMAP_ADDR(nr)		(PKMAP_BASE + ((nr) << PAGE_SHIFT))
 
-#define kmap_prot		PAGE_KERNEL
+#define kmap_prot		PAGE_KERNEL // _MOD_PROT(pgprot_kernel, L_PTE_XN)
 
 #define flush_cache_kmaps() \
 	do { \
@@ -48,7 +48,7 @@ extern void kunmap_high(struct page *page);
 #undef ARCH_NEEDS_KMAP_HIGH_GET
 #endif
 
-#ifdef ARCH_NEEDS_KMAP_HIGH_GET
+#ifdef ARCH_NEEDS_KMAP_HIGH_GET // set, 몇가지 경우에, undef시키지만, 해당되는 경우가 없었음. 
 extern void *kmap_high_get(struct page *page);
 #else
 static inline void *kmap_high_get(struct page *page)

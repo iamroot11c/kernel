@@ -181,6 +181,7 @@ void __flush_dcache_page(struct address_space *mapping, struct page *page)
 			// PIPT / VIPT nonaliasing data cache 확인
 			for (i = 0; i < (1 << compound_order(page)); i++) {
 				void *addr = kmap_atomic(page + i);
+				// 2015-01-31
 				__cpuc_flush_dcache_area(addr, PAGE_SIZE);
 				kunmap_atomic(addr);
 			}

@@ -52,7 +52,7 @@ static inline struct page *kmap_to_page(void *addr)
 
 #define totalhigh_pages 0UL
 
-#ifndef ARCH_HAS_KMAP
+#ifndef ARCH_HAS_KMAP   // not set
 static inline void *kmap(struct page *page)
 {
 	might_sleep();
@@ -70,6 +70,7 @@ static inline void *kmap_atomic(struct page *page)
 }
 #define kmap_atomic_prot(page, prot)	kmap_atomic(page)
 
+// 2015-01-31, not compiled
 static inline void __kunmap_atomic(void *addr)
 {
 	pagefault_enable();
@@ -87,6 +88,9 @@ static inline void __kunmap_atomic(void *addr)
 
 DECLARE_PER_CPU(int, __kmap_atomic_idx);
 
+// 2015-01-31
+// kmap에 새로 할당할 idx를 구하는 기능
+// atomic을 위해서, per cpu 기능을 이용한다.
 static inline int kmap_atomic_idx_push(void)
 {
 	int idx = __this_cpu_inc_return(__kmap_atomic_idx) - 1;
@@ -103,6 +107,8 @@ static inline int kmap_atomic_idx(void)
 	return __this_cpu_read(__kmap_atomic_idx) - 1;
 }
 
+// 2015-01-31,
+// __kmap_atomic_idx에서 하나 뺀다.
 static inline void kmap_atomic_idx_pop(void)
 {
 #ifdef CONFIG_DEBUG_HIGHMEM

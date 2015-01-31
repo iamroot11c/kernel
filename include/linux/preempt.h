@@ -24,7 +24,7 @@
 
 #define preempt_count()	(current_thread_info()->preempt_count)
 
-#ifdef CONFIG_PREEMPT
+#ifdef CONFIG_PREEMPT   // set
 
 asmlinkage void preempt_schedule(void);
 

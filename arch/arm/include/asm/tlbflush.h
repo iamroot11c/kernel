@@ -61,7 +61,7 @@
 #undef _TLB
 #undef MULTI_TLB
 
-#ifdef CONFIG_SMP_ON_UP
+#ifdef CONFIG_SMP_ON_UP // set
 #define MULTI_TLB 1
 #endif
 
@@ -173,9 +173,9 @@
 				 TLB_V6_U_FULL | TLB_V6_U_PAGE | \
 				 TLB_V6_U_ASID | TLB_V6_BP)
 
-#ifdef CONFIG_CPU_TLB_V7
+#ifdef CONFIG_CPU_TLB_V7    // set
 
-# ifdef CONFIG_SMP_ON_UP
+# ifdef CONFIG_SMP_ON_UP    // set
 // 현재 프로세서 설정 값
 // CONFIG_SMP_ON_UP, CONFIG_SMP 두 값이 설정이 되어있지만
 // 첫 번째 항목이 먼저 있기 때문에 해당 위치의 플래그가 세팅된다.
@@ -194,8 +194,8 @@
 
 # ifdef _TLB
 #  define MULTI_TLB 1
-
 # else
+// 2015-01-31, here, _TLB is not setted, but MULTI_TLB is setted by 64 line(CONFIG_SMP_ON_UP) 
 #  define _TLB v7wbi
 # endif
 #else
@@ -522,6 +522,7 @@ __flush_tlb_page(struct vm_area_struct *vma, unsigned long uaddr)
 		dsb(ish);
 }
 
+// 2015-01-31, kaddr은 PAGE_MASK를 씌운 값이다.
 static inline void __local_flush_tlb_kernel_page(unsigned long kaddr)
 {
 	const int zero = 0;
@@ -538,12 +539,17 @@ static inline void __local_flush_tlb_kernel_page(unsigned long kaddr)
 	tlb_op(TLB_V6_I_PAGE, "c8, c5, 1", kaddr);
 }
 
+// 2015-01-31
 static inline void local_flush_tlb_kernel_page(unsigned long kaddr)
 {
 	const unsigned int __tlb_flag = __cpu_tlb_flags;
 
-	kaddr &= PAGE_MASK;
+	kaddr &= PAGE_MASK;     // 0xFFFF_F000
 
+    // dsb(nshst) : 저장이 완료 될때까지만, 기다리고,
+    // 통합 지점만 수행되는 dsb작업
+    //
+    // TLB가 Write Back이라면, dsb작업을 한다.
 	if (tlb_flag(TLB_WB))
 		dsb(nshst);
 
@@ -551,8 +557,8 @@ static inline void local_flush_tlb_kernel_page(unsigned long kaddr)
 	tlb_op(TLB_V7_UIS_PAGE, "c8, c7, 1", kaddr);
 
 	if (tlb_flag(TLB_BARRIER)) {
-		dsb(nsh);
-		isb();
+		dsb(nsh);   // 통합 지점까지만, 수행되는 dsb 작업
+		isb();      // 이전 명령어 파이프라인 플러시
 	}
 }
 

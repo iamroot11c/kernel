@@ -60,14 +60,19 @@ void *kmap_atomic(struct page *page)
 		kmap = NULL;
 	else
 #endif
+		// 2015-01-31, start
 		kmap = kmap_high_get(page);
 	if (kmap)
 		return kmap;
 
 	type = kmap_atomic_idx_push();
 
-	idx = type + KM_TYPE_NR * smp_processor_id();
-	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
+	// idx값 구하는 과정은 의문이다.
+	idx = type + KM_TYPE_NR * smp_processor_id();	// KM_TYPE_NR(16)	 
+	// ex) fixmap  : 0xfff00000 - 0xfffe0000   ( 896 kB)
+	// memory layout에 fixmap영역이 있다.
+	// 그곳의 메모리를 할당받는다.
+	vaddr = __fix_to_virt(FIX_KMAP_BEGIN/* 0 */ + idx);
 #ifdef CONFIG_DEBUG_HIGHMEM
 	/*
 	 * With debugging enabled, kunmap_atomic forces that entry to 0.
@@ -80,17 +85,19 @@ void *kmap_atomic(struct page *page)
 	 * in place, so the contained TLB flush ensures the TLB is updated
 	 * with the new mapping.
 	 */
-	set_top_pte(vaddr, mk_pte(page, kmap_prot));
+	set_top_pte(vaddr, mk_pte(page, kmap_prot/* PAGE_KERNEL */));
 
 	return (void *)vaddr;
 }
 EXPORT_SYMBOL(kmap_atomic);
 
+// 2015-01-31
 void __kunmap_atomic(void *kvaddr)
 {
 	unsigned long vaddr = (unsigned long) kvaddr & PAGE_MASK;
 	int idx, type;
 
+	// fixmap 영역이라면,
 	if (kvaddr >= (void *)FIXADDR_START) {
 		type = kmap_atomic_idx();
 		idx = type + KM_TYPE_NR * smp_processor_id();

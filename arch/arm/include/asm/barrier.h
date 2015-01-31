@@ -13,9 +13,14 @@
 #define wfi()	__asm__ __volatile__ ("wfi" : : : "memory")
 #endif
 
+// 2015-01-31
 #if __LINUX_ARM_ARCH__ >= 7
+// isb, 명령어 동기화, 프로세스의 파이프라인을 비운다.
 #define isb(option) __asm__ __volatile__ ("isb " #option : : : "memory")
+// dsb, 이 명령이 수행되기전에, 명령어의 수행이 모두 완료 왼다.
 #define dsb(option) __asm__ __volatile__ ("dsb " #option : : : "memory")
+// dmb, Data Access에 대한 모든 명령어가 끝나고 나서, dmb 명령 이후, Data Access가
+// 발생하는 것을 보장한다.
 #define dmb(option) __asm__ __volatile__ ("dmb " #option : : : "memory")
 #elif defined(CONFIG_CPU_XSC3) || __LINUX_ARM_ARCH__ == 6
 #define isb(x) __asm__ __volatile__ ("mcr p15, 0, %0, c7, c5, 4" \

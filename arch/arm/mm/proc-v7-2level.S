@@ -72,39 +72,43 @@ ENDPROC(cpu_v7_switch_mm)
  *	- pte   - PTE value to store
  *	- ext	- value for extended PTE bits
  */
+// 2015-01-31
 ENTRY(cpu_v7_set_pte_ext)
 #ifdef CONFIG_MMU
 	str	r1, [r0]			@ linux version
+						// *r0 = r1;
 
 	bic	r3, r1, #0x000003f0
-	bic	r3, r3, #PTE_TYPE_MASK
+	bic	r3, r3, #PTE_TYPE_MASK		// (_AT(pteval_t, 3) << 0), 하위 2비트
 	orr	r3, r3, r2
-	orr	r3, r3, #PTE_EXT_AP0 | 2
+	orr	r3, r3, #PTE_EXT_AP0 | 2	// PTE_EXT_AP0     (_AT(pteval_t, 1) << 4)
 
-	tst	r1, #1 << 4
-	orrne	r3, r3, #PTE_EXT_TEX(1)
+	tst	r1, #1 << 4			// PTE_EXT_AP0 설정 유무 체크
+	orrne	r3, r3, #PTE_EXT_TEX(1)		// PTE_EXT_TEX(x)      (_AT(pteval_t, (x)) << 6) /* v5 */
+						// 설정이 안되어 있으면, PTE_EXT_TEX라도 설정하는 것
 
-	eor	r1, r1, #L_PTE_DIRTY
-	tst	r1, #L_PTE_RDONLY | L_PTE_DIRTY
-	orrne	r3, r3, #PTE_EXT_APX
+	eor	r1, r1, #L_PTE_DIRTY		// L_PTE_DIRTY     (_AT(pteval_t, 1) << 6)
+	tst	r1, #L_PTE_RDONLY | L_PTE_DIRTY	// L_PTE_RDONLY        (_AT(pteval_t, 1) << 7)
+	orrne	r3, r3, #PTE_EXT_APX		// PTE_EXT_APX     (_AT(pteval_t, 1) << 9) /* v6 */
 
-	tst	r1, #L_PTE_USER
-	orrne	r3, r3, #PTE_EXT_AP1
+	tst	r1, #L_PTE_USER			// L_PTE_USER      (_AT(pteval_t, 1) << 8)
+	orrne	r3, r3, #PTE_EXT_AP1            // PTE_EXT_AP1     (_AT(pteval_t, 2) << 4)
 
-	tst	r1, #L_PTE_XN
-	orrne	r3, r3, #PTE_EXT_XN
+	tst	r1, #L_PTE_XN			// L_PTE_XN        (_AT(pteval_t, 1) << 9)
+	orrne	r3, r3, #PTE_EXT_XN             // PTE_EXT_XN      (_AT(pteval_t, 1) << 0)     /* v6 */
 
-	tst	r1, #L_PTE_YOUNG
-	tstne	r1, #L_PTE_VALID
-	eorne	r1, r1, #L_PTE_NONE
+	tst	r1, #L_PTE_YOUNG		// L_PTE_YOUNG     (_AT(pteval_t, 1) << 1)
+	tstne	r1, #L_PTE_VALID		// L_PTE_VALID     (_AT(pteval_t, 1) << 0)     /* Valid */
+	eorne	r1, r1, #L_PTE_NONE		// L_PTE_NONE      (_AT(pteval_t, 1) << 11)
 	tstne	r1, #L_PTE_NONE
 	moveq	r3, #0
 
- ARM(	str	r3, [r0, #2048]! )
+ ARM(	str	r3, [r0, #2048]! )		// *(r0 + 2048) = r3; r0 += 2048;
  THUMB(	add	r0, r0, #2048 )
  THUMB(	str	r3, [r0] )
 	ALT_SMP(W(nop))
 	ALT_UP (mcr	p15, 0, r0, c7, c10, 1)		@ flush_pte
+							// DCCMVAC, clean data cache line 
 #endif
 	mov	pc, lr
 ENDPROC(cpu_v7_set_pte_ext)

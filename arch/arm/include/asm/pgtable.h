@@ -87,6 +87,8 @@ extern pgprot_t		pgprot_hyp_device;
 extern pgprot_t		pgprot_s2;
 extern pgprot_t		pgprot_s2_device;
 
+// 2015-01-31, 
+// _MOD_PROT(pgprot_kernel, L_PTE_XN)
 #define _MOD_PROT(p, b)	__pgprot(pgprot_val(p) | (b))
 
 #define PAGE_NONE		_MOD_PROT(pgprot_user, L_PTE_XN | L_PTE_RDONLY | L_PTE_NONE)
@@ -220,9 +222,11 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 #define pte_unmap(pte)			__pte_unmap(pte)
 
 #define pte_pfn(pte)		((pte_val(pte) & PHYS_MASK) >> PAGE_SHIFT)
+// 물리 주소와, PTE mask값을 or하면, pte가 된다.
 #define pfn_pte(pfn,prot)	__pte(__pfn_to_phys(pfn) | pgprot_val(prot))
 
 #define pte_page(pte)		pfn_to_page(pte_pfn(pte))
+// 2015-01-31
 #define mk_pte(page,prot)	pfn_pte(page_to_pfn(page), prot)
 
 #define pte_clear(mm,addr,ptep)	set_pte_ext(ptep, __pte(0), 0)

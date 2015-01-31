@@ -24,6 +24,7 @@ static inline void pagefault_disable(void)
 	barrier();
 }
 
+// 2015-01-31
 static inline void pagefault_enable(void)
 {
 	/*

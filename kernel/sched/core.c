@@ -2507,12 +2507,13 @@ void __sched schedule_preempt_disabled(void)
 	preempt_disable();
 }
 
-#ifdef CONFIG_PREEMPT
+#ifdef CONFIG_PREEMPT	// set
 /*
  * this is the entry point to schedule() from in-kernel preemption
  * off of preempt_enable. Kernel preemptions off return from interrupt
  * occur there and call schedule directly.
  */
+// 2015-01-31
 asmlinkage void __sched notrace preempt_schedule(void)
 {
 	/*
@@ -2523,7 +2524,8 @@ asmlinkage void __sched notrace preempt_schedule(void)
 		return;
 
 	do {
-		add_preempt_count_notrace(PREEMPT_ACTIVE);
+		add_preempt_count_notrace(PREEMPT_ACTIVE);	// 0x4000_0000
+		// 2015-01-31, 여기까지
 		__schedule();
 		sub_preempt_count_notrace(PREEMPT_ACTIVE);
 
@@ -2587,16 +2589,23 @@ EXPORT_SYMBOL(default_wake_function);
  * started to run but is not in state TASK_RUNNING. try_to_wake_up() returns
  * zero in this (rare) case, and we handle it by continuing to scan the queue.
  */
+// 2015-01-31
+// nr_exclusive가 0이라면, 대기큐의 모든 것을 깨운다.
+// __wake_up_common(q, TASK_NORMAL, 1, 0, NULL);
 static void __wake_up_common(wait_queue_head_t *q, unsigned int mode,
 			int nr_exclusive, int wake_flags, void *key)
 {
 	wait_queue_t *curr, *next;
 
+	// 리스트 순회 시, 멤버 삭제에도 안전한 매크로
+	// 2015-01-31, 좀 더 확인해 봐야겠지만,
+	// 디자인 패턴의 Command Pattern과 같이, 큐의 데이터를 꺼내오고,
+	// 등록된 콜백함수를 수행한다. 
 	list_for_each_entry_safe(curr, next, &q->task_list, task_list) {
 		unsigned flags = curr->flags;
 
 		if (curr->func(curr, mode, wake_flags, key) &&
-				(flags & WQ_FLAG_EXCLUSIVE) && !--nr_exclusive)
+				(flags & WQ_FLAG_EXCLUSIVE) && !--nr_exclusive)	// nr_exclusive가 1일때
 			break;
 	}
 }
@@ -2611,6 +2620,8 @@ static void __wake_up_common(wait_queue_head_t *q, unsigned int mode,
  * It may be assumed that this function implies a write memory barrier before
  * changing the task state if and only if any tasks are woken up.
  */
+// 2015-01-31
+// __wake_up(x, TASK_NORMAL, 1, NULL)
 void __wake_up(wait_queue_head_t *q, unsigned int mode,
 			int nr_exclusive, void *key)
 {

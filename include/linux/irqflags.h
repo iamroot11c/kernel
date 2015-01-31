@@ -14,7 +14,7 @@
 #include <linux/typecheck.h>
 #include <asm/irqflags.h>
 
-#ifdef CONFIG_TRACE_IRQFLAGS
+#ifdef CONFIG_TRACE_IRQFLAGS    // not set
   extern void trace_softirqs_on(unsigned long ip);
   extern void trace_softirqs_off(unsigned long ip);
   extern void trace_hardirqs_on(void);
@@ -85,7 +85,7 @@
  * The local_irq_*() APIs are equal to the raw_local_irq*()
  * if !TRACE_IRQFLAGS.
  */
-#ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
+#ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT    // set
 #define local_irq_enable() \
 	do { trace_hardirqs_on(); raw_local_irq_enable(); } while (0)
 #define local_irq_disable() \

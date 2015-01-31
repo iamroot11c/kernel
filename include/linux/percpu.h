@@ -192,6 +192,7 @@ extern void __bad_size_call_parameter(void);
 	pscr_ret__;							\
 })
 
+// __this_cpu_add_return_
 #define __pcpu_size_call_return2(stem, variable, ...)			\
 ({									\
 	typeof(variable) pscr2_ret__;					\

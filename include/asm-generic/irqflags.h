@@ -57,6 +57,7 @@ static inline void arch_local_irq_disable(void)
 
 /* test hardware interrupt enable bit */
 #ifndef arch_irqs_disabled
+// 2015-01-31
 static inline int arch_irqs_disabled(void)
 {
 	return arch_irqs_disabled_flags(arch_local_save_flags());

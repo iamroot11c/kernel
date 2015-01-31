@@ -248,14 +248,14 @@
 # endif
 #endif
 
-#ifndef MULTI_CPU
+#ifndef MULTI_CPU   // not set
 #define cpu_proc_init			__glue(CPU_NAME,_proc_init)
 #define cpu_proc_fin			__glue(CPU_NAME,_proc_fin)
 #define cpu_reset			__glue(CPU_NAME,_reset)
 #define cpu_do_idle			__glue(CPU_NAME,_do_idle)
 #define cpu_dcache_clean_area		__glue(CPU_NAME,_dcache_clean_area)
 #define cpu_do_switch_mm		__glue(CPU_NAME,_switch_mm)
-#define cpu_set_pte_ext			__glue(CPU_NAME,_set_pte_ext)
+#define cpu_set_pte_ext			__glue(CPU_NAME,_set_pte_ext)   // cpu_v7_set_pte_ext
 #define cpu_suspend_size		__glue(CPU_NAME,_suspend_size)
 #define cpu_do_suspend			__glue(CPU_NAME,_do_suspend)
 #define cpu_do_resume			__glue(CPU_NAME,_do_resume)

@@ -90,6 +90,7 @@
 #define DECLARE_PER_CPU(type, name)					\
 	DECLARE_PER_CPU_SECTION(type, name, "")
 
+// DEFINE_PER_CPU(int, __kmap_atomic_idx); 
 #define DEFINE_PER_CPU(type, name)					\
 	DEFINE_PER_CPU_SECTION(type, name, "")
 
