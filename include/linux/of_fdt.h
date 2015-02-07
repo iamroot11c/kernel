@@ -59,7 +59,7 @@ struct boot_param_header {
 	__be32	dt_struct_size;		/* size of the DT structure block 0x3978*/
 };
 
-#if defined(CONFIG_OF_FLATTREE)
+#if defined(CONFIG_OF_FLATTREE) // defined
 
 struct device_node;
 

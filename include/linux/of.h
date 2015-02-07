@@ -43,6 +43,7 @@ struct property {
 struct of_irq_controller;
 #endif
 
+// 2015-02-07
 struct device_node {
 	const char *name;
 	const char *type;
@@ -57,7 +58,7 @@ struct device_node {
 	struct	device_node *next;	/* next device of same type */
 	struct	device_node *allnext;	/* next in list of all nodes */
 	struct	proc_dir_entry *pde;	/* this node's proc directory */
-	struct	kref kref;
+	struct	kref kref;              // atomic_t refcount;
 	unsigned long _flags;
 	void	*data;
 #if defined(CONFIG_SPARC)

@@ -25,6 +25,7 @@ static inline void pagefault_disable(void)
 }
 
 // 2015-01-31
+// 2015-02-07, 끝
 static inline void pagefault_enable(void)
 {
 	/*

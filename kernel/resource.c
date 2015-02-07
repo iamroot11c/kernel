@@ -24,7 +24,7 @@
 #include <linux/mm.h>
 #include <asm/io.h>
 
-
+// 자원을 트리로 관리하는데 아래의 2가지 자원은 트리의 시작
 struct resource ioport_resource = {
 	.name	= "PCI IO",
 	.start	= 0,
@@ -195,6 +195,7 @@ static struct resource *alloc_resource(gfp_t flags)
 }
 
 /* Return the conflict entry if you can't request it */
+// 2015-02-07
 static struct resource * __request_resource(struct resource *root, struct resource *new)
 {
 	resource_size_t start = new->start;
@@ -214,7 +215,7 @@ static struct resource * __request_resource(struct resource *root, struct resour
 			new->sibling = tmp;
 			*p = new;
 			new->parent = root;
-			return NULL;
+			return NULL; //요청 성공
 		}
 		p = &tmp->sibling;
 		if (tmp->end < start)
@@ -279,13 +280,14 @@ void release_child_resources(struct resource *r)
  *
  * Returns 0 for success, conflict resource on error.
  */
+// 2015-02-07
 struct resource *request_resource_conflict(struct resource *root, struct resource *new)
 {
 	struct resource *conflict;
 
-	write_lock(&resource_lock);
+	write_lock(&resource_lock);   // 선점을 비 활성화
 	conflict = __request_resource(root, new);
-	write_unlock(&resource_lock);
+	write_unlock(&resource_lock); // 선점 가능하도록 활성화
 	return conflict;
 }
 
@@ -296,6 +298,8 @@ struct resource *request_resource_conflict(struct resource *root, struct resourc
  *
  * Returns 0 for success, negative error code on error.
  */
+// 2015-02-07
+// request_resource(&iomem_resource, res);
 int request_resource(struct resource *root, struct resource *new)
 {
 	struct resource *conflict;

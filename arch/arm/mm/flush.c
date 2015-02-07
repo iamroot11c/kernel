@@ -23,15 +23,25 @@
 
 #ifdef CONFIG_CPU_CACHE_VIPT
 
+// 2015-02-07, vaddr을 임의로 주어 계산 및 명령어 확인
 static void flush_pfn_alias(unsigned long pfn, unsigned long vaddr)
 {
 	unsigned long to = FLUSH_ALIAS_START + (CACHE_COLOUR(vaddr) << PAGE_SHIFT);
+			  // ((vaddr & (SHMLBA - 1)) >> PAGE_SHIFT) 
+			  // ((0xC000_1234 & 0x3FFF) >> 12)
+			  // -----------------------------
+			  // 0xFFFF_4000 + 0x1000 --- 12, 13번 비트를 구함
+			  // 0xFFFF_5000
 	const int zero = 0;
 
 	set_top_pte(to, pfn_pte(pfn, PAGE_KERNEL));
 
-	asm(	"mcrr	p15, 0, %1, %0, c14\n"
-	"	mcr	p15, 0, %2, c7, c10, 4"
+	asm(	"mcrr	p15, 0, %1, %0, c14\n"  
+		/* op{cond} coproc, #opcode1, Rt, Rt2, CRm
+		 * See Chapter 9 Generic Timer for information on the Generic Timer registers.
+		 * CNTPCT - Physical Count Register
+		 */
+	"	mcr	p15, 0, %2, c7, c10, 4" /* CP15DSB(Data Synchronization Barrier operation) */
 	    :
 	    : "r" (to), "r" (to + PAGE_SIZE - L1_CACHE_BYTES), "r" (zero)
 	    : "cc");
@@ -163,6 +173,7 @@ void copy_to_user_page(struct vm_area_struct *vma, struct page *page,
 
 // 2015-01-25, 시작
 // __flush_dcache_page(NULL, empty_zero_page);
+// 2015-02-07, 끝
 void __flush_dcache_page(struct address_space *mapping, struct page *page)
 {
 	/*

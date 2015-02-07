@@ -205,6 +205,8 @@ static void *unflatten_dt_alloc(void **mem, unsigned long size,
  * @allnextpp: pointer to ->allnext from last allocated device_node
  * @fpsize: Size of the node path up at the current depth.
  */
+// 2015-02-07, 흝어봄
+// unflatten_dt_node(blob, 0, &start, NULL, NULL, 0)
 static void * unflatten_dt_node(struct boot_param_header *blob,
 				void *mem,
 				void **p,
@@ -414,6 +416,10 @@ static void * unflatten_dt_node(struct boot_param_header *blob,
  * @dt_alloc: An allocator that provides a virtual address to memory
  * for the resulting tree
  */
+// 2015-02-07, 시작
+// __unflatten_device_tree(initial_boot_params, &of_allnodes,
+//                               early_init_dt_alloc_memory_arch);
+//
 static void __unflatten_device_tree(struct boot_param_header *blob,
 			     struct device_node **mynodes,
 			     void * (*dt_alloc)(u64 size, u64 align))
@@ -434,6 +440,7 @@ static void __unflatten_device_tree(struct boot_param_header *blob,
 	pr_debug("size: %08x\n", be32_to_cpu(blob->totalsize));
 	pr_debug("version: %08x\n", be32_to_cpu(blob->version));
 
+	// little endian으로 정렬후 트리의 헤더(루트)인지 조사
 	if (be32_to_cpu(blob->magic) != OF_DT_HEADER) {
 		pr_err("Invalid device tree blob header\n");
 		return;
@@ -441,16 +448,24 @@ static void __unflatten_device_tree(struct boot_param_header *blob,
 
 	/* First pass, scan for size */
 	start = ((void *)blob) + be32_to_cpu(blob->off_dt_struct);
+	// unflatten_dt_node() 함수는 분석하지 않고 흝어봄
+	// 다음주에 분석할 예정
 	size = (unsigned long)unflatten_dt_node(blob, 0, &start, NULL, NULL, 0);
 	size = ALIGN(size, 4);
 
 	pr_debug("  size is %lx, allocating...\n", size);
 
 	/* Allocate memory for the expanded device tree */
+	// unflatten_dt_node() 함수에서 구한 size만큼 할당하되
+	// struct device_node 크기로 정렬된 가상주소를 구함 
+	// __ALIGNOF__(type)은 type 형식에 대한 정렬 요구 사항을 반환하거나,
+	// 정렬 요구 사항이 없으면 1을 반환합니다.
+	// 참고: http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0348bk/BABBDFAF.html
 	mem = dt_alloc(size + 4, __alignof__(struct device_node));
 	memset(mem, 0, size);
 
 	*(__be32 *)(mem + size) = cpu_to_be32(0xdeadbeef);
+	// 2015-02-07, 여기까지
 
 	pr_debug("  unflattening %p...\n", mem);
 
@@ -927,7 +942,7 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
 	return 1;
 }
 
-#ifdef CONFIG_HAVE_MEMBLOCK
+#ifdef CONFIG_HAVE_MEMBLOCK // defined
 /*
  * called from unflatten_device_tree() to bootstrap devicetree itself
  * Architectures can override this definition if memblock isn't used

@@ -126,6 +126,8 @@ static inline void kmap_atomic_idx_pop(void)
  * Prevent people trying to call kunmap_atomic() as if it were kunmap()
  * kunmap_atomic() should get the return value of kmap_atomic, not the page.
  */
+//2015-01-31
+//2015-02-07, 끝
 #define kunmap_atomic(addr)                                     \
 do {                                                            \
 	BUILD_BUG_ON(__same_type((addr), struct page *));       \

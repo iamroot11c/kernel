@@ -2374,6 +2374,9 @@ pick_next_task(struct rq *rq)
  *          - return from syscall or exception to user-space
  *          - return from interrupt-handler to user-space
  */
+// 2015-02-05 흝어봄
+// 분석의 흐름을 이어가기 위해 이 함수를 자세히 분석하지 않음
+// 프로세서의 상태(주기)를 알고 좀 더 분석 할 예정. 꼭!
 static void __sched __schedule(void)
 {
 	struct task_struct *prev, *next;
@@ -2513,7 +2516,8 @@ void __sched schedule_preempt_disabled(void)
  * off of preempt_enable. Kernel preemptions off return from interrupt
  * occur there and call schedule directly.
  */
-// 2015-01-31
+// 2015-01-31, 시작
+// 2015-02-07, 끝
 asmlinkage void __sched notrace preempt_schedule(void)
 {
 	/*
@@ -2526,6 +2530,8 @@ asmlinkage void __sched notrace preempt_schedule(void)
 	do {
 		add_preempt_count_notrace(PREEMPT_ACTIVE);	// 0x4000_0000
 		// 2015-01-31, 여기까지
+
+		// 2015-02-07, __schedule() 함수는 분석하지 않고 흝어봄
 		__schedule();
 		sub_preempt_count_notrace(PREEMPT_ACTIVE);
 

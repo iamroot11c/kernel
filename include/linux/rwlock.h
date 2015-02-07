@@ -61,7 +61,7 @@ do {								\
 #define read_trylock(lock)	__cond_lock(lock, _raw_read_trylock(lock))
 #define write_trylock(lock)	__cond_lock(lock, _raw_write_trylock(lock))
 
-#define write_lock(lock)	_raw_write_lock(lock)
+#define write_lock(lock)	_raw_write_lock(lock) // __LOCK(lock) 
 #define read_lock(lock)		_raw_read_lock(lock)
 
 #if defined(CONFIG_SMP) || defined(CONFIG_DEBUG_SPINLOCK)

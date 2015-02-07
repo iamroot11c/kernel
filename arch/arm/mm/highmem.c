@@ -92,6 +92,7 @@ void *kmap_atomic(struct page *page)
 EXPORT_SYMBOL(kmap_atomic);
 
 // 2015-01-31
+// 2015-02-07, 끝
 void __kunmap_atomic(void *kvaddr)
 {
 	unsigned long vaddr = (unsigned long) kvaddr & PAGE_MASK;

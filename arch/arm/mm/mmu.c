@@ -1701,8 +1701,9 @@ void __init paging_init(const struct machine_desc *mdesc)
 	bootmem_init();
 	// 2015-01-24, 완료
 
-	// 2015-02-24, 시작
+	// 2015-01-24, 시작
 	// 가상주소의 page를 구함
 	empty_zero_page = virt_to_page(zero_page);
 	__flush_dcache_page(NULL, empty_zero_page);
+	// 2015-02-07, 끝
 }

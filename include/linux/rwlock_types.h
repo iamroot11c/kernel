@@ -13,7 +13,7 @@ typedef struct {
 #ifdef CONFIG_GENERIC_LOCKBREAK
 	unsigned int break_lock;
 #endif
-#ifdef CONFIG_DEBUG_SPINLOCK
+#ifdef CONFIG_DEBUG_SPINLOCK // defined
 	unsigned int magic, owner_cpu;
 	void *owner;
 #endif

@@ -149,6 +149,8 @@ DEFINE_PER_CPU(struct cpuinfo_arm, cpu_data);
 /*
  * Standard memory resources
  */
+// 2015-02-05
+// include/linux/ioport.h
 static struct resource mem_res[] = {
 	{
 		.name = "Video RAM",
@@ -731,12 +733,14 @@ static int __init early_mem(char *p)
 }
 early_param("mem", early_mem);
 
+// 2015-02-05
+// 'System RAM'을 모든 memblock.memory영역에 추가
 static void __init request_standard_resources(const struct machine_desc *mdesc)
 {
 	struct memblock_region *region;
 	struct resource *res;
 
-	kernel_code.start   = virt_to_phys(_text);
+	kernel_code.start   = virt_to_phys(_text);     // 0xC000_8000
 	kernel_code.end     = virt_to_phys(_etext - 1);
 	kernel_data.start   = virt_to_phys(_sdata);
 	kernel_data.end     = virt_to_phys(_end - 1);
@@ -750,6 +754,8 @@ static void __init request_standard_resources(const struct machine_desc *mdesc)
 
 		request_resource(&iomem_resource, res);
 
+		// 리소스 영역 안에 커널의 코드와 데이터가 있다면
+		// 리소스의 자식에 추가 또는 재 구성
 		if (kernel_code.start >= res->start &&
 		    kernel_code.end <= res->end)
 			request_resource(res, &kernel_code);
@@ -768,6 +774,7 @@ static void __init request_standard_resources(const struct machine_desc *mdesc)
 	 * Some machines don't have the possibility of ever
 	 * possessing lp0, lp1 or lp2
 	 */
+	// LP: parallel ports
 	if (mdesc->reserve_lp0)
 		request_resource(&ioport_resource, &lp0);
 	if (mdesc->reserve_lp1)
@@ -940,11 +947,15 @@ void __init setup_arch(char **cmdline_p)
 
 	// 2014-10-11 분석중
 	paging_init(mdesc);
+	// 2015-02-07 분석 완료
+	
+	// 2015-02-07, 저녁 식사 후 시작
 	request_standard_resources(mdesc);
 
 	if (mdesc->restart)
 		arm_pm_restart = mdesc->restart;
 
+	// 2015-02-07
 	unflatten_device_tree();
 
 	arm_dt_init_cpu_maps();

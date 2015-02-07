@@ -15,6 +15,7 @@
  * Resources are tree-like, allowing
  * nesting etc..
  */
+// 2015-02-05
 struct resource {
 	resource_size_t start;
 	resource_size_t end;
