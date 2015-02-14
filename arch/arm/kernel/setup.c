@@ -955,8 +955,9 @@ void __init setup_arch(char **cmdline_p)
 	if (mdesc->restart)
 		arm_pm_restart = mdesc->restart;
 
-	// 2015-02-07
+	// 2015-02-07, start
 	unflatten_device_tree();
+	// 2015-02-14, end
 
 	arm_dt_init_cpu_maps();
 	psci_init();

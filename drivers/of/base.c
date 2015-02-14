@@ -149,6 +149,8 @@ void of_node_put(struct device_node *node)
 EXPORT_SYMBOL(of_node_put);
 #endif /* CONFIG_OF_DYNAMIC */
 
+// 2015-02-14
+// of_get_property(np, "name", NULL);
 static struct property *__of_find_property(const struct device_node *np,
 					   const char *name, int *lenp)
 {
@@ -157,6 +159,8 @@ static struct property *__of_find_property(const struct device_node *np,
 	if (!np)
 		return NULL;
 
+	// struct property는 커널의 링크드 리스트 대신에,
+	// 직접 구현해서 사용하고 있음
 	for (pp = np->properties; pp; pp = pp->next) {
 		if (of_prop_cmp(pp->name, name) == 0) {
 			if (lenp)
@@ -168,6 +172,8 @@ static struct property *__of_find_property(const struct device_node *np,
 	return pp;
 }
 
+// 2015-02-14
+// of_get_property(np, "name", NULL);
 struct property *of_find_property(const struct device_node *np,
 				  const char *name,
 				  int *lenp)
@@ -223,6 +229,8 @@ static const void *__of_get_property(const struct device_node *np,
  * Find a property with a given name for a given node
  * and return the value.
  */
+// 2015-02-14
+// of_get_property(np, "name", NULL);
 const void *of_get_property(const struct device_node *np, const char *name,
 			    int *lenp)
 {
