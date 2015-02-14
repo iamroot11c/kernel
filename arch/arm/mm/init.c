@@ -445,6 +445,10 @@ void __init bootmem_init(void)
 
 	// 하이메모리의 시작과 끝을 찾음
 	// 페이지 프레임 번호를 찾음
+	// 2015-02-12 추가
+	// min은 bank 배열의 첫 번째 주소, max_low는 하이메모리 주소, 
+	// max_high는 nf_banks를 인덱스로 bank에서 찾은 주소에 대한
+	// 각 각의 PFN을 구함
 	find_limits(&min, &max_low, &max_high);
 
 	// 2014-11-01 시작

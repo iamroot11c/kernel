@@ -4782,7 +4782,7 @@ void __paginginit set_pageblock_order(void)
 #endif /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
 
 // 2015-01-10
-// calc_memmap_size(zones_size[j], (size - zholes_size[j]));
+// calc_memmap_size(zones_size[j], (zones_size[j] - zholes_size[j]));
 static unsigned long __paginginit calc_memmap_size(unsigned long spanned_pages,
 						   unsigned long present_pages)
 {
@@ -4796,7 +4796,12 @@ static unsigned long __paginginit calc_memmap_size(unsigned long spanned_pages,
 	 * populated regions may not naturally algined on page boundary.
 	 * So the (present_pages >> 4) heuristic is a tradeoff for that.
 	 */
-	// zones_size[j] > ((size - zholes_size[j]) + ((size - zholes_size[j]) >> 4))
+	// zones_size[j] > ((zones_size[j] - zholes_size[j]) + 
+	//                                  ((zones_size[j] - zholes_size[j]) >> 4)
+	// 위 주석을 분석하면 '좀 더 정확한 판단을 위해 holes가 zone에 있는지 
+	// SPARSEMEM이 사용중인지 확인 또한 memmap pages가 영역(regions)의 
+	// 경계(구분)가 정렬되어 있지 않아 (present_pages >> 4)를 연산하여 더함'
+	// 이라고 되어있다.
 	if (spanned_pages > present_pages + (present_pages >> 4) &&
 	    IS_ENABLED(CONFIG_SPARSEMEM))
 		pages = present_pages;
