@@ -85,7 +85,7 @@ EXPORT_SYMBOL(of_n_size_cells);
 struct device_node *of_node_get(struct device_node *node)
 {
 	if (node)
-		kref_get(&node->kref);
+		kref_get(&node->kref); // 참조값을 증가
 	return node;
 }
 EXPORT_SYMBOL(of_node_get);
@@ -229,8 +229,9 @@ static const void *__of_get_property(const struct device_node *np,
  * Find a property with a given name for a given node
  * and return the value.
  */
-// 2015-02-14
+// 2015-02-14; name이 같은 property 구조체를 찾음
 // of_get_property(np, "name", NULL);
+// of_get_property(of_chosen, "linux,stdout-path", NULL);
 const void *of_get_property(const struct device_node *np, const char *name,
 			    int *lenp)
 {
@@ -570,6 +571,8 @@ EXPORT_SYMBOL(of_get_child_by_name);
  *	Returns a node pointer with refcount incremented, use
  *	of_node_put() on it when done.
  */
+// 2015-02-14
+// of_find_node_by_path("/chosen");
 struct device_node *of_find_node_by_path(const char *path)
 {
 	struct device_node *np = of_allnodes;
@@ -864,6 +867,8 @@ EXPORT_SYMBOL(of_find_node_by_phandle);
  * property data isn't large enough.
  *
  */
+// 2015-02-14
+// of_find_property_value_of_size(cpu, "reg", (1 * sizeof(hwid))
 static void *of_find_property_value_of_size(const struct device_node *np,
 			const char *propname, u32 len)
 {
@@ -991,6 +996,8 @@ EXPORT_SYMBOL_GPL(of_property_read_u16_array);
  *
  * The out_values is modified only if a valid u32 value can be decoded.
  */
+// 2015-02-14
+// of_property_read_u32_array(cpu, "reg", &hwid, 1);
 int of_property_read_u32_array(const struct device_node *np,
 			       const char *propname, u32 *out_values,
 			       size_t sz)
@@ -1002,7 +1009,7 @@ int of_property_read_u32_array(const struct device_node *np,
 		return PTR_ERR(val);
 
 	while (sz--)
-		*out_values++ = be32_to_cpup(val++);
+		*out_values++ = be32_to_cpup(val++); // 값을 증가 후 저장
 	return 0;
 }
 EXPORT_SYMBOL_GPL(of_property_read_u32_array);
@@ -1727,6 +1734,8 @@ int of_detach_node(struct device_node *np)
 }
 #endif /* defined(CONFIG_OF_DYNAMIC) */
 
+// 2015-02-14; alias_prop 구조체 리스트의 마지막(헤드의 왼쪽)에 추가
+// of_alias_add(ap, np, id, start, len);
 static void of_alias_add(struct alias_prop *ap, struct device_node *np,
 			 int id, const char *stem, int stem_len)
 {
@@ -1749,6 +1758,8 @@ static void of_alias_add(struct alias_prop *ap, struct device_node *np,
  * @dt_alloc:	An allocator that provides a virtual address to memory
  *		for the resulting tree
  */
+// 2015-02-14
+// of_alias_scan(early_init_dt_alloc_memory_arch);
 void of_alias_scan(void * (*dt_alloc)(u64 size, u64 align))
 {
 	struct property *pp;
@@ -1788,8 +1799,11 @@ void of_alias_scan(void * (*dt_alloc)(u64 size, u64 align))
 
 		/* walk the alias backwards to extract the id and work out
 		 * the 'stem' string */
+		// 문자열의 끝의 다음부터 숫자('0'~'9')가 아닌 문자를 찾음
 		while (isdigit(*(end-1)) && end > start)
 			end--;
+		// 숫자가 아닌 문자를 처음으로 만난 
+		// 곳까지하여 문자열의 길이를 구함
 		len = end - start;
 
 		if (kstrtoint(end, 10, &id) < 0)

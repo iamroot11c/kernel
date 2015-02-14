@@ -80,6 +80,7 @@ extern struct device_node *of_node_get(struct device_node *node);
 extern void of_node_put(struct device_node *node);
 #else /* CONFIG_OF_DYNAMIC */
 /* Dummy ref counting routines - to be implemented later */
+// 2015-02-14
 static inline struct device_node *of_node_get(struct device_node *node)
 {
 	return node;
@@ -576,6 +577,8 @@ static inline int of_property_read_u16(const struct device_node *np,
 	return of_property_read_u16_array(np, propname, out_value, 1);
 }
 
+// 2015-02-14
+// of_property_read_u32(cpu, "reg", &hwid)
 static inline int of_property_read_u32(const struct device_node *np,
 				       const char *propname,
 				       u32 *out_value)

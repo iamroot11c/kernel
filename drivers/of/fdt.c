@@ -1006,6 +1006,8 @@ void __init unflatten_device_tree(void)
 				early_init_dt_alloc_memory_arch);
 
 	/* Get pointer to "/chosen" and "/aliases" nodes for use everywhere */
+	// of_chosen, of_stdout, of_aliases를 구하며
+	// of_aliases의 리스트를 만듬
 	of_alias_scan(early_init_dt_alloc_memory_arch);
 }
 

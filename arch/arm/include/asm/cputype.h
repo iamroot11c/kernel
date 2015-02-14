@@ -81,6 +81,7 @@ extern unsigned int processor_id;
 
 #ifdef CONFIG_CPU_CP15	//더 알아 봐야됨.  arm inline asm 참고
 			//20140712
+// 2015-02-14; Main ID Register를 읽음
 #define read_cpuid(reg)							\
 	({								\
 		unsigned int __val;					\

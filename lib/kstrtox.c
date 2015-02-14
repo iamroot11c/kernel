@@ -247,6 +247,8 @@ EXPORT_SYMBOL(kstrtouint);
  * Used as a replacement for the obsolete simple_strtoull. Return code must
  * be checked.
  */
+// 2015-02-14; 문자를 숫자로 변환
+// kstrtoint(end, 10, &id)
 int kstrtoint(const char *s, unsigned int base, int *res)
 {
 	long long tmp;

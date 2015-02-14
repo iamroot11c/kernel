@@ -959,7 +959,9 @@ void __init setup_arch(char **cmdline_p)
 	unflatten_device_tree();
 	// 2015-02-14, end
 
+	// 2015-02-14, start
 	arm_dt_init_cpu_maps();
+	// 2015-02-14, 여기까지
 	psci_init();
 #ifdef CONFIG_SMP
 	if (is_smp()) {

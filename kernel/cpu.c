@@ -656,10 +656,12 @@ EXPORT_SYMBOL_GPL(cpu_bit_bitmap);
 const DECLARE_BITMAP(cpu_all_bits, NR_CPUS) = CPU_BITS_ALL;
 EXPORT_SYMBOL(cpu_all_bits);
 
-#ifdef CONFIG_INIT_ALL_POSSIBLE
+#ifdef CONFIG_INIT_ALL_POSSIBLE // not defind
 static DECLARE_BITMAP(cpu_possible_bits, CONFIG_NR_CPUS) __read_mostly
 	= CPU_BITS_ALL;
 #else
+// http://egloos.zum.com/furmuwon/v/11004261
+// 비트수를 32로 나누어 총 몇 바이트가 필요한지 계산하여 배열을 생성
 static DECLARE_BITMAP(cpu_possible_bits, CONFIG_NR_CPUS) __read_mostly;
 #endif
 const struct cpumask *const cpu_possible_mask = to_cpumask(cpu_possible_bits);
@@ -677,6 +679,8 @@ static DECLARE_BITMAP(cpu_active_bits, CONFIG_NR_CPUS) __read_mostly;
 const struct cpumask *const cpu_active_mask = to_cpumask(cpu_active_bits);
 EXPORT_SYMBOL(cpu_active_mask);
 
+// 2015-02-14
+// set_cpu_possible(i, true);
 void set_cpu_possible(unsigned int cpu, bool possible)
 {
 	if (possible)
