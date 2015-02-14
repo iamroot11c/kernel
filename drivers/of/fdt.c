@@ -26,6 +26,7 @@
 
 #include <asm/page.h>
 
+// 2015-02-14
 char *of_fdt_get_string(struct boot_param_header *blob, u32 offset)
 {
 	return ((char *)blob) +
@@ -184,11 +185,19 @@ int of_fdt_match(struct boot_param_header *blob, unsigned long node,
 	return score;
 }
 
+// 2015-02-14
+// np = unflatten_dt_alloc(&mem, sizeof(struct device_node) + allocl,
+//                              __alignof__(struct device_node));
+//
+// pp = unflatten_dt_alloc(&mem, sizeof(struct property),
+//                              __alignof__(struct property));
+//
 static void *unflatten_dt_alloc(void **mem, unsigned long size,
 				       unsigned long align)
 {
 	void *res;
 
+	// 2015-02-14, 0을 align 해봤자, 0일 것이다.
 	*mem = PTR_ALIGN(*mem, align);
 	res = *mem;
 	*mem += size;
@@ -206,7 +215,9 @@ static void *unflatten_dt_alloc(void **mem, unsigned long size,
  * @fpsize: Size of the node path up at the current depth.
  */
 // 2015-02-07, 흝어봄
-// unflatten_dt_node(blob, 0, &start, NULL, NULL, 0)
+//  size = (unsigned long)unflatten_dt_node(blob, 0, &start, NULL, NULL, 0);
+//  // 2015-02-14
+//  unflatten_dt_node(blob, mem, &start, NULL, &allnextp, 0);
 static void * unflatten_dt_node(struct boot_param_header *blob,
 				void *mem,
 				void **p,
@@ -230,7 +241,8 @@ static void * unflatten_dt_node(struct boot_param_header *blob,
 	*p += 4;
 	pathp = *p;
 	l = allocl = strlen(pathp) + 1;
-	*p = PTR_ALIGN(*p + l, 4);
+	// org pointer backup
+	*p = PTR_ALIGN(*p + l, 4);	// 4byte align
 
 	/* version 0x10 has a more compact unit name here instead of the full
 	 * path. we accumulate the full path size using "fpsize", we'll rebuild
@@ -258,8 +270,11 @@ static void * unflatten_dt_node(struct boot_param_header *blob,
 		}
 	}
 
+	// 2015-02-14, 우리는 *mem에 0이 들어있다.
 	np = unflatten_dt_alloc(&mem, sizeof(struct device_node) + allocl,
 				__alignof__(struct device_node));
+
+	// 2015-02-14, allnextpp가 NULL임으로, 분석하지 않았음.
 	if (allnextpp) {
 		char *fn;
 		np->full_name = fn = ((char *)np) + sizeof(*np);
@@ -313,6 +328,7 @@ static void * unflatten_dt_node(struct boot_param_header *blob,
 		if (be32_to_cpu(blob->version) < 0x10)
 			*p = PTR_ALIGN(*p, sz >= 8 ? 8 : 4);
 
+		// 2015-02-14
 		pname = of_fdt_get_string(blob, noff);
 		if (pname == NULL) {
 			pr_info("Can't find property name in list !\n");
@@ -321,8 +337,10 @@ static void * unflatten_dt_node(struct boot_param_header *blob,
 		if (strcmp(pname, "name") == 0)
 			has_name = 1;
 		l = strlen(pname) + 1;
+		// 2015-02-14
 		pp = unflatten_dt_alloc(&mem, sizeof(struct property),
 					__alignof__(struct property));
+		// 실질적인 property setting
 		if (allnextpp) {
 			/* We accept flattened tree phandles either in
 			 * ePAPR-style "phandle" properties, or the
@@ -339,6 +357,7 @@ static void * unflatten_dt_node(struct boot_param_header *blob,
 			 * stuff */
 			if (strcmp(pname, "ibm,phandle") == 0)
 				np->phandle = be32_to_cpup((__be32 *)*p);
+			// setting propery from blob
 			pp->name = pname;
 			pp->length = sz;
 			pp->value = *p;
@@ -350,10 +369,14 @@ static void * unflatten_dt_node(struct boot_param_header *blob,
 	/* with version 0x10 we may not have the name property, recreate
 	 * it here from the unit name if absent
 	 */
+	// 0x10 버전인 경우, property를 가지지 않기 때문에, 아래 루틴이 필요함
 	if (!has_name) {
 		char *p1 = pathp, *ps = pathp, *pa = NULL;
 		int sz;
 
+		// 문자열 끝까지 조회
+		// pa, ps는 가장 마지막 포인터를 가지고 있다.
+		// 예) "@@@"라면 pa는 가장 마지막 @의 포인터를 가지고 있을 것임.
 		while (*p1) {
 			if ((*p1) == '@')
 				pa = p1;
@@ -361,8 +384,9 @@ static void * unflatten_dt_node(struct boot_param_header *blob,
 				ps = p1 + 1;
 			p1++;
 		}
+		// 아래는, 예외 처리
 		if (pa < ps)
-			pa = p1;
+			pa = p1;	// 이 경우, p1은 NULL을 가지고 있는 주소
 		sz = (pa - ps) + 1;
 		pp = unflatten_dt_alloc(&mem, sizeof(struct property) + sz,
 					__alignof__(struct property));
@@ -380,6 +404,7 @@ static void * unflatten_dt_node(struct boot_param_header *blob,
 	}
 	if (allnextpp) {
 		*prev_pp = NULL;
+		// 2015-02-14
 		np->name = of_get_property(np, "name", NULL);
 		np->type = of_get_property(np, "device_type", NULL);
 
@@ -420,6 +445,10 @@ static void * unflatten_dt_node(struct boot_param_header *blob,
 // __unflatten_device_tree(initial_boot_params, &of_allnodes,
 //                               early_init_dt_alloc_memory_arch);
 //
+// 2015-02-14,
+// 처음에는 Scan을 통해서 size를 확인하고,
+// 두번째는, 실제적인 값 셋팅을 한다.
+// 위 두과정은 unflatten_dt_node()를 통해서 이루어 진다.
 static void __unflatten_device_tree(struct boot_param_header *blob,
 			     struct device_node **mynodes,
 			     void * (*dt_alloc)(u64 size, u64 align))
@@ -450,6 +479,7 @@ static void __unflatten_device_tree(struct boot_param_header *blob,
 	start = ((void *)blob) + be32_to_cpu(blob->off_dt_struct);
 	// unflatten_dt_node() 함수는 분석하지 않고 흝어봄
 	// 다음주에 분석할 예정
+	// 2015-02-14, unflatten_dt_node() 부터 시작
 	size = (unsigned long)unflatten_dt_node(blob, 0, &start, NULL, NULL, 0);
 	size = ALIGN(size, 4);
 
@@ -471,9 +501,12 @@ static void __unflatten_device_tree(struct boot_param_header *blob,
 
 	/* Second pass, do actual unflattening */
 	start = ((void *)blob) + be32_to_cpu(blob->off_dt_struct);
+	// off_dt_struct
+	// 이미 위에서 한번 했고, 차이점이 있다면, 0대신에 mem, &allnextp를 넘겨준다.
 	unflatten_dt_node(blob, mem, &start, NULL, &allnextp, 0);
 	if (be32_to_cpup(start) != OF_DT_END)
 		pr_warning("Weird tag at end of tree: %08x\n", be32_to_cpup(start));
+	// overwritten을 이렇게 체크한다.
 	if (be32_to_cpup(mem + size) != 0xdeadbeef)
 		pr_warning("End of tree marker overwritten: %08x\n",
 			   be32_to_cpup(mem + size));
@@ -961,8 +994,14 @@ void * __init __weak early_init_dt_alloc_memory_arch(u64 size, u64 align)
  * pointers of the nodes so the normal device-tree walking functions
  * can be used.
  */
+// 2015-02-14
+// 아래에서 Device Tree Blob Layout을 확인할 수 있다.
+// http://ozlabs.org/~dgibson/papers/dtc-paper.pdf
 void __init unflatten_device_tree(void)
 {
+	// 2015-02-14,
+	// initial_boot_params은 전역변수이며, setup_machine_fdt()에서
+	// 설정 되어 진다.
 	__unflatten_device_tree(initial_boot_params, &of_allnodes,
 				early_init_dt_alloc_memory_arch);
 
