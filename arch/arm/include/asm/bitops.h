@@ -205,6 +205,8 @@ extern int _find_next_bit_be(const unsigned long *p, int size, int offset);
 #define find_first_zero_bit(p,sz)	_find_first_zero_bit_le(p,sz)
 #define find_next_zero_bit(p,sz,off)	_find_next_zero_bit_le(p,sz,off)
 #define find_first_bit(p,sz)		_find_first_bit_le(p,sz)
+// 2015-02-28;
+// find_next_bit(cpumask_bits(srcp), nr_cpumask_bits, n+1)
 #define find_next_bit(p,sz,off)		_find_next_bit_le(p,sz,off)
 
 #else
@@ -265,6 +267,21 @@ static inline int constant_fls(int x)
 // 2015-01-17
 // x : 4096 -> return 13;
 // 처음으로 1이 나온 비트 number를 리턴
+// 2015-02-28; 내용 보충
+// fls (find last set)
+// ffs (find first set)
+// ffz (find first zero)
+//
+// 명명 규칙은 아래와 같다.
+// MSB ............... LSB
+// LSB부터 찾을 때 first
+// MSB부터 찾을 때 last
+
+// set - 1을 찾는다.
+// zero - 0을 찾는다.
+// 참고: http://u-city.tistory.com/143
+//
+// 셋되어있는 맨 마지막 비트의 위치를 찾음
 static inline int fls(int x)
 {
 	int ret;
@@ -278,6 +295,7 @@ static inline int fls(int x)
 }
 
 #define __fls(x) (fls(x) - 1)
+//2015-02-28; 처으으로 셋되어 있는 비트를 찾음
 #define ffs(x) ({ unsigned long __t = (x); fls(__t & -__t); })
 #define __ffs(x) (ffs(x) - 1)
 // find first zero

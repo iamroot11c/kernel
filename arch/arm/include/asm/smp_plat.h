@@ -54,6 +54,7 @@ static inline int cache_ops_need_broadcast(void)
  * Logical CPU mapping.
  */
 extern u32 __cpu_logical_map[];
+// 2015-02-28;
 #define cpu_logical_map(cpu)	__cpu_logical_map[cpu]
 /*
  * Retrieve logical cpu index corresponding to a given MPIDR[23:0]

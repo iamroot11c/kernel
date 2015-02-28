@@ -70,6 +70,7 @@ ENDPROC(_find_next_zero_bit_le)
  * Purpose  : Find a 'one' bit
  * Prototype: int find_first_bit(const unsigned long *addr, unsigned int maxbit);
  */
+// 2015-02-28; 
 ENTRY(_find_first_bit_le)
 		teq	r1, #0	
 		beq	3f
@@ -91,18 +92,26 @@ ENDPROC(_find_first_bit_le)
  * Purpose  : Find next 'one' bit
  * Prototype: int find_next_zero_bit(void *addr, unsigned int maxbit, int offset)
  */
+// 2015-02-28;
+// _find_next_bit_le(cpumask_bits(srcp), nr_cpumask_bits, n+1)
+// r0 = cpumask_bits(srcp)
+// r1 = nr_cpumask_bits
+// r2 = n+1
 ENTRY(_find_next_bit_le)
 		teq	r1, #0
 		beq	3b
-		ands	ip, r2, #7
+		ands	ip, r2, #7              @// ip = r2 * 7; // 연산후 상태 갱신
 		beq	1b			@ If new byte, goto old routine
- ARM(		ldrb	r3, [r0, r2, lsr #3]	)
+ ARM(		ldrb	r3, [r0, r2, lsr #3]	) @// r3 = *(r0 + (r2 >> 3)) // *(r0 + (r2/8))
  THUMB(		lsr	r3, r2, #3		)
  THUMB(		ldrb	r3, [r0, r3]		)
 		movs	r3, r3, lsr ip		@ shift off unused bits
-		bne	.L_found
+		                                @// r3 = r3 >> ip;
+		bne	.L_found                @// if (r3 > 0) .L_fouund;
 		orr	r2, r2, #7		@ if zero, then no bits here
+		                                @// r2 = r2 | 7;
 		add	r2, r2, #1		@ align bit pointer
+		                                @// r2 = r2 + 1;
 		b	2b			@ loop for next bit
 ENDPROC(_find_next_bit_le)
 

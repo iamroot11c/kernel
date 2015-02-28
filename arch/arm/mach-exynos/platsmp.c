@@ -68,9 +68,10 @@ static void write_pen_release(int val)
 	outer_clean_range(__pa(&pen_release), __pa(&pen_release + 1));
 }
 
+// 2015-02-28;
 static void __iomem *scu_base_addr(void)
 {
-	return (void __iomem *)(S5P_VA_SCU);
+	return (void __iomem *)(S5P_VA_SCU); // (void __iomem *)0xF880_0000
 }
 
 static DEFINE_SPINLOCK(boot_lock);
@@ -176,12 +177,14 @@ static int exynos_boot_secondary(unsigned int cpu, struct task_struct *idle)
  * Initialise the CPU possible map early - this describes the CPUs
  * which may be present or become present in the system.
  */
-
+// 2015-02-28; 시작
 static void __init exynos_smp_init_cpus(void)
 {
-	void __iomem *scu_base = scu_base_addr();
+	void __iomem *scu_base = scu_base_addr();  // (void __iomem *)0xF880_0000
 	unsigned int i, ncores;
 
+	// Exynos5440을 타켓으로 분석하고 있어 해당 아키텍쳐의 
+	// cortex 버전이 15로 바로 함수 종료함
 	if (read_cpuid_part_number() == ARM_CPU_PART_CORTEX_A9)
 		ncores = scu_base ? scu_get_core_count(scu_base) : 1;
 	else

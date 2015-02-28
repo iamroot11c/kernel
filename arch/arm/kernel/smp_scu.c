@@ -26,9 +26,14 @@
 /*
  * Get the number of CPU cores from the SCU configuration
  */
+// 2015-02-28
+// scu_get_core_count(0xF880_0000);
+// include/asm/io.h의 __raw_readl() 함수와
+// mach-exynos/include/mach/uncompress.h의 __raw_readl() 함수 모두
+// 해당 주소에서 값을 읽어옴
 unsigned int __init scu_get_core_count(void __iomem *scu_base)
 {
-	unsigned int ncores = __raw_readl(scu_base + SCU_CONFIG);
+	unsigned int ncores = __raw_readl(scu_base + SCU_CONFIG/*0x04*/);
 	return (ncores & 0x03) + 1;
 }
 

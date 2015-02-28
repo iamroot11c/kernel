@@ -283,11 +283,15 @@ static inline int bitmap_full(const unsigned long *src, int nbits)
 		return __bitmap_full(src, nbits);
 }
 
+// 2015-02-28;
+// bitmap_weight(cpumask_bits(srcp), nr_cpumask_bits);
 static inline int bitmap_weight(const unsigned long *src, int nbits)
 {
-	if (small_const_nbits(nbits))
+	if (small_const_nbits(nbits)) 
 		return hweight_long(*src & BITMAP_LAST_WORD_MASK(nbits));
+        // src과 nbits의 마스크를 and 연산 후 셋 비트의 개수를 구함
 	return __bitmap_weight(src, nbits);
+    // src에서 셋 비트의 개수를 구함
 }
 
 static inline void bitmap_shift_right(unsigned long *dst,

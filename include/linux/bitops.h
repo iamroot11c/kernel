@@ -61,6 +61,7 @@ static __inline__ int get_count_order(unsigned int count)
 	return order;
 }
 
+// 2015-02-28;
 static inline unsigned long hweight_long(unsigned long w)
 {
 	return sizeof(w) == 4 ? hweight32(w) : hweight64(w);

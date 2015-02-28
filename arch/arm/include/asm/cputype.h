@@ -53,8 +53,10 @@
 #define MPIDR_INVALID (~MPIDR_HWID_BITMASK)
 
 #define MPIDR_LEVEL_BITS 8
-#define MPIDR_LEVEL_MASK ((1 << MPIDR_LEVEL_BITS) - 1)
+#define MPIDR_LEVEL_MASK ((1 << MPIDR_LEVEL_BITS) - 1) // 0b0111
 
+// 2015-02-28;
+// MPIDR_AFFINITY_LEVEL(mask/*0*/, i)
 #define MPIDR_AFFINITY_LEVEL(mpidr, level) \
 	((mpidr >> (MPIDR_LEVEL_BITS * level)) & MPIDR_LEVEL_MASK)	//하위 1byte값을 추출
 									//20140712
@@ -145,6 +147,7 @@ static inline unsigned int __attribute_const__ read_cpuid_ext(unsigned offset)
  * compiler that it's constant.  Use this function to read the CPU ID
  * rather than directly reading processor_id or read_cpuid() directly.
  */
+// 2015-02-28;
 static inline unsigned int __attribute_const__ read_cpuid_id(void)
 {
 	return read_cpuid(CPUID_ID);
@@ -171,9 +174,10 @@ static inline unsigned int __attribute_const__ read_cpuid_implementor(void)
 	return (read_cpuid_id() & 0xFF000000) >> 24;
 }
 
+// 2015-02-28;
 static inline unsigned int __attribute_const__ read_cpuid_part_number(void)
 {
-	return read_cpuid_id() & 0xFFF0;
+	return read_cpuid_id() & 0xFFF0; // CPU ID에서 상위 12비트만을 읽음
 }
 
 static inline unsigned int __attribute_const__ xscale_cpu_arch_version(void)

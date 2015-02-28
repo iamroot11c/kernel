@@ -72,6 +72,18 @@ static DECLARE_COMPLETION(cpu_running);
 
 static struct smp_operations smp_ops;
 
+// 2015-02-28; 시작
+// smp_set_ops(mdcs->smp) // smp = smp_ops(exynos_smp_ops
+// struct smp_operations exynos_smp_ops __initdata = {
+//    .smp_init_cpus          = exynos_smp_init_cpus,
+//    .smp_prepare_cpus       = exynos_smp_prepare_cpus,
+//    .smp_secondary_init     = exynos_secondary_init,
+//    .smp_boot_secondary     = exynos_boot_secondary,
+// #ifdef CONFIG_HOTPLUG_CPU 
+//    .cpu_die                = exynos_cpu_die,
+// #endif
+// };
+//
 void __init smp_set_ops(struct smp_operations *ops)
 {
 	if (ops)
@@ -131,10 +143,11 @@ int __cpu_up(unsigned int cpu, struct task_struct *idle)
 }
 
 /* platform specific SMP operations */
+// 2015-02-28;
 void __init smp_init_cpus(void)
 {
 	if (smp_ops.smp_init_cpus)
-		smp_ops.smp_init_cpus();
+		smp_ops.smp_init_cpus(); // exynos_smp_init_cpus() 함수 호출
 }
 
 int boot_secondary(unsigned int cpu, struct task_struct *idle)

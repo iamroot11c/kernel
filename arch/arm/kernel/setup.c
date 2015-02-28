@@ -500,6 +500,7 @@ struct mpidr_hash mpidr_hash;
  *			  MPIDR value. Resulting algorithm is a collision
  *			  free hash carried out through shifting and ORing
  */
+// 2015-02-25;
 static void __init smp_build_mpidr_hash(void)
 {
 	u32 i, affinity;
@@ -508,6 +509,11 @@ static void __init smp_build_mpidr_hash(void)
 	 * Pre-scan the list of MPIDRS and filter out bits that do
 	 * not contribute to affinity levels, ie they never toggle.
 	 */
+	// #define for_each_cpu(cpu, mask)             \
+	//     for ((cpu) = -1;                \
+	//         (cpu) = cpumask_next((cpu), (mask)),    \
+	//         (cpu) < nr_cpu_ids;)
+	//
 	for_each_possible_cpu(i)
 		mask |= (cpu_logical_map(i) ^ cpu_logical_map(0));
 	pr_debug("mask of set bits 0x%x\n", mask);
@@ -522,9 +528,9 @@ static void __init smp_build_mpidr_hash(void)
 		 * to determine how many bits are required
 		 * to express the affinity level.
 		 */
-		ls = fls(affinity);
-		fs[i] = affinity ? ffs(affinity) - 1 : 0;
-		bits[i] = ls - fs[i];
+		ls = fls(affinity); // 마지막 비트의 위치를 찾음
+		fs[i] = affinity ? ffs(affinity) - 1 : 0; // 첫 번째 비트의 위치를 찾음
+		bits[i] = ls - fs[i]; // 처음과 마지막 비트 사이의 비트수를 계산
 	}
 	/*
 	 * An index can be created from the MPIDR by isolating the
@@ -867,6 +873,7 @@ static void __init reserve_crashkernel(void)
 	insert_resource(&iomem_resource, &crashk_res);
 }
 #else
+// 2015-02-28; CONFIG_KEXEC not define
 static inline void reserve_crashkernel(void) {}
 #endif /* CONFIG_KEXEC */
 
@@ -962,16 +969,36 @@ void __init setup_arch(char **cmdline_p)
 	// 2015-02-14, start
 	arm_dt_init_cpu_maps();
 	// 2015-02-14, 여기까지
+	
+	// 2015-02-28; 시작
+	// CONFIG_ARM_PSCI not defind
 	psci_init();
 #ifdef CONFIG_SMP
 	if (is_smp()) {
+		// 
+		// DT_MACHINE_START(EXYNOS5_DT, "SAMSUNG EXYNOS5 (Flattened Device Tree)")
+		// /* Maintainer: Kukjin Kim <kgene.kim@samsung.com> */
+		//     .smp            = smp_ops(exynos_smp_ops),
+		//     .map_io         = exynos_init_io,
+		//     .init_machine   = exynos5_dt_machine_init,
+		//     .init_late      = exynos_init_late,
+		//     .init_time      = exynos_init_time,
+		//     .dt_compat      = exynos5_dt_compat,
+		//     .restart        = exynos5_restart,
+		//     .reserve        = exynos5_reserve,
+		// MACHINE_EN
+		// 2015-02-28; 위의 설정에따라 smp_init 함수가 정의되지 않은것으로 가정하여 분석 진행
+		// 위 설정은 mach-exynos5-dt.c 파일에 있음
 		if (!mdesc->smp_init || !mdesc->smp_init()) {
+			// CONFIG_ARM_PSCI not defined
+			// 항상 false
 			if (psci_smp_available())
 				smp_set_ops(&psci_smp_ops);
 			else if (mdesc->smp)
 				smp_set_ops(mdesc->smp);
 		}
 		smp_init_cpus();
+	        // 2015-02-28;
 		smp_build_mpidr_hash();
 	}
 #endif
@@ -979,22 +1006,25 @@ void __init setup_arch(char **cmdline_p)
 	if (!is_smp())
 		hyp_mode_check();
 
+	// 2015-02-28; CONFIG_KEXEC not define
 	reserve_crashkernel();
 
-#ifdef CONFIG_MULTI_IRQ_HANDLER
+#ifdef CONFIG_MULTI_IRQ_HANDLER // not define
 	handle_arch_irq = mdesc->handle_irq;
 #endif
 
 #ifdef CONFIG_VT
-#if defined(CONFIG_VGA_CONSOLE)
+#if defined(CONFIG_VGA_CONSOLE) // not define
 	conswitchp = &vga_con;
-#elif defined(CONFIG_DUMMY_CONSOLE)
+#elif defined(CONFIG_DUMMY_CONSOLE) // defined
 	conswitchp = &dummy_con;
 #endif
 #endif
 
+	// smp_init() 함수와 같이 미 정의로 판단됨
 	if (mdesc->init_early)
 		mdesc->init_early();
+	// 2015-02-28; setup_arch() 함수 끝
 }
 
 
