@@ -92,6 +92,9 @@ void __init arm_dt_init_cpu_maps(void)
 	u32 mpidr = is_smp() ? read_cpuid_mpidr() & MPIDR_HWID_BITMASK : 0;
 
 	// 배열의 각 각의 원소를 MPIDR_INVALID 값으로 초기화
+	// GNU C language document 2.5.2 Initializing Arrays
+	// (http://www.gnu.org/software/gnu-c-manual/gnu-c-manual.html#Initializing-Arrays)
+	// GNU 확장기능으로 배열 초기목록에서만 사용
 	u32 tmp_map[NR_CPUS] = { [0 ... NR_CPUS-1] = MPIDR_INVALID };
 	bool bootcpu_valid = false;
 	cpus = of_find_node_by_path("/cpus");
