@@ -78,6 +78,8 @@ typedef struct spinlock {
 #define __SPIN_LOCK_INITIALIZER(lockname) \
 	{ { .rlock = __RAW_SPIN_LOCK_INITIALIZER(lockname) } }
 
+// 2015-03-07,
+// ex) __SPIN_LOCK_UNLOCKED(init_mm.page_table_lock)
 #define __SPIN_LOCK_UNLOCKED(lockname) \
 	(spinlock_t ) __SPIN_LOCK_INITIALIZER(lockname)
 

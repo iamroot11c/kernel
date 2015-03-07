@@ -6,6 +6,10 @@
 
 #ifndef __ASSEMBLY__
 
+// 2015-03-07
+// DECLARE_BITMAP(bits, 2);
+// => unsigned long bit[1] 
+//결국은, long 변수 하나 선언, 비트 패턴으로 컨트롤?
 #define DECLARE_BITMAP(name,bits) \
 	unsigned long name[BITS_TO_LONGS(bits)]
 

@@ -345,6 +345,9 @@ static inline void smp_prepare_cpus(unsigned int maxcpus) { }
  * parsing is performed in place, and we should allow a component to
  * store reference of name/value for future reference.
  */
+// 2015-03-07
+// 전역 변수에 복사하는 하는 기능을 함.
+// command_line, boot_command_line에 대해서
 static void __init setup_command_line(char *command_line)
 {
 	saved_command_line = alloc_bootmem(strlen (boot_command_line)+1);
@@ -507,10 +510,22 @@ asmlinkage void __init start_kernel(void)
 	pr_notice("%s", linux_banner);
 	setup_arch(&command_line);	//함수 내부 진행중 20140712
 	// 2015-02-28; 여기까지
-	mm_init_owner(&init_mm, &init_task);
+
+	// 2015-03-07, start
+	// do nothing
+	mm_init_owner(&init_mm, &init_task);	// CONFIG_MM_OWNER not define
+	// 2015-03-07, end
+	
+	// do nothing
 	mm_init_cpumask(&init_mm);
+
+	// 2015-03-07, start
 	setup_command_line(command_line);
-	setup_nr_cpu_ids();
+	// 2015-03-07, end
+
+	// 2015-03-07, start
+	setup_nr_cpu_ids();	// 2015-03-07, 진행중
+
 	setup_per_cpu_areas();
 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
 

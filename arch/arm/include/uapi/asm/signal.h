@@ -6,12 +6,11 @@
 /* Avoid too many header ordering problems.  */
 struct siginfo;
 
-#ifndef __KERNEL__
+#ifndef __KERNEL__  // set
 /* Here we must cater to libcs that poke about in kernel headers.  */
 
 #define NSIG		32
 typedef unsigned long sigset_t;
-
 #endif /* __KERNEL__ */
 
 #define SIGHUP		 1

@@ -37,6 +37,16 @@ struct nsproxy {
 extern struct nsproxy init_nsproxy;
 
 /*
+ *  from : https://blog.jtlebi.fr/2013/12/22/introduction-to-linux-namespaces-part-1-uts/
+    UTS: hostname 
+    IPC: inter-process communication
+    PID: “chroot” process tree
+    NS: mount points, first to land in Linux
+    NET: network access, including interfaces
+    USER: map virtual, local user-ids to real local ones
+*/
+
+/*
  * the namespaces access rules are:
  *
  *  1. only current task is allowed to change tsk->nsproxy pointer or

@@ -8,15 +8,18 @@
 
 #define UID_GID_MAP_MAX_EXTENTS 5
 
+// 2015-03-07
+// 64 byte 1 cache line을 고려한 구조체
 struct uid_gid_map {	/* 64 bytes -- 1 cache line */
 	u32 nr_extents;
 	struct uid_gid_extent {
 		u32 first;
 		u32 lower_first;
 		u32 count;
-	} extent[UID_GID_MAP_MAX_EXTENTS];
+	} extent[UID_GID_MAP_MAX_EXTENTS/*5*/];
 };
 
+// 2015-03-07
 struct user_namespace {
 	struct uid_gid_map	uid_map;
 	struct uid_gid_map	gid_map;

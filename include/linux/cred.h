@@ -33,8 +33,8 @@ struct group_info {
 	atomic_t	usage;
 	int		ngroups;
 	int		nblocks;
-	kgid_t		small_block[NGROUPS_SMALL];
-	kgid_t		*blocks[0];
+	kgid_t		small_block[NGROUPS_SMALL/*32*/];
+	kgid_t		*blocks[0];     // 이중 포인터 하나 선언 ? => **blocks;
 };
 
 /**
@@ -83,21 +83,26 @@ extern int in_egroup_p(kgid_t);
  *
  *  (1) The objective context of a task.  These parts are used when some other
  *	task is attempting to affect this one.
+ *	=> 자신은 가만 있고, 남이 와서 영향을 미치려 할 때,
  *
  *  (2) The subjective context.  These details are used when the task is acting
  *	upon another object, be that a file, a task, a key or whatever.
+ *   => 내가 남에게 영향을 미치려 할 때
  *
  * Note that some members of this structure belong to both categories - the
  * LSM security pointer for instance.
+ *   => LSM(리눅스 보안 모듈)은 둘 다 모두에 속한 예.
  *
  * A task has two security pointers.  task->real_cred points to the objective
  * context that defines that task's actual details.  The objective part of this
  * context is used whenever that task is acted upon.
+ *   => task->real_cred 1번째 경우,
  *
  * task->cred points to the subjective context that defines the details of how
  * that task is going to act upon another object.  This may be overridden
  * temporarily to point to another security context, but normally points to the
  * same context as task->real_cred.
+ *   => task->cred 2번째 경우, 일반적으로 첫번째와 동일한 값을 가짐.
  */
 struct cred {
 	atomic_t	usage;
@@ -121,7 +126,7 @@ struct cred {
 	kernel_cap_t	cap_permitted;	/* caps we're permitted */
 	kernel_cap_t	cap_effective;	/* caps we can actually use */
 	kernel_cap_t	cap_bset;	/* capability bounding set */
-#ifdef CONFIG_KEYS
+#ifdef CONFIG_KEYS // not set
 	unsigned char	jit_keyring;	/* default keyring to attach requested
 					 * keys to */
 	struct key __rcu *session_keyring; /* keyring inherited over fork */
@@ -129,7 +134,7 @@ struct cred {
 	struct key	*thread_keyring; /* keyring private to this thread */
 	struct key	*request_key_auth; /* assumed request_key authority */
 #endif
-#ifdef CONFIG_SECURITY
+#ifdef CONFIG_SECURITY  // not set
 	void		*security;	/* subjective LSM security */
 #endif
 	struct user_struct *user;	/* real user ID subscription */

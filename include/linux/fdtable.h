@@ -56,7 +56,7 @@ struct files_struct {
 	int next_fd;
 	unsigned long close_on_exec_init[1];
 	unsigned long open_fds_init[1];
-	struct file __rcu * fd_array[NR_OPEN_DEFAULT];
+	struct file __rcu * fd_array[NR_OPEN_DEFAULT/*32*/];
 };
 
 #define rcu_dereference_check_fdtable(files, fdtfd) \

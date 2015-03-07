@@ -18,7 +18,7 @@
 
 struct rw_semaphore;
 
-#ifdef CONFIG_RWSEM_GENERIC_SPINLOCK
+#ifdef CONFIG_RWSEM_GENERIC_SPINLOCK    // set
 #include <linux/rwsem-spinlock.h> /* use a generic implementation */
 #else
 /* All arch specific implementations share the same struct */
@@ -55,10 +55,13 @@ static inline int rwsem_is_locked(struct rw_semaphore *sem)
 # define __RWSEM_DEP_MAP_INIT(lockname)
 #endif
 
+// 2015-03-07, ex)
+// __RWSEM_INITIALIZER(init_mm.mmap_sem)
+// linux/rwsem-spinlock.h
 #define __RWSEM_INITIALIZER(name)			\
-	{ RWSEM_UNLOCKED_VALUE,				\
-	  __RAW_SPIN_LOCK_UNLOCKED(name.wait_lock),	\
-	  LIST_HEAD_INIT((name).wait_list)		\
+	{ RWSEM_UNLOCKED_VALUE /* 0x00000000 */,				\
+	  __RAW_SPIN_LOCK_UNLOCKED(name.wait_lock) /* spinlock init */,	\
+	  LIST_HEAD_INIT((name).wait_list) /* list init */		\
 	  __RWSEM_DEP_MAP_INIT(name) }
 
 #define DECLARE_RWSEM(name) \

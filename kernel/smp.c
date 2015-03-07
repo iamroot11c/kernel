@@ -520,6 +520,7 @@ int nr_cpu_ids __read_mostly = NR_CPUS;
 //컴파일러에게 알려줌 	20140712
 EXPORT_SYMBOL(nr_cpu_ids);
 
+// 2015-03-07, 여기까지
 /* An arch may set nr_cpu_ids earlier if needed, so this would be redundant */
 void __init setup_nr_cpu_ids(void)
 {

@@ -37,6 +37,7 @@ struct netns_ipvs;
 #define NETDEV_HASHBITS    8
 #define NETDEV_HASHENTRIES (1 << NETDEV_HASHBITS)
 
+// 2015-03-07
 struct net {
 	atomic_t		passive;	/* To decided when the network
 						 * namespace should be freed.

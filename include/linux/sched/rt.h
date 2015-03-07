@@ -14,10 +14,11 @@
  * MAX_RT_PRIO must not be smaller than MAX_USER_RT_PRIO.
  */
 
+// 2015-03-07
 #define MAX_USER_RT_PRIO	100
 #define MAX_RT_PRIO		MAX_USER_RT_PRIO
 
-#define MAX_PRIO		(MAX_RT_PRIO + 40)
+#define MAX_PRIO		(MAX_RT_PRIO/*100*/ + 40)
 #define DEFAULT_PRIO		(MAX_RT_PRIO + 20)
 
 static inline int rt_prio(int prio)
@@ -59,6 +60,6 @@ extern void normalize_rt_tasks(void);
  * default timeslice is 100 msecs (used only for SCHED_RR tasks).
  * Timeslices get refilled after they expire.
  */
-#define RR_TIMESLICE		(100 * HZ / 1000)
+#define RR_TIMESLICE		(100 * HZ/*100*/ / 1000) // 10
 
 #endif /* _SCHED_RT_H */

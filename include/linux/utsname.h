@@ -19,6 +19,7 @@ enum uts_proc {
 struct user_namespace;
 extern struct user_namespace init_user_ns;
 
+// 2015-03-07
 struct uts_namespace {
 	struct kref kref;
 	struct new_utsname name;

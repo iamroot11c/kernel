@@ -32,6 +32,7 @@
  */
 #define PID_MAX_LIMIT (CONFIG_BASE_SMALL ? PAGE_SIZE * 8 : \
 	(sizeof(long) > 4 ? 4 * 1024 * 1024 : PID_MAX_DEFAULT))
+// 2015-03-07,  0x8000
 
 /*
  * Define a minimum number of pids per cpu.  Heuristically based

@@ -22,7 +22,7 @@ struct old_utsname {
 };
 
 struct new_utsname {
-	char sysname[__NEW_UTS_LEN + 1];
+	char sysname[__NEW_UTS_LEN/*64*/ + 1];
 	char nodename[__NEW_UTS_LEN + 1];
 	char release[__NEW_UTS_LEN + 1];
 	char version[__NEW_UTS_LEN + 1];

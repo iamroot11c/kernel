@@ -52,7 +52,9 @@
 #define round_down(x, y) ((x) & ~__round_mask(x, y))
 
 #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
-#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+// 2015-03-07
+// DIV_ROUND_UP(2, 32) => (33 / 32) => 1
+#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))   
 #define DIV_ROUND_UP_ULL(ll,d) \
 	({ unsigned long long _tmp = (ll)+(d)-1; do_div(_tmp, d); _tmp; })
 

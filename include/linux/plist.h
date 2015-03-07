@@ -102,6 +102,8 @@ struct plist_node {
  * @node:	struct plist_node variable name
  * @__prio:	initial node priority
  */
+// 2015-03-07
+// PLIST_NODE_INIT(tsk.pushable_tasks, MAX_PRIO)
 #define PLIST_NODE_INIT(node, __prio)			\
 {							\
 	.prio  = (__prio),				\

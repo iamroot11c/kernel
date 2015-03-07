@@ -13,7 +13,7 @@
 typedef unsigned long old_sigset_t;		/* at least 32 bits */
 
 typedef struct {
-	unsigned long sig[_NSIG_WORDS];
+	unsigned long sig[_NSIG_WORDS/*2*/];
 } sigset_t;
 
 #define __ARCH_HAS_SA_RESTORER

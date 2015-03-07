@@ -38,24 +38,24 @@ struct cred init_cred = {
 	.subscribers		= ATOMIC_INIT(2),
 	.magic			= CRED_MAGIC,
 #endif
-	.uid			= GLOBAL_ROOT_UID,
-	.gid			= GLOBAL_ROOT_GID,
+	.uid			= GLOBAL_ROOT_UID/*0*/,
+	.gid			= GLOBAL_ROOT_GID/*0*/,
 	.suid			= GLOBAL_ROOT_UID,
 	.sgid			= GLOBAL_ROOT_GID,
 	.euid			= GLOBAL_ROOT_UID,
 	.egid			= GLOBAL_ROOT_GID,
 	.fsuid			= GLOBAL_ROOT_UID,
 	.fsgid			= GLOBAL_ROOT_GID,
-	.securebits		= SECUREBITS_DEFAULT,
-	.cap_inheritable	= CAP_EMPTY_SET,
-	.cap_permitted		= CAP_FULL_SET,
+	.securebits		= SECUREBITS_DEFAULT/*0x00000000*/,
+	.cap_inheritable	= CAP_EMPTY_SET/*{{0,0}}*/,
+	.cap_permitted		= CAP_FULL_SET/*{{~0, ~0}}*/,
 	.cap_effective		= CAP_FULL_SET,
 	.cap_bset		= CAP_FULL_SET,
-	.user			= INIT_USER,
+	.user			= INIT_USER/*(&root_user)*/,
 	.user_ns		= &init_user_ns,
 	.group_info		= &init_groups,
 };
-
+// 2015-03-07, 식자전...
 static inline void set_cred_subscribers(struct cred *cred, int n)
 {
 #ifdef CONFIG_DEBUG_CREDENTIALS

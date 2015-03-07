@@ -368,7 +368,7 @@ extern int get_dumpable(struct mm_struct *mm);
 
 struct sighand_struct {
 	atomic_t		count;
-	struct k_sigaction	action[_NSIG];
+	struct k_sigaction	action[_NSIG/*64*/];
 	spinlock_t		siglock;
 	wait_queue_head_t	signalfd_wqh;
 };
@@ -577,7 +577,7 @@ struct signal_struct {
 	 * protect this instead of the siglock, because they really
 	 * have no need to disable irqs.
 	 */
-	struct rlimit rlim[RLIM_NLIMITS];
+	struct rlimit rlim[RLIM_NLIMITS/*16*/];
 
 #ifdef CONFIG_BSD_PROCESS_ACCT
 	struct pacct_struct pacct;	/* per-process accounting information */
@@ -639,28 +639,30 @@ static inline int signal_group_exit(const struct signal_struct *sig)
 /*
  * Some day this will be a full-fledged user tracking system..
  */
+// 2015-03-07
 struct user_struct {
 	atomic_t __count;	/* reference count */
 	atomic_t processes;	/* How many processes does this user have? */
 	atomic_t files;		/* How many open files does this user have? */
 	atomic_t sigpending;	/* How many pending signals does this user have? */
-#ifdef CONFIG_INOTIFY_USER
+#ifdef CONFIG_INOTIFY_USER  // set
 	atomic_t inotify_watches; /* How many inotify watches does this user have? */
 	atomic_t inotify_devs;	/* How many inotify devs does this user have opened? */
 #endif
-#ifdef CONFIG_FANOTIFY
+#ifdef CONFIG_FANOTIFY      // not set
 	atomic_t fanotify_listeners;
 #endif
-#ifdef CONFIG_EPOLL
+#ifdef CONFIG_EPOLL         // not set
 	atomic_long_t epoll_watches; /* The number of file descriptors currently watched */
 #endif
-#ifdef CONFIG_POSIX_MQUEUE
+#ifdef CONFIG_POSIX_MQUEUE  // not set
 	/* protected by mq_lock	*/
 	unsigned long mq_bytes;	/* How many bytes can be allocated to mqueue? */
 #endif
+    // shared memory?
 	unsigned long locked_shm; /* How many pages of mlocked shm ? */
 
-#ifdef CONFIG_KEYS
+#ifdef CONFIG_KEYS      // not set
 	struct key *uid_keyring;	/* UID specific keyring */
 	struct key *session_keyring;	/* UID's default session keyring */
 #endif
@@ -669,7 +671,7 @@ struct user_struct {
 	struct hlist_node uidhash_node;
 	kuid_t uid;
 
-#ifdef CONFIG_PERF_EVENTS
+#ifdef CONFIG_PERF_EVENTS   // not set
 	atomic_long_t locked_vm;
 #endif
 };
@@ -921,6 +923,7 @@ struct sched_avg {
 	 * above by 1024/(1-y).  Thus we only need a u32 to store them for all
 	 * choices of y < 1-2^(-32)*1024.
 	 */
+    // 무한 등비 급수: an infinite geometric series
 	u32 runnable_avg_sum, runnable_avg_period;
 	u64 last_runnable_update;
 	s64 decay_count;
@@ -976,11 +979,11 @@ struct sched_entity {
 
 	u64			nr_migrations;
 
-#ifdef CONFIG_SCHEDSTATS
+#ifdef CONFIG_SCHEDSTATS    // not set
 	struct sched_statistics statistics;
 #endif
 
-#ifdef CONFIG_FAIR_GROUP_SCHED
+#ifdef CONFIG_FAIR_GROUP_SCHED  // not set
 	struct sched_entity	*parent;
 	/* rq on which this entity is (to be) queued: */
 	struct cfs_rq		*cfs_rq;
@@ -988,7 +991,7 @@ struct sched_entity {
 	struct cfs_rq		*my_q;
 #endif
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP   // set
 	/* Per-entity load-tracking */
 	struct sched_avg	avg;
 #endif
@@ -1001,7 +1004,7 @@ struct sched_rt_entity {
 	unsigned int time_slice;
 
 	struct sched_rt_entity *back;
-#ifdef CONFIG_RT_GROUP_SCHED
+#ifdef CONFIG_RT_GROUP_SCHED    // not set
 	struct sched_rt_entity	*parent;
 	/* rq on which this entity is (to be) queued: */
 	struct rt_rq		*rt_rq;
@@ -1146,7 +1149,7 @@ struct task_struct {
 	struct list_head ptrace_entry;
 
 	/* PID/PID hash table linkage. */
-	struct pid_link pids[PIDTYPE_MAX];
+	struct pid_link pids[PIDTYPE_MAX/*3*/];
 	struct list_head thread_group;
 
 	struct completion *vfork_done;		/* for vfork() */
@@ -2681,7 +2684,7 @@ static inline void inc_syscw(struct task_struct *tsk)
 #define TASK_SIZE_OF(tsk)	TASK_SIZE
 #endif
 
-#ifdef CONFIG_MM_OWNER
+#ifdef CONFIG_MM_OWNER  // not set
 extern void mm_update_next_owner(struct mm_struct *mm);
 extern void mm_init_owner(struct mm_struct *mm, struct task_struct *p);
 #else

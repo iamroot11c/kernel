@@ -22,13 +22,15 @@
  * userns count is 1 for root user, 1 for init_uts_ns,
  * and 1 for... ?
  */
+// .extent는 배열 5개를 가지고 있지만, 초기화는 0번째 하나만 하고 있다.
+// 이전에도 언급했지만, struct user_namespace는 64byte 1 cache line을 고려한 구조체
 struct user_namespace init_user_ns = {
 	.uid_map = {
 		.nr_extents = 1,
 		.extent[0] = {
 			.first = 0,
 			.lower_first = 0,
-			.count = 4294967295U,
+			.count = 4294967295U/*0xFFFF_FFFF*/,
 		},
 	},
 	.gid_map = {
@@ -50,7 +52,7 @@ struct user_namespace init_user_ns = {
 	.count = ATOMIC_INIT(3),
 	.owner = GLOBAL_ROOT_UID,
 	.group = GLOBAL_ROOT_GID,
-	.proc_inum = PROC_USER_INIT_INO,
+	.proc_inum = PROC_USER_INIT_INO/*0xEFFFFFFDU*/,
 };
 EXPORT_SYMBOL_GPL(init_user_ns);
 

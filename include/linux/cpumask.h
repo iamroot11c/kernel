@@ -784,10 +784,11 @@ static inline const struct cpumask *get_cpu_mask(unsigned int cpu)
 
 #define cpu_is_offline(cpu)	unlikely(!cpu_online(cpu))
 
-#if NR_CPUS <= BITS_PER_LONG
+// 2015-03-07
+#if NR_CPUS <= BITS_PER_LONG /*32*/
 #define CPU_BITS_ALL						\
 {								\
-	[BITS_TO_LONGS(NR_CPUS)-1] = CPU_MASK_LAST_WORD	\
+	[BITS_TO_LONGS(NR_CPUS)/*32*/-1] = CPU_MASK_LAST_WORD/* NR_CPUS를 2로 가정할 떄, 3 */	\
 }
 
 #else /* NR_CPUS > BITS_PER_LONG */
@@ -809,11 +810,11 @@ static inline const struct cpumask *get_cpu_mask(unsigned int cpu)
 
 #define CPU_MASK_LAST_WORD BITMAP_LAST_WORD_MASK(NR_CPUS)
 
-#if NR_CPUS <= BITS_PER_LONG
-
+#if NR_CPUS <= BITS_PER_LONG/*32*/ // NR_CPUS가 2로 가정
+// 2015-03-07
 #define CPU_MASK_ALL							\
 (cpumask_t) { {								\
-	[BITS_TO_LONGS(NR_CPUS)-1] = CPU_MASK_LAST_WORD			\
+	[BITS_TO_LONGS(NR_CPUS)-1]/*0번째*/ = CPU_MASK_LAST_WORD			\
 } }
 
 #else

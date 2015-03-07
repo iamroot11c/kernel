@@ -27,15 +27,15 @@ struct uts_namespace init_uts_ns = {
 		.refcount	= ATOMIC_INIT(2),
 	},
 	.name = {
-		.sysname	= UTS_SYSNAME,
-		.nodename	= UTS_NODENAME,
+		.sysname	= UTS_SYSNAME/*"Linux"*/,
+		.nodename	= UTS_NODENAME/*"(none)"*/,
 		.release	= UTS_RELEASE,
 		.version	= UTS_VERSION,
 		.machine	= UTS_MACHINE,
-		.domainname	= UTS_DOMAINNAME,
+		.domainname	= UTS_DOMAINNAME,/*"(none)"*/
 	},
 	.user_ns = &init_user_ns,
-	.proc_inum = PROC_UTS_INIT_INO,
+	.proc_inum = PROC_UTS_INIT_INO,/*0xEFFFFFFEU*/
 };
 EXPORT_SYMBOL_GPL(init_uts_ns);
 

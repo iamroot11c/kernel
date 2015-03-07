@@ -16,7 +16,7 @@
 
 #ifdef CONFIG_SMP
 # define INIT_PUSHABLE_TASKS(tsk)					\
-	.pushable_tasks = PLIST_NODE_INIT(tsk.pushable_tasks, MAX_PRIO),
+	.pushable_tasks = PLIST_NODE_INIT(tsk.pushable_tasks, MAX_PRIO/*140*/),
 #else
 # define INIT_PUSHABLE_TASKS(tsk)
 #endif
@@ -24,20 +24,23 @@
 extern struct files_struct init_files;
 extern struct fs_struct init_fs;
 
-#ifdef CONFIG_CGROUPS
+#ifdef CONFIG_CGROUPS   // not set
 #define INIT_GROUP_RWSEM(sig)						\
 	.group_rwsem = __RWSEM_INITIALIZER(sig.group_rwsem),
 #else
 #define INIT_GROUP_RWSEM(sig)
 #endif
 
-#ifdef CONFIG_CPUSETS
+#ifdef CONFIG_CPUSETS   // not set
 #define INIT_CPUSET_SEQ							\
 	.mems_allowed_seq = SEQCNT_ZERO,
 #else
 #define INIT_CPUSET_SEQ
 #endif
 
+// 2015-03-07
+// INIT_SIGNALS(init_signals)
+// 모든 것을 초기화하지 않았고, 아래의 것들만 명시적으로 초기화 함.
 #define INIT_SIGNALS(sig) {						\
 	.nr_threads	= 1,						\
 	.wait_chldexit	= __WAIT_QUEUE_HEAD_INITIALIZER(sig.wait_chldexit),\
@@ -59,6 +62,8 @@ extern struct fs_struct init_fs;
 
 extern struct nsproxy init_nsproxy;
 
+// 2015-03-07
+// INIT_SIGHAND(init_sighand);
 #define INIT_SIGHAND(sighand) {						\
 	.count		= ATOMIC_INIT(1), 				\
 	.action		= { { { .sa_handler = SIG_DFL, } }, },		\
@@ -92,7 +97,7 @@ extern struct group_info init_groups;
 	.pid = &init_struct_pid,				\
 }
 
-#ifdef CONFIG_AUDITSYSCALL
+#ifdef CONFIG_AUDITSYSCALL  // not set
 #define INIT_IDS \
 	.loginuid = INVALID_UID, \
 	.sessionid = -1,
@@ -100,19 +105,19 @@ extern struct group_info init_groups;
 #define INIT_IDS
 #endif
 
-#ifdef CONFIG_RCU_BOOST
+#ifdef CONFIG_RCU_BOOST // not set
 #define INIT_TASK_RCU_BOOST()						\
 	.rcu_boost_mutex = NULL,
 #else
 #define INIT_TASK_RCU_BOOST()
 #endif
-#ifdef CONFIG_TREE_PREEMPT_RCU
+#ifdef CONFIG_TREE_PREEMPT_RCU  // set
 #define INIT_TASK_RCU_TREE_PREEMPT()					\
 	.rcu_blocked_node = NULL,
 #else
 #define INIT_TASK_RCU_TREE_PREEMPT(tsk)
 #endif
-#ifdef CONFIG_PREEMPT_RCU
+#ifdef CONFIG_PREEMPT_RCU   // set
 #define INIT_TASK_RCU_PREEMPT(tsk)					\
 	.rcu_read_lock_nesting = 0,					\
 	.rcu_read_unlock_special = 0,					\
@@ -127,14 +132,14 @@ extern struct cred init_cred;
 
 extern struct task_group root_task_group;
 
-#ifdef CONFIG_CGROUP_SCHED
+#ifdef CONFIG_CGROUP_SCHED  // not set
 # define INIT_CGROUP_SCHED(tsk)						\
 	.sched_task_group = &root_task_group,
 #else
 # define INIT_CGROUP_SCHED(tsk)
 #endif
 
-#ifdef CONFIG_PERF_EVENTS
+#ifdef CONFIG_PERF_EVENTS   // not set
 # define INIT_PERF_EVENTS(tsk)						\
 	.perf_event_mutex = 						\
 		 __MUTEX_INITIALIZER(tsk.perf_event_mutex),		\
@@ -143,7 +148,7 @@ extern struct task_group root_task_group;
 # define INIT_PERF_EVENTS(tsk)
 #endif
 
-#ifdef CONFIG_VIRT_CPU_ACCOUNTING_GEN
+#ifdef CONFIG_VIRT_CPU_ACCOUNTING_GEN   // not set
 # define INIT_VTIME(tsk)						\
 	.vtime_seqlock = __SEQLOCK_UNLOCKED(tsk.vtime_seqlock),	\
 	.vtime_snap = 0,				\
@@ -158,13 +163,15 @@ extern struct task_group root_task_group;
  *  INIT_TASK is used to set up the first task table, touch at
  * your own risk!. Base=0, limit=0x1fffff (=2MB)
  */
+// 2015-03-07
+// INIT_TASK(init_task)
 #define INIT_TASK(tsk)	\
 {									\
 	.state		= 0,						\
-	.stack		= &init_thread_info,				\
+	.stack		= &init_thread_info/*(init_thread_union.thread_info)*/,				\
 	.usage		= ATOMIC_INIT(2),				\
 	.flags		= PF_KTHREAD,					\
-	.prio		= MAX_PRIO-20,					\
+	.prio		= MAX_PRIO/*140*/-20,/* 120, DEFAULT_PRIO */					\
 	.static_prio	= MAX_PRIO-20,					\
 	.normal_prio	= MAX_PRIO-20,					\
 	.policy		= SCHED_NORMAL,					\
@@ -172,16 +179,17 @@ extern struct task_group root_task_group;
 	.nr_cpus_allowed= NR_CPUS,					\
 	.mm		= NULL,						\
 	.active_mm	= &init_mm,					\
+    // sched_entity
 	.se		= {						\
 		.group_node 	= LIST_HEAD_INIT(tsk.se.group_node),	\
 	},								\
 	.rt		= {						\
 		.run_list	= LIST_HEAD_INIT(tsk.rt.run_list),	\
-		.time_slice	= RR_TIMESLICE,				\
+		.time_slice	= RR_TIMESLICE/*10*/,				\
 	},								\
 	.tasks		= LIST_HEAD_INIT(tsk.tasks),			\
 	INIT_PUSHABLE_TASKS(tsk)					\
-	INIT_CGROUP_SCHED(tsk)						\
+	INIT_CGROUP_SCHED(tsk)	/* do nothing */					\
 	.ptraced	= LIST_HEAD_INIT(tsk.ptraced),			\
 	.ptrace_entry	= LIST_HEAD_INIT(tsk.ptrace_entry),		\
 	.real_parent	= &tsk,						\
@@ -189,6 +197,7 @@ extern struct task_group root_task_group;
 	.children	= LIST_HEAD_INIT(tsk.children),			\
 	.sibling	= LIST_HEAD_INIT(tsk.sibling),			\
 	.group_leader	= &tsk,						\
+    // 2015-03-07, 식사전
 	RCU_POINTER_INITIALIZER(real_cred, &init_cred),			\
 	RCU_POINTER_INITIALIZER(cred, &init_cred),			\
 	.comm		= INIT_TASK_COMM,				\
@@ -198,6 +207,7 @@ extern struct task_group root_task_group;
 	.signal		= &init_signals,				\
 	.sighand	= &init_sighand,				\
 	.nsproxy	= &init_nsproxy,				\
+    //
 	.pending	= {						\
 		.list = LIST_HEAD_INIT(tsk.pending.list),		\
 		.signal = {{0}}},					\
@@ -213,18 +223,18 @@ extern struct task_group root_task_group;
 		[PIDTYPE_SID]  = INIT_PID_LINK(PIDTYPE_SID),		\
 	},								\
 	.thread_group	= LIST_HEAD_INIT(tsk.thread_group),		\
-	INIT_IDS							\
-	INIT_PERF_EVENTS(tsk)						\
-	INIT_TRACE_IRQFLAGS						\
-	INIT_LOCKDEP							\
-	INIT_FTRACE_GRAPH						\
+	INIT_IDS /* do nothing */							\
+	INIT_PERF_EVENTS(tsk)	/* do nothing */			\
+	INIT_TRACE_IRQFLAGS		/* do nothing */			\
+	INIT_LOCKDEP			/* do nothing */    		\
+	INIT_FTRACE_GRAPH	    /* do nothing */			\
 	INIT_TRACE_RECURSION						\
-	INIT_TASK_RCU_PREEMPT(tsk)					\
-	INIT_CPUSET_SEQ							\
-	INIT_VTIME(tsk)							\
+	INIT_TASK_RCU_PREEMPT(tsk) /* do nothing */			\
+	INIT_CPUSET_SEQ				/* do nothing */		\
+	INIT_VTIME(tsk)				/* do nothing */		\
 }
 
-
+// 2015-03-07
 #define INIT_CPU_TIMERS(cpu_timers)					\
 {									\
 	LIST_HEAD_INIT(cpu_timers[0]),					\

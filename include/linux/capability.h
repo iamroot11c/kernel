@@ -16,10 +16,11 @@
 
 
 #define _KERNEL_CAPABILITY_VERSION _LINUX_CAPABILITY_VERSION_3
-#define _KERNEL_CAPABILITY_U32S    _LINUX_CAPABILITY_U32S_3
+#define _KERNEL_CAPABILITY_U32S    _LINUX_CAPABILITY_U32S_3 /*2*/
 
 extern int file_caps_enabled;
 
+// 2015-03-07
 typedef struct kernel_cap_struct {
 	__u32 cap[_KERNEL_CAPABILITY_U32S];
 } kernel_cap_t;
@@ -78,7 +79,7 @@ extern const kernel_cap_t __cap_init_eff_set;
 # error Fix up hand-coded capability macro initializers
 #else /* HAND-CODED capability initializers */
 
-# define CAP_EMPTY_SET    ((kernel_cap_t){{ 0, 0 }})
+# define CAP_EMPTY_SET    ((kernel_cap_t){{ 0, 0 }})    // 내부에 배열 2개 존재
 # define CAP_FULL_SET     ((kernel_cap_t){{ ~0, ~0 }})
 # define CAP_FS_SET       ((kernel_cap_t){{ CAP_FS_MASK_B0 \
 				    | CAP_TO_MASK(CAP_LINUX_IMMUTABLE), \

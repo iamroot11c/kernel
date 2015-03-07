@@ -28,15 +28,17 @@
 
 static struct kmem_cache *nsproxy_cachep;
 
+// 2015-03-07
+// *_ns : stand for name space
 struct nsproxy init_nsproxy = {
 	.count			= ATOMIC_INIT(1),
 	.uts_ns			= &init_uts_ns,
-#if defined(CONFIG_POSIX_MQUEUE) || defined(CONFIG_SYSVIPC)
+#if defined(CONFIG_POSIX_MQUEUE) /* not set */ || defined(CONFIG_SYSVIPC) /* set */
 	.ipc_ns			= &init_ipc_ns,
 #endif
 	.mnt_ns			= NULL,
 	.pid_ns_for_children	= &init_pid_ns,
-#ifdef CONFIG_NET
+#ifdef CONFIG_NET /* set */
 	.net_ns			= &init_net,
 #endif
 };

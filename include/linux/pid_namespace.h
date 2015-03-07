@@ -14,26 +14,27 @@ struct pidmap {
        void *page;
 };
 
-#define BITS_PER_PAGE		(PAGE_SIZE * 8)
-#define BITS_PER_PAGE_MASK	(BITS_PER_PAGE-1)
-#define PIDMAP_ENTRIES		((PID_MAX_LIMIT+BITS_PER_PAGE-1)/BITS_PER_PAGE)
+#define BITS_PER_PAGE		(PAGE_SIZE * 8) // 4096 * 8 = 32768
+#define BITS_PER_PAGE_MASK	(BITS_PER_PAGE-1)   // 32767
+#define PIDMAP_ENTRIES		((PID_MAX_LIMIT/*0x8000(32768)*/+BITS_PER_PAGE-1)/BITS_PER_PAGE) // (32768 + 32767) / 32768 = 1
 
 struct bsd_acct_struct;
 
+// 2015-03-07
 struct pid_namespace {
 	struct kref kref;
-	struct pidmap pidmap[PIDMAP_ENTRIES];
+	struct pidmap pidmap[PIDMAP_ENTRIES/*1*/];
 	int last_pid;
 	unsigned int nr_hashed;
 	struct task_struct *child_reaper;
 	struct kmem_cache *pid_cachep;
 	unsigned int level;
 	struct pid_namespace *parent;
-#ifdef CONFIG_PROC_FS
+#ifdef CONFIG_PROC_FS // set
 	struct vfsmount *proc_mnt;
 	struct dentry *proc_self;
 #endif
-#ifdef CONFIG_BSD_PROCESS_ACCT
+#ifdef CONFIG_BSD_PROCESS_ACCT // not set
 	struct bsd_acct_struct *bacct;
 #endif
 	struct user_namespace *user_ns;

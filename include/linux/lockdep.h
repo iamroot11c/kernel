@@ -16,7 +16,7 @@ struct lockdep_map;
 extern int prove_locking;
 extern int lock_stat;
 
-#ifdef CONFIG_LOCKDEP
+#ifdef CONFIG_LOCKDEP   // not set
 
 #include <linux/linkage.h>
 #include <linux/list.h>

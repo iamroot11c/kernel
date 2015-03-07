@@ -67,6 +67,7 @@ static inline int mk_pid(struct pid_namespace *pid_ns,
  * value does not cause lots of bitmaps to be allocated, but
  * the scheme scales to up to 4 million PIDs, runtime.
  */
+// 2015-03-07
 struct pid_namespace init_pid_ns = {
 	.kref = {
 		.refcount       = ATOMIC_INIT(2),
@@ -79,7 +80,7 @@ struct pid_namespace init_pid_ns = {
 	.level = 0,
 	.child_reaper = &init_task,
 	.user_ns = &init_user_ns,
-	.proc_inum = PROC_PID_INIT_INO,
+	.proc_inum = PROC_PID_INIT_INO,/* 0xEFFFFFFCU */
 };
 EXPORT_SYMBOL_GPL(init_pid_ns);
 
