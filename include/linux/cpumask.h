@@ -12,6 +12,7 @@
 #include <linux/bug.h>
 
 typedef struct cpumask { DECLARE_BITMAP(bits, NR_CPUS); } cpumask_t;
+// typedef struct cpumask { unsigned long bits[BITS_TO_LONGS(NR_CPUS)]; } cpumask_t;
 
 /**
  * cpumask_bits - get the bits in a cpumask
@@ -25,7 +26,7 @@ typedef struct cpumask { DECLARE_BITMAP(bits, NR_CPUS); } cpumask_t;
 #if NR_CPUS == 1
 #define nr_cpu_ids		1
 #else
-extern int nr_cpu_ids;
+extern int nr_cpu_ids; 
 #endif
 
 #ifdef CONFIG_CPUMASK_OFFSTACK
@@ -33,7 +34,7 @@ extern int nr_cpu_ids;
  * not all bits may be allocated. */
 #define nr_cpumask_bits	nr_cpu_ids
 #else
-#define nr_cpumask_bits	NR_CPUS
+#define nr_cpumask_bits	NR_CPUS // 2
 #endif
 
 /*
@@ -169,6 +170,7 @@ static inline unsigned int cpumask_first(const struct cpumask *srcp)
  * Returns >= nr_cpu_ids if no further cpus set.
  */
 // 2015-02-28;
+// cpumask_next(n, cpu_possible_mask); // n is -1, 1, 2, 3, ... , n.
 static inline unsigned int cpumask_next(int n, const struct cpumask *srcp)
 {
 	/* -1 is a legal arg here. */

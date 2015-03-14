@@ -509,6 +509,7 @@ static void __init smp_build_mpidr_hash(void)
 	 * Pre-scan the list of MPIDRS and filter out bits that do
 	 * not contribute to affinity levels, ie they never toggle.
 	 */
+	// #define for_each_possible_cpu(cpu) for_each_cpu((cpu), cpu_possible_mask)
 	// #define for_each_cpu(cpu, mask)             \
 	//     for ((cpu) = -1;                \
 	//         (cpu) = cpumask_next((cpu), (mask)),    \

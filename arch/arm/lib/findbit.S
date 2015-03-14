@@ -93,20 +93,26 @@ ENDPROC(_find_first_bit_le)
  * Prototype: int find_next_zero_bit(void *addr, unsigned int maxbit, int offset)
  */
 // 2015-02-28;
+//
 // _find_next_bit_le(cpumask_bits(srcp), nr_cpumask_bits, n+1)
-// r0 = cpumask_bits(srcp)
-// r1 = nr_cpumask_bits
+// _find_next_bit_le(maskp->bits, 2, n+1); // n = 0, 1, 2, 3, ... , n-1, n;
+// r0 = maskp->bits
+// r1 = 2
 // r2 = n+1
 ENTRY(_find_next_bit_le)
 		teq	r1, #0
 		beq	3b
-		ands	ip, r2, #7              @// ip = r2 * 7; // 연산후 상태 갱신
+		ands	ip, r2, #7              @// ip = r2 * 7;
+		                                @// 인덱스가 0과 8(2^3), 16(2^4), 32(2^5), ... , 2^n 
+						@// 값은 우측으로 쉬프트 하지 않아도 됨
 		beq	1b			@ If new byte, goto old routine
  ARM(		ldrb	r3, [r0, r2, lsr #3]	) @// r3 = *(r0 + (r2 >> 3)) // *(r0 + (r2/8))
  THUMB(		lsr	r3, r2, #3		)
  THUMB(		ldrb	r3, [r0, r3]		)
 		movs	r3, r3, lsr ip		@ shift off unused bits
 		                                @// r3 = r3 >> ip;
+						@// 인덱스 &  7 연산 후 나머지 만큼
+						@// 우측으로 쉬프트
 		bne	.L_found                @// if (r3 > 0) .L_fouund;
 		orr	r2, r2, #7		@ if zero, then no bits here
 		                                @// r2 = r2 | 7;
@@ -195,10 +201,13 @@ ENDPROC(_find_next_bit_be)
 .L_found:
 #if __LINUX_ARM_ARCH__ >= 5
 		rsb	r0, r3, #0            @// r0 = #0 - r3
-		and	r3, r3, r0             
+		and	r3, r3, r0            @// r3 = r3 & (-r3);
+	                                      @//  13 = 0b0000_1101
+				              @// -13 = 0b1111_0011
+					      @// 0b0000_0001 = 0b0000_1101 & 0b1111_0011;
 		clz	r3, r3                @// 최상위 비트에서 최초로 1이 나올때까지의
-		                              @// 비트개수
-		rsb	r3, r3, #31           @// r3 -= #31; 0 <= r3 < 31
+		                              @// 비트개수로 위의 예제에서는 31이 나옴
+		rsb	r3, r3, #31           @// r3 = #31 - r3; // 0 <= r3 < 31
 		add	r0, r2, r3            @// r0 = r2 + r3
 #else
 		tst	r3, #0x0f
