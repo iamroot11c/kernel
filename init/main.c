@@ -525,7 +525,9 @@ asmlinkage void __init start_kernel(void)
 
 	// 2015-03-07, start
 	setup_nr_cpu_ids();	// 2015-03-07, 진행중
+	                        // 2015-03-14, 완료
 
+	// 2015-03-14, 시작
 	setup_per_cpu_areas();
 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
 

@@ -1438,17 +1438,25 @@ early_param("percpu_alloc", percpu_alloc_setup);
  * On success, pointer to the new allocation_info is returned.  On
  * failure, ERR_PTR value is returned.
  */
+// 2015-03-14; 시작
+//pcpu_build_alloc_info(PERCPU_MODULE_RESERVE/*0x2000=(8 << 10), 8KB*/,
+//                      PERCPU_DYNAMIC_RESERVE/*0x8000=(12 << 10), 12KB*/,
+//                      PAGE_SIZE/*4KB, 0x0000_1000*/, NULL)
 static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 				size_t reserved_size, size_t dyn_size,
 				size_t atom_size,
 				pcpu_fc_cpu_distance_fn_t cpu_distance_fn)
 {
-	static int group_map[NR_CPUS] __initdata;
-	static int group_cnt[NR_CPUS] __initdata;
+	static int group_map[NR_CPUS/*2*/] __initdata;
+	static int group_cnt[NR_CPUS/*2*/] __initdata;
+	// c04d0000 D __per_cpu_start
+	// c04d1d00 D __per_cpu_end
+	// c04d1d00 - c04d0000
 	const size_t static_size = __per_cpu_end - __per_cpu_start;
 	int nr_groups = 1, nr_units = 0;
 	size_t size_sum, min_unit_size, alloc_size;
 	int upa, max_upa, uninitialized_var(best_upa);	/* units_per_alloc */
+	// #define uninitialized_var(x) x = x // best_upa = best_upa;
 	int last_allocs, group, unit;
 	unsigned int cpu, tcpu;
 	struct pcpu_alloc_info *ai;
@@ -1460,7 +1468,7 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 
 	/* calculate size_sum and ensure dyn_size is enough for early alloc */
 	size_sum = PFN_ALIGN(static_size + reserved_size +
-			    max_t(size_t, dyn_size, PERCPU_DYNAMIC_EARLY_SIZE));
+			    max_t(size_t, dyn_size, PERCPU_DYNAMIC_EARLY_SIZE)/*12KB*/);
 	dyn_size = size_sum - static_size - reserved_size;
 
 	/*
@@ -1469,21 +1477,23 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 	 * which can accommodate 4k aligned segments which are equal to
 	 * or larger than min_unit_size.
 	 */
-	min_unit_size = max_t(size_t, size_sum, PCPU_MIN_UNIT_SIZE);
+	min_unit_size = max_t(size_t, size_sum, PCPU_MIN_UNIT_SIZE/*32KB*/);
 
 	alloc_size = roundup(min_unit_size, atom_size);
 	upa = alloc_size / min_unit_size;
-	while (alloc_size % upa || ((alloc_size / upa) & ~PAGE_MASK))
+	while (alloc_size % upa || ((alloc_size / upa) & ~PAGE_MASK/*0xFFF=!0xFFFF_F000*/))
 		upa--;
 	max_upa = upa;
 
 	/* group cpus according to their proximity */
+	// for ((cpu) = -1; (cpu) = cpumask_next((cpu), cpu_possible_mask), (cpu) < nr_cpu_ids;)
 	for_each_possible_cpu(cpu) {
 		group = 0;
 	next_group:
 		for_each_possible_cpu(tcpu) {
 			if (cpu == tcpu)
 				break;
+			// cpu_distance_fn 함수 포인터가 NULL이어서 조건을 만족 못함
 			if (group_map[tcpu] == group && cpu_distance_fn &&
 			    (cpu_distance_fn(cpu, tcpu) > LOCAL_DISTANCE ||
 			     cpu_distance_fn(tcpu, cpu) > LOCAL_DISTANCE)) {
@@ -1493,6 +1503,7 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 			}
 		}
 		group_map[cpu] = group;
+		// cpu_distance_fn 함수 포인터가 NULL이어서 0번 그룹에 대해서만 증가
 		group_cnt[group]++;
 	}
 
@@ -1606,13 +1617,18 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
  * RETURNS:
  * 0 on success, -errno on failure.
  */
+// 2015-03-14; 시작
+//pcpu_embed_first_chunk(PERCPU_MODULE_RESERVE/*0x2000=(8 << 10), 8KB*/,
+//                       PERCPU_DYNAMIC_RESERVE/*0x8000=(12 << 10), 12KB*/,
+//                       PAGE_SIZE/*4KB, 0x0000_1000*/, NULL,                      
+//                       pcpu_dfl_fc_alloc, pcpu_dfl_fc_free);
 int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 				  size_t atom_size,
 				  pcpu_fc_cpu_distance_fn_t cpu_distance_fn,
 				  pcpu_fc_alloc_fn_t alloc_fn,
 				  pcpu_fc_free_fn_t free_fn)
 {
-	void *base = (void *)ULONG_MAX;
+	void *base = (void *)ULONG_MAX; 
 	void **areas = NULL;
 	struct pcpu_alloc_info *ai;
 	size_t size_sum, areas_size, max_distance;
@@ -1855,6 +1871,7 @@ static void __init pcpu_dfl_fc_free(void *ptr, size_t size)
 	free_bootmem(__pa(ptr), size);
 }
 
+// 2015-03-14, 시작
 void __init setup_per_cpu_areas(void)
 {
 	unsigned long delta;
@@ -1865,8 +1882,9 @@ void __init setup_per_cpu_areas(void)
 	 * Always reserve area for module percpu variables.  That's
 	 * what the legacy allocator did.
 	 */
-	rc = pcpu_embed_first_chunk(PERCPU_MODULE_RESERVE,
-				    PERCPU_DYNAMIC_RESERVE, PAGE_SIZE, NULL,
+	rc = pcpu_embed_first_chunk(PERCPU_MODULE_RESERVE/*(8 << 10)*/,
+				    PERCPU_DYNAMIC_RESERVE/*(12 << 10)*/, 
+				    PAGE_SIZE/*4KB, 0x0000_1000*/, NULL,
 				    pcpu_dfl_fc_alloc, pcpu_dfl_fc_free);
 	if (rc < 0)
 		panic("Failed to initialize percpu areas.");

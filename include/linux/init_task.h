@@ -179,7 +179,7 @@ extern struct task_group root_task_group;
 	.nr_cpus_allowed= NR_CPUS,					\
 	.mm		= NULL,						\
 	.active_mm	= &init_mm,					\
-    // sched_entity
+    /* sched_entity */ \
 	.se		= {						\
 		.group_node 	= LIST_HEAD_INIT(tsk.se.group_node),	\
 	},								\
@@ -197,7 +197,7 @@ extern struct task_group root_task_group;
 	.children	= LIST_HEAD_INIT(tsk.children),			\
 	.sibling	= LIST_HEAD_INIT(tsk.sibling),			\
 	.group_leader	= &tsk,						\
-    // 2015-03-07, 식사전
+    /* 2015-03-07, 식사전 */ \
 	RCU_POINTER_INITIALIZER(real_cred, &init_cred),			\
 	RCU_POINTER_INITIALIZER(cred, &init_cred),			\
 	.comm		= INIT_TASK_COMM,				\
@@ -207,7 +207,7 @@ extern struct task_group root_task_group;
 	.signal		= &init_signals,				\
 	.sighand	= &init_sighand,				\
 	.nsproxy	= &init_nsproxy,				\
-    //
+    /**/ \
 	.pending	= {						\
 		.list = LIST_HEAD_INIT(tsk.pending.list),		\
 		.signal = {{0}}},					\

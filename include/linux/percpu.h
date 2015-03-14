@@ -10,7 +10,7 @@
 #include <asm/percpu.h>
 
 /* enough to cover all DEFINE_PER_CPUs in modules */
-#ifdef CONFIG_MODULES
+#ifdef CONFIG_MODULES // defined
 #define PERCPU_MODULE_RESERVE		(8 << 10)
 #else
 #define PERCPU_MODULE_RESERVE		0
@@ -75,7 +75,7 @@
 #if BITS_PER_LONG > 32
 #define PERCPU_DYNAMIC_RESERVE		(20 << 10)
 #else
-#define PERCPU_DYNAMIC_RESERVE		(12 << 10)
+#define PERCPU_DYNAMIC_RESERVE		(12 << 10) // 32bit
 #endif
 
 extern void *pcpu_base_addr;
@@ -153,6 +153,7 @@ extern int __init pcpu_page_first_chunk(size_t reserved_size,
 extern void __percpu *__alloc_reserved_percpu(size_t size, size_t align);
 extern bool is_kernel_percpu_address(unsigned long addr);
 
+// CONFIG_SMP defined, CONFIG_HAVE_SETUP_PER_CPU_AREA not defin
 #if !defined(CONFIG_SMP) || !defined(CONFIG_HAVE_SETUP_PER_CPU_AREA)
 extern void __init setup_per_cpu_areas(void);
 #endif

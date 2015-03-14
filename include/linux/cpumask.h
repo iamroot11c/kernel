@@ -755,6 +755,7 @@ void init_cpu_online(const struct cpumask *src);
  *
  * This does the conversion, and can be used as a constant initializer.
  */
+//to_cpumask(cpu_possible_bits);
 #define to_cpumask(bitmap)						\
 	((struct cpumask *)(1 ? (bitmap)				\
 			    : (void *)sizeof(__check_is_bitmap(bitmap))))

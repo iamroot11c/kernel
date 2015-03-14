@@ -742,6 +742,7 @@ static inline void ftrace_dump(enum ftrace_dump_mode oops_dump_mode) { }
 	type __min2 = (y);			\
 	__min1 < __min2 ? __min1: __min2; })
 
+max_t(size_t, dyn_size, PERCPU_DYNAMIC_EARLY_SIZE)
 #define max_t(type, x, y) ({			\
 	type __max1 = (x);			\
 	type __max2 = (y);			\

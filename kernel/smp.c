@@ -521,9 +521,11 @@ int nr_cpu_ids __read_mostly = NR_CPUS;
 EXPORT_SYMBOL(nr_cpu_ids);
 
 // 2015-03-07, 여기까지
+// 2015-03-14, find_last_bit() 함수 분석 완료
 /* An arch may set nr_cpu_ids earlier if needed, so this would be redundant */
 void __init setup_nr_cpu_ids(void)
 {
+	// 검색을 실패하면 NR_CPUS 개수가 리턴됨
 	nr_cpu_ids = find_last_bit(cpumask_bits(cpu_possible_mask),NR_CPUS) + 1;
 }
 
