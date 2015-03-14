@@ -463,6 +463,8 @@ void __init free_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
  *
  * The range must be contiguous but may span node boundaries.
  */
+// 2015-03-14
+// free_bootmem(__pa(ptr), ai->unit_size);
 void __init free_bootmem(unsigned long physaddr, unsigned long size)
 {
 	unsigned long start, end;
@@ -717,6 +719,10 @@ static void * __init alloc_bootmem_core(unsigned long size,
 
 // 2014-12-27;
 // ___alloc_bootmem_nopanic(x, 64, __pa(0xffffffffUL), 0);
+// 2015-03-14;
+// ___alloc_bootmem_nopanic(gi->nr_units * ai->unit_size, atom_size,
+//                          __virt_to_phys((unsigned long)0xffffffffUL),
+//                          0);
 static void * __init ___alloc_bootmem_nopanic(unsigned long size,
 					      unsigned long align,
 					      unsigned long goal,
@@ -751,6 +757,9 @@ restart:
  *
  * Returns NULL on failure.
  */
+// 2015-03-14
+// __alloc_bootmem_nopanic(gi->nr_units * ai->unit_size, atom_size,
+//                         __virt_to_phys((unsigned long)0xffffffffUL));
 void * __init __alloc_bootmem_nopanic(unsigned long size, unsigned long align,
 					unsigned long goal)
 {

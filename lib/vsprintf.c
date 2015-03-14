@@ -1796,6 +1796,8 @@ EXPORT_SYMBOL(vsnprintf);
  *
  * See the vsnprintf() documentation for format string extensions over C99.
  */
+// 2015-03-14;
+// vscnprintf(buf+len, buflen-len, "%s%0*lx", args/*sep, (chunksz+3)/4, val*/);
 int vscnprintf(char *buf, size_t size, const char *fmt, va_list args)
 {
 	int i;
@@ -1847,13 +1849,15 @@ EXPORT_SYMBOL(snprintf);
  * The return value is the number of characters written into @buf not including
  * the trailing '\0'. If @size is == 0 the function returns 0.
  */
-
+// 2015-03-14
+// scnprintf(buf+len, buflen-len, "%s%0*lx", sep, (chunksz+3)/4, val);
 int scnprintf(char *buf, size_t size, const char *fmt, ...)
 {
 	va_list args;
 	int i;
 
 	va_start(args, fmt);
+// #define va_start(ap, A)         (void) ((ap) = (((char *) &(A)) + (_bnd (A,_AUPBND))))
 	i = vscnprintf(buf, size, fmt, args);
 	va_end(args);
 

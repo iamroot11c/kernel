@@ -656,10 +656,10 @@ static void pcpu_destroy_chunk(struct pcpu_chunk *chunk);
 static struct page *pcpu_addr_to_page(void *addr);
 static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai);
 
-#ifdef CONFIG_NEED_PER_CPU_KM
+#ifdef CONFIG_NEED_PER_CPU_KM // not define
 #include "percpu-km.c"
 #else
-#include "percpu-vm.c"
+#include "percpu-vm.c"        // percpu-vm.o 파일 생성되지 않음, percpu.o에 포함
 #endif
 
 /**
@@ -1051,6 +1051,8 @@ phys_addr_t per_cpu_ptr_to_phys(void *addr)
  * Pointer to the allocated pcpu_alloc_info on success, NULL on
  * failure.
  */
+// 2015-03-14;
+// pcpu_alloc_alloc_info(nr_groups, nr_units);
 struct pcpu_alloc_info * __init pcpu_alloc_alloc_info(int nr_groups,
 						      int nr_units)
 {
@@ -1204,11 +1206,12 @@ static void pcpu_dump_alloc_info(const char *lvl,
  * RETURNS:
  * 0 on success, -errno on failure.
  */
+// 2015-03-14; 시작
 int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 				  void *base_addr)
 {
 	static char cpus_buf[4096] __initdata;
-	static int smap[PERCPU_DYNAMIC_EARLY_SLOTS] __initdata;
+	static int smap[PERCPU_DYNAMIC_EARLY_SLOTS/*128*/] __initdata;
 	static int dmap[PERCPU_DYNAMIC_EARLY_SLOTS] __initdata;
 	size_t dyn_size = ai->dyn_size;
 	size_t size_sum = ai->static_size + ai->reserved_size + dyn_size;
@@ -1220,6 +1223,7 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	int *unit_map;
 	int group, unit, i;
 
+	// cpus_buf에 저장
 	cpumask_scnprintf(cpus_buf, sizeof(cpus_buf), cpu_possible_mask);
 
 #define PCPU_SETUP_BUG_ON(cond)	do {					\
@@ -1241,8 +1245,11 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	PCPU_SETUP_BUG_ON((unsigned long)base_addr & ~PAGE_MASK);
 	PCPU_SETUP_BUG_ON(ai->unit_size < size_sum);
 	PCPU_SETUP_BUG_ON(ai->unit_size & ~PAGE_MASK);
-	PCPU_SETUP_BUG_ON(ai->unit_size < PCPU_MIN_UNIT_SIZE);
-	PCPU_SETUP_BUG_ON(ai->dyn_size < PERCPU_DYNAMIC_EARLY_SIZE);
+	PCPU_SETUP_BUG_ON(ai->unit_size < PCPU_MIN_UNIT_SIZE/*32KB*/);
+	PCPU_SETUP_BUG_ON(ai->dyn_size < PERCPU_DYNAMIC_EARLY_SIZE/*12KB*/);
+	// CONFIG_NEED_PER_CPU_KM 미 정의로
+	// percpu-vm.c:pcpu_verify_alloc_info(const struct pcpu_alloc_info*) 함수 호출
+	// pcpu_verify_alloc_info() 함수는 항상 0을 리턴
 	PCPU_SETUP_BUG_ON(pcpu_verify_alloc_info(ai) < 0);
 
 	/* process group information and build config tables accordingly */
@@ -1256,6 +1263,7 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 
 	pcpu_low_unit_cpu = NR_CPUS;
 	pcpu_high_unit_cpu = NR_CPUS;
+	// 2015-03-14; 여기까지
 
 	for (group = 0, unit = 0; group < ai->nr_groups; group++, unit += i) {
 		const struct pcpu_group_info *gi = &ai->groups[group];
@@ -1438,7 +1446,7 @@ early_param("percpu_alloc", percpu_alloc_setup);
  * On success, pointer to the new allocation_info is returned.  On
  * failure, ERR_PTR value is returned.
  */
-// 2015-03-14; 시작
+// 2015-03-14; 
 //pcpu_build_alloc_info(PERCPU_MODULE_RESERVE/*0x2000=(8 << 10), 8KB*/,
 //                      PERCPU_DYNAMIC_RESERVE/*0x8000=(12 << 10), 12KB*/,
 //                      PAGE_SIZE/*4KB, 0x0000_1000*/, NULL)
@@ -1512,7 +1520,7 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 	 * and then as much as possible without using more address
 	 * space.
 	 */
-	last_allocs = INT_MAX;
+	last_allocs = INT_MAX; // 7FFFFFFF = (int)(~0U>>1)
 	for (upa = max_upa; upa; upa--) {
 		int allocs = 0, wasted = 0;
 
@@ -1622,6 +1630,12 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 //                       PERCPU_DYNAMIC_RESERVE/*0x8000=(12 << 10), 12KB*/,
 //                       PAGE_SIZE/*4KB, 0x0000_1000*/, NULL,                      
 //                       pcpu_dfl_fc_alloc, pcpu_dfl_fc_free);
+//
+// http://manseok.blogspot.kr/2014_02_01_archive.html
+// http://egloos.zum.com/studyfoss/v/5375570
+// http://egloos.zum.com/studyfoss/v/5377666
+// http://www.iamroot.org/xe/Kernel_8_x86/92086
+// http://ftp.dei.uc.pt/pub/linux/kernel/people/christoph/sf2011/percpu-collab2011.pdf
 int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 				  size_t atom_size,
 				  pcpu_fc_cpu_distance_fn_t cpu_distance_fn,
@@ -1660,12 +1674,13 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 
 		/* allocate space for the whole group */
 		ptr = alloc_fn(cpu, gi->nr_units * ai->unit_size, atom_size);
+		//    pcpu_dfl_fc_alloc(cpu, gi->nr_units * ai->unit_size, atom_size);
 		if (!ptr) {
 			rc = -ENOMEM;
 			goto out_free_areas;
 		}
 		/* kmemleak tracks the percpu allocations separately */
-		kmemleak_free(ptr);
+		kmemleak_free(ptr); // CONFIG_DEBUG_KMEMLEAK 미 정의로 아무작업을 하지 않음
 		areas[group] = ptr;
 
 		base = min(ptr, base);
@@ -1684,6 +1699,7 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 			if (gi->cpu_map[i] == NR_CPUS) {
 				/* unused unit, free whole */
 				free_fn(ptr, ai->unit_size);
+				// pcpu_dfl_fc_free(ptr, ai->unit_size);
 				continue;
 			}
 			/* copy and return the unused part */
@@ -1702,11 +1718,12 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 	max_distance += ai->unit_size;
 
 	/* warn if maximum distance is further than 75% of vmalloc space */
+	// 가상 메모리의 3/4을 사용하면 경고를 출력
 	if (max_distance > (VMALLOC_END - VMALLOC_START) * 3 / 4) {
 		pr_warning("PERCPU: max_distance=0x%zx too large for vmalloc "
 			   "space 0x%lx\n", max_distance,
 			   (unsigned long)(VMALLOC_END - VMALLOC_START));
-#ifdef CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK
+#ifdef CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK // not define
 		/* and fail if we have fallback */
 		rc = -EINVAL;
 		goto out_free;
@@ -1716,7 +1733,10 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 	pr_info("PERCPU: Embedded %zu pages/cpu @%p s%zu r%zu d%zu u%zu\n",
 		PFN_DOWN(size_sum), base, ai->static_size, ai->reserved_size,
 		ai->dyn_size, ai->unit_size);
+	// exynos5420 log 
+	// PERCPU: Embedded 9 pages/cpu @ee785000 s7552 r8192 d21120 u36864
 
+	// 2015-03-15; 분석중
 	rc = pcpu_setup_first_chunk(ai, base);
 	goto out_free;
 
@@ -1860,12 +1880,16 @@ out_free_ar:
 unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
 EXPORT_SYMBOL(__per_cpu_offset);
 
+// 2015-03-14;
+// pcpu_dfl_fc_alloc(cpu, gi->nr_units * ai->unit_size, atom_size);
 static void * __init pcpu_dfl_fc_alloc(unsigned int cpu, size_t size,
 				       size_t align)
 {
 	return __alloc_bootmem_nopanic(size, align, __pa(MAX_DMA_ADDRESS));
 }
 
+// 2015-03-14
+// pcpu_dfl_fc_free(ptr, ai->unit_size);
 static void __init pcpu_dfl_fc_free(void *ptr, size_t size)
 {
 	free_bootmem(__pa(ptr), size);
@@ -1882,6 +1906,7 @@ void __init setup_per_cpu_areas(void)
 	 * Always reserve area for module percpu variables.  That's
 	 * what the legacy allocator did.
 	 */
+	// 2015-03-14; 분석중
 	rc = pcpu_embed_first_chunk(PERCPU_MODULE_RESERVE/*(8 << 10)*/,
 				    PERCPU_DYNAMIC_RESERVE/*(12 << 10)*/, 
 				    PAGE_SIZE/*4KB, 0x0000_1000*/, NULL,

@@ -552,6 +552,8 @@ static inline void cpumask_copy(struct cpumask *dstp,
  * If len is zero, returns zero.  Otherwise returns the length of the
  * (nul-terminated) @buf string.
  */
+// 2015-03-14; 
+// cpumask_scnprintf(cpus_buf, sizeof(cpus_buf), cpu_possible_mask);
 static inline int cpumask_scnprintf(char *buf, int len,
 				    const struct cpumask *srcp)
 {
