@@ -793,7 +793,7 @@ static inline const struct cpumask *get_cpu_mask(unsigned int cpu)
 #if NR_CPUS <= BITS_PER_LONG /*32*/
 #define CPU_BITS_ALL						\
 {								\
-	[BITS_TO_LONGS(NR_CPUS)/*32*/-1] = CPU_MASK_LAST_WORD/* NR_CPUS를 2로 가정할 떄, 3 */	\
+	[BITS_TO_LONGS(NR_CPUS)/*1*/-1] = CPU_MASK_LAST_WORD/* NR_CPUS를 2로 가정할 떄, 3 */	\
 }
 
 #else /* NR_CPUS > BITS_PER_LONG */
