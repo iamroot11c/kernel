@@ -1413,8 +1413,8 @@ early_param("percpu_alloc", percpu_alloc_setup);
  * Build it if needed by the arch config or the generic setup is going
  * to be used.
  */
-#if defined(CONFIG_NEED_PER_CPU_EMBED_FIRST_CHUNK) || \
-	!defined(CONFIG_HAVE_SETUP_PER_CPU_AREA)
+#if defined(CONFIG_NEED_PER_CPU_EMBED_FIRST_CHUNK) || /*not define*/\
+	!defined(CONFIG_HAVE_SETUP_PER_CPU_AREA) /*not define*/
 #define BUILD_EMBED_FIRST_CHUNK
 #endif
 
@@ -1459,25 +1459,33 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 	static int group_cnt[NR_CPUS/*2*/] __initdata;
 	// c04d0000 D __per_cpu_start
 	// c04d1d00 D __per_cpu_end
-	// c04d1d00 - c04d0000
-	const size_t static_size = __per_cpu_end - __per_cpu_start;
+	// 0x0000_1D00(7,424) = 0x0c04d_1d00 - 0x0c04d_0000
+	const size_t static_size = __per_cpu_end - __per_cpu_start; 
 	int nr_groups = 1, nr_units = 0;
 	size_t size_sum, min_unit_size, alloc_size;
 	int upa, max_upa, uninitialized_var(best_upa);	/* units_per_alloc */
 	// #define uninitialized_var(x) x = x // best_upa = best_upa;
+	// 변수를 초기화 하지 않음
 	int last_allocs, group, unit;
 	unsigned int cpu, tcpu;
 	struct pcpu_alloc_info *ai;
 	unsigned int *cpu_map;
 
 	/* this function may be called multiple times */
+	// 정적 배열이므로 초기화 작업을 반드시 해주어야함
 	memset(group_map, 0, sizeof(group_map));
 	memset(group_cnt, 0, sizeof(group_cnt));
 
 	/* calculate size_sum and ensure dyn_size is enough for early alloc */
-	size_sum = PFN_ALIGN(static_size + reserved_size +
-			    max_t(size_t, dyn_size, PERCPU_DYNAMIC_EARLY_SIZE)/*12KB*/);
+	size_sum = PFN_ALIGN(static_size/*0x1D00*/ + reserved_size/*8KB*/	+
+			    max_t(size_t, dyn_size/*12KB*/, PERCPU_DYNAMIC_EARLY_SIZE/*12KB*/));
+	//       = PFN_ALIGN(27,904/*0x1D00 + 8KB(0x2000) + 12KB(*0x3000)/);
+	//       = (((unsigned long) 27,094) + (4096/*0x1000*/ - 1)) & 0xFFFF_F000
+	//       = 31,189 & 0xFFFF_F000
+	//       = 28,672(0x7000);
 	dyn_size = size_sum - static_size - reserved_size;
+	//       = 28,672(0x7000) - 7,424(0x1D00) - 8,196(8KB);
+	//       = 13,052;
 
 	/*
 	 * Determine min_unit_size, alloc_size and max_upa such that
@@ -1485,16 +1493,23 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 	 * which can accommodate 4k aligned segments which are equal to
 	 * or larger than min_unit_size.
 	 */
-	min_unit_size = max_t(size_t, size_sum, PCPU_MIN_UNIT_SIZE/*32KB*/);
+	min_unit_size = max_t(size_t, size_sum, PCPU_MIN_UNIT_SIZE/*32KB, 0x8000*/);
+	//            = 0x7000 > 0x8000 ? 0x7000 : 0x8000
+	//            = 0x8000
 
 	alloc_size = roundup(min_unit_size, atom_size);
+	//         = roundup(0x8000, 4KB);
+	//         = ((0x8000 + (0x1000 -1)) / 0x1000) * 0x1000;
+	//         = 0x8000;
 	upa = alloc_size / min_unit_size;
+	//  = 0x8000 / 0x8000;
+	//  = 1;
 	while (alloc_size % upa || ((alloc_size / upa) & ~PAGE_MASK/*0xFFF=!0xFFFF_F000*/))
 		upa--;
 	max_upa = upa;
 
 	/* group cpus according to their proximity */
-	// for ((cpu) = -1; (cpu) = cpumask_next((cpu), cpu_possible_mask), (cpu) < nr_cpu_ids;)
+	// for (cpu = -1; cpu = cpumask_next(cpu, cpu_possible_mask), cpu < nr_cpu_ids;)
 	for_each_possible_cpu(cpu) {
 		group = 0;
 	next_group:
@@ -1592,7 +1607,7 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 }
 #endif /* BUILD_EMBED_FIRST_CHUNK || BUILD_PAGE_FIRST_CHUNK */
 
-#if defined(BUILD_EMBED_FIRST_CHUNK)
+#if defined(BUILD_EMBED_FIRST_CHUNK) // defined
 /**
  * pcpu_embed_first_chunk - embed the first percpu chunk into bootmem
  * @reserved_size: the size of reserved percpu area in bytes
@@ -1907,8 +1922,8 @@ void __init setup_per_cpu_areas(void)
 	 * what the legacy allocator did.
 	 */
 	// 2015-03-14; 분석중
-	rc = pcpu_embed_first_chunk(PERCPU_MODULE_RESERVE/*(8 << 10)*/,
-				    PERCPU_DYNAMIC_RESERVE/*(12 << 10)*/, 
+	rc = pcpu_embed_first_chunk(PERCPU_MODULE_RESERVE/*8KB = (8 << 10)*/,
+				    PERCPU_DYNAMIC_RESERVE/*12KB = (12 << 10)*/, 
 				    PAGE_SIZE/*4KB, 0x0000_1000*/, NULL,
 				    pcpu_dfl_fc_alloc, pcpu_dfl_fc_free);
 	if (rc < 0)

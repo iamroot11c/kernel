@@ -206,7 +206,7 @@ extern int _find_next_bit_be(const unsigned long *p, int size, int offset);
 #define find_next_zero_bit(p,sz,off)	_find_next_zero_bit_le(p,sz,off)
 #define find_first_bit(p,sz)		_find_first_bit_le(p,sz)
 // 2015-02-28;
-// find_next_bit(cpumask_bits(maskp->bits, 2, n+1);
+// find_next_bit(cpu_possible_mask->bits, 2, n+1);
 #define find_next_bit(p,sz,off)		_find_next_bit_le(p,sz,off)
 
 #else

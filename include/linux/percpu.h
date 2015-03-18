@@ -11,7 +11,7 @@
 
 /* enough to cover all DEFINE_PER_CPUs in modules */
 #ifdef CONFIG_MODULES // defined
-#define PERCPU_MODULE_RESERVE		(8 << 10)
+#define PERCPU_MODULE_RESERVE		(8 << 10) // 8KB, 8192 = 1024x8
 #else
 #define PERCPU_MODULE_RESERVE		0
 #endif
@@ -49,7 +49,7 @@
 } while (0)
 
 /* minimum unit size, also is the maximum supported allocation size */
-#define PCPU_MIN_UNIT_SIZE		PFN_ALIGN(32 << 10)
+#define PCPU_MIN_UNIT_SIZE		PFN_ALIGN(32 << 10) // 32KB, 0x8000
 
 /*
  * Percpu allocator can serve percpu allocations before slab is
@@ -59,7 +59,7 @@
  * larger than PERCPU_DYNAMIC_EARLY_SIZE.
  */
 #define PERCPU_DYNAMIC_EARLY_SLOTS	128
-#define PERCPU_DYNAMIC_EARLY_SIZE	(12 << 10)
+#define PERCPU_DYNAMIC_EARLY_SIZE	(12 << 10) // 12KB
 
 /*
  * PERCPU_DYNAMIC_RESERVE indicates the amount of free area to piggy
@@ -75,7 +75,8 @@
 #if BITS_PER_LONG > 32
 #define PERCPU_DYNAMIC_RESERVE		(20 << 10)
 #else
-#define PERCPU_DYNAMIC_RESERVE		(12 << 10) // 32bit
+#define PERCPU_DYNAMIC_RESERVE		(12 << 10) // 32bit, 12KB, 
+                                               // 12,288 = 1024x12
 #endif
 
 extern void *pcpu_base_addr;
