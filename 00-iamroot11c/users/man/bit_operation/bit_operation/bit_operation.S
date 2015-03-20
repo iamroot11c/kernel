@@ -117,27 +117,40 @@ ENDPROC(_find_first_bit_le)
  * Prototype: int find_next_zero_bit(void *addr, unsigned int maxbit, int offset)
  */
 // 2015-02-28;
-// _find_next_bit_le(cpumask_bits(srcp), nr_cpumask_bits, n+1)
-// _find_next_bit_le(maskp->bits, 2, n+1)
-// r0 = maskp->bits;
-// r1 = 2;
-// r2 = n+1; // 0, 1, 2, ... , n+1
+//
+// _find_next_bit_le(cpumask_bits(srcp)/*maskp->bits*/, nr_cpumask_bits/*2*/, n+1)
+// r0 = maskp->bits
+// r1 = 2
+// r2 = n+1 // 0, 1, 2, 3, ... , n;
 ENTRY(_find_next_bit_le)
-                teq     r1, #0                  @// CPU 총 개수가 0이면 오류
-                beq     3b                      @// backward 3 label
-                ands    ip, r2, #7              @// ip = r2 & 7; // 연산후 상태 갱신
+                teq     r1, #0
+                beq     3b              @// backward 3 label
+                ands    ip, r2, #7      @// ip = r2 & 7;
+                                        @// 오프셋이 0 또는 8(2^3),
+                                        @// 16(2^4), 32(2^5), ... , 2^n 이면
+                                        @// 값을 우측으로 쉬프트 하지 않음
                 beq     1b                      @ If new byte, goto old routine
-                ldrb    r3, [r0, r2, lsr #3]    @// r3 = *(r0 + (r2 >> 3)) // *(r0 + (r2/8))
-                                                @                          // 7 >> 3 
+                ldrb    r3, [r0, r2, lsr #3] @// r3 = *(r0 + (r2 >> 3)) // *(r0 + (r2/8))
                 movs    r3, r3, lsr ip          @ shift off unused bits
-                                                @// r3 = r3 >> ip;
-                bne     .L_found                @// if (r3 > 0) .L_fouund;
-                orr     r2, r2, #7              @ if zero, then no bits here
-                                                @// r2 = r2 | 7;
-                add     r2, r2, #1              @ align bit pointer
-                                                @// r2 = r2 + 1;
-                b       2b                      @ loop for next bit
+                                        @// r3 = r3 >> ip;
+                                        @// 오프셋 & 7 연산 후 나머지 만큼
+                                        @// 우측으로 쉬프트
+                                        @// 이는 찾는 위치를 0번째 비트에서
+                                        @// 하기위해 우측으로 쉬프트
+                bne     .L_found        @// if (r3 > 0) .L_fouund;
+                orr     r2, r2, #7      @ if zero, then no bits here
+                add     r2, r2, #1      @ align bit pointer
+                                        @// r2 = (r2|0b0111) + 1;
+                                        @// 8비트(0~7, 8~15, 16~21, 22~32)단위로
+                                        @// 검사를 먼저하여 다음 구역으로 이동
+                                        @// 예를 들어 검사는 위치가 8번 비트에서
+                                        @// 15번 비트라면
+                                        @// 16번 비트에서 21번 비트사이를 검사하기
+                                        @// 위해 오프셋을 조정
+                b       2b              @ loop for next bit
+                                        @// backward 2 label
 ENDPROC(_find_next_bit_le)
+
 
 #ifdef __ARMEB__
 
@@ -234,8 +247,9 @@ ENDPROC(_cnt_first_bit)
         rsb     r3, r3, #31           @// r3 -= #31; 0 <= r3 < 31
         add     r0, r2, r3            @// r0 = r2 + r3
 
-        cmp     r1, r0                  @ Clamp to maxbit
-        movlo   r0, r1                  @// if (r1 < r0)
-                                        @//  r0 = r1
+        cmp     r1, r0                @ Clamp to maxbit
+        movlo   r0, r1                @// if (r1 < r0)
+                                      @//  r0 = r1
+                                      @// 조사 범위를 넘었는지 조사
         mov     pc, lr
 

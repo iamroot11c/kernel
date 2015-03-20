@@ -1457,10 +1457,11 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 {
 	static int group_map[NR_CPUS/*2*/] __initdata;
 	static int group_cnt[NR_CPUS/*2*/] __initdata;
+	const size_t static_size = __per_cpu_end - __per_cpu_start; 
 	// c04d0000 D __per_cpu_start
 	// c04d1d00 D __per_cpu_end
 	// 0x0000_1D00(7,424) = 0x0c04d_1d00 - 0x0c04d_0000
-	const size_t static_size = __per_cpu_end - __per_cpu_start; 
+
 	int nr_groups = 1, nr_units = 0;
 	size_t size_sum, min_unit_size, alloc_size;
 	int upa, max_upa, uninitialized_var(best_upa);	/* units_per_alloc */
@@ -1481,7 +1482,7 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 			    max_t(size_t, dyn_size/*12KB*/, PERCPU_DYNAMIC_EARLY_SIZE/*12KB*/));
 	//       = PFN_ALIGN(27,904/*0x1D00 + 8KB(0x2000) + 12KB(*0x3000)/);
 	//       = (((unsigned long) 27,094) + (4096/*0x1000*/ - 1)) & 0xFFFF_F000
-	//       = 31,189 & 0xFFFF_F000
+	//       = 0x79D5/*31,189*/ & 0xFFFF_F000
 	//       = 28,672(0x7000);
 	dyn_size = size_sum - static_size - reserved_size;
 	//       = 28,672(0x7000) - 7,424(0x1D00) - 8,196(8KB);
@@ -1507,6 +1508,7 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 	while (alloc_size % upa || ((alloc_size / upa) & ~PAGE_MASK/*0xFFF=!0xFFFF_F000*/))
 		upa--;
 	max_upa = upa;
+	//        1
 
 	/* group cpus according to their proximity */
 	// for (cpu = -1; cpu = cpumask_next(cpu, cpu_possible_mask), cpu < nr_cpu_ids;)
@@ -1527,7 +1529,7 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 		}
 		group_map[cpu] = group;
 		// cpu_distance_fn 함수 포인터가 NULL이어서 0번 그룹에 대해서만 증가
-		group_cnt[group]++;
+		group_cnt[group]++; // 최대값은 2
 	}
 
 	/*
@@ -1539,11 +1541,14 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 	for (upa = max_upa; upa; upa--) {
 		int allocs = 0, wasted = 0;
 
+		// if (0x8000 % upa || (0x8000 / upa) & 0x0FFF) 
 		if (alloc_size % upa || ((alloc_size / upa) & ~PAGE_MASK))
 			continue;
 
+		// cpu_distance_fn 함수 포인터가 NULL이어서 nr_groups는 1
 		for (group = 0; group < nr_groups; group++) {
 			int this_allocs = DIV_ROUND_UP(group_cnt[group], upa);
+			//              = (group_cnt[group] + upa - 1) / upa
 			allocs += this_allocs;
 			wasted += this_allocs * upa - group_cnt[group];
 		}
@@ -1663,6 +1668,7 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 	size_t size_sum, areas_size, max_distance;
 	int group, i, rc;
 
+	// pcpu_alloc_info의 멤버 인자의 값을 계산 및 인스턴스 생성
 	ai = pcpu_build_alloc_info(reserved_size, dyn_size, atom_size,
 				   cpu_distance_fn);
 	if (IS_ERR(ai))
@@ -1750,6 +1756,12 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 		ai->dyn_size, ai->unit_size);
 	// exynos5420 log 
 	// PERCPU: Embedded 9 pages/cpu @ee785000 s7552 r8192 d21120 u36864
+	// size_sum          = 9;
+	// base              = 785000
+	// ai->static        = 7552
+	// ai->reserved_size = 8192
+	// ai->dyn_size      = 21120
+	// ai->unit_size     = 36864
 
 	// 2015-03-15; 분석중
 	rc = pcpu_setup_first_chunk(ai, base);
