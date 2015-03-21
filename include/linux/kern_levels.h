@@ -4,6 +4,7 @@
 #define KERN_SOH	"\001"		/* ASCII Start Of Header */
 #define KERN_SOH_ASCII	'\001'
 
+// 2015-03-21, KERNEL_DEBUG 문자열 확인함
 #define KERN_EMERG	KERN_SOH "0"	/* system is unusable */
 #define KERN_ALERT	KERN_SOH "1"	/* action must be taken immediately */
 #define KERN_CRIT	KERN_SOH "2"	/* critical conditions */

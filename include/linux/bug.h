@@ -30,6 +30,7 @@ struct pt_regs;
    result (of value 0 and type size_t), so the expression can be used
    e.g. in a structure initializer (or where-ever else comma expressions
    aren't permitted). */
+// 2015-03-21 확인, e 값이 참인 경우 컴파일 에러. 왜냐하면 비트 필드가 음의 값으로 설정될 수 없기 때문 
 #define BUILD_BUG_ON_ZERO(e) (sizeof(struct { int:-!!(e); }))
 #define BUILD_BUG_ON_NULL(e) ((void *)sizeof(struct { int:-!!(e); }))
 

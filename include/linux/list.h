@@ -34,6 +34,7 @@ static inline void INIT_LIST_HEAD(struct list_head *list)
  * the prev/next entries already!
  */
 #ifndef CONFIG_DEBUG_LIST
+// new 링크드 리스트를 prev와 next와 연결시킨다.
 static inline void __list_add(struct list_head *new,
 			      struct list_head *prev,
 			      struct list_head *next)
@@ -57,6 +58,7 @@ extern void __list_add(struct list_head *new,
  * Insert a new entry after the specified head.
  * This is good for implementing stacks.
  */
+// 2015-03-21 확인
 static inline void list_add(struct list_head *new, struct list_head *head)
 {
 	__list_add(new, head, head->next);
@@ -83,6 +85,11 @@ static inline void list_add_tail(struct list_head *new, struct list_head *head)
  * This is only for internal list manipulation where we know
  * the prev/next entries already!
  */
+// 별도의 메모리 해제는 일어나지 않는다.
+// 자신의 다음 노드->이전 노드 리스트를 자신의 이전 노드 리스트로
+// 자신의 이전 노드->다음 노드 리스트를 자신의 다음 노드 리스트로 변경
+// 말이 어려운데, 간단히 설명하면 
+// 링크드 리스트에서 자기 자신은 빠지고 빠진 자리의 링크드 리스트를 연결시킨다고 생각하는 것이 좋다.
 static inline void __list_del(struct list_head * prev, struct list_head * next)
 {
 	next->prev = prev;
@@ -150,10 +157,13 @@ static inline void list_del_init(struct list_head *entry)
  * @list: the entry to move
  * @head: the head that will precede our entry
  */
+// 2015-03-21 확인
 static inline void list_move(struct list_head *list, struct list_head *head)
 {
-	__list_del_entry(list);
-	list_add(list, head);
+	// list와 연결된 링크드 리스트 항목에서 list 항목을 삭제 
+    __list_del_entry(list);
+	// head와 head->next 사이에 list 노드를 추가
+    list_add(list, head);
 }
 
 /**

@@ -161,6 +161,7 @@ extern int bitmap_ord_to_pos(const unsigned long *bitmap, int n, int bits);
 
 // BITS_PER_LONG - 32bit: 32
 // __builtin_constant_p() 함수는 컴파일 타임에 nbits가 상수인지 검사
+// 2015-03-21 확인. nbits가 상수이면서 BITS_PER_LONG보다 작은 경우 참
 #define small_const_nbits(nbits) \
 	(__builtin_constant_p(nbits) && (nbits) <= BITS_PER_LONG)
 
@@ -173,14 +174,18 @@ static inline void bitmap_zero(unsigned long *dst, int nbits)
 		memset(dst, 0, len);
 	}
 }
-
+// 2015-03-21 확인
 static inline void bitmap_fill(unsigned long *dst, int nbits)
 {
 	size_t nlongs = BITS_TO_LONGS(nbits);
-	if (!small_const_nbits(nbits)) {
-		int len = (nlongs - 1) * sizeof(unsigned long);
-		memset(dst, 0xff,  len);
+    // nbits는 실행 시간에 값이 설정되기 때문에 small_const_nbits함수에서 항상 false가 리턴
+    if (!small_const_nbits(nbits)) {
+		// 지금 분석 대상의 사양에서는 nlongs의 값이 1이 나올 것이다.
+        int len = (nlongs - 1) * sizeof(unsigned long);
+        // no operation
+        memset(dst, 0xff,  len);
 	}
+    // nbits로 나타낼 수 있는 최대 경우의 수 값을 설정.(ex. nbits : 3-> return : 7)
 	dst[nlongs - 1] = BITMAP_LAST_WORD_MASK(nbits);
 }
 

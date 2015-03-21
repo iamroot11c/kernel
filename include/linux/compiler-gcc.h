@@ -48,6 +48,7 @@
 #define __must_be_array(arr) 0
 #else
 /* &a[0] degrades to a pointer: a different type from an array */
+// 2015-03-21 확인
 #define __must_be_array(a) BUILD_BUG_ON_ZERO(__same_type((a), &(a)[0]))
 #endif
 

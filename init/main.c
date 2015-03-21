@@ -529,9 +529,13 @@ asmlinkage void __init start_kernel(void)
 
 	// 2015-03-14, 시작
 	setup_per_cpu_areas();  
+	// 2015-03-21 분석 완료
+	// 2015-03-21 시작
+	// 확인하기로는 부팅 시 이 함수가 set_my_cpu_offset함수를 부르는 가장 마지막 로직
 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
-
-	build_all_zonelists(NULL, NULL);
+	// 2015-03-21 분석 완료
+	// 2015-03-21 분석 시작
+	build_all_zonelists(NULL, NULL);`
 	page_alloc_init();
 
 	pr_notice("Kernel command line: %s\n", boot_command_line);

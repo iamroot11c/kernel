@@ -402,9 +402,13 @@ void __init smp_cpus_done(unsigned int max_cpus)
 
 	hyp_mode_check();
 }
-
+// 2015-03-21 확인
 void __init smp_prepare_boot_cpu(void)
 {
+	// 이전에 설정한 __per_cpu_offset[process_id]의 값을 
+	// PL1레지스터에 TPIDRPRW속성으로 넣는다.
+	// (왜 오프셋의 값을 스레드 아이디 형태로 넣는지는 확인이 필요)
+	// 이 값은 __my_cpu_offset함수를 호출 시 얻어올 수 있다.
 	set_my_cpu_offset(per_cpu_offset(smp_processor_id()));
 }
 
