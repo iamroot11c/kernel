@@ -286,6 +286,8 @@ static inline int fls(int x)
 {
 	int ret;
 
+    // http://gcc.gnu.org/onlinedocs/gcc-4.6.3/gcc/Other-Builtins.html
+    // 컴파일 타임에 상수로 정해질 수 있는 경우에 1을, 아닌 경우에는 0을 리턴
 	if (__builtin_constant_p(x))
 	       return constant_fls(x);
 

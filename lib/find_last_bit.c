@@ -61,6 +61,8 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 found:
 			// 셋되어있는 맨 마지막 비트의 위치를 찾아 1을 뺀 값이
 			// 대부분 리턴됨
+			// tmp = 0b0000_0000_0000_0001;
+			// 1 = 0 * 32 + 1;
 			return words * BITS_PER_LONG + __fls(tmp);
 		}
 	}
