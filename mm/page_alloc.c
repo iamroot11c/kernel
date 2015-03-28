@@ -92,12 +92,12 @@ EXPORT_PER_CPU_SYMBOL(_numa_mem_);
 nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
 	[N_POSSIBLE] = NODE_MASK_ALL,
 	[N_ONLINE] = { { [0] = 1UL } },
-#ifndef CONFIG_NUMA
+#ifndef CONFIG_NUMA   // not define
 	[N_NORMAL_MEMORY] = { { [0] = 1UL } },
-#ifdef CONFIG_HIGHMEM
+#ifdef CONFIG_HIGHMEM // defined
 	[N_HIGH_MEMORY] = { { [0] = 1UL } },
 #endif
-#ifdef CONFIG_MOVABLE_NODE
+#ifdef CONFIG_MOVABLE_NODE // not define
 	[N_MEMORY] = { { [0] = 1UL } },
 #endif
 	[N_CPU] = { { [0] = 1UL } },
@@ -2942,6 +2942,9 @@ EXPORT_SYMBOL(free_pages_exact);
  * zone, the number of pages is calculated as:
  *     managed_pages - high_pages
  */
+// 2015-03-28
+// nr_free_zone_pages(gfp_zone(GFP_HIGHUSER_MOVABLE));
+// nr_free_zone_pages(1);
 static unsigned long nr_free_zone_pages(int offset)
 {
 	struct zoneref *z;
@@ -2950,8 +2953,14 @@ static unsigned long nr_free_zone_pages(int offset)
 	/* Just pick one node, since fallback list is circular */
 	unsigned long sum = 0;
 
-	struct zonelist *zonelist = node_zonelist(numa_node_id(), GFP_KERNEL);
+	struct zonelist *zonelist = node_zonelist(numa_node_id()/*0*/, GFP_KERNEL);
+	//                        = (&contig_page_data)->node_zonelists + gfp_zonelist(GFP_KERNEL);
+	//                        = (&contig_page_data)->node_zonelists + 0;
 
+	// for (z = first_zones_zonelist(zonelist, offset, null, &zone);
+	//      zone;                           \
+	//      z = next_zones_zonelist(++z, offset, null, &zone))
+	//
 	for_each_zone_zonelist(zone, z, zonelist, offset) {
 		unsigned long size = zone->managed_pages;
 		unsigned long high = high_wmark_pages(zone);
@@ -2980,6 +2989,7 @@ EXPORT_SYMBOL_GPL(nr_free_buffer_pages);
  * nr_free_pagecache_pages() counts the number of pages which are beyond the
  * high watermark within all zones.
  */
+// 2015-03-28
 unsigned long nr_free_pagecache_pages(void)
 {
 	return nr_free_zone_pages(gfp_zone(GFP_HIGHUSER_MOVABLE));
@@ -3243,10 +3253,16 @@ void show_free_areas(unsigned int filter)
 	show_swap_cache_info();
 }
 
+// 2015-03-28;
+// zoneref_set_zone(zone, &zonelist->_zonerefs[nr_zones++]);
+// zoneref의 zone과 zone 타입을 설정
+// zone_idx() 함수의 결과의 예로 0 일 때는 ZONE_DMA
+// 1일 때는 ZONE_NORMAL로 타입을 결정되며 연산하여 타입이 결정
 static void zoneref_set_zone(struct zone *zone, struct zoneref *zoneref)
 {
 	zoneref->zone = zone;
 	zoneref->zone_idx = zone_idx(zone);
+	//                = ((zone) - (zone)->zone_pgdat->node_zones)
 }
 
 /*
@@ -3254,22 +3270,34 @@ static void zoneref_set_zone(struct zone *zone, struct zoneref *zoneref)
  *
  * Add all populated zones of a node to the zonelist.
  */
+// 2015-03-28
+// pgdat = &contig_page_data;
+// build_zonelists_node(pgdat, &pgdat->node_zonelists[0], 0);
 static int build_zonelists_node(pg_data_t *pgdat, struct zonelist *zonelist,
 				int nr_zones)
 {
 	struct zone *zone;
-	enum zone_type zone_type = MAX_NR_ZONES;
+	enum zone_type zone_type = MAX_NR_ZONES/*3*/;
+	//                       = zone_type::__MAX_NR_ZONES;
 
+	// 아래의 순서로 실행
+	// ZONE_MOVABLE -> ZONE_NORMAL -> ZONE_DMA 
 	do {
 		zone_type--;
 		zone = pgdat->node_zones + zone_type;
 		if (populated_zone(zone)) {
+			// zoneref_set_zone() 함수를 호출하면서
+			// nr_zones를 증가하며 이 함수는 해당 
+			// zoneref을 설정
 			zoneref_set_zone(zone,
 				&zonelist->_zonerefs[nr_zones++]);
+
+			// UMA 구조로 확인하지 않음
 			check_highest_zone(zone_type);
 		}
 	} while (zone_type);
 
+	// zoneref_set_zone() 함수 호출하면서 증가함
 	return nr_zones;
 }
 
@@ -3283,6 +3311,7 @@ static int build_zonelists_node(pg_data_t *pgdat, struct zonelist *zonelist,
  *  If not NUMA, ZONELIST_ORDER_ZONE and ZONELIST_ORDER_NODE will create
  *  the same zonelist. So only NUMA can configure this param.
  */
+// 2015-03-28; UMA 구조로 설정을 변경하지 않음
 #define ZONELIST_ORDER_DEFAULT  0
 #define ZONELIST_ORDER_NODE     1
 #define ZONELIST_ORDER_ZONE     2
@@ -3514,6 +3543,8 @@ static void build_zonelists_in_zone_order(pg_data_t *pgdat, int nr_nodes)
 	zonelist->_zonerefs[pos].zone_idx = 0;
 }
 
+// 2015-03-28;
+// 대부분 ZONELIST_ORDER_NODE가 리턴됨
 static int default_zonelist_order(void)
 {
 	int nid, zone_type;
@@ -3529,12 +3560,18 @@ static int default_zonelist_order(void)
 	/* Is there ZONE_NORMAL ? (ex. ppc has only DMA zone..) */
 	low_kmem_size = 0;
 	total_size = 0;
+	// for ( (node) = 0; (node) == 0; (node) = 1) // 한번만 실행
 	for_each_online_node(nid) {
-		for (zone_type = 0; zone_type < MAX_NR_ZONES; zone_type++) {
+		for (zone_type = 0; zone_type < MAX_NR_ZONES/*3*/; zone_type++) {
 			z = &NODE_DATA(nid)->node_zones[zone_type];
 			if (populated_zone(z)) {
-				if (zone_type < ZONE_NORMAL)
+				if (zone_type < ZONE_NORMAL) { 
+					// 가장 작은 메모리 영역이 ZONE_NORMAL로
+					// low_kmem_size는 증가하지 않음
 					low_kmem_size += z->managed_pages;
+				}
+				// zone->present_pages에 값이 있어 
+				// total_size만 증가 
 				total_size += z->managed_pages;
 			} else if (zone_type == ZONE_NORMAL) {
 				/*
@@ -3549,8 +3586,11 @@ static int default_zonelist_order(void)
 		}
 	}
 	if (!low_kmem_size ||  /* there are no DMA area. */
-	    low_kmem_size > total_size/2) /* DMA/DMA32 is big. */
-		return ZONELIST_ORDER_NODE;
+	    low_kmem_size > total_size/2) /* DMA/DMA32 is big. */ 
+		return ZONELIST_ORDER_NODE/*1*/;
+	// low_kmem_size가 증가하지 않아 ZONELIST_ORDER_NODE로 리턴함
+
+	// 총 메모리 크기보다 로우 메모리 영역이 50%를 넘을 때 
 	/*
 	 * look into each node's config.
 	 * If there is a node whose DMA/DMA32 memory is very big area on
@@ -3558,6 +3598,8 @@ static int default_zonelist_order(void)
 	 */
 	average_size = total_size /
 				(nodes_weight(node_states[N_MEMORY]) + 1);
+
+	// for ( (node) = 0; (node) == 0; (node) = 1)
 	for_each_online_node(nid) {
 		low_kmem_size = 0;
 		total_size = 0;
@@ -3577,9 +3619,15 @@ static int default_zonelist_order(void)
 	return ZONELIST_ORDER_ZONE;
 }
 
+// 2015-03-28; NUMA 일 때 호출 
 static void set_zonelist_order(void)
 {
-	if (user_zonelist_order == ZONELIST_ORDER_DEFAULT)
+	// 추론 UMA 구조로 ZONE이 하나만 존재하며
+	// NUMA 구조는 ZONE이 여러개 존재함 그래서 user_zonelist_order의
+	// 값을 ZONELIST_ORDER_DEFAULT로 되었을 것으로 보임
+	// default_zonelist_order() 함수는 대부분 ZONELIST_ORDER_NODE가
+	// 리턴됨
+	if (user_zonelist_order == ZONELIST_ORDER_DEFAULT/*0*/)
 		current_zonelist_order = default_zonelist_order();
 	else
 		current_zonelist_order = user_zonelist_order;
@@ -3671,11 +3719,14 @@ int local_memory_node(int node)
 
 #else	/* CONFIG_NUMA */
 
+// 2015-03-28; UMA 구조로 항상 ZONELIST_ORDER_ZONE로 설정
 static void set_zonelist_order(void)
 {
 	current_zonelist_order = ZONELIST_ORDER_ZONE;
 }
 
+// 2015-03-28;
+// build_zonelists(&contig_page_data);
 static void build_zonelists(pg_data_t *pgdat)
 {
 	int node, local_node;
@@ -3685,6 +3736,7 @@ static void build_zonelists(pg_data_t *pgdat)
 	local_node = pgdat->node_id;
 
 	zonelist = &pgdat->node_zonelists[0];
+	// zone 개수가 리턴됨 
 	j = build_zonelists_node(pgdat, zonelist, 0);
 
 	/*
@@ -3696,21 +3748,24 @@ static void build_zonelists(pg_data_t *pgdat)
 	 * node N+1 (modulo N)
 	 */
 	for (node = local_node + 1; node < MAX_NUMNODES; node++) {
-		if (!node_online(node))
+		if (!node_online(node)) // (node == 0)
 			continue;
 		j = build_zonelists_node(NODE_DATA(node), zonelist, j);
 	}
 	for (node = 0; node < local_node; node++) {
 		if (!node_online(node))
 			continue;
+		// node가 0일 때만 실행
 		j = build_zonelists_node(NODE_DATA(node), zonelist, j);
 	}
 
+	// zonelist._zonerefs 배열의 마지막을 설정하여 끝을 알 수 있게함
 	zonelist->_zonerefs[j].zone = NULL;
 	zonelist->_zonerefs[j].zone_idx = 0;
 }
 
 /* non-NUMA variant of zonelist performance cache - just NULL zlcache_ptr */
+// 2015-03-28
 static void build_zonelist_cache(pg_data_t *pgdat)
 {
 	pgdat->node_zonelists[0].zlcache_ptr = NULL;
@@ -3746,25 +3801,30 @@ static void setup_zone_pageset(struct zone *zone);
 DEFINE_MUTEX(zonelists_mutex);
 
 /* return values int ....just for stop_machine() */
+// 2015-03-28;
+// __build_all_zonelists(NULL);
 static int __build_all_zonelists(void *data)
 {
 	int nid;
 	int cpu;
 	pg_data_t *self = data;
 
-#ifdef CONFIG_NUMA
+#ifdef CONFIG_NUMA // not define
 	memset(node_load, 0, sizeof(node_load));
 #endif
 
+	// 부팅할 때 호출되어 self가 NULL로 되어 아래의
+	// 조건을 만족못함
 	if (self && !node_online(self->node_id)) {
 		build_zonelists(self);
 		build_zonelist_cache(self);
 	}
 
 	for_each_online_node(nid) {
-		pg_data_t *pgdat = NODE_DATA(nid);
+		pg_data_t *pgdat = NODE_DATA(nid); // (&contig_page_data) 
 
 		build_zonelists(pgdat);
+		// 저녁 식사 후에 진행
 		build_zonelist_cache(pgdat);
 	}
 
@@ -3781,10 +3841,18 @@ static int __build_all_zonelists(void *data)
 	 * needs the percpu allocator in order to allocate its pagesets
 	 * (a chicken-egg dilemma).
 	 */
+	// #define for_each_cpu(cpu, mask)             \
+	//     for ((cpu) = -1;                \
+	//        (cpu) = cpumask_next((cpu), (mask)),    \
+	//        (cpu) < nr_cpu_ids;)
+		
 	for_each_possible_cpu(cpu) {
 		setup_pageset(&per_cpu(boot_pageset, cpu), 0);
+		// setup_pageset(
+		//        *SHIFT_PERCPU_PTR(&boot_pageset, per_cpu_offset(cpu)),
+		//        0);
 
-#ifdef CONFIG_HAVE_MEMORYLESS_NODES
+#ifdef CONFIG_HAVE_MEMORYLESS_NODES // not define
 		/*
 		 * We now know the "local memory node" for each node--
 		 * i.e., the node of the first zone in the generic zonelist.
@@ -3806,19 +3874,28 @@ static int __build_all_zonelists(void *data)
  * unless system_state == SYSTEM_BOOTING.
  */
 // 2015-03-21 내부 분석만 진행. 여기까지
+// 2015-03-28 분석 시작
+// build_all_zonelists(NULL, NULL);
 void __ref build_all_zonelists(pg_data_t *pgdat, struct zone *zone)
 {
+	// zone.current_zonelist_order 멤버의 값을 
+	// ZONELIST_ORDER_ZONE로 저장
 	set_zonelist_order();
 
 	if (system_state == SYSTEM_BOOTING) {
 		__build_all_zonelists(NULL);
 		mminit_verify_zonelist();
-		cpuset_init_current_mems_allowed();
+		cpuset_init_current_mems_allowed(); // CONFIG_CPUSETS 미 정의로
+		                                    // 아무작업도 하지 않음
 	} else {
-#ifdef CONFIG_MEMORY_HOTPLUG
+#ifdef CONFIG_MEMORY_HOTPLUG // not define
 		if (zone)
 			setup_zone_pageset(zone);
 #endif
+		// 2015-03-28;
+		// 부팅 중 build_all_zonelists() 함수가 호출되는데
+		// 나중에 (모든 cps가)종료될 때 다시 호출되어
+		// stop_machine() 함수는 분석하지 않음
 		/* we have to stop all cpus to guarantee there is no user
 		   of zonelist */
 		stop_machine(__build_all_zonelists, pgdat, NULL);
@@ -4165,6 +4242,8 @@ static int __meminit zone_batchsize(struct zone *zone)
 /*
  * pcp->high and pcp->batch values are related and dependent on one another:
  * ->batch must never be higher then ->high.
+ * // batch가 절대로 high 멤버 변수보다 커서는 안된다. ??? 
+ * // must never be - 반드시 하면 안된다. ???
  * The following function updates them in a safe manner without read side
  * locking.
  *
@@ -4175,26 +4254,31 @@ static int __meminit zone_batchsize(struct zone *zone)
  * outside of boot time (or some other assurance that no concurrent updaters
  * exist).
  */
+// 2015-03-28;
+// pageset_update(p, 0, 1);
 static void pageset_update(struct per_cpu_pages *pcp, unsigned long high,
 		unsigned long batch)
 {
        /* start with a fail safe value for batch */
 	pcp->batch = 1;
-	smp_wmb();
+	smp_wmb(); // dmb(ishst)
 
        /* Update high, then batch, in order */
 	pcp->high = high;
-	smp_wmb();
+	smp_wmb(); // dmb(ishst)
 
 	pcp->batch = batch;
 }
 
 /* a companion to pageset_set_high() */
+// 2015-03-28
+// pageset_set_batch(p, 0);
 static void pageset_set_batch(struct per_cpu_pageset *p, unsigned long batch)
 {
 	pageset_update(&p->pcp, 6 * batch, max(1UL, 1 * batch));
 }
 
+// 2015-03-28
 static void pageset_init(struct per_cpu_pageset *p)
 {
 	struct per_cpu_pages *pcp;
@@ -4204,10 +4288,16 @@ static void pageset_init(struct per_cpu_pageset *p)
 
 	pcp = &p->pcp;
 	pcp->count = 0;
+
+	// per_cpu_pages 구조체의 lists 배열의 각 요소를 초기화
 	for (migratetype = 0; migratetype < MIGRATE_PCPTYPES; migratetype++)
 		INIT_LIST_HEAD(&pcp->lists[migratetype]);
 }
 
+// 2015-03-28
+// setup_pageset(
+//     *SHIFT_PERCPU_PTR(&boot_pageset, per_cpu_offset(cpu)),
+//      0);
 static void setup_pageset(struct per_cpu_pageset *p, unsigned long batch)
 {
 	pageset_init(p);

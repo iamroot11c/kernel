@@ -52,11 +52,14 @@ struct vm_area_struct;
  * without the underscores and use them consistently. The definitions here may
  * be used in bit comparisons.
  */
-#define __GFP_DMA	((__force gfp_t)___GFP_DMA)
-#define __GFP_HIGHMEM	((__force gfp_t)___GFP_HIGHMEM)
-#define __GFP_DMA32	((__force gfp_t)___GFP_DMA32)
-#define __GFP_MOVABLE	((__force gfp_t)___GFP_MOVABLE)  /* Page is movable */
+#define __GFP_DMA	((__force gfp_t)___GFP_DMA)         // 0x01u
+#define __GFP_HIGHMEM	((__force gfp_t)___GFP_HIGHMEM) // 0x02u
+#define __GFP_DMA32	((__force gfp_t)___GFP_DMA32)       // 0x04u
+#define __GFP_MOVABLE	((__force gfp_t)___GFP_MOVABLE)  /* Page is movable */ 
+                                                        // 0x08u
 #define GFP_ZONEMASK	(__GFP_DMA|__GFP_HIGHMEM|__GFP_DMA32|__GFP_MOVABLE)
+//                      (0x01 | 0x02 | 0x04 | 0x08u)
+//                      (0x0F)
 /*
  * Action modifiers - doesn't change the zoning
  *
@@ -114,7 +117,7 @@ struct vm_area_struct;
 #define GFP_ATOMIC	(__GFP_HIGH)
 #define GFP_NOIO	(__GFP_WAIT)
 #define GFP_NOFS	(__GFP_WAIT | __GFP_IO)
-#define GFP_KERNEL	(__GFP_WAIT | __GFP_IO | __GFP_FS)
+#define GFP_KERNEL	(__GFP_WAIT | __GFP_IO | __GFP_FS) // 0xD0 = 0x10 | 0x40 | 0x80;
 #define GFP_TEMPORARY	(__GFP_WAIT | __GFP_IO | __GFP_FS | \
 			 __GFP_RECLAIMABLE)
 #define GFP_USER	(__GFP_WAIT | __GFP_IO | __GFP_FS | __GFP_HARDWALL)
@@ -178,13 +181,13 @@ static inline int allocflags_to_migratetype(gfp_t gfp_flags)
 #define OPT_ZONE_HIGHMEM ZONE_NORMAL
 #endif
 
-#ifdef CONFIG_ZONE_DMA
+#ifdef CONFIG_ZONE_DMA // not define
 #define OPT_ZONE_DMA ZONE_DMA
 #else
 #define OPT_ZONE_DMA ZONE_NORMAL
 #endif
 
-#ifdef CONFIG_ZONE_DMA32
+#ifdef CONFIG_ZONE_DMA32 // not define
 #define OPT_ZONE_DMA32 ZONE_DMA32
 #else
 #define OPT_ZONE_DMA32 ZONE_NORMAL
@@ -227,6 +230,9 @@ static inline int allocflags_to_migratetype(gfp_t gfp_flags)
 #error ZONES_SHIFT too large to create GFP_ZONE_TABLE integer
 #endif
 
+// 2015-03-28
+// GFP_ZONE_TABLE = 1 << 20
+// GFP_ZONE_TABLE = 0x10_0000
 #define GFP_ZONE_TABLE ( \
 	(ZONE_NORMAL << 0 * ZONES_SHIFT)				      \
 	| (OPT_ZONE_DMA << ___GFP_DMA * ZONES_SHIFT)			      \
@@ -234,7 +240,9 @@ static inline int allocflags_to_migratetype(gfp_t gfp_flags)
 	| (OPT_ZONE_DMA32 << ___GFP_DMA32 * ZONES_SHIFT)		      \
 	| (ZONE_NORMAL << ___GFP_MOVABLE * ZONES_SHIFT)			      \
 	| (OPT_ZONE_DMA << (___GFP_MOVABLE | ___GFP_DMA) * ZONES_SHIFT)	      \
-	| (ZONE_MOVABLE << (___GFP_MOVABLE | ___GFP_HIGHMEM) * ZONES_SHIFT)   \
+	| (ZONE_MOVABLE << (___GFP_MOVABLE | ___GFP_HIGHMEM) * ZONES_SHIFT)  \
+      /* ZONE_MOVABLE(1) << (0x8 | 0x2) * 2// 0b1010 * 2  */    \
+      /* ZONE_MOVABLE(1) << 20 */ \
 	| (OPT_ZONE_DMA32 << (___GFP_MOVABLE | ___GFP_DMA32) * ZONES_SHIFT)   \
 )
 
@@ -255,11 +263,24 @@ static inline int allocflags_to_migratetype(gfp_t gfp_flags)
 	| 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_DMA | ___GFP_HIGHMEM)  \
 )
 
+// 2015-03-28;
+// gfp_zone(GFP_HIGHUSER_MOVABLE)
+// 플래그에서 zone에 대해 찾고
+// GFP_ZONE_TABLE에서 20번 우측(라이트)쉬프트 하고 
+// ZONES_SHIFT 비트수 만큼(exynos5420에서는 2비트를 조사)
+// 조사 하면 zone 타입을 알 수 있다.
 static inline enum zone_type gfp_zone(gfp_t flags)
 {
 	enum zone_type z;
 	int bit = (__force int) (flags & GFP_ZONEMASK);
+    //  bit = flags & 0x0F;
+    //  bit = __GFP_HIGHMEM | __GFP_MOVABLE
+    //  bit = 0b1010
 
+    // GFP_ZONE_TABLE = 0x10_0000;
+    // ZONES_SHIFT = 2
+    // 0x01 = 0x10_0000 >> (0b1010 * 2);
+    // 0x01 = 0x01 & ((1 << 2) -1); // 하위 2비트를 추출
 	z = (GFP_ZONE_TABLE >> (bit * ZONES_SHIFT)) &
 					 ((1 << ZONES_SHIFT) - 1);
 	VM_BUG_ON((GFP_ZONE_BAD >> bit) & 1);
@@ -272,12 +293,14 @@ static inline enum zone_type gfp_zone(gfp_t flags)
  * can allocate highmem pages, the *get*page*() variants return
  * virtual kernel addresses to the allocated page(s).
  */
-
+// 2015-03-28;
+// gfp_zonelist(GFP_KERNEL);
 static inline int gfp_zonelist(gfp_t flags)
 {
 	if (IS_ENABLED(CONFIG_NUMA) && unlikely(flags & __GFP_THISNODE))
 		return 1;
 
+    // UMA로 0을 리턴
 	return 0;
 }
 
@@ -290,9 +313,11 @@ static inline int gfp_zonelist(gfp_t flags)
  * For the normal case of non-DISCONTIGMEM systems the NODE_DATA() gets
  * optimized to &contig_page_data at compile-time.
  */
+// 2015-03-28;
+// node_zonelist(numa_node_id()/*0*/, GFP_KERNEL);
 static inline struct zonelist *node_zonelist(int nid, gfp_t flags)
 {
-	return NODE_DATA(nid)->node_zonelists + gfp_zonelist(flags);
+	return NODE_DATA(nid)->node_zonelists + gfp_zonelist(flags)/*0*/;
 }
 
 #ifndef HAVE_ARCH_FREE_PAGE

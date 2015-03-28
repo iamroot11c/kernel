@@ -251,10 +251,10 @@ struct per_cpu_pages {
 
 struct per_cpu_pageset {
 	struct per_cpu_pages pcp;
-#ifdef CONFIG_NUMA
+#ifdef CONFIG_NUMA // not define
 	s8 expire;
 #endif
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
 	s8 stat_threshold; // signed char stat_threshold;
 	s8 vm_stat_diff[NR_VM_ZONE_STAT_ITEMS];
 #endif
@@ -297,7 +297,7 @@ enum zone_type {
 	 * performed on pages in ZONE_NORMAL if the DMA devices support
 	 * transfers to all addressable memory.
 	 */
-	ZONE_NORMAL,
+	ZONE_NORMAL, // 0
 #ifdef CONFIG_HIGHMEM // set
 	/*
 	 * A memory area that is only addressable by the kernel through
@@ -309,8 +309,8 @@ enum zone_type {
 	 */
 	ZONE_HIGHMEM,
 #endif
-	ZONE_MOVABLE,
-	__MAX_NR_ZONES
+	ZONE_MOVABLE, // 1
+	__MAX_NR_ZONES // 2
 };
 
 #ifndef __GENERATING_BOUNDS_H
@@ -583,6 +583,7 @@ static inline bool zone_is_empty(struct zone *zone)
 
 /* Maximum number of zones on a zonelist */
 #define MAX_ZONES_PER_ZONELIST (MAX_NUMNODES * MAX_NR_ZONES)
+//                              1 * 3 
 
 #ifdef CONFIG_NUMA
 
@@ -693,7 +694,7 @@ struct zoneref {
  */
 struct zonelist {
 	struct zonelist_cache *zlcache_ptr;		     // NULL or &zlcache
-	struct zoneref _zonerefs[MAX_ZONES_PER_ZONELIST + 1];
+	struct zoneref _zonerefs[MAX_ZONES_PER_ZONELIST + 1]; // _zonerefs[3+1]
 #ifdef CONFIG_NUMA
 	struct zonelist_cache zlcache;			     // optional ...
 #endif
@@ -728,16 +729,17 @@ typedef struct pglist_data {
 	struct zone node_zones[MAX_NR_ZONES];
 	struct zonelist node_zonelists[MAX_ZONELISTS];
 	int nr_zones;
-#ifdef CONFIG_FLAT_NODE_MEM_MAP	/* means !SPARSEMEM */
+#ifdef CONFIG_FLAT_NODE_MEM_MAP	/* means !SPARSEMEM */ 
+                                // not define
 	struct page *node_mem_map;
-#ifdef CONFIG_MEMCG
+#ifdef CONFIG_MEMCG             // not define
 	struct page_cgroup *node_page_cgroup;
 #endif
 #endif
 #ifndef CONFIG_NO_BOOTMEM
 	struct bootmem_data *bdata;
 #endif
-#ifdef CONFIG_MEMORY_HOTPLUG
+#ifdef CONFIG_MEMORY_HOTPLUG // not define
 	/*
 	 * Must be held any time you expect node_start_pfn, node_present_pages
 	 * or node_spanned_pages stay constant.  Holding this will also
@@ -761,7 +763,7 @@ typedef struct pglist_data {
 	struct task_struct *kswapd;	/* Protected by lock_memory_hotplug() */
 	int kswapd_max_order;
 	enum zone_type classzone_idx;
-#ifdef CONFIG_NUMA_BALANCING
+#ifdef CONFIG_NUMA_BALANCING // not define
 	/*
 	 * Lock serializing the per destination node AutoNUMA memory
 	 * migration rate limiting data.
@@ -845,8 +847,11 @@ unsigned long __init node_memmap_size_bytes(int, unsigned long, unsigned long);
 /*
  * zone_idx() returns 0 for the ZONE_DMA zone, 1 for the ZONE_NORMAL zone, etc.
  */
+// 2015-03-28;
 #define zone_idx(zone)		((zone) - (zone)->zone_pgdat->node_zones)
 
+// 2015-03-28;
+// free_area_init_core() 함수에서 값을 저장
 static inline int populated_zone(struct zone *zone)
 {
 	return (!!zone->present_pages);
@@ -1010,6 +1015,8 @@ struct zoneref *next_zones_zonelist(struct zoneref *z,
  * used to iterate the zonelist with next_zones_zonelist by advancing it by
  * one before calling.
  */
+// 2015-03-28;
+// first_zones_zonelist(zonelist, offset, null, &zone);
 static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
 					enum zone_type highest_zoneidx,
 					nodemask_t *nodes,

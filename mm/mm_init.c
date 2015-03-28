@@ -21,10 +21,15 @@ int mminit_loglevel;
 #endif
 
 /* The zonelists are simply reported, validation is manual. */
+// 2015-03-28
+// 로그레벨이 MMINIT_WARNING 일 때 zone의 이름을 출력 
 void mminit_verify_zonelist(void)
 {
 	int nid;
 
+	// Booting_kernel_exynos5420.log 에서는 
+	// mminit::zonelist 로그가 없어 로그레벨이
+	// MMINIT_WARNING으로 되어있을것으로 판단됨 
 	if (mminit_loglevel < MMINIT_VERIFY)
 		return;
 
@@ -41,8 +46,8 @@ void mminit_verify_zonelist(void)
 			/* Identify the zone and nodelist */
 			zoneid = i % MAX_NR_ZONES;
 			listid = i / MAX_NR_ZONES;
-			zonelist = &pgdat->node_zonelists[listid];
-			zone = &pgdat->node_zones[zoneid];
+			zonelist = &pgdat->node_zonelists[listid]; // MAX_NR_ZONES과 나누어 zonelist를 찾음
+			zone = &pgdat->node_zones[zoneid]; // MAX_NR_ZONES과 나머지 연산을 통해 zone을 찾음
 			if (!populated_zone(zone))
 				continue;
 

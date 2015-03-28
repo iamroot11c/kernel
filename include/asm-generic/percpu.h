@@ -5,7 +5,7 @@
 #include <linux/threads.h>
 #include <linux/percpu-defs.h>
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defind
 
 /*
  * per_cpu_offset() is the offset that has to be added to a
@@ -54,7 +54,7 @@ extern unsigned long __per_cpu_offset[NR_CPUS]; // NR_CPUS = 2;
  * established ways to produce a usable pointer from the percpu variable
  * offset.
  */
-//numa_node,cpu
+// 2015-03-28
 #define per_cpu(var, cpu) \
 	(*SHIFT_PERCPU_PTR(&(var), per_cpu_offset(cpu)))
 

@@ -13,7 +13,7 @@
 #include <linux/nodemask.h>
 #include <linux/mm.h>
 
-#ifdef CONFIG_CPUSETS
+#ifdef CONFIG_CPUSETS // not define
 
 extern int number_of_cpusets;	/* How many cpusets are defined in system? */
 
@@ -143,6 +143,8 @@ static inline nodemask_t cpuset_mems_allowed(struct task_struct *p)
 }
 
 #define cpuset_current_mems_allowed (node_states[N_MEMORY])
+
+// 2015-03-28;
 static inline void cpuset_init_current_mems_allowed(void) {}
 
 static inline int cpuset_nodemask_valid_mems_allowed(nodemask_t *nodemask)
