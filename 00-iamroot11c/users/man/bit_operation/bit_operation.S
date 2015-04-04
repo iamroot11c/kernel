@@ -62,6 +62,7 @@ ENTRY(_find_first_zero_bit_le)
 1:
                 ldrb    r3, [r0, r2, lsr #3]    
                 eors    r3, r3, #0xff           @ invert bits
+		                                @// LSB 부터 찾기 위해 비트를 반전시킴
                 bne     .L_found                @ any now set - found zero bit
                 add     r2, r2, #8              @ next bit pointer
 2:              cmp     r2, r1                  @ any more?

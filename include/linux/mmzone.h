@@ -297,7 +297,7 @@ enum zone_type {
 	 * performed on pages in ZONE_NORMAL if the DMA devices support
 	 * transfers to all addressable memory.
 	 */
-	ZONE_NORMAL, // 0
+	ZONE_NORMAL,   // 0
 #ifdef CONFIG_HIGHMEM // set
 	/*
 	 * A memory area that is only addressable by the kernel through
@@ -307,10 +307,10 @@ enum zone_type {
 	 * table entries on i386) for each page that the kernel needs to
 	 * access.
 	 */
-	ZONE_HIGHMEM,
+	ZONE_HIGHMEM,  // 1
 #endif
-	ZONE_MOVABLE, // 1
-	__MAX_NR_ZONES // 2
+	ZONE_MOVABLE,  // 2
+	__MAX_NR_ZONES // 3
 };
 
 #ifndef __GENERATING_BOUNDS_H
@@ -694,6 +694,7 @@ struct zoneref {
  */
 struct zonelist {
 	struct zonelist_cache *zlcache_ptr;		     // NULL or &zlcache
+                                                 // zonelist performance cache
 	struct zoneref _zonerefs[MAX_ZONES_PER_ZONELIST + 1]; // _zonerefs[3+1]
 #ifdef CONFIG_NUMA
 	struct zonelist_cache zlcache;			     // optional ...
@@ -726,7 +727,7 @@ extern struct page *mem_map;
  */
 struct bootmem_data;
 typedef struct pglist_data {
-	struct zone node_zones[MAX_NR_ZONES];
+	struct zone node_zones[MAX_NR_ZONES/*3*/];
 	struct zonelist node_zonelists[MAX_ZONELISTS];
 	int nr_zones;
 #ifdef CONFIG_FLAT_NODE_MEM_MAP	/* means !SPARSEMEM */ 
@@ -736,7 +737,7 @@ typedef struct pglist_data {
 	struct page_cgroup *node_page_cgroup;
 #endif
 #endif
-#ifndef CONFIG_NO_BOOTMEM
+#ifndef CONFIG_NO_BOOTMEM // not define
 	struct bootmem_data *bdata;
 #endif
 #ifdef CONFIG_MEMORY_HOTPLUG // not define
@@ -852,6 +853,26 @@ unsigned long __init node_memmap_size_bytes(int, unsigned long, unsigned long);
 
 // 2015-03-28;
 // free_area_init_core() 함수에서 값을 저장
+//
+// present_pages is physical pages existing within the zone, 
+// which is calculated as:
+//  present_pages = spanned_pages - absent_pages(pages in holes);
+//
+// 해당 zone이 물리적으로 존재하여 사용할 수 있는지 판단
+// present_pages는 
+//  spanned_pages - absent_pages(pages in holes);
+// 으로 계산됨
+//
+// zone.present_pages 멤버 변수는  void free_area_init_core() 함수에서
+// 값을 저장함
+//
+// + setup_arch()
+// |- paging_init()
+// |-- bootmem_init()
+// |--- arm_bootmem_free()
+// |---- free_area_init_node()
+// |----- free_area_init_core()
+//
 static inline int populated_zone(struct zone *zone)
 {
 	return (!!zone->present_pages);

@@ -3256,13 +3256,22 @@ void show_free_areas(unsigned int filter)
 // 2015-03-28;
 // zoneref_set_zone(zone, &zonelist->_zonerefs[nr_zones++]);
 // zoneref의 zone과 zone 타입을 설정
-// zone_idx() 함수의 결과의 예로 0 일 때는 ZONE_DMA
-// 1일 때는 ZONE_NORMAL로 타입을 결정되며 연산하여 타입이 결정
+//
+// zone_idx() 함수는 
+// pglist_data 구조체의 멤버인 node_zones 배열에서
+// 해당 zone이 몇 번째 위치(인덱스)에 계산
+//
+// Exynox 5420은 node_zones의 크기가 3이며
+//  node_zones[0]에는 ZONE_NORMAL,
+//  node_zones[1]에는 ZONE_HIGHMEM,
+//  node_zones[2]에는 ZONE_MOVABLE
+// 으로 구성되어 있어 ZONE_NORMAL 일때는 0,
+// ZONE_HIGHMEM 일때는 1, ZONE_MOVABLE 일때는 2로 계산됨
 static void zoneref_set_zone(struct zone *zone, struct zoneref *zoneref)
 {
 	zoneref->zone = zone;
 	zoneref->zone_idx = zone_idx(zone);
-	//                = ((zone) - (zone)->zone_pgdat->node_zones)
+	//                = (zone - zone->zone_pgdat->node_zones)
 }
 
 /*
@@ -3273,6 +3282,9 @@ static void zoneref_set_zone(struct zone *zone, struct zoneref *zoneref)
 // 2015-03-28
 // pgdat = &contig_page_data;
 // build_zonelists_node(pgdat, &pgdat->node_zonelists[0], 0);
+//  !? build_zonelists() 함수에서 총 3회 호출함
+//
+// 사용가능한 zone을 찾고 해당 zone의 참조계수를 증가
 static int build_zonelists_node(pg_data_t *pgdat, struct zonelist *zonelist,
 				int nr_zones)
 {
@@ -3280,15 +3292,21 @@ static int build_zonelists_node(pg_data_t *pgdat, struct zonelist *zonelist,
 	enum zone_type zone_type = MAX_NR_ZONES/*3*/;
 	//                       = zone_type::__MAX_NR_ZONES;
 
-	// 아래의 순서로 실행
-	// ZONE_MOVABLE -> ZONE_NORMAL -> ZONE_DMA 
 	do {
 		zone_type--;
 		zone = pgdat->node_zones + zone_type;
+		// ZONE_MOVABLE -> ZONE_HIGHMEM -> ZONE_NORMAL  
+		// 순서로 사용가능한 zone을 찾음
 		if (populated_zone(zone)) {
 			// zoneref_set_zone() 함수를 호출하면서
-			// nr_zones를 증가하며 이 함수는 해당 
-			// zoneref을 설정
+			// nr_zones를 증가하며 
+			//
+			// pglist_data 구조체의 node_zonelists 멤버 안에
+			// _zonerefs 배열을 설정
+			// 즉 node_zonelists[0].node_zonelists[ZONE_NORMAL]
+			//  node_zonelists[0].node_zonelists[ZONE_HIGHMEM]
+			//  node_zonelists[0].node_zonelists[ZONE_MOVABLE] 
+			// 을 설정
 			zoneref_set_zone(zone,
 				&zonelist->_zonerefs[nr_zones++]);
 
@@ -3297,7 +3315,8 @@ static int build_zonelists_node(pg_data_t *pgdat, struct zonelist *zonelist,
 		}
 	} while (zone_type);
 
-	// zoneref_set_zone() 함수 호출하면서 증가함
+	// zoneref_set_zone() 함수 호출하면서 증가하며
+	// 가능가능한 zone의 개수를 리턴
 	return nr_zones;
 }
 
@@ -3727,16 +3746,19 @@ static void set_zonelist_order(void)
 
 // 2015-03-28;
 // build_zonelists(&contig_page_data);
+//
+// bootmem_data(= pgdat) 구조체의 node_zonelists 멤버를 설정
 static void build_zonelists(pg_data_t *pgdat)
 {
 	int node, local_node;
-	enum zone_type j;
+	enum zone_type j; // 타입이 zonelist 구조체의 _zonerefs 배열 멤버 변수의
+	                  // 범위를 초가하지 안
 	struct zonelist *zonelist;
 
 	local_node = pgdat->node_id;
 
 	zonelist = &pgdat->node_zonelists[0];
-	// zone 개수가 리턴됨 
+	// zone 개수가 리턴되는데 이 값으로 zone의 종류를 파악(?) 
 	j = build_zonelists_node(pgdat, zonelist, 0);
 
 	/*
@@ -3747,14 +3769,24 @@ static void build_zonelists(pg_data_t *pgdat)
 	 * zones coming right after the local ones are those from
 	 * node N+1 (modulo N)
 	 */
+	// zone_type이 zonelist 구조체의 _zonerefs 배열의 인덱스로 사용되는데
+	// build_zonelists_node() 함수에서는 배열의 범위를 벗어났는지 조사하지
+	// 않고 zonelist를 구성한다.
+	// 또한 이 함수는 아래에서 2번 호출되는데 zone_type의 값은 이 함수의
+	// 리턴값을 그대로 사용한다. 
+	// 
+	// build_zonelists_node() 함수에서 j의 값을 증가하는데 총 3번의 
+	// 함수를 호출해도 문제가 없는게 이상하다.
+	//
 	for (node = local_node + 1; node < MAX_NUMNODES; node++) {
-		if (!node_online(node)) // (node == 0)
-			continue;
+		if (!node_online(node)) // !node_online(0)
+			continue;!      //  -> !(node == 0)
+		// node가 0일 때만 실행
 		j = build_zonelists_node(NODE_DATA(node), zonelist, j);
 	}
 	for (node = 0; node < local_node; node++) {
-		if (!node_online(node))
-			continue;
+		if (!node_online(node)) // !node_online(0)
+			continue;       //  -> !(node == 0)
 		// node가 0일 때만 실행
 		j = build_zonelists_node(NODE_DATA(node), zonelist, j);
 	}
@@ -3766,6 +3798,7 @@ static void build_zonelists(pg_data_t *pgdat)
 
 /* non-NUMA variant of zonelist performance cache - just NULL zlcache_ptr */
 // 2015-03-28
+// zonelist 구조체의 캐쉬 포인터(zlcache_ptr)를 초기화
 static void build_zonelist_cache(pg_data_t *pgdat)
 {
 	pgdat->node_zonelists[0].zlcache_ptr = NULL;
@@ -3815,16 +3848,21 @@ static int __build_all_zonelists(void *data)
 
 	// 부팅할 때 호출되어 self가 NULL로 되어 아래의
 	// 조건을 만족못함
+	//
+	// 나중에 (모든 cpus가)종료될 때 다시 호출될 때 분석
 	if (self && !node_online(self->node_id)) {
 		build_zonelists(self);
 		build_zonelist_cache(self);
 	}
 
-	for_each_online_node(nid) {
+	// 1번만 실행
+	for_each_online_node(nid) { 
+//      for (nid = 0; nid == 0; nid = 1)
 		pg_data_t *pgdat = NODE_DATA(nid); // (&contig_page_data) 
 
-		build_zonelists(pgdat);
-		// 저녁 식사 후에 진행
+		build_zonelists(pgdat); // bootmem_data(= pg_data_t) 구조체의
+                        		// node_zonelists 멤버 데이터를 설정
+					
 		build_zonelist_cache(pgdat);
 	}
 
@@ -3845,7 +3883,6 @@ static int __build_all_zonelists(void *data)
 	//     for ((cpu) = -1;                \
 	//        (cpu) = cpumask_next((cpu), (mask)),    \
 	//        (cpu) < nr_cpu_ids;)
-		
 	for_each_possible_cpu(cpu) {
 		setup_pageset(&per_cpu(boot_pageset, cpu), 0);
 		// setup_pageset(
@@ -3894,7 +3931,7 @@ void __ref build_all_zonelists(pg_data_t *pgdat, struct zone *zone)
 #endif
 		// 2015-03-28;
 		// 부팅 중 build_all_zonelists() 함수가 호출되는데
-		// 나중에 (모든 cps가)종료될 때 다시 호출되어
+		// 나중에 (모든 cpus가)종료될 때 다시 호출되어
 		// stop_machine() 함수는 분석하지 않음
 		/* we have to stop all cpus to guarantee there is no user
 		   of zonelist */
@@ -3902,6 +3939,7 @@ void __ref build_all_zonelists(pg_data_t *pgdat, struct zone *zone)
 		/* cpuset refresh routine should be here */
 	}
 	vm_total_pages = nr_free_pagecache_pages();
+	// 2015-03-28; 여기까지.
 	/*
 	 * Disable grouping by mobility if the number of pages in the
 	 * system is too low to allow the mechanism to work. It would be

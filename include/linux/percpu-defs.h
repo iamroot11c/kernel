@@ -50,6 +50,7 @@
  * restrictions, if CONFIG_DEBUG_FORCE_WEAK_PER_CPU is set weak
  * definition is used for all cases.
  */
+// ARCH_NEEDS_WEAK_PER_CPU and CONFIG_DEBUG_FORCE_WEAK_PER_CPU not define
 #if defined(ARCH_NEEDS_WEAK_PER_CPU) || defined(CONFIG_DEBUG_FORCE_WEAK_PER_CPU)
 /*
  * __pcpu_scope_* dummy variable is used to enforce scope.  It
@@ -75,9 +76,12 @@
 /*
  * Normal declaration and definition macros.
  */
+// ARCH_NEEDS_WEAK_PER_CPU와 
+//  CONFIG_DEBUG_FORCE_WEAK_PER_CPU 미 정의
 #define DECLARE_PER_CPU_SECTION(type, name, sec)			\
 	extern __PCPU_ATTRS(sec) __typeof__(type) name
 
+// 2015-03-28
 #define DEFINE_PER_CPU_SECTION(type, name, sec)				\
 	__PCPU_ATTRS(sec) PER_CPU_DEF_ATTRIBUTES			\
 	__typeof__(type) name
