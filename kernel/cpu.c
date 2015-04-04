@@ -30,16 +30,22 @@ static DEFINE_MUTEX(cpu_add_remove_lock);
  * The following two API's must be used when attempting
  * to serialize the updates to cpu_online_mask, cpu_present_mask.
  */
+// 2015-04-04
 void cpu_maps_update_begin(void)
 {
 	mutex_lock(&cpu_add_remove_lock);
 }
 
+// 2015-04-04
 void cpu_maps_update_done(void)
 {
 	mutex_unlock(&cpu_add_remove_lock);
 }
 
+// 2015-04-04
+// 117 #define RAW_NOTIFIER_HEAD(name)                 \
+// 118     struct raw_notifier_head name =             \
+// 119         RAW_NOTIFIER_INIT(name)
 static RAW_NOTIFIER_HEAD(cpu_chain);
 
 /* If set, cpu_up and cpu_down will return -EBUSY and do nothing.
@@ -156,10 +162,13 @@ void cpu_hotplug_enable(void)
 
 #endif	/* CONFIG_HOTPLUG_CPU */
 
+// 2015-04-04
 /* Need to know about CPUs going up/down? */
 int __ref register_cpu_notifier(struct notifier_block *nb)
 {
 	int ret;
+
+	// begin, done 사이에 실제 register가 이루어 진다.
 	cpu_maps_update_begin();
 	ret = raw_notifier_chain_register(&cpu_chain, nb);
 	cpu_maps_update_done();
@@ -182,7 +191,8 @@ static int cpu_notify(unsigned long val, void *v)
 	return __cpu_notify(val, v, -1, NULL);
 }
 
-#ifdef CONFIG_HOTPLUG_CPU
+// 2015-04-04
+#ifdef CONFIG_HOTPLUG_CPU	// y
 
 static void cpu_notify_nofail(unsigned long val, void *v)
 {

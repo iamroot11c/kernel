@@ -342,6 +342,8 @@ int get_kernel_page(unsigned long start, int write, struct page **pages)
 }
 EXPORT_SYMBOL_GPL(get_kernel_page);
 
+// 2015-04-04
+// 2015-04-04, 여기까지
 static void pagevec_lru_move_fn(struct pagevec *pvec,
 	void (*move_fn)(struct page *page, struct lruvec *lruvec, void *arg),
 	void *arg)
@@ -673,6 +675,7 @@ static void lru_deactivate_fn(struct page *page, struct lruvec *lruvec,
  * Either "cpu" is the current CPU, and preemption has already been
  * disabled; or "cpu" is being hot-unplugged, and is already dead.
  */
+// 2015-04-04
 void lru_add_drain_cpu(int cpu)
 {
 	struct pagevec *pvec = &per_cpu(lru_add_pvec, cpu);
@@ -909,6 +912,7 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec,
  * Add the passed pages to the LRU, then drop the caller's refcount
  * on them.  Reinitialises the caller's pagevec.
  */
+// 2015-04-04
 void __pagevec_lru_add(struct pagevec *pvec)
 {
 	pagevec_lru_move_fn(pvec, __pagevec_lru_add_fn, NULL);

@@ -18,15 +18,31 @@ BLOCKING_NOTIFIER_HEAD(reboot_notifier_list);
  *	are layered on top of these, with appropriate locking added.
  */
 
+// 2015-04-04
+// notifier_block은 linked list 형태로 관리되며,
+// 우선순위를 고려해서 순서가 결정 된다.
+// 내림차순 정렬이다.
 static int notifier_chain_register(struct notifier_block **nl,
 		struct notifier_block *n)
 {
+	// 2015-04-04, 현재는 *nl은 null
+	// 우선순위 형태로 정렬
+	// 동일 우선 순위가 삽입될 때, 새로운 멤버는 가장 마지막에 추가된다.
+	// NOTE: 만약, nl이 NULL이라면, *nl은 Segmentation Fault이다.
 	while ((*nl) != NULL) {
 		if (n->priority > (*nl)->priority)
 			break;
+		// address of '((*nl)->next)'이 assign되고 있다.
+		// 그러므로, NULL이 할당되는 것은 아니다.
 		nl = &((*nl)->next);
 	}
+
+	// n이 맨마지막에 삽입된다면, n->next = NULL;
+	// n이 우선순위가 높아서, 중간에 삽입된다면, *nl앞에 삽입된다.
 	n->next = *nl;
+	// 2015-04-04
+	// *nl에 n을 할당하는 기능
+	// rcu_assign_pointer(NULL, n);
 	rcu_assign_pointer(*nl, n);
 	return 0;
 }
@@ -341,6 +357,7 @@ EXPORT_SYMBOL_GPL(blocking_notifier_call_chain);
  *
  *	Currently always returns zero.
  */
+// 2015-04-04
 int raw_notifier_chain_register(struct raw_notifier_head *nh,
 		struct notifier_block *n)
 {

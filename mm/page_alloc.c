@@ -3940,6 +3940,8 @@ void __ref build_all_zonelists(pg_data_t *pgdat, struct zone *zone)
 	}
 	vm_total_pages = nr_free_pagecache_pages();
 	// 2015-03-28; 여기까지.
+ 
+	// 2015-04-04, 시작 
 	/*
 	 * Disable grouping by mobility if the number of pages in the
 	 * system is too low to allow the mechanism to work. It would be
@@ -3952,6 +3954,8 @@ void __ref build_all_zonelists(pg_data_t *pgdat, struct zone *zone)
 	else
 		page_group_by_mobility_disabled = 0;
 
+	// 2015-04-04
+	// Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 517136
 	printk("Built %i zonelists in %s order, mobility grouping %s.  "
 		"Total pages: %ld\n",
 			nr_online_nodes,
@@ -5671,6 +5675,8 @@ void __init free_area_init(unsigned long *zones_size)
 			__pa(PAGE_OFFSET) >> PAGE_SHIFT, NULL);
 }
 
+// 2015-04-04 
+// CPU가 죽었을 때, page를 비워주고, 다시 원상 복구시키는 기능을 하는 것으로 보임.
 static int page_alloc_cpu_notify(struct notifier_block *self,
 				 unsigned long action, void *hcpu)
 {
@@ -5700,8 +5706,14 @@ static int page_alloc_cpu_notify(struct notifier_block *self,
 	return NOTIFY_OK;
 }
 
+// 2015-04-04
+// 실제 기능은, page_alloc_cpu_notify를 우선순위 0으로 등록한다.
+// notifier_block을 생성해서, linked list형태로 chain을 구성한다.
 void __init page_alloc_init(void)
 {
+	// priority는 signed이다.
+	// 그러므로, 0은 전체 priority 중, 중간이다.
+	// NORMAL PRIORITY로 개념상정리한다. 
 	hotcpu_notifier(page_alloc_cpu_notify, 0);
 }
 
