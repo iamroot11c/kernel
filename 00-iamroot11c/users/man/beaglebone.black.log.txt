@@ -1,0 +1,105 @@
+U-Boot SPL 2013.04-dirty (May 20 2013 - 14:30:06)
+musb-hdrc: ConfigData=0xde (UTMI-8, dyn FIFOs, HB-ISO Rx, HB-ISO Tx, SoftConn)
+musb-hdrc: MHDRC RTL version 2.0 
+musb-hdrc: setup fifo_mode 4
+musb-hdrc: 28/31 max ep, 16384/16384 memory
+USB Peripheral mode controller at 47401000 using PIO, IRQ 0
+musb-hdrc: ConfigData=0xde (UTMI-8, dyn FIFOs, HB-ISO Rx, HB-ISO Tx, SoftConn)
+musb-hdrc: MHDRC RTL version 2.0 
+musb-hdrc: setup fifo_mode 4
+musb-hdrc: 28/31 max ep, 16384/16384 memory
+USB Host mode controller at 47401800 using PIO, IRQ 0
+OMAP SD/MMC: 0
+mmc_send_cmd : timeout: No status update
+reading u-boot.img
+reading u-boot.img
+
+
+U-Boot 2013.04-dirty (May 20 2013 - 14:30:06)
+
+I2C:   ready
+DRAM:  512 MiB
+WARNING: Caches not enabled
+NAND:  No NAND device found!!!
+0 MiB
+MMC:   OMAP SD/MMC: 0, OMAP SD/MMC: 1
+*** Warning - readenv() failed, using default environment
+
+musb-hdrc: ConfigData=0xde (UTMI-8, dyn FIFOs, HB-ISO Rx, HB-ISO Tx, SoftConn)
+musb-hdrc: MHDRC RTL version 2.0 
+musb-hdrc: setup fifo_mode 4
+musb-hdrc: 28/31 max ep, 16384/16384 memory
+USB Peripheral mode controller at 47401000 using PIO, IRQ 0
+musb-hdrc: ConfigData=0xde (UTMI-8, dyn FIFOs, HB-ISO Rx, HB-ISO Tx, SoftConn)
+musb-hdrc: MHDRC RTL version 2.0 
+musb-hdrc: setup fifo_mode 4
+musb-hdrc: 28/31 max ep, 16384/16384 memory
+USB Host mode controller at 47401800 using PIO, IRQ 0
+Net:   <ethaddr> not set. Validating first E-fuse MAC
+cpsw, usb_ether
+Hit any key to stop autoboot:  0 
+gpio: pin 53 (gpio 53) value is 1
+mmc_send_cmd : timeout: No status update
+Card did not respond to voltage select!
+mmc0(part 0) is current device
+Card did not respond to voltage select!
+No micro SD card found, setting mmcdev to 1
+mmc_send_cmd : timeout: No status update
+mmc1(part 0) is current device
+mmc_send_cmd : timeout: No status update
+gpio: pin 54 (gpio 54) value is 1
+SD/MMC found on device 1
+reading uEnv.txt
+26 bytes read in 3 ms (7.8 KiB/s)
+Loaded environment from uEnv.txt
+Importing environment from mmc ...
+gpio: pin 55 (gpio 55) value is 1
+4234440 bytes read in 740 ms (5.5 MiB/s)
+gpio: pin 56 (gpio 56) value is 1
+23769 bytes read in 52 ms (446.3 KiB/s)
+Booting from mmc ...
+## Booting kernel from Legacy Image at 80007fc0 ...
+Image Name:   Angstrom/3.8.13/beaglebone
+Image Type:   ARM Linux Kernel Image (uncompressed)
+Data Size:    4234376 Bytes = 4 MiB
+    Load Address: 80008000
+    Entry Point:  80008000
+Verifying Checksum ... OK
+## Flattened Device Tree blob at 80f80000
+Booting using the fdt blob at 0x80f80000
+XIP Kernel Image ... OK
+OK
+Using Device Tree in place at 80f80000, end 80f88cd8
+
+Starting kernel ...
+
+Uncompressing Linux... done, booting the kernel.
+[    0.193156] omap2_mbox_probe: platform not supported
+[    0.203686] tps65217-bl tps65217-bl: no platform data provided
+[    0.280358] bone-capemgr bone_capemgr.9: slot #0: No cape found
+[    0.317469] bone-capemgr bone_capemgr.9: slot #1: No cape found
+[    0.354573] bone-capemgr bone_capemgr.9: slot #2: No cape found
+[    0.391683] bone-capemgr bone_capemgr.9: slot #3: No cape found
+[    0.422824] omap_hsmmc mmc.4: of_parse_phandle_with_args of 'reset' failed
+[    0.487950] pinctrl-single 44e10800.pinmux: pin 44e10854 already requested by 44e10800.pinmux; cannot claim for gpio-leds.8
+[    0.499673] pinctrl-single 44e10800.pinmux: pin-21 (gpio-leds.8) status -22
+[    0.506976] pinctrl-single 44e10800.pinmux: could not request pin 21 on device pinctrl-single
+[   11.564789] libphy: PHY 4a101000.mdio:01 not found
+[   11.569896] net eth0: phy 4a101000.mdio:01 not found on slave 1
+systemd-fsck[83]: Angstrom: clean, 50739/112672 files, 310442/449820 blocks
+
+.---O---.                                           
+|       |                  .-.           o o        
+|   |   |-----.-----.-----.| |   .----..-----.-----.
+|       |     | __  |  ---'| '--.|  .-'|     |     |
+|   |   |  |  |     |---  ||  --'|  |  |  '  | | | |
+'---'---'--'--'--.  |-----''----''--'  '-----'-'-'-'
+                -'  |
+'---'
+
+The Angstrom Distribution beaglebone ttyO0
+
+Angstrom v2012.12 - Kernel 3.8.13
+
+beaglebone login: 
+ 
