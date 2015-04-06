@@ -535,8 +535,13 @@ asmlinkage void __init start_kernel(void)
 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
 	// 2015-03-21 분석 완료
 	// 2015-03-21 분석 시작
-	build_all_zonelists(NULL, NULL);`
-	page_alloc_init();
+	build_all_zonelists(NULL, NULL);
+	// 2015-04-04, end
+	
+	// 2015-04-04, start 
+	// 2015-04-04, lru_add_drain_cpu 진행중
+	// 2015-04-04, pagevec_lru_move_fn 기본만 봄.
+	page_alloc_init();	
 
 	pr_notice("Kernel command line: %s\n", boot_command_line);
 	parse_early_param();

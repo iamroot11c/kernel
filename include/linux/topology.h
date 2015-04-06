@@ -211,10 +211,15 @@ static inline void set_cpu_numa_node(int cpu, int node)
 
 /* Returns the number of the current Node. */
 #ifndef numa_node_id
-//여기
+// 2015-03-28; 
+// 'return (1, 0);'은 항상 맨 오른쪽 값(0)을 리턴하여
+// raw_smp_processor_id() 함수의 결과값에 상관없이
+// 항상 0이 리턴됨
 static inline int numa_node_id(void)
 {
 	return cpu_to_node(raw_smp_processor_id());
+    // return ((void)(raw_smp_processor_id()),0)
+    // return ((void)current_thread_info()->cpu), 0)
 }
 #endif
 

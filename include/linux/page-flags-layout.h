@@ -14,10 +14,10 @@
 // MAX_NR_ZONES = 3;
 #if MAX_NR_ZONES < 2
 #define ZONES_SHIFT 0
-#elif MAX_NR_ZONES <= 2
+#elif MAX_NR_ZONES <= 2 // 3 <= 2
 #define ZONES_SHIFT 1
-#elif MAX_NR_ZONES <= 4
-#define ZONES_SHIFT 2
+#elif MAX_NR_ZONES <= 4 // 3 <= 4
+#define ZONES_SHIFT 2   // set
 #else
 #error ZONES_SHIFT -- too many zones configured adjust calculation
 #endif

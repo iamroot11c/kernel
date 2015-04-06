@@ -548,6 +548,8 @@ static inline void rcu_preempt_sleep_check(void)
 		smp_read_barrier_depends(); \
 		(_________p1); \
 	})
+// 2015-04-04
+// __rcu_assign_pointer(NULL, (v), __rcu)
 #define __rcu_assign_pointer(p, v, space) \
 	do { \
 		smp_wmb(); \
@@ -913,6 +915,8 @@ static inline notrace void rcu_read_unlock_sched_notrace(void)
  * impossible-to-diagnose memory corruption.  So please be careful.
  * See the RCU_INIT_POINTER() comment header for details.
  */
+// 2015-04-04
+// rcu_assign_pointer(NULL, n);
 #define rcu_assign_pointer(p, v) \
 	__rcu_assign_pointer((p), (v), __rcu)
 

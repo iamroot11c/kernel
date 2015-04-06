@@ -110,10 +110,11 @@ enum {
 #define CPU_DYING_FROZEN	(CPU_DYING | CPU_TASKS_FROZEN)
 #define CPU_STARTING_FROZEN	(CPU_STARTING | CPU_TASKS_FROZEN)
 
-
-#ifdef CONFIG_SMP
+// 2015-04-04
+#ifdef CONFIG_SMP   // y
 /* Need to know about CPUs going up/down? */
 #if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE)
+// hotcpu_notifier(page_alloc_cpu_notify, 0);
 #define cpu_notifier(fn, pri) {					\
 	static struct notifier_block fn##_nb =			\
 		{ .notifier_call = fn, .priority = pri };	\
@@ -123,6 +124,7 @@ enum {
 #define cpu_notifier(fn, pri)	do { (void)(fn); } while (0)
 #endif /* #else #if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE) */
 #ifdef CONFIG_HOTPLUG_CPU
+// 2015-04-04
 extern int register_cpu_notifier(struct notifier_block *nb);
 extern void unregister_cpu_notifier(struct notifier_block *nb);
 #else
@@ -143,6 +145,10 @@ static inline void unregister_cpu_notifier(struct notifier_block *nb)
 
 int cpu_up(unsigned int cpu);
 void notify_cpu_starting(unsigned int cpu);
+// 2015-04-04
+// 아래 두 함수는 SMP를 고려한 함수이다.
+// SMP 상에서 의미를 가진다.
+// 실제 동작은 Mutex Lock, Unlock임
 extern void cpu_maps_update_begin(void);
 extern void cpu_maps_update_done(void);
 
@@ -170,7 +176,8 @@ static inline void cpu_maps_update_done(void)
 #endif /* CONFIG_SMP */
 extern struct bus_type cpu_subsys;
 
-#ifdef CONFIG_HOTPLUG_CPU
+// 2015-04-04
+#ifdef CONFIG_HOTPLUG_CPU   // y
 /* Stop CPUs going up and down. */
 
 extern void cpu_hotplug_begin(void);
@@ -179,6 +186,8 @@ extern void get_online_cpus(void);
 extern void put_online_cpus(void);
 extern void cpu_hotplug_disable(void);
 extern void cpu_hotplug_enable(void);
+// 2015-04-04
+// hotcpu_notifier(page_alloc_cpu_notify, 0);
 #define hotcpu_notifier(fn, pri)	cpu_notifier(fn, pri)
 #define register_hotcpu_notifier(nb)	register_cpu_notifier(nb)
 #define unregister_hotcpu_notifier(nb)	unregister_cpu_notifier(nb)

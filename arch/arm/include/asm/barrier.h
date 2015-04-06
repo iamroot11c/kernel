@@ -54,7 +54,7 @@
 #define wmb()		barrier()
 #endif
 
-#ifndef CONFIG_SMP
+#ifndef CONFIG_SMP // CONFIG_SMP defined
 #define smp_mb()	barrier()
 #define smp_rmb()	barrier()
 #define smp_wmb()	barrier()

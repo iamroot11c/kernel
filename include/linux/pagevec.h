@@ -8,16 +8,19 @@
 #ifndef _LINUX_PAGEVEC_H
 #define _LINUX_PAGEVEC_H
 
+// 2015-04-04
 /* 14 pointers + two long's align the pagevec structure to a power of two */
 #define PAGEVEC_SIZE	14
 
 struct page;
 struct address_space;
 
+// 2015-04-04
+// page vector
 struct pagevec {
 	unsigned long nr;
 	unsigned long cold;
-	struct page *pages[PAGEVEC_SIZE];
+	struct page *pages[PAGEVEC_SIZE/*14*/];
 };
 
 void __pagevec_release(struct pagevec *pvec);
@@ -39,6 +42,7 @@ static inline void pagevec_reinit(struct pagevec *pvec)
 	pvec->nr = 0;
 }
 
+// 2015-04-04
 static inline unsigned pagevec_count(struct pagevec *pvec)
 {
 	return pvec->nr;

@@ -295,6 +295,7 @@ static inline int do_migrate_pages(struct mm_struct *mm, const nodemask_t *from,
 	return 0;
 }
 
+// 2015-03-28; UMA 구조로 확인하지 않음
 static inline void check_highest_zone(int k)
 {
 }

@@ -281,6 +281,7 @@ static inline int __first_unset_node(const nodemask_t *maskp)
 #define NODE_MASK_LAST_WORD BITMAP_LAST_WORD_MASK(MAX_NUMNODES)
 
 #if MAX_NUMNODES <= BITS_PER_LONG
+//  1            <= 32
 
 #define NODE_MASK_ALL							\
 ((nodemask_t) { {							\
@@ -381,21 +382,21 @@ static inline void __nodes_fold(nodemask_t *dstp, const nodemask_t *origp,
  * Bitmasks that are kept for all the nodes.
  */
 enum node_states {
-	N_POSSIBLE,		/* The node could become online at some point */
-	N_ONLINE,		/* The node is online */
-	N_NORMAL_MEMORY,	/* The node has regular memory */
-#ifdef CONFIG_HIGHMEM
-	N_HIGH_MEMORY,		/* The node has regular or high memory */
+	N_POSSIBLE,		 // 0 /* The node could become online at some point */
+	N_ONLINE,		 // 1 /* The node is online */
+	N_NORMAL_MEMORY, // 2 /* The node has regular memory */
+#ifdef CONFIG_HIGHMEM // defined
+	N_HIGH_MEMORY,   // 3 /* The node has regular or high memory */
 #else
 	N_HIGH_MEMORY = N_NORMAL_MEMORY,
 #endif
-#ifdef CONFIG_MOVABLE_NODE
+#ifdef CONFIG_MOVABLE_NODE // not define
 	N_MEMORY,		/* The node has memory(regular, high, movable) */
 #else
-	N_MEMORY = N_HIGH_MEMORY,
+	N_MEMORY = N_HIGH_MEMORY, // 3
 #endif
-	N_CPU,		/* The node has one or more cpus */
-	NR_NODE_STATES
+	N_CPU,		    // 4 /* The node has one or more cpus */
+	NR_NODE_STATES  // 5
 };
 
 /*
@@ -450,6 +451,7 @@ static inline void node_set_offline(int nid)
 
 #else
 
+// 2015-03-28
 static inline int node_state(int node, enum node_states state)
 {
 	return node == 0;
@@ -468,6 +470,7 @@ static inline int num_node_state(enum node_states state)
 	return 1;
 }
 
+// 2015-03-28;
 #define for_each_node_state(node, __state) \
 	for ( (node) = 0; (node) == 0; (node) = 1)
 
@@ -499,7 +502,7 @@ static inline int node_random(const nodemask_t *mask)
 #define node_possible(node)	node_state((node), N_POSSIBLE)
 
 #define for_each_node(node)	   for_each_node_state(node, N_POSSIBLE)
-#define for_each_online_node(node) for_each_node_state(node, N_ONLINE)
+#define for_each_online_node(node) for_each_node_state(node, N_ONLINE) // N_ONLINE = 1;
 
 /*
  * For nodemask scrach area.

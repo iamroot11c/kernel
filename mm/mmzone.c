@@ -52,6 +52,8 @@ static inline int zref_in_nodemask(struct zoneref *zref, nodemask_t *nodes)
 }
 
 /* Returns the next zone at or below highest_zoneidx in a zonelist */
+// 2015-03-28; nodes가 NULL 일 때는 첫 번째 zoneref를 찾을 것으로 예측됨 
+// next_zones_zonelist(zonelist->_zonerefs, offset, null, &zone);
 struct zoneref *next_zones_zonelist(struct zoneref *z,
 					enum zone_type highest_zoneidx,
 					nodemask_t *nodes,
@@ -69,7 +71,7 @@ struct zoneref *next_zones_zonelist(struct zoneref *z,
 				(z->zone && !zref_in_nodemask(z, nodes)))
 			z++;
 
-	*zone = zonelist_zone(z);
+	*zone = zonelist_zone(z); // 목록의 첫 번째를 구할 것으로 예측됨
 	return z;
 }
 

@@ -47,9 +47,11 @@
  * runtime initialization.
  */
 
+// 2015-04-04
 typedef	int (*notifier_fn_t)(struct notifier_block *nb,
 			unsigned long action, void *data);
 
+// 2015-04-04
 struct notifier_block {
 	notifier_fn_t notifier_call;
 	struct notifier_block __rcu *next;
@@ -99,6 +101,7 @@ extern void srcu_init_notifier_head(struct srcu_notifier_head *nh);
 #define BLOCKING_NOTIFIER_INIT(name) {				\
 		.rwsem = __RWSEM_INITIALIZER((name).rwsem),	\
 		.head = NULL }
+// 2015-04-04
 #define RAW_NOTIFIER_INIT(name)	{				\
 		.head = NULL }
 /* srcu_notifier_heads cannot be initialized statically */
@@ -109,6 +112,8 @@ extern void srcu_init_notifier_head(struct srcu_notifier_head *nh);
 #define BLOCKING_NOTIFIER_HEAD(name)				\
 	struct blocking_notifier_head name =			\
 		BLOCKING_NOTIFIER_INIT(name)
+// 2015-04-04
+// static RAW_NOTIFIER_HEAD(cpu_chain);
 #define RAW_NOTIFIER_HEAD(name)					\
 	struct raw_notifier_head name =				\
 		RAW_NOTIFIER_INIT(name)
