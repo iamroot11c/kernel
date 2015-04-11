@@ -160,11 +160,12 @@ static inline int hpage_nr_pages(struct page *page)
 extern int do_huge_pmd_numa_page(struct mm_struct *mm, struct vm_area_struct *vma,
 				unsigned long addr, pmd_t pmd, pmd_t *pmdp);
 
-#else /* CONFIG_TRANSPARENT_HUGEPAGE */
+#else /* CONFIG_TRANSPARENT_HUGEPAGE */ // not set
 #define HPAGE_PMD_SHIFT ({ BUILD_BUG(); 0; })
 #define HPAGE_PMD_MASK ({ BUILD_BUG(); 0; })
 #define HPAGE_PMD_SIZE ({ BUILD_BUG(); 0; })
 
+// 2015-04-11
 #define hpage_nr_pages(x) 1
 
 #define transparent_hugepage_enabled(__vma) 0

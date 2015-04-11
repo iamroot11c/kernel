@@ -162,6 +162,8 @@ enum zone_stat_item {
 #define LRU_ACTIVE 1
 #define LRU_FILE 2
 
+// 2015-04-11
+// 다행히 enum값이 비지 않음.
 enum lru_list {
 	LRU_INACTIVE_ANON = LRU_BASE,
 	LRU_ACTIVE_ANON = LRU_BASE + LRU_ACTIVE,
@@ -190,6 +192,7 @@ static inline int is_unevictable_lru(enum lru_list lru)
 	return (lru == LRU_UNEVICTABLE);
 }
 
+// 2015-04-11
 struct zone_reclaim_stat {
 	/*
 	 * The pageout code in vmscan.c keeps track of how many of the
@@ -207,7 +210,7 @@ struct zone_reclaim_stat {
 struct lruvec {
 	struct list_head lists[NR_LRU_LISTS];
 	struct zone_reclaim_stat reclaim_stat;
-#ifdef CONFIG_MEMCG
+#ifdef CONFIG_MEMCG // not set
 	struct zone *zone;
 #endif
 };

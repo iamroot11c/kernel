@@ -59,6 +59,8 @@ extern void __list_add(struct list_head *new,
  * This is good for implementing stacks.
  */
 // 2015-03-21 확인
+// 2015-04-11 확인
+// head와 head->next사이에 new를 삽입하는 동작
 static inline void list_add(struct list_head *new, struct list_head *head)
 {
 	__list_add(new, head, head->next);
@@ -73,6 +75,7 @@ static inline void list_add(struct list_head *new, struct list_head *head)
  * Insert a new entry before the specified head.
  * This is useful for implementing queues.
  */
+// 환형 링크드 
 static inline void list_add_tail(struct list_head *new, struct list_head *head)
 {
 	__list_add(new, head->prev, head);
@@ -107,7 +110,9 @@ static inline void __list_del_entry(struct list_head *entry)
 {
 	__list_del(entry->prev, entry->next);
 }
-
+// 2015-04-11 
+// 링크드리스트에서 자신의 항목을 삭제한 후 
+// prev, next 포인터를 유효하지 않은 값으로 설정
 static inline void list_del(struct list_head *entry)
 {
 	__list_del(entry->prev, entry->next);
@@ -171,6 +176,7 @@ static inline void list_move(struct list_head *list, struct list_head *head)
  * @list: the entry to move
  * @head: the head that will follow our entry
  */
+// 2015-04-11
 static inline void list_move_tail(struct list_head *list,
 				  struct list_head *head)
 {

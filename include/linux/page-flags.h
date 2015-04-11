@@ -157,6 +157,8 @@ static inline void __ClearPage##uname(struct page *page)		\
 static inline int TestSetPage##uname(struct page *page)			\
 		{ return test_and_set_bit(PG_##lname, &page->flags); }
 
+// 2015-04-11
+// PAGEFLAG(Referenced, referenced) TESTCLEARFLAG(Referenced, referenced)
 #define TESTCLEARFLAG(uname, lname)					\
 static inline int TestClearPage##uname(struct page *page)		\
 		{ return test_and_clear_bit(PG_##lname, &page->flags); }
@@ -200,6 +202,7 @@ PAGEFLAG(Error, error) TESTCLEARFLAG(Error, error)
 PAGEFLAG(Referenced, referenced) TESTCLEARFLAG(Referenced, referenced)
 PAGEFLAG(Dirty, dirty) TESTSCFLAG(Dirty, dirty) __CLEARPAGEFLAG(Dirty, dirty)
 PAGEFLAG(LRU, lru) __CLEARPAGEFLAG(LRU, lru)
+// 2015-04-11 PageActive()
 PAGEFLAG(Active, active) __CLEARPAGEFLAG(Active, active)
 	TESTCLEARFLAG(Active, active)
 __PAGEFLAG(Slab, slab)
@@ -207,6 +210,7 @@ PAGEFLAG(Checked, checked)		/* Used by some filesystems */
 PAGEFLAG(Pinned, pinned) TESTSCFLAG(Pinned, pinned)	/* Xen */
 PAGEFLAG(SavePinned, savepinned);			/* Xen */
 PAGEFLAG(Reserved, reserved) __CLEARPAGEFLAG(Reserved, reserved)
+// 2015-04-11 PageSwapBacked()
 PAGEFLAG(SwapBacked, swapbacked) __CLEARPAGEFLAG(SwapBacked, swapbacked)
 
 __PAGEFLAG(SlobFree, slob_free)

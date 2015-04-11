@@ -344,6 +344,8 @@ EXPORT_SYMBOL_GPL(get_kernel_page);
 
 // 2015-04-04
 // 2015-04-04, 여기까지
+// 2015-04-11 시작
+// pagevec_lru_move_fn(pvec, lru_deactivate_fn, NULL);
 static void pagevec_lru_move_fn(struct pagevec *pvec,
 	void (*move_fn)(struct page *page, struct lruvec *lruvec, void *arg),
 	void *arg)
@@ -352,7 +354,8 @@ static void pagevec_lru_move_fn(struct pagevec *pvec,
 	struct zone *zone = NULL;
 	struct lruvec *lruvec;
 	unsigned long flags = 0;
-
+	
+	// for (i = 0; i < pvec->nr; i++)
 	for (i = 0; i < pagevec_count(pvec); i++) {
 		struct page *page = pvec->pages[i];
 		struct zone *pagezone = page_zone(page);
@@ -363,9 +366,11 @@ static void pagevec_lru_move_fn(struct pagevec *pvec,
 			zone = pagezone;
 			spin_lock_irqsave(&zone->lru_lock, flags);
 		}
-
+		// 현 버전에서는 zone->lruvec를 반환.
 		lruvec = mem_cgroup_page_lruvec(page, zone);
 		(*move_fn)(page, lruvec, arg);
+		// 2015-04-11 여기까지.
+		// 함수포인터로 전달받은 lru_deactivate_fn동작 살펴봄.
 	}
 	if (zone)
 		spin_unlock_irqrestore(&zone->lru_lock, flags);
@@ -417,12 +422,13 @@ void rotate_reclaimable_page(struct page *page)
 		local_irq_restore(flags);
 	}
 }
-
+// 2015-04-11
+// update_page_reclaim_stat(lruvec, file, 0);
 static void update_page_reclaim_stat(struct lruvec *lruvec,
 				     int file, int rotated)
 {
 	struct zone_reclaim_stat *reclaim_stat = &lruvec->reclaim_stat;
-
+	
 	reclaim_stat->recent_scanned[file]++;
 	if (rotated)
 		reclaim_stat->recent_rotated[file]++;
@@ -624,29 +630,38 @@ void add_page_to_unevictable_list(struct page *page)
  * be write it out by flusher threads as this is much more effective
  * than the single-page writeout from reclaim.
  */
+// 2015-04-11
 static void lru_deactivate_fn(struct page *page, struct lruvec *lruvec,
 			      void *arg)
 {
 	int lru, file;
 	bool active;
-
+	// PG_LRU플래그 설정 여부 확인
 	if (!PageLRU(page))
 		return;
-
+	// PG_Unevictable 플래그 설정 여부 확인 	
 	if (PageUnevictable(page))
 		return;
 
 	/* Some processes are using the page */
+	// 페이지 테이블에 참조 중인 것으로 판단.`
 	if (page_mapped(page))
 		return;
-
+	
+	// PG_Active 플래그 설정 여부 확인
 	active = PageActive(page);
+	// PG_SwapBacked플래그 설정 여부 확인
+	// 참인 경우 파일, 아닌 경우 익명의 페이지(메모리 상주, 임시 페이지 ...)
 	file = page_is_file_cache(page);
+	// 파일 타입인지 아닌지 검사
 	lru = page_lru_base_type(page);
-
+	// 페이지 링크드 리스트 내에서 제거 및 존 내 플래그 재세팅
 	del_page_from_lru_list(page, lruvec, lru + active);
+	// active flag 꺼줌
 	ClearPageActive(page);
+	// referenced flag 꺼줌
 	ClearPageReferenced(page);
+	// 페이지 링크드 리스트 내에 추가 및 zone 플래그 재세팅
 	add_page_to_lru_list(page, lruvec, lru);
 
 	if (PageWriteback(page) || PageDirty(page)) {
@@ -662,10 +677,12 @@ static void lru_deactivate_fn(struct page *page, struct lruvec *lruvec,
 		 * We moves tha page into tail of inactive.
 		 */
 		list_move_tail(&page->lru, &lruvec->lists[lru]);
+		// vm_event[PGROTATED] += 1;
 		__count_vm_event(PGROTATED);
 	}
 
 	if (active)
+		// vm_event[PGDEACTIVATE] += 1;
 		__count_vm_event(PGDEACTIVATE);
 	update_page_reclaim_stat(lruvec, file, 0);
 }

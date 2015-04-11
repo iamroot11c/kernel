@@ -884,8 +884,10 @@ static inline pgoff_t page_file_index(struct page *page)
 /*
  * Return true if this page is mapped into pagetables.
  */
+// 2015-04-11
 static inline int page_mapped(struct page *page)
 {
+    // 위의 주석으로 추측컨데, pagetable에 매핑되어있는 경우 0보다 큰 값이 저장되는 듯 하다.
 	return atomic_read(&(page)->_mapcount) >= 0;
 }
 

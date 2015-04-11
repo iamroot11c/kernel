@@ -17,26 +17,37 @@
  * needs to survive until the page is last deleted from the LRU, which
  * could be as far down as __page_cache_release.
  */
+// 2015-04-11
 static inline int page_is_file_cache(struct page *page)
 {
 	return !PageSwapBacked(page);
 }
-
+// 2015-04-11
 static __always_inline void add_page_to_lru_list(struct page *page,
 				struct lruvec *lruvec, enum lru_list lru)
 {
+    // 1 return
 	int nr_pages = hpage_nr_pages(page);
-	mem_cgroup_update_lru_size(lruvec, lru, nr_pages);
-	list_add(&page->lru, &lruvec->lists[lru]);
+	// NOP
+    mem_cgroup_update_lru_size(lruvec, lru, nr_pages);
+	// linked list 항목에 추가
+    list_add(&page->lru, &lruvec->lists[lru]);
 	__mod_zone_page_state(lruvec_zone(lruvec), NR_LRU_BASE + lru, nr_pages);
 }
 
+// 2015-04-11
+// del_page_from_lru_list(page, lruvec, lru + active);
+// __always_inline : inline할 것을 명시해 주는 지시어
 static __always_inline void del_page_from_lru_list(struct page *page,
 				struct lruvec *lruvec, enum lru_list lru)
 {
+    // config 미설정으로 1 리턴
 	int nr_pages = hpage_nr_pages(page);
+    // config 미설정으로 빈 static함수 호출, NOP
 	mem_cgroup_update_lru_size(lruvec, lru, -nr_pages);
-	list_del(&page->lru);
+	// 링크드리스트에서 자신의 항목 삭제
+    list_del(&page->lru);
+    // zone내의 페이지 개수 상태 플래그(percpu 내 존재)에 페이지 수만큼 값을 빼줌.
 	__mod_zone_page_state(lruvec_zone(lruvec), NR_LRU_BASE + lru, -nr_pages);
 }
 

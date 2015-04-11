@@ -232,6 +232,7 @@ bool mem_cgroup_bad_page_check(struct page *page);
 void mem_cgroup_print_bad_page(struct page *page);
 #endif
 #else /* CONFIG_MEMCG */
+// 현재 설정버전은 notset
 struct mem_cgroup;
 
 static inline int mem_cgroup_newpage_charge(struct page *page,
@@ -341,6 +342,7 @@ static inline void mem_cgroup_iter_break(struct mem_cgroup *root,
 {
 }
 
+// 2015-04-11
 static inline bool mem_cgroup_disabled(void)
 {
 	return true;
@@ -358,6 +360,7 @@ mem_cgroup_get_lru_size(struct lruvec *lruvec, enum lru_list lru)
 	return 0;
 }
 
+// 2015-04-11
 static inline void
 mem_cgroup_update_lru_size(struct lruvec *lruvec, enum lru_list lru,
 			      int increment)

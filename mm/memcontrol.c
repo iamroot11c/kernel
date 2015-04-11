@@ -1350,6 +1350,7 @@ out:
  * @page: the page
  * @zone: zone of the page
  */
+// 2015-04-11
 struct lruvec *mem_cgroup_page_lruvec(struct page *page, struct zone *zone)
 {
 	struct mem_cgroup_per_zone *mz;
@@ -1358,10 +1359,13 @@ struct lruvec *mem_cgroup_page_lruvec(struct page *page, struct zone *zone)
 	struct lruvec *lruvec;
 
 	if (mem_cgroup_disabled()) {
+		// 현 분석 버전에서는 무조건 true가 리턴
+		// 존에 있는 lruvec를 저장
 		lruvec = &zone->lruvec;
 		goto out;
 	}
-
+	// 현 버전에서는 mem_cgroup_disabled가 무조건 true이기 때문에
+	// :out 까지 분석하지 않는다.
 	pc = lookup_page_cgroup(page);
 	memcg = pc->mem_cgroup;
 

@@ -10,7 +10,7 @@
 
 extern int sysctl_stat_interval;
 
-#ifdef CONFIG_VM_EVENT_COUNTERS
+#ifdef CONFIG_VM_EVENT_COUNTERS // set
 /*
  * Light weight per cpu counter implementation.
  *

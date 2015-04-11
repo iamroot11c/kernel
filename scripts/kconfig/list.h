@@ -96,6 +96,9 @@ static inline void __list_add(struct list_head *_new,
  * Insert a new entry before the specified head.
  * This is useful for implementing queues.
  */
+// 2015-04-11
+// 환형 링크드 리스트인 것을 전제하고 있기 때문에 
+// head의 prev값은 제일 끝이다.
 static inline void list_add_tail(struct list_head *_new, struct list_head *head)
 {
 	__list_add(_new, head->prev, head);

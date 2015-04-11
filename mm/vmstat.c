@@ -211,6 +211,8 @@ void set_pgdat_percpu_threshold(pg_data_t *pgdat,
  */
 // 2015-01-10
 // __mod_zone_page_state(zone, NR_ALLOC_BATCH/*1*/, zone->managed_pages)
+// 2015-04-11
+// __mod_zone_page_state(lruvec_zone(lruvec), NR_LRU_BASE + lru, -nr_pages)
 void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
 				int delta)
 {
@@ -227,11 +229,13 @@ void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
 	t = __this_cpu_read(pcp->stat_threshold);
 
 	if (unlikely(x > t || x < -t)) {
+		// threshold 체크
 		zone_page_state_add(x, zone, item);
 		x = 0;
 	}
 	
 	// *p = x;
+	// (*p) = (*p) + delta;
 	__this_cpu_write(*p, x);
 }
 EXPORT_SYMBOL(__mod_zone_page_state);
