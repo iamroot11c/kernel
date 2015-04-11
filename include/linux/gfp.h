@@ -231,8 +231,8 @@ static inline int allocflags_to_migratetype(gfp_t gfp_flags)
 #endif
 
 // 2015-03-28
-// GFP_ZONE_TABLE = 1 << 20
-// GFP_ZONE_TABLE = 0x10_0000
+// GFP_ZONE_TABLE = 2 << 20
+// GFP_ZONE_TABLE = 0x0020_0000
 #define GFP_ZONE_TABLE ( \
 	(ZONE_NORMAL << 0 * ZONES_SHIFT)				      \
 	| (OPT_ZONE_DMA << ___GFP_DMA * ZONES_SHIFT)			      \
@@ -241,8 +241,8 @@ static inline int allocflags_to_migratetype(gfp_t gfp_flags)
 	| (ZONE_NORMAL << ___GFP_MOVABLE * ZONES_SHIFT)			      \
 	| (OPT_ZONE_DMA << (___GFP_MOVABLE | ___GFP_DMA) * ZONES_SHIFT)	      \
 	| (ZONE_MOVABLE << (___GFP_MOVABLE | ___GFP_HIGHMEM) * ZONES_SHIFT)  \
-      /* ZONE_MOVABLE(1) << (0x8 | 0x2) * 2// 0b1010 * 2  */    \
-      /* ZONE_MOVABLE(1) << 20 */ \
+      /* ZONE_MOVABLE(2) << (0x8 | 0x2) * 2 // 0b1010 * 2  */    \
+      /* ZONE_MOVABLE(2) << 20 */ \
 	| (OPT_ZONE_DMA32 << (___GFP_MOVABLE | ___GFP_DMA32) * ZONES_SHIFT)   \
 )
 
@@ -269,6 +269,10 @@ static inline int allocflags_to_migratetype(gfp_t gfp_flags)
 // GFP_ZONE_TABLE에서 20번 우측(라이트)쉬프트 하고 
 // ZONES_SHIFT 비트수 만큼(exynos5420에서는 2비트를 조사)
 // 조사 하면 zone 타입을 알 수 있다.
+//
+// 2015-04-10 보충
+// GFP mask에서 하위 4비트는 zone을 나타내는 영역이며
+// gfp_zone() 함수는 인자로 전달된 flags에서 zone을 찾음
 static inline enum zone_type gfp_zone(gfp_t flags)
 {
 	enum zone_type z;
@@ -277,10 +281,10 @@ static inline enum zone_type gfp_zone(gfp_t flags)
     //  bit = __GFP_HIGHMEM | __GFP_MOVABLE
     //  bit = 0b1010
 
-    // GFP_ZONE_TABLE = 0x10_0000;
+    // GFP_ZONE_TABLE = 0x20_0000;
     // ZONES_SHIFT = 2
-    // 0x01 = 0x10_0000 >> (0b1010 * 2);
-    // 0x01 = 0x01 & ((1 << 2) -1); // 하위 2비트를 추출
+    // 0x02 = 0x20_0000 >> (0b1010 * 2);
+    // 0x02 = 0x02 & ((1 << 2) -1); // 하위 2비트를 추출
 	z = (GFP_ZONE_TABLE >> (bit * ZONES_SHIFT)) &
 					 ((1 << ZONES_SHIFT) - 1);
 	VM_BUG_ON((GFP_ZONE_BAD >> bit) & 1);

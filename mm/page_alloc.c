@@ -2944,7 +2944,7 @@ EXPORT_SYMBOL(free_pages_exact);
  */
 // 2015-03-28
 // nr_free_zone_pages(gfp_zone(GFP_HIGHUSER_MOVABLE));
-// nr_free_zone_pages(1);
+// nr_free_zone_pages(2);
 static unsigned long nr_free_zone_pages(int offset)
 {
 	struct zoneref *z;
@@ -2990,6 +2990,9 @@ EXPORT_SYMBOL_GPL(nr_free_buffer_pages);
  * high watermark within all zones.
  */
 // 2015-03-28
+//
+// 2015-04-10 보충
+// 페이지 중 zone_type.ZONE_HIGHMEM의 개수를 구함
 unsigned long nr_free_pagecache_pages(void)
 {
 	return nr_free_zone_pages(gfp_zone(GFP_HIGHUSER_MOVABLE));
