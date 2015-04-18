@@ -37,6 +37,8 @@ static inline void count_vm_event(enum vm_event_item item)
 	this_cpu_inc(vm_event_states.event[item]);
 }
 
+// 2015-04-18;
+// __count_vm_events(PGFREE, 1 << order);
 static inline void __count_vm_events(enum vm_event_item item, long delta)
 {
 	__this_cpu_add(vm_event_states.event[item], delta);

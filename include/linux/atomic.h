@@ -12,6 +12,9 @@
  * Atomically adds @a to @v, so long as @v was not already @u.
  * Returns non-zero if @v was not @u, and zero otherwise.
  */
+// 2015-04-18;
+// atomic_add_unless((v), 1, 0)
+// atomic_t 변수 v와 세번째 인자 u가 같지 않으면 0이 아닌값으로 리턴
 static inline int atomic_add_unless(atomic_t *v, int a, int u)
 {
 	return __atomic_add_unless(v, a, u) != u;
@@ -24,6 +27,7 @@ static inline int atomic_add_unless(atomic_t *v, int a, int u)
  * Atomically increments @v by 1, so long as @v is non-zero.
  * Returns non-zero if @v was non-zero, and zero otherwise.
  */
+// v가 가리키는(*v) 값이 0이 아니라면 증가
 #ifndef atomic_inc_not_zero
 #define atomic_inc_not_zero(v)		atomic_add_unless((v), 1, 0)
 #endif

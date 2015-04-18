@@ -325,6 +325,7 @@ static inline struct zonelist *node_zonelist(int nid, gfp_t flags)
 }
 
 #ifndef HAVE_ARCH_FREE_PAGE
+// 2015-04-18; 
 static inline void arch_free_page(struct page *page, int order) { }
 #endif
 #ifndef HAVE_ARCH_ALLOC_PAGE

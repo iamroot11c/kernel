@@ -78,6 +78,8 @@ static inline int atomic_add_return(int i, atomic_t *v)
 	return result;
 }
 
+// 2015-04-18;
+// 감소를 완료할 때까지 반복 시도
 static inline void atomic_sub(int i, atomic_t *v)
 {
 	unsigned long tmp;
@@ -88,12 +90,18 @@ static inline void atomic_sub(int i, atomic_t *v)
 "	sub	%0, %0, %4\n"
 "	strex	%1, %0, [%3]\n"
 "	teq	%1, #0\n"
-"	bne	1b"
+"	bne	1b @// 성공할 때까지 시도"
 	: "=&r" (result), "=&r" (tmp), "+Qo" (v->counter)
 	: "r" (&v->counter), "Ir" (i)
 	: "cc");
 }
 
+// 2015-04-18;
+// 감소를 완료할 때까지 반복 시도
+// 
+// atomic_sub() 함수와 atomic_sub_return() 함수의 동작은 동일하나
+// 결과를 리턴하는 이 함수는 동작 수행전 dmb 명령어를 사용해서
+// result에 저장 결과가 저장되도록 보장함
 static inline int atomic_sub_return(int i, atomic_t *v)
 {
 	unsigned long tmp;
@@ -113,15 +121,29 @@ static inline int atomic_sub_return(int i, atomic_t *v)
 
 	smp_mb();
 
+    // 값이 감소된 값을 리턴 
 	return result;
 }
 
+// 2015-04-18;
+// atomic_cmpxchg((v), c, c + a));
+// 값을 증가할 수 있을 때까지 반복 시도, 리턴되는 값은 증가전 값
 static inline int atomic_cmpxchg(atomic_t *ptr, int old, int new)
 {
 	unsigned long oldval, res;
 
 	smp_mb();
 
+    // strex는 메모리에 값을 저장하는데 그 결과를 리턴하는 명령어로
+    //  저장을 성공하면 0, 실패하면 1을 리턴합니다.
+    // str 뒤에 오는 'ex'는 word, 'xb'는 byte, 'xh'는 halfword로 
+    //  저장하는 값의 최대 크기에 영항을 미친다.
+    // STREX, STREXB, and STREXH attempt to store a word, byte, 
+    //  and halfword respectively to a memory address.
+    // If an Store-Exclusive instruction performs the store, 
+    //  it writes 0 to its destination register.
+    // If it does not perform the store, 
+    //  it writes 1 to its destination register.
 	do {
 		__asm__ __volatile__("@ atomic_cmpxchg\n"
 		"ldrex	%1, [%3]\n"
@@ -214,6 +236,8 @@ static inline void atomic_clear_mask(unsigned long mask, unsigned long *addr)
 
 #define atomic_xchg(v, new) (xchg(&((v)->counter), new))
 
+// 2015-04-18;
+// atomic_add_unless((v), 1, 0);
 static inline int __atomic_add_unless(atomic_t *v, int a, int u)
 {
 	int c, old;
@@ -228,6 +252,8 @@ static inline int __atomic_add_unless(atomic_t *v, int a, int u)
 #define atomic_dec(v)		atomic_sub(1, v)
 
 #define atomic_inc_and_test(v)	(atomic_add_return(1, v) == 0)
+// 2015-04-18;
+// 감소된 값이 0이면 true, 0이 아니면 false;
 #define atomic_dec_and_test(v)	(atomic_sub_return(1, v) == 0)
 #define atomic_inc_return(v)    (atomic_add_return(1, v))
 #define atomic_dec_return(v)    (atomic_sub_return(1, v))

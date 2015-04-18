@@ -104,6 +104,9 @@ static inline void tracepoint_synchronize_unregister(void)
 
 #ifndef DECLARE_TRACE
 
+// 2015-04-18
+// GCC 가변인자 매크로
+// 참고: http://egloos.zum.com/uuzazuk9/v/906491
 #define TP_PROTO(args...)	args
 #define TP_ARGS(args...)	args
 #define TP_CONDITION(args...)	args
@@ -163,6 +166,7 @@ static inline void tracepoint_synchronize_unregister(void)
  * not add unwanted padding between the beginning of the section and the
  * structure. Force alignment to the same alignment as the section start.
  */
+// 2015-04-18;
 #define __DECLARE_TRACE(name, proto, args, cond, data_proto, data_args) \
 	extern struct tracepoint __tracepoint_##name;			\
 	static inline void trace_##name(proto)				\
@@ -261,6 +265,7 @@ static inline void tracepoint_synchronize_unregister(void)
 #define DECLARE_TRACE_NOARGS(name)					\
 		__DECLARE_TRACE(name, void, , 1, void *__data, __data)
 
+// 2015-04-18;
 #define DECLARE_TRACE(name, proto, args)				\
 		__DECLARE_TRACE(name, PARAMS(proto), PARAMS(args), 1,	\
 				PARAMS(void *__data, proto),		\

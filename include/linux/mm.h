@@ -254,6 +254,7 @@ struct inode;
 #define set_page_private(page, v)	((page)->private = (v))
 
 /* It's valid only if the page is free path or free_list */
+// 2015-04-18;
 static inline void set_freepage_migratetype(struct page *page, int migratetype)
 {
 	page->index = migratetype;
@@ -288,6 +289,8 @@ static inline int get_freepage_migratetype(struct page *page)
 /*
  * Drop a ref, return true if the refcount fell to zero (the page has no users)
  */
+// 2015-04-18;
+// 감소된 값이 0이면 true, 0이 아니면 false;
 static inline int put_page_testzero(struct page *page)
 {
 	VM_BUG_ON(atomic_read(&page->_count) == 0);
@@ -298,6 +301,8 @@ static inline int put_page_testzero(struct page *page)
  * Try to grab a ref unless the page has a refcount of zero, return false if
  * that is the case.
  */
+// 2015-04-18;
+// page 구조체의 _count 멤버의 값이 0이 아니라면 증가
 static inline int get_page_unless_zero(struct page *page)
 {
 	return atomic_inc_not_zero(&page->_count);
@@ -369,9 +374,14 @@ static inline void compound_unlock_irqrestore(struct page *page,
 #endif
 }
 
+// 2015-04-18;
+// 인자로 주어진 page가 끝이라면 첫 번째 page를 구하며,
+// 마지막이 아니라면 바로 리턴함
 static inline struct page *compound_head(struct page *page)
 {
 	if (unlikely(PageTail(page))) {
+        // page의 끝이라면 첫 번째 page를 구함
+        // 리턴하기전 page의 헤더를 다시 확인함
 		struct page *head = page->first_page;
 
 		/*
@@ -379,7 +389,7 @@ static inline struct page *compound_head(struct page *page)
 		 * compound page, so recheck that it is still a tail
 		 * page before returning.
 		 */
-		smp_rmb();
+		smp_rmb(); // 메모리 베리어를 호출
 		if (likely(PageTail(page)))
 			return head;
 	}
@@ -494,12 +504,21 @@ static inline void set_compound_page_dtor(struct page *page,
 	page[1].lru.next = (void *)dtor;
 }
 
+// 2015-04-18;
+// 소멸자 함수는 위의 set_compound_page_dtor() 함수에서 등록
+// (free_compound_page() 함수로 등록)
+//  
+// set_compound_page_dtor() 함수는 page_alloc.c에서  prep_compound_page()함수에서  
+// 호출함
+//
+// To Do: 소멸자가 등록되는 과정을 조사해야함
 static inline compound_page_dtor *get_compound_page_dtor(struct page *page)
 {
 	return (compound_page_dtor *)page[1].lru.next;
 }
 
 // 2015-01-24
+// 2015-04-28; 헤더가 아니면 0을 리턴
 static inline int compound_order(struct page *page)
 {
 	if (!PageHead(page))
@@ -697,6 +716,7 @@ static inline int page_nid_last(struct page *page)
 
 extern int page_nid_xchg_last(struct page *page, int nid);
 
+// 2015-04-18;
 static inline void page_nid_reset_last(struct page *page)
 {
 	int nid = (1 << LAST_NID_SHIFT/*0*/) - 1;
@@ -1846,7 +1866,7 @@ extern void copy_user_huge_page(struct page *dst, struct page *src,
 				unsigned int pages_per_huge_page);
 #endif /* CONFIG_TRANSPARENT_HUGEPAGE || CONFIG_HUGETLBFS */
 
-#ifdef CONFIG_DEBUG_PAGEALLOC
+#ifdef CONFIG_DEBUG_PAGEALLOC // not define
 extern unsigned int _debug_guardpage_minorder;
 
 static inline unsigned int debug_guardpage_minorder(void)
@@ -1860,6 +1880,7 @@ static inline bool page_is_guard(struct page *page)
 }
 #else
 static inline unsigned int debug_guardpage_minorder(void) { return 0; }
+// 2015-04-18;
 static inline bool page_is_guard(struct page *page) { return false; }
 #endif /* CONFIG_DEBUG_PAGEALLOC */
 

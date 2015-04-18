@@ -10,7 +10,7 @@ struct ctl_table;
 struct user_struct;
 struct mmu_gather;
 
-#ifdef CONFIG_HUGETLB_PAGE
+#ifdef CONFIG_HUGETLB_PAGE // not define
 
 #include <linux/mempolicy.h>
 #include <linux/shm.h>
@@ -105,6 +105,7 @@ static inline int PageHuge(struct page *page)
 	return 0;
 }
 
+// 2015-04-18;
 static inline int PageHeadHuge(struct page *page_head)
 {
 	return 0;

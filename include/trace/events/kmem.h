@@ -147,6 +147,16 @@ DEFINE_EVENT(kmem_free, kmem_cache_free,
 	TP_ARGS(call_site, ptr)
 );
 
+// 2015-04-28;
+// 이 매크로로 mm_page_free와 관련된 함수가 생성됨
+//
+// extern struct tracepoint __tracepoint_mm_page_free;           
+// void trace_mm_page_free(struct page *page, unsigned int order)
+// void trace_mm_page_free_rcuidle(proto)
+// int register_trace_mm_page_free(void (*probe)(data_proto), void *data)   
+// int unregister_trace_mm_page_free(void (*probe)(data_proto), void *data)  
+// void check_trace_callback_type_mm_page_free(void (*cb)(data_proto))  
+//
 TRACE_EVENT(mm_page_free,
 
 	TP_PROTO(struct page *page, unsigned int order),

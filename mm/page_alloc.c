@@ -362,7 +362,7 @@ out:
  * put_page() function.  Its ->lru.prev holds the order of allocation.
  * This usage means that zero-order pages may not be compound.
  */
-
+// 2015-04-18;
 static void free_compound_page(struct page *page)
 {
 	__free_pages_ok(page, compound_order(page));
@@ -457,6 +457,7 @@ static inline void set_page_guard_flag(struct page *page) { }
 static inline void clear_page_guard_flag(struct page *page) { }
 #endif
 
+// 2015-04-18;
 static inline void set_page_order(struct page *page, int order)
 {
 	set_page_private(page, order);
@@ -507,6 +508,7 @@ __find_buddy_index(unsigned long page_idx, unsigned int order)
  *
  * For recording page's order, we use page_private(page).
  */
+// 2015-04-18;
 static inline int page_is_buddy(struct page *page, struct page *buddy,
 								int order)
 {
@@ -552,7 +554,8 @@ static inline int page_is_buddy(struct page *page, struct page *buddy,
  *
  * -- nyc
  */
-
+// 2015-04-18;
+// __free_one_page(page, zone, order, migratetype);
 static inline void __free_one_page(struct page *page,
 		struct zone *zone, unsigned int order,
 		int migratetype)
@@ -609,6 +612,7 @@ static inline void __free_one_page(struct page *page,
 	 * so it's less likely to be used soon and more likely to be merged
 	 * as a higher order page
 	 */
+	// CONFIG_HOLES_IN_ZONE 미 정의로 pfn_valid_within() 함수는 항상 1을 리턴
 	if ((order < MAX_ORDER-2) && pfn_valid_within(page_to_pfn(buddy))) {
 		struct page *higher_page, *higher_buddy;
 		combined_idx = buddy_idx & page_idx;
@@ -627,6 +631,7 @@ out:
 	zone->free_area[order].nr_free++;
 }
 
+// 2015-04-18;
 static inline int free_pages_check(struct page *page)
 {
 	if (unlikely(page_mapcount(page) |
@@ -706,6 +711,8 @@ static void free_pcppages_bulk(struct zone *zone, int count,
 	spin_unlock(&zone->lock);
 }
 
+// 2015-04-18;
+// free_one_page(page_zone(page), page, order, migratetype);
 static void free_one_page(struct zone *zone, struct page *page, int order,
 				int migratetype)
 {
@@ -718,12 +725,15 @@ static void free_one_page(struct zone *zone, struct page *page, int order,
 	spin_unlock(&zone->lock);
 }
 
+// 2015-04-18;
 static bool free_pages_prepare(struct page *page, unsigned int order)
 {
 	int i;
 	int bad = 0;
 
 	trace_mm_page_free(page, order);
+
+	// CONFIG_KMEMCHECK 비 활성화로 아래 함수는 아무작업도 하지 않음
 	kmemcheck_free_shadow(page, order);
 
 	if (PageAnon(page))
@@ -739,12 +749,18 @@ static bool free_pages_prepare(struct page *page, unsigned int order)
 		debug_check_no_obj_freed(page_address(page),
 					   PAGE_SIZE << order);
 	}
+
+	// ARM은 page를 해제하는 함수를 제공하지 않음
+	// s390, powerpc는 함수를 제공
 	arch_free_page(page, order);
+
+	// CONFIG_DEBUG_PAGEALLOC 미 정의로 아무작업도 하지 않음
 	kernel_map_pages(page, 1 << order, 0);
 
 	return true;
 }
 
+// 2015-04-18;
 static void __free_pages_ok(struct page *page, unsigned int order)
 {
 	unsigned long flags;
@@ -6186,9 +6202,10 @@ static inline unsigned long *get_pageblock_bitmap(struct zone *zone,
 #endif /* CONFIG_SPARSEMEM */
 }
 
+// 2015-04-18;
 static inline int pfn_to_bitidx(struct zone *zone, unsigned long pfn)
 {
-#ifdef CONFIG_SPARSEMEM
+#ifdef CONFIG_SPARSEMEM // defined
 	pfn &= (PAGES_PER_SECTION-1); // pfn &= (0x0001_0000 -1)
 	//     (pfn >> 10) * 4;
 	return (pfn >> pageblock_order) * NR_PAGEBLOCK_BITS; 
@@ -6205,6 +6222,8 @@ static inline int pfn_to_bitidx(struct zone *zone, unsigned long pfn)
  * @end_bitidx: The last bit of interest
  * returns pageblock_bits flags
  */
+// 2015-04-18;
+// get_pageblock_flags_group(page, PB_migrate, PB_migrate_end);
 unsigned long get_pageblock_flags_group(struct page *page,
 					int start_bitidx, int end_bitidx)
 {
@@ -6223,6 +6242,7 @@ unsigned long get_pageblock_flags_group(struct page *page,
 		if (test_bit(bitidx + start_bitidx, bitmap))
 			flags |= value;
 
+	// bitmap에서 셋된 비트들을 계산
 	return flags;
 }
 

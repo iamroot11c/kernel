@@ -60,6 +60,7 @@
 #define smp_wmb()	barrier()
 #else
 #define smp_mb()	dmb(ish)
+// 2015-04-18;
 #define smp_rmb()	smp_mb()
 #define smp_wmb()	dmb(ishst)
 #endif

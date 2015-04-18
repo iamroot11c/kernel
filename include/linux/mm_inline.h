@@ -38,6 +38,7 @@ static __always_inline void add_page_to_lru_list(struct page *page,
 // 2015-04-11
 // del_page_from_lru_list(page, lruvec, lru + active);
 // __always_inline : inline할 것을 명시해 주는 지시어
+// 2015-04-18
 static __always_inline void del_page_from_lru_list(struct page *page,
 				struct lruvec *lruvec, enum lru_list lru)
 {
@@ -59,10 +60,11 @@ static __always_inline void del_page_from_lru_list(struct page *page,
  *
  * Returns the base LRU type - file or anon - @page should be on.
  */
+// 2015-04-18;
 static inline enum lru_list page_lru_base_type(struct page *page)
 {
 	if (page_is_file_cache(page))
-		return LRU_INACTIVE_FILE;
+		return LRU_INACTIVE_FILE; 
 	return LRU_INACTIVE_ANON;
 }
 
@@ -73,18 +75,21 @@ static inline enum lru_list page_lru_base_type(struct page *page)
  * Returns the LRU list a page was on, as an index into the array of LRU
  * lists; and clears its Unevictable or Active flags, ready for freeing.
  */
+// 2015-04-18;
 static __always_inline enum lru_list page_off_lru(struct page *page)
 {
 	enum lru_list lru;
 
+    // PG_unevictable 플래그 검사
 	if (PageUnevictable(page)) {
+        // PG_unevictable 플래그를 클리어
 		__ClearPageUnevictable(page);
 		lru = LRU_UNEVICTABLE;
 	} else {
 		lru = page_lru_base_type(page);
 		if (PageActive(page)) {
 			__ClearPageActive(page);
-			lru += LRU_ACTIVE;
+			lru += LRU_ACTIVE; // 활동상태로 변경
 		}
 	}
 	return lru;

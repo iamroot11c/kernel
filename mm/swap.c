@@ -49,6 +49,7 @@ static DEFINE_PER_CPU(struct pagevec, lru_deactivate_pvecs);
  * This path almost never happens for VM activity - pages are normally
  * freed via pagevecs.  But it gets used by networking.
  */
+// 2015-04-18;
 static void __page_cache_release(struct page *page)
 {
 	if (PageLRU(page)) {
@@ -60,6 +61,7 @@ static void __page_cache_release(struct page *page)
 		lruvec = mem_cgroup_page_lruvec(page, zone);
 		VM_BUG_ON(!PageLRU(page));
 		__ClearPageLRU(page);
+
 		del_page_from_lru_list(page, lruvec, page_off_lru(page));
 		spin_unlock_irqrestore(&zone->lru_lock, flags);
 	}
@@ -71,19 +73,25 @@ static void __put_single_page(struct page *page)
 	free_hot_cold_page(page, 0);
 }
 
+// 2015-04-18;
 static void __put_compound_page(struct page *page)
 {
 	compound_page_dtor *dtor;
 
 	__page_cache_release(page);
+	// (compound_page_dtor *)page[1].lru.next
 	dtor = get_compound_page_dtor(page);
 	(*dtor)(page);
 }
 
+// 2015-04-18;
 static void put_compound_page(struct page *page)
 {
+	// page의 flags에서 PG_head_tail_mask가 있는지 확인
 	if (unlikely(PageTail(page))) {
 		/* __split_huge_page_refcount can run under us */
+		// 인자로 주어진 page가 끝이라면 첫 번째 page를 구하며,
+		// 마지막이 아니라면 바로 리턴함 
 		struct page *page_head = compound_head(page);
 
 		if (likely(page != page_head &&
@@ -98,6 +106,8 @@ static void put_compound_page(struct page *page)
 			 * still hot on arches that do not support
 			 * this_cpu_cmpxchg_double().
 			 */
+			// CONFIG_HUGETLB_PAGE 미 정의로 PageHeadHuge() 함수는 항상 
+			// 0을 리턴
 			if (PageSlab(page_head) || PageHeadHuge(page_head)) {
 				if (likely(PageTail(page))) {
 					/*
@@ -106,6 +116,9 @@ static void put_compound_page(struct page *page)
 					 */
 					VM_BUG_ON(!PageHead(page_head));
 					atomic_dec(&page->_mapcount);
+					
+					// page 구조체의 _count 멤버를 감소한 값이 0이면 
+					//  오류 메시지 출력
 					if (put_page_testzero(page_head))
 						VM_BUG_ON(1);
 					if (put_page_testzero(page_head))
@@ -125,6 +138,8 @@ static void put_compound_page(struct page *page)
 					 */
 					goto skip_lock;
 			}
+			// 2015-04-18; 여기까지 진행
+
 			/*
 			 * page_head wasn't a dangling pointer but it
 			 * may not be a head page anymore by the time
@@ -374,6 +389,8 @@ static void pagevec_lru_move_fn(struct pagevec *pvec,
 	}
 	if (zone)
 		spin_unlock_irqrestore(&zone->lru_lock, flags);
+
+	// 2015-04-18 시작
 	release_pages(pvec->pages, pvec->nr, pvec->cold);
 	pagevec_reinit(pvec);
 }
@@ -799,9 +816,12 @@ void lru_add_drain_all(void)
  * grabbed the page via the LRU.  If it did, give up: shrink_inactive_list()
  * will free it.
  */
+// 2015-04-18; 시작
+// release_pages(pvec->pages, pvec->nr, pvec->cold);
 void release_pages(struct page **pages, int nr, int cold)
 {
 	int i;
+	// 헤더를 만듬
 	LIST_HEAD(pages_to_free);
 	struct zone *zone = NULL;
 	struct lruvec *lruvec;
@@ -810,8 +830,12 @@ void release_pages(struct page **pages, int nr, int cold)
 	for (i = 0; i < nr; i++) {
 		struct page *page = pages[i];
 
+		// page의 flags 멤버에 pageflags.PG_compound이 셋되어있는지 검사
 		if (unlikely(PageCompound(page))) {
+			// pageflags.PG_compound가 셋되어 있음
 			if (zone) {
+				// 첫 번째 루프에서는 zone이 null이어서 
+				// 검사하지 않음
 				spin_unlock_irqrestore(&zone->lru_lock, flags);
 				zone = NULL;
 			}

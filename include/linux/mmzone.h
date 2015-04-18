@@ -78,6 +78,7 @@ enum {
 
 extern int page_group_by_mobility_disabled;
 
+// 2015-04-18;
 static inline int get_pageblock_migratetype(struct page *page)
 {
 	return get_pageblock_flags_group(page, PB_migrate, PB_migrate_end);
@@ -1306,7 +1307,7 @@ unsigned long __init node_memmap_size_bytes(int, unsigned long, unsigned long);
  * pfn_valid_within() should be used in this case; we optimise this away
  * when we have no holes within a MAX_ORDER_NR_PAGES block.
  */
-#ifdef CONFIG_HOLES_IN_ZONE
+#ifdef CONFIG_HOLES_IN_ZONE // not define
 #define pfn_valid_within(pfn) pfn_valid(pfn)
 #else
 #define pfn_valid_within(pfn) (1)

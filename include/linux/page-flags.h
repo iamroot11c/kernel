@@ -91,6 +91,7 @@ enum pageflags {
 	PG_tail,		/* A tail page */
 #else
 	PG_compound,		/* A compound page */
+                        // 2015-04-11;
 #endif
 	PG_swapcache,		/* Swap page: swp_entry_t in private */
 	PG_mappedtodisk,	/* Has blocks allocated on-disk */
@@ -133,9 +134,12 @@ enum pageflags {
 /*
  * Macros to create function definitions for page flags
  */
+// 2015-04-11;
+// TESTPAGEFLAG(Compound, compound)
 #define TESTPAGEFLAG(uname, lname)					\
 static inline int Page##uname(const struct page *page)			\
 			{ return test_bit(PG_##lname, &page->flags); }
+//test_bit(PG_compound, &page->flags);
 
 #define SETPAGEFLAG(uname, lname)					\
 static inline void SetPage##uname(struct page *page)			\
@@ -170,6 +174,13 @@ static inline int __TestClearPage##uname(struct page *page)		\
 #define PAGEFLAG(uname, lname) TESTPAGEFLAG(uname, lname)		\
 	SETPAGEFLAG(uname, lname) CLEARPAGEFLAG(uname, lname)
 
+// 2015-04-18;
+// __PAGEFLAG(Slab, slab)
+// int PageSlab(const struct page *page) { test_bit(PG_slab, &page->flags); }
+//
+// void __SetPageSlab(struct page *page) { __set_bit(PG_slab, &page->flags); }
+//
+// void __ClearPageSlab(struct page *page) { __clear_bit(PG_slab, &page->flags); }
 #define __PAGEFLAG(uname, lname) TESTPAGEFLAG(uname, lname)		\
 	__SETPAGEFLAG(uname, lname)  __CLEARPAGEFLAG(uname, lname)
 
@@ -200,11 +211,14 @@ struct page;	/* forward declaration */
 TESTPAGEFLAG(Locked, locked)
 PAGEFLAG(Error, error) TESTCLEARFLAG(Error, error)
 PAGEFLAG(Referenced, referenced) TESTCLEARFLAG(Referenced, referenced)
+// 2015-04-18;
 PAGEFLAG(Dirty, dirty) TESTSCFLAG(Dirty, dirty) __CLEARPAGEFLAG(Dirty, dirty)
+// 2015-04-18;
 PAGEFLAG(LRU, lru) __CLEARPAGEFLAG(LRU, lru)
-// 2015-04-11 PageActive()
+// 2015-04-18 PageActive()
 PAGEFLAG(Active, active) __CLEARPAGEFLAG(Active, active)
 	TESTCLEARFLAG(Active, active)
+// 2015-04-18
 __PAGEFLAG(Slab, slab)
 PAGEFLAG(Checked, checked)		/* Used by some filesystems */
 PAGEFLAG(Pinned, pinned) TESTSCFLAG(Pinned, pinned)	/* Xen */
@@ -359,6 +373,8 @@ static inline void ClearPageCompound(struct page *page)
  * pages on the LRU and/or pagecache.
  */
 //PG_compound
+// 2015-04-11
+// test_bit(PG_compound, &page->flags);
 TESTPAGEFLAG(Compound, compound)
 __SETPAGEFLAG(Head, compound)  __CLEARPAGEFLAG(Head, compound)
 
@@ -377,11 +393,15 @@ __SETPAGEFLAG(Head, compound)  __CLEARPAGEFLAG(Head, compound)
 #define PG_head_tail_mask ((1L << PG_compound) | (1L << PG_reclaim))
 
 // 2015-01-24
+// 2015-04-18;
+// page의 flags에서 PG_head_mask가 있는지 확인
 static inline int PageHead(struct page *page)
 {
 	return ((page->flags & PG_head_tail_mask) == PG_head_mask);
 }
 
+// 2015-04-18;
+// page의 flags에서 PG_head_tail_mask가 있는지 확인
 static inline int PageTail(struct page *page)
 {
 	return ((page->flags & PG_head_tail_mask) == PG_head_tail_mask);
@@ -407,7 +427,7 @@ static inline void ClearPageCompound(struct page *page)
 
 #endif /* !PAGEFLAGS_EXTENDED */
 
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+#ifdef CONFIG_TRANSPARENT_HUGEPAGE // not defined
 /*
  * PageHuge() only returns true for hugetlbfs pages, but not for
  * normal or transparent huge pages.
