@@ -67,9 +67,12 @@ static void __page_cache_release(struct page *page)
 	}
 }
 
+// 2015-04-25
 static void __put_single_page(struct page *page)
 {
+	// page를 LRU list에서 삭제
 	__page_cache_release(page);
+	// 2015-04-25 start, end
 	free_hot_cold_page(page, 0);
 }
 
@@ -139,14 +142,16 @@ static void put_compound_page(struct page *page)
 					goto skip_lock;
 			}
 			// 2015-04-18; 여기까지 진행
-
+			
+			// 2015-04-25 여기부터 진행
 			/*
 			 * page_head wasn't a dangling pointer but it
 			 * may not be a head page anymore by the time
 			 * we obtain the lock. That is ok as long as it
 			 * can't be freed from under us.
 			 */
-			flags = compound_lock_irqsave(page_head);
+			// CONFIG_TRANSPARENT_HUGEPAGE이 비활성화이고, flags 변수는 아마 0인것으로 추측됨.
+			flags = compound_lock_irqsave(page_head); 
 			if (unlikely(!PageTail(page))) {
 				/* __split_huge_page_refcount run before us */
 				compound_unlock_irqrestore(page_head, flags);
@@ -171,6 +176,7 @@ skip_lock:
 						__put_compound_page(page_head);
 					else
 						__put_single_page(page_head);
+					// 2015-04-25 식사전
 				}
 out_put_single:
 				if (put_page_testzero(page))
@@ -392,6 +398,7 @@ static void pagevec_lru_move_fn(struct pagevec *pvec,
 
 	// 2015-04-18 시작
 	release_pages(pvec->pages, pvec->nr, pvec->cold);
+	// 2015-04-25 end
 	pagevec_reinit(pvec);
 }
 
@@ -441,6 +448,8 @@ void rotate_reclaimable_page(struct page *page)
 }
 // 2015-04-11
 // update_page_reclaim_stat(lruvec, file, 0);
+// 2015-04-25
+// update_page_reclaim_stat(lruvec, file, 1);
 static void update_page_reclaim_stat(struct lruvec *lruvec,
 				     int file, int rotated)
 {
@@ -451,6 +460,7 @@ static void update_page_reclaim_stat(struct lruvec *lruvec,
 		reclaim_stat->recent_rotated[file]++;
 }
 
+// 2015-04-25
 static void __activate_page(struct page *page, struct lruvec *lruvec,
 			    void *arg)
 {
@@ -462,7 +472,7 @@ static void __activate_page(struct page *page, struct lruvec *lruvec,
 		SetPageActive(page);
 		lru += LRU_ACTIVE;
 		add_page_to_lru_list(page, lruvec, lru);
-		trace_mm_lru_activate(page, page_to_pfn(page));
+		trace_mm_lru_activate(page, page_to_pfn(page));		// debug
 
 		__count_vm_event(PGACTIVATE);
 		update_page_reclaim_stat(lruvec, file, 1);
@@ -472,6 +482,7 @@ static void __activate_page(struct page *page, struct lruvec *lruvec,
 #ifdef CONFIG_SMP
 static DEFINE_PER_CPU(struct pagevec, activate_page_pvecs);
 
+// 2015-04-25
 static void activate_page_drain(int cpu)
 {
 	struct pagevec *pvec = &per_cpu(activate_page_pvecs, cpu);
@@ -730,8 +741,11 @@ void lru_add_drain_cpu(int cpu)
 	pvec = &per_cpu(lru_deactivate_pvecs, cpu);
 	if (pagevec_count(pvec))
 		pagevec_lru_move_fn(pvec, lru_deactivate_fn, NULL);
+	// 2015-04-25
 
+	// 2015-04-25
 	activate_page_drain(cpu);
+	// 2015-04-25
 }
 
 /**
@@ -839,10 +853,13 @@ void release_pages(struct page **pages, int nr, int cold)
 				spin_unlock_irqrestore(&zone->lru_lock, flags);
 				zone = NULL;
 			}
+			// 2015-04-18 start
 			put_compound_page(page);
+			// 2015-04-25 end
 			continue;
 		}
 
+		// release_pages()로 진입했다면, 기본 ref count는 감소될 것이다.
 		if (!put_page_testzero(page))
 			continue;
 

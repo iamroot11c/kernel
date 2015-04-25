@@ -40,6 +40,7 @@
  * store exclusive to ensure that these are atomic.  We may loop
  * to ensure that the update happens.
  */
+// 2015-04-23
 static inline void atomic_add(int i, atomic_t *v)
 {
 	unsigned long tmp;

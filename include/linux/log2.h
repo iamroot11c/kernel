@@ -83,6 +83,9 @@ unsigned long __rounddown_pow_of_two(unsigned long n)
  *
  * selects the appropriately-sized optimised version depending on sizeof(n)
  */
+// 2015-04-25
+// 밑을 2로하는 log 함수
+// ex) ilog2(32) => 5
 #define ilog2(n)				\
 (						\
 	__builtin_constant_p(n) ? (		\
@@ -166,6 +169,8 @@ unsigned long __rounddown_pow_of_two(unsigned long n)
  * - the result is undefined when n == 0
  * - this can be used to initialise global variables from constant data
  */
+// 2015-04-25
+// __builtin_constant_p(n) n이 상수이면 true
 #define roundup_pow_of_two(n)			\
 (						\
 	__builtin_constant_p(n) ? (		\

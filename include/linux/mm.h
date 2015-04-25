@@ -255,12 +255,14 @@ struct inode;
 
 /* It's valid only if the page is free path or free_list */
 // 2015-04-18;
+// 2015-04-25
 static inline void set_freepage_migratetype(struct page *page, int migratetype)
 {
 	page->index = migratetype;
 }
 
 /* It's valid only if the page is free path or free_list */
+// 2015-04-25
 static inline int get_freepage_migratetype(struct page *page)
 {
 	return page->index;
@@ -355,16 +357,19 @@ static inline void compound_unlock(struct page *page)
 #endif
 }
 
+// 2015-04-25
 static inline unsigned long compound_lock_irqsave(struct page *page)
 {
+    // #define uninitialized_var(x) x = x
 	unsigned long uninitialized_var(flags);
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+#ifdef CONFIG_TRANSPARENT_HUGEPAGE  // not set
 	local_irq_save(flags);
 	compound_lock(page);
 #endif
 	return flags;
 }
 
+// 2015-04-25
 static inline void compound_unlock_irqrestore(struct page *page,
 					      unsigned long flags)
 {

@@ -49,6 +49,7 @@
 #include <linux/types.h>
 #include <linux/compiler.h>
 
+// CONFIG_JUMP_LABEL not set
 #if defined(CC_HAVE_ASM_GOTO) && defined(CONFIG_JUMP_LABEL)
 
 struct static_key {
@@ -61,6 +62,8 @@ struct static_key {
 };
 
 # include <asm/jump_label.h>
+// NOTE: CONFIG_JUMP_LABEL이 not set임으로 HAVE_JUMP_LABEL은 정의되지 않는다. 
+// 코드 검증 기능
 # define HAVE_JUMP_LABEL
 #endif	/* CC_HAVE_ASM_GOTO && CONFIG_JUMP_LABEL */
 
@@ -72,7 +75,7 @@ enum jump_label_type {
 struct module;
 
 #include <linux/atomic.h>
-#ifdef HAVE_JUMP_LABEL
+#ifdef HAVE_JUMP_LABEL      // not set
 
 #define JUMP_LABEL_TRUE_BRANCH 1UL
 
@@ -126,6 +129,7 @@ struct static_key {
 	atomic_t enabled;
 };
 
+// 2015-04-25
 static __always_inline void jump_label_init(void)
 {
 }

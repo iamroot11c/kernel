@@ -185,10 +185,12 @@ static enum jump_label_type jump_label_type(struct static_key *key)
 	return JUMP_LABEL_DISABLE;
 }
 
+// 2015-04-25
+// HAVE_JUMP_LABEL이 not set, 수행되지 않는다.
 void __init jump_label_init(void)
 {
-	struct jump_entry *iter_start = __start___jump_table;
-	struct jump_entry *iter_stop = __stop___jump_table;
+	struct jump_entry *iter_start = __start___jump_table;	// vmlinux
+	struct jump_entry *iter_stop = __stop___jump_table;	// vmlinux
 	struct static_key *key = NULL;
 	struct jump_entry *iter;
 

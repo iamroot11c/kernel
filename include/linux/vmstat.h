@@ -27,6 +27,7 @@ struct vm_event_state {
 
 DECLARE_PER_CPU(struct vm_event_state, vm_event_states);
 
+// 2015-04-25
 static inline void __count_vm_event(enum vm_event_item item)
 {
 	__this_cpu_inc(vm_event_states.event[item]);
@@ -51,6 +52,7 @@ static inline void count_vm_events(enum vm_event_item item, long delta)
 
 extern void all_vm_events(unsigned long *);
 
+// 2015-04-25
 extern void vm_events_fold_cpu(int cpu);
 
 #else
@@ -199,6 +201,7 @@ extern void __inc_zone_state(struct zone *, enum zone_stat_item);
 extern void dec_zone_state(struct zone *, enum zone_stat_item);
 extern void __dec_zone_state(struct zone *, enum zone_stat_item);
 
+// 2015-04-25
 void cpu_vm_stats_fold(int cpu);
 void refresh_zone_stat_thresholds(void);
 

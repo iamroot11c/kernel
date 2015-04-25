@@ -245,10 +245,11 @@ static u32 clear_idx;
 #else
 #define LOG_ALIGN __alignof__(struct printk_log)
 #endif
-#define __LOG_BUF_LEN (1 << CONFIG_LOG_BUF_SHIFT)
+// 2015-04-25
+#define __LOG_BUF_LEN (1 << CONFIG_LOG_BUF_SHIFT/*17*/)	// 128K
 static char __log_buf[__LOG_BUF_LEN] __aligned(LOG_ALIGN);
 static char *log_buf = __log_buf;
-static u32 log_buf_len = __LOG_BUF_LEN;
+static u32 log_buf_len = __LOG_BUF_LEN;		// 128K
 
 /* cpu currently holding logbuf_lock */
 static volatile unsigned int logbuf_cpu = UINT_MAX;
@@ -747,6 +748,9 @@ static int __init log_buf_len_setup(char *str)
 }
 early_param("log_buf_len", log_buf_len_setup);
 
+// 2015-04-25
+// setup_log_buf(0);
+// command line 파싱 후, 관련 값이 있을 경우, 지정된 값으로 버퍼 할당한다.
 void __init setup_log_buf(int early)
 {
 	unsigned long flags;
@@ -756,6 +760,7 @@ void __init setup_log_buf(int early)
 	if (!new_log_buf_len)
 		return;
 
+	// 2015-04-25, 0이기 때문에 수행되지 않는다.
 	if (early) {
 		unsigned long mem;
 

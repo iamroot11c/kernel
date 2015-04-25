@@ -192,6 +192,11 @@ static char *next_arg(char *args, char **param, char **val)
 
 /* Args looks like "foo=bar,bar2 baz=fuz wiz". */
 // "early option, cmdline, null, 0, 0, 0, do_early_param"
+// 2015-04-25, parse_args("early options", cmdline, NULL, 0, 0, 0, do_early_param);
+// 2015-04-25,
+// parse_args("Booting kernel", static_command_line, __start___param,
+//                     __stop___param - __start___param,
+//                     -1, -1, &unknown_bootoption);
 int parse_args(const char *doing,
 	       char *args,
 	       const struct kernel_param *params,

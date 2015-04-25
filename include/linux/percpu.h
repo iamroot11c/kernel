@@ -146,6 +146,7 @@ extern int __init pcpu_page_first_chunk(size_t reserved_size,
  * version should probably be combined with get_cpu()/put_cpu().
  */
 #ifdef CONFIG_SMP
+// 2015-04-25
 #define per_cpu_ptr(ptr, cpu)	SHIFT_PERCPU_PTR((ptr), per_cpu_offset((cpu)))
 #else
 #define per_cpu_ptr(ptr, cpu)	({ (void)(cpu); VERIFY_PERCPU_PTR((ptr)); })

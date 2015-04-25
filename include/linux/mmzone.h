@@ -63,7 +63,7 @@ enum {
 	MIGRATE_TYPES   // 4
 };
 
-#ifdef CONFIG_CMA
+#ifdef CONFIG_CMA   // not set
 #  define is_migrate_cma(migratetype) unlikely((migratetype) == MIGRATE_CMA)
 #else
 #  define is_migrate_cma(migratetype) false
@@ -106,6 +106,7 @@ struct zone_padding {
 #define ZONE_PADDING(name)
 #endif
 
+// 2015-04-25
 enum zone_stat_item {
 	/* First 128 byte cacheline (assuming 64 bit words) */
 	NR_FREE_PAGES,
@@ -244,6 +245,7 @@ enum zone_watermarks {
 #define low_wmark_pages(z) (z->watermark[WMARK_LOW])
 #define high_wmark_pages(z) (z->watermark[WMARK_HIGH])
 
+// 2015-04-25
 struct per_cpu_pages {
 	int count;		/* number of pages in the list */
 	int high;		/* high watermark, emptying needed */
@@ -982,6 +984,7 @@ extern struct zone *next_zone(struct zone *zone);
 	     zone;					\
 	     zone = next_zone(zone))
 
+// 2015-04-25
 #define for_each_populated_zone(zone)		        \
 	for (zone = (first_online_pgdat())->node_zones; \
 	     zone;					\

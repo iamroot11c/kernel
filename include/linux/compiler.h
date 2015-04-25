@@ -371,6 +371,9 @@ void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect);
  * use is to mediate communication between process-level code and irq/NMI
  * handlers, all running on the same CPU.
  */
+// 2015-04-25
+// volatile을 사용했으므로, 메모리에서 읽어오는 것을 보장하려는 의도가 보임.
+// http://egloos.zum.com/studyfoss/v/5682616
 #define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
 
 /* Ignore/forbid kprobes attach on very low level functions marked by this attribute: */

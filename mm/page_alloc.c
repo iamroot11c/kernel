@@ -556,6 +556,8 @@ static inline int page_is_buddy(struct page *page, struct page *buddy,
  */
 // 2015-04-18;
 // __free_one_page(page, zone, order, migratetype);
+// 2015-04-25, __free_one_page(page, zone, 0, mt);    
+// 이벤트 발생 시 호출되는 CB임으로 아래는 충분히 분석하지 않았음.
 static inline void __free_one_page(struct page *page,
 		struct zone *zone, unsigned int order,
 		int migratetype)
@@ -659,6 +661,8 @@ static inline int free_pages_check(struct page *page)
  * And clear the zone's pages_scanned counter, to hold off the "all pages are
  * pinned" detection logic.
  */
+// 2015-04-25
+// free_pcppages_bulk(zone, batch, pcp);
 static void free_pcppages_bulk(struct zone *zone, int count,
 					struct per_cpu_pages *pcp)
 {
@@ -680,6 +684,8 @@ static void free_pcppages_bulk(struct zone *zone, int count,
 		 * off fuller lists instead of spinning excessively around empty
 		 * lists
 		 */
+		// 내용물이 있는 리스트를 찾는다.
+		// 그런데, 모든 리스트가 empty라면 어떻게 되는가?
 		do {
 			batch_free++;
 			if (++migratetype == MIGRATE_PCPTYPES)
@@ -699,11 +705,12 @@ static void free_pcppages_bulk(struct zone *zone, int count,
 			list_del(&page->lru);
 			mt = get_freepage_migratetype(page);
 			/* MIGRATE_MOVABLE list may include MIGRATE_RESERVEs */
-			__free_one_page(page, zone, 0, mt);
-			trace_mm_page_pcpu_drain(page, 0, mt);
+			__free_one_page(page, zone, 0, mt);	// 핵심 기능
+			trace_mm_page_pcpu_drain(page, 0, mt);	// debug 기능임으로 일단은 건너뜀
+			// 아래는 항상 실행 될 것이다.
 			if (likely(!is_migrate_isolate_page(page))) {
 				__mod_zone_page_state(zone, NR_FREE_PAGES, 1);
-				if (is_migrate_cma(mt))
+				if (is_migrate_cma(mt))		// 항상 false
 					__mod_zone_page_state(zone, NR_FREE_CMA_PAGES, 1);
 			}
 		} while (--to_free && --batch_free && !list_empty(list));
@@ -726,6 +733,7 @@ static void free_one_page(struct zone *zone, struct page *page, int order,
 }
 
 // 2015-04-18;
+// 2015-04-25, free_pages_prepare(page, 0)
 static bool free_pages_prepare(struct page *page, unsigned int order)
 {
 	int i;
@@ -1253,6 +1261,7 @@ void drain_zone_pages(struct zone *zone, struct per_cpu_pages *pcp)
  * thread pinned to the current processor or a processor that
  * is not online.
  */
+// 2015-04-25
 static void drain_pages(unsigned int cpu)
 {
 	unsigned long flags;
@@ -1366,6 +1375,7 @@ void mark_free_pages(struct zone *zone)
  * Free a 0-order page
  * cold == 1 ? free a cold page : free a hot page
  */
+// 2015-04-25
 void free_hot_cold_page(struct page *page, int cold)
 {
 	struct zone *zone = page_zone(page);
@@ -1376,6 +1386,8 @@ void free_hot_cold_page(struct page *page, int cold)
 	if (!free_pages_prepare(page, 0))
 		return;
 
+	// 실질적인 동작
+	// bitmap을 조사한 값
 	migratetype = get_pageblock_migratetype(page);
 	set_freepage_migratetype(page, migratetype);
 	local_irq_save(flags);
@@ -1388,20 +1400,31 @@ void free_hot_cold_page(struct page *page, int cold)
 	 * areas back if necessary. Otherwise, we may have to free
 	 * excessively into the page allocator
 	 */
+	// 아래의 경우는 잘못된 경우의 예외 처리
 	if (migratetype >= MIGRATE_PCPTYPES) {
+		// is_migrate_isolate()이 항상 false임으로 아래는 수행될 일이 없다.
 		if (unlikely(is_migrate_isolate(migratetype))) {
 			free_one_page(zone, page, 0, migratetype);
 			goto out;
 		}
+		// 강제로 MIGRATE_MOVABLE로 set하고 있음.
 		migratetype = MIGRATE_MOVABLE;
 	}
 
 	pcp = &this_cpu_ptr(zone->pageset)->pcp;
+
+	// cache 알고리즘 적용
+	// cold이면, list의 맨 마지막에 add
+	// hot이면, list의 맨 처음에 add
 	if (cold)
 		list_add_tail(&page->lru, &pcp->lists[migratetype]);
 	else
 		list_add(&page->lru, &pcp->lists[migratetype]);
 	pcp->count++;
+
+	// high값이 count보다 큰 경우, 아래 로직이 수행되지 않는다.
+	// free_pcppages_bulk() 호출을 하지 않는 경우를 만들기위해서, 
+	// 설정된 것으로 추측.
 	if (pcp->count >= pcp->high) {
 		unsigned long batch = ACCESS_ONCE(pcp->batch);
 		free_pcppages_bulk(zone, batch, pcp);
@@ -1415,12 +1438,13 @@ out:
 /*
  * Free a list of 0-order pages
  */
+// 2015-04-25
 void free_hot_cold_page_list(struct list_head *list, int cold)
 {
 	struct page *page, *next;
 
 	list_for_each_entry_safe(page, next, list, lru) {
-		trace_mm_page_free_batched(page, cold);
+		trace_mm_page_free_batched(page, cold);		// for debug
 		free_hot_cold_page(page, cold);
 	}
 }
@@ -5703,7 +5727,10 @@ static int page_alloc_cpu_notify(struct notifier_block *self,
 
 	if (action == CPU_DEAD || action == CPU_DEAD_FROZEN) {
 		lru_add_drain_cpu(cpu);
+		// 2015-04-25, end
+		// 2015-04-25, start
 		drain_pages(cpu);
+		// 2015-04-25, end
 
 		/*
 		 * Spill the event counters of the dead processor
@@ -5711,7 +5738,9 @@ static int page_alloc_cpu_notify(struct notifier_block *self,
 		 * This artificially elevates the count of the current
 		 * processor.
 		 */
+		// 2015-04-25
 		vm_events_fold_cpu(cpu);
+		// 2015-04-25
 
 		/*
 		 * Zero the differential counters of the dead processor
@@ -5720,6 +5749,7 @@ static int page_alloc_cpu_notify(struct notifier_block *self,
 		 * This is only okay since the processor is dead and cannot
 		 * race with what we are doing.
 		 */
+		// 2015-04-25
 		cpu_vm_stats_fold(cpu);
 	}
 	return NOTIFY_OK;
@@ -6097,6 +6127,12 @@ __setup("hashdist=", set_hashdist);
  *   quantity of entries
  * - limit is the number of hash buckets, not the total allocation size
  */
+// 2015-04-25
+//         pid_hash = alloc_large_system_hash("PID", sizeof(*pid_hash), 0, 18,
+//                                             HASH_EARLY | HASH_SMALL,
+//                                             &pidhash_shift, NULL,
+//                                             0, 4096);
+//
 void *__init alloc_large_system_hash(const char *tablename,
 				     unsigned long bucketsize,
 				     unsigned long numentries,
@@ -6107,18 +6143,18 @@ void *__init alloc_large_system_hash(const char *tablename,
 				     unsigned long low_limit,
 				     unsigned long high_limit)
 {
-	unsigned long long max = high_limit;
+	unsigned long long max = high_limit;	// 4096
 	unsigned long log2qty, size;
 	void *table = NULL;
 
 	/* allow the kernel cmdline to have a say */
-	if (!numentries) {
+	if (!numentries/*0*/) {
 		/* round applicable memory size up to nearest megabyte */
 		numentries = nr_kernel_pages;
 
 		/* It isn't necessary when PAGE_SIZE >= 1MB */
 		if (PAGE_SHIFT < 20)
-			numentries = round_up(numentries, (1<<20)/PAGE_SIZE);
+			numentries = round_up(numentries, (1<<20/*1MB*/)/PAGE_SIZE);
 
 		/* limit to 1 bucket per 2^scale bytes of low memory */
 		if (scale > PAGE_SHIFT)
@@ -6140,19 +6176,20 @@ void *__init alloc_large_system_hash(const char *tablename,
 	numentries = roundup_pow_of_two(numentries);
 
 	/* limit allocation size to 1/16 total memory by default */
-	if (max == 0) {
+	if (max/*4096*/ == 0) {
 		max = ((unsigned long long)nr_all_pages << PAGE_SHIFT) >> 4;
 		do_div(max, bucketsize);
 	}
-	max = min(max, 0x80000000ULL);
+	max = min(max, 0x80000000ULL/*2GB*/);	// max = 4096;
 
 	if (numentries < low_limit)
 		numentries = low_limit;
 	if (numentries > max)
-		numentries = max;
+		numentries = max;	// max보다 더 크다면, max로 셋
 
-	log2qty = ilog2(numentries);
+	log2qty = ilog2(numentries);	// 2를 밑으로하는 로그값(지수)
 
+	// size를 기반을 table을 구한다.
 	do {
 		size = bucketsize << log2qty;
 		if (flags & HASH_EARLY)

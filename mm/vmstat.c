@@ -61,12 +61,16 @@ EXPORT_SYMBOL_GPL(all_vm_events);
  * This is adding to the events on one processor
  * but keeps the global counts constant.
  */
+// 2015-04-25
 void vm_events_fold_cpu(int cpu)
 {
+	// 다른 CPU에서 접근해서 값을 읽어올 수 있는 것 아닌가?
+	// 그렇다면 읽어 온 것 가지고, 다른 CPU에서 오동작 할 수 있는 것 아닌가?
 	struct vm_event_state *fold_state = &per_cpu(vm_event_states, cpu);
 	int i;
 
 	for (i = 0; i < NR_VM_EVENT_ITEMS; i++) {
+		// 
 		count_vm_events(i, fold_state->event[i]);
 		fold_state->event[i] = 0;
 	}
@@ -79,6 +83,7 @@ void vm_events_fold_cpu(int cpu)
  *
  * vm_stat contains the global counters
  */
+// 2015-04-25
 atomic_long_t vm_stat[NR_VM_ZONE_STAT_ITEMS] __cacheline_aligned_in_smp;
 EXPORT_SYMBOL(vm_stat);
 
@@ -213,6 +218,8 @@ void set_pgdat_percpu_threshold(pg_data_t *pgdat,
 // __mod_zone_page_state(zone, NR_ALLOC_BATCH/*1*/, zone->managed_pages)
 // 2015-04-11
 // __mod_zone_page_state(lruvec_zone(lruvec), NR_LRU_BASE + lru, -nr_pages)
+// 2015-04-25
+// __mod_zone_page_state(zone, NR_FREE_PAGES, 1);
 void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
 				int delta)
 {
@@ -430,6 +437,7 @@ void dec_zone_page_state(struct page *page, enum zone_stat_item item)
 EXPORT_SYMBOL(dec_zone_page_state);
 #endif
 
+// 2015-04-25
 static inline void fold_diff(int *diff)
 {
 	int i;
@@ -513,6 +521,7 @@ static void refresh_cpu_vm_stats(void)
  * There cannot be any access by the offline cpu and therefore
  * synchronization is simplified.
  */
+// 2015-04-25
 void cpu_vm_stats_fold(int cpu)
 {
 	struct zone *zone;
@@ -535,6 +544,7 @@ void cpu_vm_stats_fold(int cpu)
 			}
 	}
 
+	// 2015-04-25
 	fold_diff(global_diff);
 }
 

@@ -9,28 +9,33 @@
 #include <linux/mm.h>
 #include <linux/mmzone.h>
 
+// 2015-04-25
 struct pglist_data *first_online_pgdat(void)
 {
 	return NODE_DATA(first_online_node);
 }
 
+// 2015-04-25
 struct pglist_data *next_online_pgdat(struct pglist_data *pgdat)
 {
+	// nid = 0;
 	int nid = next_online_node(pgdat->node_id);
 
 	if (nid == MAX_NUMNODES)
 		return NULL;
+	// (&contig_page_data)
 	return NODE_DATA(nid);
 }
 
 /*
  * next_zone - helper magic for for_each_zone()
  */
+// 2015-04-25
 struct zone *next_zone(struct zone *zone)
 {
 	pg_data_t *pgdat = zone->zone_pgdat;
 
-	if (zone < pgdat->node_zones + MAX_NR_ZONES - 1)
+	if (zone < pgdat->node_zones + MAX_NR_ZONES/*3*/ - 1)
 		zone++;
 	else {
 		pgdat = next_online_pgdat(pgdat);

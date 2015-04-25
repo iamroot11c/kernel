@@ -416,12 +416,14 @@ static int __init do_early_param(char *param, char *val, const char *unused)
 	return 0;
 }
 
+// 2015-04-25
 void __init parse_early_options(char *cmdline)
 {
 	parse_args("early options", cmdline, NULL, 0, 0, 0, do_early_param);
 }
 
 /* Arch code calls this early on, or if not, just before other parsing. */
+// 2015-04-25
 void __init parse_early_param(void)
 {
 	static __initdata int done = 0;
@@ -432,6 +434,7 @@ void __init parse_early_param(void)
 
 	/* All fall through to do_early_param. */
 	strlcpy(tmp_cmdline, boot_command_line, COMMAND_LINE_SIZE);
+	// 2015-04-25
 	parse_early_options(tmp_cmdline);
 	done = 1;
 }
@@ -542,21 +545,30 @@ asmlinkage void __init start_kernel(void)
 	// 2015-04-04, lru_add_drain_cpu 진행중
 	// 2015-04-04, pagevec_lru_move_fn 기본만 봄.
 	page_alloc_init();	
+	// 2015-04-25, end
 
+	// Kernel command line: console=ttySAC3,115200n8 debug earlyprintk ip=192.168.1.196:192.168.1.2:192.168.1.254:255.255.255.0:::none:192.168.1.254
 	pr_notice("Kernel command line: %s\n", boot_command_line);
 	parse_early_param();
 	parse_args("Booting kernel", static_command_line, __start___param,
 		   __stop___param - __start___param,
 		   -1, -1, &unknown_bootoption);
 
-	jump_label_init();
+	// 2015-04-25, start
+	jump_label_init();	// Do nothings.
+	// 2015-04-25, end
 
 	/*
 	 * These use large bootmem allocations and must precede
 	 * kmem_cache_init()
 	 */
+	// 2015-04-25, start
 	setup_log_buf(0);
+	// 2015-04-25, end
+	// 2015-04-25, start
 	pidhash_init();
+	// 2015-04-25, end
+	// 2015-04-25, 여기까지
 	vfs_caches_init_early();
 	sort_main_extable();
 	trap_init();
