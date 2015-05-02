@@ -39,8 +39,23 @@ extern struct exception_table_entry __stop___ex_table[];
 u32 __initdata main_extable_sort_needed = 1;
 
 /* Sort the kernel's built-in exception table */
+// 2015-05-02, 
+// ex는 exception table이라고 추론함.
 void __init sort_main_extable(void)
 {
+	// 아래 범위로 section을 할당했고,
+	// 무엇이 존재하는지는, System.map서는 확인되지 않는다.
+	// 28174 c0478000 R __start___ex_table
+	// 28176 c0478ff8 R __stop___ex_table
+	// 
+	// table의 크기는 고정이다. 위치도 고정이다.
+	// 코드를 보다보면, pushsection 같은 코드를 보게 되는데,
+	// 이러한 코드들이, 이 영역이 들어갔다가 나왔다 하지 않을까? 생각해본다.
+	// 그리고, 이러한 것들을 정렬해두지 않을까?
+	// 
+	// 그런데, sort_main_extable은 main에서만 호출하고 있다...
+	// 동적으로 변경된다면, 변경될 때 마다, 업데이트가 되어야하지 않을까?
+	//
 	if (main_extable_sort_needed && __stop___ex_table > __start___ex_table) {
 		pr_notice("Sorting __ex_table...\n");
 		sort_extable(__start___ex_table, __stop___ex_table);

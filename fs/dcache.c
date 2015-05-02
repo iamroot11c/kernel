@@ -3361,6 +3361,8 @@ static int __init set_dhash_entries(char *str)
 }
 __setup("dhash_entries=", set_dhash_entries);
 
+// 2015-05-02
+// 메모리 할당 후, 리스트 초기화
 static void __init dcache_init_early(void)
 {
 	unsigned int loop;
@@ -3368,6 +3370,7 @@ static void __init dcache_init_early(void)
 	/* If hashes are distributed across NUMA nodes, defer
 	 * hash allocation until vmalloc space is available.
 	 */
+	// 우리는 UMA 해당 사항 없음.
 	if (hashdist)
 		return;
 
@@ -3382,6 +3385,7 @@ static void __init dcache_init_early(void)
 					0,
 					0);
 
+	// (ptr)->first = NULL로 초기화
 	for (loop = 0; loop < (1U << d_hash_shift); loop++)
 		INIT_HLIST_BL_HEAD(dentry_hashtable + loop);
 }
@@ -3423,6 +3427,7 @@ EXPORT_SYMBOL(names_cachep);
 
 EXPORT_SYMBOL(d_genocide);
 
+// 2015-05-02
 void __init vfs_caches_init_early(void)
 {
 	dcache_init_early();

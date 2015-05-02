@@ -9,6 +9,17 @@
  * will cause compilation to stop on mismatch.
  * (for details, see gcc PR 15089)
  */
+// 2015-05-02
+// .ifnc
+// Assembles if the strings are not the same.
+// .ifnc string1, string2
+// .ifnc "this", "that"
+//
+// .endif
+// Ends an .if block.
+//
+// .err
+// Generate an error durring assembly.
 #define __asmeq(x, y)  ".ifnc " x "," y " ; .err ; .endif\n\t"
 
 

@@ -96,6 +96,8 @@ bool parameq(const char *a, const char *b)
 // num = 0
 // min_level = 0, max_level = 0
 // unknown = do_early_param
+// 2015-05-02.
+// handle_unknown = unknown_bootoption
 static int parse_one(char *param,
 		     char *val,
 		     const char *doing,
@@ -131,6 +133,7 @@ static int parse_one(char *param,
 	if (handle_unknown) {
 		pr_debug("doing %s: %s='%s'\n", doing, param, val);
 		// 2014-08-02, Call "do_early_param()"
+		// 2015-05-02. Call "unknown_bootoption"
 		return handle_unknown(param, val, doing);
 	}
 
@@ -229,6 +232,7 @@ int parse_args(const char *doing,
 		// unknown = do_early_param
 
 		// 2014-08-02, parse_one, cmd line의 param, val을 통해서, do_early_param을 통해서 __setup_xxx관련 초기화 함수를 실행한다.
+		// 2015-05-02, unknown == unknown_bootoption
 		ret = parse_one(param, val, doing, params, num,
 				min_level, max_level, unknown);
 		if (irq_was_disabled && !irqs_disabled())

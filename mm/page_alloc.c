@@ -6108,6 +6108,7 @@ int percpu_pagelist_fraction_sysctl_handler(ctl_table *table, int write,
 	return 0;
 }
 
+// 2015-05-02, default 0,
 int hashdist = HASHDIST_DEFAULT;
 
 #ifdef CONFIG_NUMA
@@ -6133,6 +6134,18 @@ __setup("hashdist=", set_hashdist);
 //                                             &pidhash_shift, NULL,
 //                                             0, 4096);
 //
+// 2015-05-02
+// dhash_entries는 초기값 0을 가지고 있다고 가정.
+//
+//                  alloc_large_system_hash("Dentry cache",
+//                                          sizeof(struct hlist_bl_head),
+//                                          dhash_entries,
+//                                          13,
+//                                          HASH_EARLY,
+//                                          &d_hash_shift,
+//                                          &d_hash_mask,
+//                                          0,
+//                                          0);
 void *__init alloc_large_system_hash(const char *tablename,
 				     unsigned long bucketsize,
 				     unsigned long numentries,
@@ -6176,6 +6189,7 @@ void *__init alloc_large_system_hash(const char *tablename,
 	numentries = roundup_pow_of_two(numentries);
 
 	/* limit allocation size to 1/16 total memory by default */
+	// 2015-05-02, max = 0
 	if (max/*4096*/ == 0) {
 		max = ((unsigned long long)nr_all_pages << PAGE_SHIFT) >> 4;
 		do_div(max, bucketsize);
@@ -6194,6 +6208,7 @@ void *__init alloc_large_system_hash(const char *tablename,
 		size = bucketsize << log2qty;
 		if (flags & HASH_EARLY)
 			table = alloc_bootmem_nopanic(size);
+		// hashdist == 0
 		else if (hashdist)
 			table = __vmalloc(size, GFP_ATOMIC, PAGE_KERNEL);
 		else {

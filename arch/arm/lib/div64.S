@@ -15,7 +15,7 @@
 #include <linux/linkage.h>
 #include <asm/unwind.h>
 
-#ifdef __ARMEB__
+#ifdef __ARMEB__	// not set
 #define xh r0
 #define xl r1
 #define yh r2
@@ -44,6 +44,20 @@
  * Clobbered regs: xl, ip
  */
 
+// 2015-05-02
+// 나눗셈을 수행, 64비트 피젯수와 32비트 제수로.
+// xh-xl은 64비트 값을 의미, high, low
+// 동일하게 yh-yl도 64비트를 의미
+//
+// What is Clobber?
+// 컴파일러에게 값이 변경되었다는 것을 알려주기 위한 수단.
+// Each clobber list item is a string constant enclosed in double quotes and separated by commas.
+//      asm volatile ("movc3 %0, %1, %2"
+//                           : /* No outputs. */
+//                           : "g" (from), "g" (to), "g" (count)
+//                           : "r0", "r1", "r2", "r3", "r4", "r5");
+// ref: https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html#Clobbers
+//
 ENTRY(__do_div64)
 UNWIND(.fnstart)
 
@@ -62,7 +76,7 @@ UNWIND(.fnstart)
 	@ The aligned divisor is stored in yl preserving the original.
 	@ The bit position is stored in ip.
 
-#if __LINUX_ARM_ARCH__ >= 5
+#if __LINUX_ARM_ARCH__ >= 5	// true
 
 	clz	yl, r4
 	clz	ip, xh
@@ -122,7 +136,7 @@ UNWIND(.fnstart)
 
 	@ We still have remainer bits in the low part.  Bring them up.
 
-#if __LINUX_ARM_ARCH__ >= 5
+#if __LINUX_ARM_ARCH__ >= 5		// true
 
 	clz	xh, xl			@ we know xh is zero here so...
 	add	xh, xh, #1

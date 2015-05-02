@@ -52,7 +52,7 @@ extern void unwind_backtrace(struct pt_regs *regs, struct task_struct *tsk);
 
 #endif	/* !__ASSEMBLY__ */
 
-#ifdef CONFIG_ARM_UNWIND
+#ifdef CONFIG_ARM_UNWIND    // set
 #define UNWIND(code...)		code
 #else
 #define UNWIND(code...)

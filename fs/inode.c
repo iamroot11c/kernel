@@ -1695,6 +1695,9 @@ static void __wait_on_freeing_inode(struct inode *inode)
 	spin_lock(&inode_hash_lock);
 }
 
+// 2015-05-02
+// parse_args를 통해서 set_ihash_entries가 호출될 수 있고, 
+// 그로 인해 값 설정이 이루어 질 수 있다.
 static __initdata unsigned long ihash_entries;
 static int __init set_ihash_entries(char *str)
 {
@@ -1708,6 +1711,7 @@ __setup("ihash_entries=", set_ihash_entries);
 /*
  * Initialize the waitqueues and inode hash table.
  */
+// 2015-05-02
 void __init inode_init_early(void)
 {
 	unsigned int loop;

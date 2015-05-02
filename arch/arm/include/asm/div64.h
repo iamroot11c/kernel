@@ -20,20 +20,23 @@
  * calling convention for arguments and results (beware).
  */
 
-#ifdef __ARMEB__
+#ifdef __ARMEB__    // not set
 #define __xh "r0"
 #define __xl "r1"
 #else
+// here
 #define __xl "r0"
 #define __xh "r1"
 #endif
 
+// 2015-05-02
+// BL은 복귀주소를 저장하고 jump(lr)
 #define __do_div_asm(n, base)					\
 ({								\
 	register unsigned int __base      asm("r4") = base;	\
 	register unsigned long long __n   asm("r0") = n;	\
 	register unsigned long long __res asm("r2");		\
-	register unsigned int __rem       asm(__xh);		\
+	register unsigned int __rem       asm(__xh/*r1*/);		\
 	asm(	__asmeq("%0", __xh)				\
 		__asmeq("%1", "r2")				\
 		__asmeq("%2", "r0")				\
@@ -58,7 +61,7 @@
  */
 #define do_div(n, base) __do_div_asm(n, base)
 
-#elif __GNUC__ >= 4
+#elif __GNUC__ >= 4     // 우리는, GNUC 4이상이다.
 
 #include <asm/bug.h>
 
@@ -70,9 +73,11 @@
  * sufficiently recent to perform proper long long constant propagation.
  * (It is unfortunate that gcc doesn't perform all this internally.)
  */
+// 2015-05-02
 #define do_div(n, base)							\
 ({									\
 	unsigned int __r, __b = (base);					\
+    // 우리가 해당되는 !__builtin_constant_p(__b)에 대해서 알아봅시다.
 	if (!__builtin_constant_p(__b) || __b == 0 ||			\
 	    (__LINUX_ARM_ARCH__ < 4 && (__b & (__b - 1)) != 0)) {	\
 		/* non-constant divisor (or zero): slow path */		\

@@ -118,6 +118,7 @@ EXPORT_SYMBOL(system_state);
 /*
  * Boot command-line arguments
  */
+// 2015-05-02,  CONFIG_INIT_ENV_ARG_LIMIT = 32
 #define MAX_INIT_ARGS CONFIG_INIT_ENV_ARG_LIMIT
 #define MAX_INIT_ENVS CONFIG_INIT_ENV_ARG_LIMIT
 
@@ -162,6 +163,7 @@ static const char *panic_later, *panic_param;
 
 extern const struct obs_kernel_param __setup_start[], __setup_end[];
 
+// 2015-05-02
 static int __init obsolete_checksetup(char *line)
 {
 	const struct obs_kernel_param *p;
@@ -234,6 +236,7 @@ static int __init loglevel(char *str)
 early_param("loglevel", loglevel);
 
 /* Change NUL term back to "=", to make "param" the whole string. */
+// 2015-05-02
 static int __init repair_env_string(char *param, char *val, const char *unused)
 {
 	if (val) {
@@ -254,6 +257,7 @@ static int __init repair_env_string(char *param, char *val, const char *unused)
  * Unknown boot options get handed to init, unless they look like
  * unused parameters (modprobe will find them in /proc/cmdline).
  */
+// 2015-05-02
 static int __init unknown_bootoption(char *param, char *val, const char *unused)
 {
 	repair_env_string(param, val, unused);
@@ -272,8 +276,9 @@ static int __init unknown_bootoption(char *param, char *val, const char *unused)
 	if (val) {
 		/* Environment option */
 		unsigned int i;
+		//  envp_init[i] NULL인지 아닌지가 탈출조건이다.
 		for (i = 0; envp_init[i]; i++) {
-			if (i == MAX_INIT_ENVS) {
+			if (i == MAX_INIT_ENVS/*32*/) {
 				panic_later = "Too many boot env vars at `%s'";
 				panic_param = param;
 			}
@@ -550,6 +555,7 @@ asmlinkage void __init start_kernel(void)
 	// Kernel command line: console=ttySAC3,115200n8 debug earlyprintk ip=192.168.1.196:192.168.1.2:192.168.1.254:255.255.255.0:::none:192.168.1.254
 	pr_notice("Kernel command line: %s\n", boot_command_line);
 	parse_early_param();
+	// 2015-05-02, unknown_bootoption 살펴봄 
 	parse_args("Booting kernel", static_command_line, __start___param,
 		   __stop___param - __start___param,
 		   -1, -1, &unknown_bootoption);
@@ -570,7 +576,12 @@ asmlinkage void __init start_kernel(void)
 	// 2015-04-25, end
 	// 2015-04-25, 여기까지
 	vfs_caches_init_early();
+	// 2015-04-25
+	// 2015-05-02, start
 	sort_main_extable();
+	// 2015-05-02, end
+	// 2015-05-02, 여기까지
+	
 	trap_init();
 	mm_init();
 

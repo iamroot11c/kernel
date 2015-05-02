@@ -237,12 +237,25 @@ struct obs_kernel_param {
  * obs_kernel_param "array" too far apart in .init.setup.
  */
 
- // ex) early_param("quiet", quiet_kernel);
- // static const char __setup_str_quiet_kernel[] = "quiet";
- // static struct obs_kernel_param __setup_quiet_kernel = {
- //  __setup_str_quiet_kernel, quiet_kernel, 1
- // }
-
+// early_param(str, fn)
+// ex) early_param("quiet", quiet_kernel);
+// static const char __setup_str_quiet_kernel[] = "quiet";
+// static struct obs_kernel_param __setup_quiet_kernel = {
+//  __setup_str_quiet_kernel, quiet_kernel, 1
+// }
+//
+// 2015-05-02
+//  __setup(str, fn)
+// ex)  __setup("ihash_entries=", set_ihash_entries);
+// static const char __setup_str_set_ihash_entries[] = "ihash_entries=";
+// static struct obs_kernel_param __setup_set_ihash_entries = {
+// __setup_str_set_ihash_entries, set_ihash_entries, 0 } 
+//
+// cmdline 파싱 시, str을 만날 경우, 등록된 함수를 수행한다.
+// ref: http://egloos.zum.com/furmuwon/v/10646725
+//
+// 함수 실행은 early인 경우, do_early_param에서,
+// 아닌 경우는, obsolete_checksetup에서 수행된다.
 #define __setup_param(str, unique_id, fn, early)			\
 	static const char __setup_str_##unique_id[] __initconst	\
 		__aligned(1) = str; \
