@@ -50,9 +50,9 @@
  */
 #define __round_mask(x, y) ((__typeof__(x))((y)-1))
 // 각각의 값은 2의 지수 형태로 써야지 적당한 값이 나온다.
-// x에 대한 y의 배수를 리턴
+// -1의 의미는 그런 것이다.
+// 그래서 둘 중에 큰 값을 리턴하게 되는데, 이것을 round_up이라고 표현하는 것으로 보인다.  
 // ex) round_up(1024, 2048) = 2048
-// ex) round_up(5, 4) = 8
 #define round_up(x, y) ((((x)-1) | __round_mask(x, y))+1)
 #define round_down(x, y) ((x) & ~__round_mask(x, y))
 
