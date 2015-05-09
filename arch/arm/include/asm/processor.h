@@ -105,6 +105,7 @@ static inline void prefetch(const void *ptr)
 }
 
 #define ARCH_HAS_PREFETCHW
+// 2015-05-09;
 #define prefetchw(ptr)	prefetch(ptr)
 
 #define ARCH_HAS_SPINLOCK_PREFETCH

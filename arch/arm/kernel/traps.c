@@ -836,6 +836,7 @@ void abort(void)
 }
 EXPORT_SYMBOL(abort);
 
+// 201505-09;
 void __init trap_init(void)
 {
 	return;

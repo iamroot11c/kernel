@@ -19,7 +19,7 @@ extern unsigned long min_low_pfn;
  */
 extern unsigned long max_pfn;
 
-#ifndef CONFIG_NO_BOOTMEM
+#ifndef CONFIG_NO_BOOTMEM // not define
 /*
  * node_bootmem_map is a map pointer - the bits represent all physical 
  * memory pages (including holes) on the node.

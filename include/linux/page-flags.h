@@ -153,6 +153,7 @@ static inline void ClearPage##uname(struct page *page)			\
 static inline void __SetPage##uname(struct page *page)			\
 			{ __set_bit(PG_##lname, &page->flags); }
 
+// 2015-05-09;
 #define __CLEARPAGEFLAG(uname, lname)					\
 static inline void __ClearPage##uname(struct page *page)		\
 			{ __clear_bit(PG_##lname, &page->flags); }
@@ -223,6 +224,9 @@ __PAGEFLAG(Slab, slab)
 PAGEFLAG(Checked, checked)		/* Used by some filesystems */
 PAGEFLAG(Pinned, pinned) TESTSCFLAG(Pinned, pinned)	/* Xen */
 PAGEFLAG(SavePinned, savepinned);			/* Xen */
+// 2015-05-09;
+// static inline void __ClearPageReserved(struct page *page)        \
+// { __clear_bit(PG_reserved, &page->flags); }
 PAGEFLAG(Reserved, reserved) __CLEARPAGEFLAG(Reserved, reserved)
 // 2015-04-11 PageSwapBacked()
 PAGEFLAG(SwapBacked, swapbacked) __CLEARPAGEFLAG(SwapBacked, swapbacked)

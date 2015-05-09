@@ -207,10 +207,12 @@ void __init free_bootmem_late(unsigned long physaddr, unsigned long size)
 	}
 }
 
+// 2015-05-09; 
+// free_all_bootmem_core(bdata);
 static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
 {
 	struct page *page;
-	unsigned long start, end, pages, count = 0;
+	unsigned long start, end, pages, count = 0; //count는 리턴값
 
 	if (!bdata->node_bootmem_map)
 		return 0;
@@ -226,29 +228,34 @@ static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
 		unsigned shift;
 
 		map = bdata->node_bootmem_map;
-		idx = start - bdata->node_min_pfn;
-		shift = idx & (BITS_PER_LONG - 1);
+		idx = start - bdata->node_min_pfn; // 최초는 0
+		shift = idx & (BITS_PER_LONG - 1); // BITS_PER_LONG-1 <= shift <= 0;
 		/*
 		 * vec holds at most BITS_PER_LONG map bits,
 		 * bit 0 corresponds to start.
 		 */
+		// map을 32비트로 나누어서 읽음
+		// 1은 0으로, 0은 1로 값을 반전 
 		vec = ~map[idx / BITS_PER_LONG];
 
 		if (shift) {
-			vec >>= shift;
+			vec >>= shift; // 
 			if (end - start >= BITS_PER_LONG)
 				vec |= ~map[idx / BITS_PER_LONG + 1] <<
 					(BITS_PER_LONG - shift);
+                        // 위에서 구한 map의 다음 인덱스구해 좌측 쉬프트연산을 해서는
+			// vec 값을 수정(보정) 
 		}
 		/*
 		 * If we have a properly aligned and fully unreserved
 		 * BITS_PER_LONG block of pages in front of us, free
 		 * it in one go.
 		 */
+		// 정렬이 되어있고 map이 비었을때
 		if (IS_ALIGNED(start, BITS_PER_LONG) && vec == ~0UL) {
-			int order = ilog2(BITS_PER_LONG);
+			int order = ilog2(BITS_PER_LONG); // 32 = 2^5
 
-			__free_pages_bootmem(pfn_to_page(start), order);
+			__free_pages_bootmem(pfn_to_page(start), order/*5*/);
 			count += BITS_PER_LONG;
 			start += BITS_PER_LONG;
 		} else {
@@ -256,6 +263,7 @@ static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
 
 			start = ALIGN(start + 1, BITS_PER_LONG);
 			while (vec && cur != start) {
+				// map에서 빈 것(0)만 찿음
 				if (vec & 1) {
 					page = pfn_to_page(cur);
 					__free_pages_bootmem(page, 0);
@@ -269,7 +277,8 @@ static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
 
 	page = virt_to_page(bdata->node_bootmem_map);
 	pages = bdata->node_low_pfn - bdata->node_min_pfn;
-	pages = bootmem_bootmap_pages(pages);
+	pages = bootmem_bootmap_pages(pages); // pages 값을 
+	                                      // PAGE_SIZE(12) 단위로 조정
 	count += pages;
 	while (pages--)
 		__free_pages_bootmem(page++, 0);
@@ -281,31 +290,45 @@ static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
 
 static int reset_managed_pages_done __initdata;
 
+// 2015-05-09;
+// reset_node_managed_pages(pgdat);
 static inline void __init reset_node_managed_pages(pg_data_t *pgdat)
 {
 	struct zone *z;
 
+	// reset_managed_pages_done 변수를 사용해서 1번만 호출되도록함
 	if (reset_managed_pages_done)
 		return;
 
-	for (z = pgdat->node_zones; z < pgdat->node_zones + MAX_NR_ZONES; z++)
+	for (z = pgdat->node_zones; z < pgdat->node_zones + MAX_NR_ZONES /*3*/; z++)
 		z->managed_pages = 0;
 }
 
+// 2015-05-09; 시작
 void __init reset_all_zones_managed_pages(void)
 {
 	struct pglist_data *pgdat;
 
+	// first_online_pgdat() 함수는 contig_page_data의 주소를 반환
+	// next_online_pgdat() 함수는 항상 NULL을 리턴할 것으로 예상되어
+	// 반복문을 한번만 실행
+	// #define for_each_online_pgdat(pgdat)            \
+	//        for (pgdat = first_online_pgdat();      \
+	//             pgdat;                 \
+	//             pgdat = next_online_pgdat(pgdat))
 	for_each_online_pgdat(pgdat)
-		reset_node_managed_pages(pgdat);
+		reset_node_managed_pages(pgdat); // pgdat = &contig_page_data; 
+
+	// reset_node_managed_pages() 함수가 한번만 실행되도록 값을 변경
 	reset_managed_pages_done = 1;
 }
 
 /**
- * free_all_bootmem - release free pages to the buddy allocator
+ * free_all_bootmem - release free pages to the buddy allocatr
  *
  * Returns the number of pages actually released.
  */
+// 2015-05-09; // 페이지 개수를 리턴함 
 unsigned long __init free_all_bootmem(void)
 {
 	unsigned long total_pages = 0;
@@ -465,6 +488,9 @@ void __init free_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
  */
 // 2015-03-14
 // free_bootmem(__pa(ptr), ai->unit_size);
+//
+// 2015-05-09;
+// free_bootmem(pg, pgend - pg);
 void __init free_bootmem(unsigned long physaddr, unsigned long size)
 {
 	unsigned long start, end;

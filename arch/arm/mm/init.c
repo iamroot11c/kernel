@@ -503,6 +503,8 @@ static inline void poison_init_mem(void *s, size_t count)
 		*p++ = 0xe7fddef0;
 }
 
+// 2015-05-09;
+// free_memmap(prev_bank_end, bank_start);
 static inline void
 free_memmap(unsigned long start_pfn, unsigned long end_pfn)
 {
@@ -528,11 +530,14 @@ free_memmap(unsigned long start_pfn, unsigned long end_pfn)
 	 */
 	if (pg < pgend)
 		free_bootmem(pg, pgend - pg);
+	// pg부터 pgend에서 pg를 빼서 구한 영역을 해제함
 }
 
 /*
  * The mem_map array can get very big.  Free the unused area of the memory map.
  */
+// 2015-05-09; 
+// free_unused_memmap(&meminfo);
 static void __init free_unused_memmap(struct meminfo *mi)
 {
 	unsigned long bank_start, prev_bank_end = 0;
@@ -542,18 +547,22 @@ static void __init free_unused_memmap(struct meminfo *mi)
 	 * This relies on each bank being in address order.
 	 * The banks are sorted previously in bootmem_init().
 	 */
+	// #define for_each_bank(iter,mi)              \
+	//     for (iter = 0; iter < (mi)->nr_banks; iter++)
 	for_each_bank(i, mi) {
 		struct membank *bank = &mi->bank[i];
 
 		bank_start = bank_pfn_start(bank);
+		//         = (bank->start) >> PAGE_SHIFT/*12*/;
 
 #ifdef CONFIG_SPARSEMEM
 		/*
 		 * Take care not to free memmap entries that don't exist
 		 * due to SPARSEMEM sections which aren't present.
 		 */
+		// 최초의 값은 0
 		bank_start = min(bank_start,
-				 ALIGN(prev_bank_end, PAGES_PER_SECTION));
+				 ALIGN(prev_bank_end, PAGES_PER_SECTION /*4KB, 0x0001_0000*/));
 #else
 		/*
 		 * Align down here since the VM subsystem insists that the
@@ -566,6 +575,8 @@ static void __init free_unused_memmap(struct meminfo *mi)
 		 * If we had a previous bank, and there is a space
 		 * between the current bank and the previous, free it.
 		 */
+		// 이전의 뱅크가 있을때 현재 뱅크와 이전 뱅크 사이에
+		// 공백이 있으면 해제를 함
 		if (prev_bank_end && prev_bank_end < bank_start)
 			free_memmap(prev_bank_end, bank_start);
 
@@ -574,10 +585,14 @@ static void __init free_unused_memmap(struct meminfo *mi)
 		 * memmap entries are valid from the bank end aligned to
 		 * MAX_ORDER_NR_PAGES.
 		 */
-		prev_bank_end = ALIGN(bank_pfn_end(bank), MAX_ORDER_NR_PAGES);
+		prev_bank_end = ALIGN(bank_pfn_end(bank) , MAX_ORDER_NR_PAGES /*1024*/);
+		//            = ALIGN((bank->start + bank->size) >> PAGE_SHIFT/*12*/,
+		//                    1024);
 	}
 
 #ifdef CONFIG_SPARSEMEM
+	// prev_bank_end가 PAGES_PER_SECTION으로 정렬되어있지 않다면 
+	// free_memmap() 함수를 호출
 	if (!IS_ALIGNED(prev_bank_end, PAGES_PER_SECTION))
 		free_memmap(prev_bank_end,
 			    ALIGN(prev_bank_end, PAGES_PER_SECTION));
@@ -645,21 +660,34 @@ static void __init free_highpages(void)
  * memory is free.  This is done after various parts of the system have
  * claimed their memory after the kernel image.
  */
+// 2015-05-09; 시작
+// TCM: Tightly-Coupled memory
+// DTCM: Data TCM
+// ITCM: Instruction TCM
 void __init mem_init(void)
 {
-#ifdef CONFIG_HAVE_TCM
+#ifdef CONFIG_HAVE_TCM // not define
 	/* These pointers are filled in on TCM detection */
 	extern u32 dtcm_end;
 	extern u32 itcm_end;
 #endif
 
-	max_mapnr   = pfn_to_page(max_pfn + PHYS_PFN_OFFSET) - mem_map;
+	// 2015-05-09; 시작
+	// max_low_pfn, max_pfn은 bootmem_init() 함수에서 값을 설정
+	max_mapnr = pfn_to_page(max_pfn + PHYS_PFN_OFFSET) - mem_map;
+	// 2015-05-09; 끝
 
 	/* this will put all unused low memory onto the freelists */
+	// 2015-05-09; 시작
 	free_unused_memmap(&meminfo);
+	// 2015-05-09; 끝
+	// 2015-05-09; 시작
 	free_all_bootmem();
+	// 2015-05-09; 끝
+	
+	// 2015-05-09; 여기까지 진행
 
-#ifdef CONFIG_SA1111
+#ifdef CONFIG_SA1111 // not define
 	/* now that our DMA memory is actually so designated, we can free it */
 	free_reserved_area(__va(PHYS_OFFSET), swapper_pg_dir, -1, NULL);
 #endif

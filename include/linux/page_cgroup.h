@@ -29,7 +29,8 @@ struct page_cgroup {
 
 void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat);
 
-#ifdef CONFIG_SPARSEMEM
+#ifdef CONFIG_SPARSEMEM // defined
+// 2015-05-09;
 static inline void __init page_cgroup_init_flatmem(void)
 {
 }

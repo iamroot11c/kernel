@@ -476,7 +476,7 @@ static inline int num_node_state(enum node_states state)
 
 // 2015-04-25
 #define first_online_node	0
-#define next_online_node(nid)	(MAX_NUMNODES)
+#define next_online_node(nid)	(MAX_NUMNODES) // 1
 #define nr_node_ids		1
 #define nr_online_nodes		1
 

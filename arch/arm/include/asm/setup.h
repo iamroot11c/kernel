@@ -32,9 +32,10 @@ struct membank {
 	unsigned int highmem;
 };
 
+// 2015-05-09;
 struct meminfo {
 	int nr_banks;
-	struct membank bank[NR_BANKS];
+	struct membank bank[NR_BANKS/*8*/];
 };
 
 extern struct meminfo meminfo;

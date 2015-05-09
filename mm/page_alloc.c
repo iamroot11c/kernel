@@ -108,6 +108,7 @@ EXPORT_SYMBOL(node_states);
 /* Protect totalram_pages and zone->managed_pages */
 static DEFINE_SPINLOCK(managed_page_count_lock);
 
+// 2015-05-09;
 unsigned long totalram_pages __read_mostly;
 unsigned long totalreserve_pages __read_mostly;
 /*
@@ -769,6 +770,9 @@ static bool free_pages_prepare(struct page *page, unsigned int order)
 }
 
 // 2015-04-18;
+//
+// 2015-05-09;
+// __free_pages_ok(page, order);
 static void __free_pages_ok(struct page *page, unsigned int order)
 {
 	unsigned long flags;
@@ -785,12 +789,16 @@ static void __free_pages_ok(struct page *page, unsigned int order)
 	local_irq_restore(flags);
 }
 
+// 2015-05-09; 시작
+// __free_pages_bootmem(pfn_to_page(start), order/*5*/);
+// __free_pages_bootmem(page, 0);
 void __init __free_pages_bootmem(struct page *page, unsigned int order)
 {
-	unsigned int nr_pages = 1 << order;
+	unsigned int nr_pages = 1 << order; // 32 또는 1
 	struct page *p = page;
 	unsigned int loop;
 
+	// 값을 읽을것을 미리 알려줌
 	prefetchw(p);
 	for (loop = 0; loop < (nr_pages - 1); loop++, p++) {
 		prefetchw(p + 1);
@@ -801,7 +809,7 @@ void __init __free_pages_bootmem(struct page *page, unsigned int order)
 	set_page_count(p, 0);
 
 	page_zone(page)->managed_pages += nr_pages;
-	set_page_refcounted(page);
+	set_page_refcounted(page); // 인자로 넘어온 page
 	__free_pages(page, order);
 }
 
@@ -1376,6 +1384,9 @@ void mark_free_pages(struct zone *zone)
  * cold == 1 ? free a cold page : free a hot page
  */
 // 2015-04-25
+//
+// 2015-05-09;
+// free_hot_cold_page(page, 0);
 void free_hot_cold_page(struct page *page, int cold)
 {
 	struct zone *zone = page_zone(page);
@@ -2847,11 +2858,13 @@ unsigned long get_zeroed_page(gfp_t gfp_mask)
 }
 EXPORT_SYMBOL(get_zeroed_page);
 
+// 2015-05-09;
+// __free_pages(page, order);
 void __free_pages(struct page *page, unsigned int order)
 {
 	if (put_page_testzero(page)) {
 		if (order == 0)
-			free_hot_cold_page(page, 0);
+			free_hot_cold_page(page, 0); // hot
 		else
 			__free_pages_ok(page, order);
 	}

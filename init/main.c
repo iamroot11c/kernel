@@ -471,13 +471,18 @@ void __init __weak thread_info_cache_init(void)
 /*
  * Set up kernel memory allocators
  */
+// 2015-05-09; 시작
 static void __init mm_init(void)
 {
 	/*
 	 * page_cgroup requires contiguous pages,
 	 * bigger than MAX_ORDER unless SPARSEMEM.
 	 */
-	page_cgroup_init_flatmem();
+	// 2015-05-09; 시작
+	page_cgroup_init_flatmem(); // CONFIG_SPARSEMEM 활성화로 
+	                            // 아무역활이 없음
+				    // 2015-05-09; end
+	// 2015-05-09; 시작
 	mem_init();
 	kmem_cache_init();
 	percpu_init_late();
@@ -581,8 +586,11 @@ asmlinkage void __init start_kernel(void)
 	sort_main_extable();
 	// 2015-05-02, end
 	// 2015-05-02, 여기까지
-	
-	trap_init();
+
+	// 2015-05-09; 시작	
+	trap_init(); // 아무 동작을하지 않는 함수
+	             // 2015-05-09, end
+	// 2015-05-09; 시작	
 	mm_init();
 
 	/*

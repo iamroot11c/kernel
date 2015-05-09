@@ -863,6 +863,8 @@ ENDPROC(fixup_pv_table)
 __pv_phys_offset:
 	.long	0
 	.size	__pv_phys_offset, . - __pv_phys_offset
+	@// 2015-05-09;
+	@// 위의 .size를 통해 __pv_phys_offset의 값이 보정된다.
 __pv_offset:
 	.long	0
 #endif

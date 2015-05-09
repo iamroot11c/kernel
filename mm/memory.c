@@ -73,10 +73,11 @@
 #warning Unfortunate NUMA and NUMA Balancing config, growing page-frame for last_nid.
 #endif
 
-#ifndef CONFIG_NEED_MULTIPLE_NODES
+#ifndef CONFIG_NEED_MULTIPLE_NODES // not define
 /* use the per-pgdat data instead for discontigmem - mbligh */
 unsigned long max_mapnr;
-struct page *mem_map;
+struct page *mem_map; // 2015-05-09;
+                      // alloc_node_mem_map() 함수에서 값을 저장
 
 EXPORT_SYMBOL(max_mapnr);
 EXPORT_SYMBOL(mem_map);

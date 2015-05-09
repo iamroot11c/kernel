@@ -173,8 +173,11 @@
  */
 #define __PV_BITS_31_24	0x81000000
 
+// 2015-05-09; 
+// 참고: http://iamroot.org/wiki/doku.php?id=%EC%8A%A4%ED%84%B0%EB%94%94:kernel_%EC%8A%A4%ED%84%B0%EB%94%94_10%EC%B0%A8_arm_c
 extern unsigned long __pv_phys_offset;
 #define PHYS_OFFSET __pv_phys_offset
+
 /* phys_to_virt기준 : phy, virt, "sub", __PV_BITS_31_24
  * virt_to_phys는 sub->add가 된다
  * 1:   sub virt phy 0x81000000
@@ -232,7 +235,10 @@ static inline unsigned long __phys_to_virt(unsigned long x)
  * direct-mapped view.  We assume this is the first page
  * of RAM in the mem_map as well.
  */
-#define PHYS_PFN_OFFSET	((unsigned long)(PHYS_OFFSET >> PAGE_SHIFT))
+// arm/kernel/head.S에서 __pv_phys_offset은 .size를 통해 값이 보정된다.
+// PHYS_OFFSET = __pv_phys_offset 
+// PAGE_SHIFT = 12
+#define PHYS_PFN_OFFSET	((unsigned long)(PHYS_OFFSET >> PAGE_SHIFT)) 
 
 /*
  * These are *only* valid on the kernel direct mapped RAM memory.

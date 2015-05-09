@@ -25,7 +25,8 @@
 #else
 #define MAX_ORDER CONFIG_FORCE_MAX_ZONEORDER // 11
 #endif
-#define MAX_ORDER_NR_PAGES (1 << (MAX_ORDER - 1))
+// 2015-05-09;
+#define MAX_ORDER_NR_PAGES (1 << (MAX_ORDER - 1)) // 1024 = 1 << (11 - 1);
 
 /*
  * PAGE_ALLOC_COSTLY_ORDER is the order at which allocations are deemed
@@ -715,7 +716,7 @@ struct node_active_region {
 };
 #endif /* CONFIG_HAVE_MEMBLOCK_NODE_MAP */
 
-#ifndef CONFIG_DISCONTIGMEM
+#ifndef CONFIG_DISCONTIGMEM 
 /* The array of struct pages - for discontigmem use pgdat->lmem_map */
 extern struct page *mem_map;
 #endif
@@ -968,6 +969,7 @@ extern struct zone *next_zone(struct zone *zone);
  * for_each_online_pgdat - helper macro to iterate over all online nodes
  * @pgdat - pointer to a pg_data_t variable
  */
+// first_online_pgdat() 함수는 contig_page_data의 주소를 반환
 #define for_each_online_pgdat(pgdat)			\
 	for (pgdat = first_online_pgdat();		\
 	     pgdat;					\

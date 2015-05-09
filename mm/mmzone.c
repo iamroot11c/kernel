@@ -18,9 +18,13 @@ struct pglist_data *first_online_pgdat(void)
 // 2015-04-25
 struct pglist_data *next_online_pgdat(struct pglist_data *pgdat)
 {
-	// nid = 0;
+	// nid = MAX_NUMNODES/*1*/;
+	// MAX_NUMNODES가 1로 되어있어 next_online_node() 함수는
+	// 항상 MAX_NUMNODES을 리턴
 	int nid = next_online_node(pgdat->node_id);
 
+	// next_online_node() 함수가 MAX_NUMNODES를 리턴해서
+	// 이 함수는 항상 NULL을 리턴할것으로 예상됨
 	if (nid == MAX_NUMNODES)
 		return NULL;
 	// (&contig_page_data)
