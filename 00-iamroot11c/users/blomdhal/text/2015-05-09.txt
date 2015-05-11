@@ -1,0 +1,22 @@
+DTCM(Data Tightly Coupled Memory)
+ITCM(Instruction ~)
+
+176 extern unsigned long __pv_phys_offset;
+177 #define PHYS_OFFSET __pv_phys_offset
+178 /* phys_to_virt기준 : phy, virt, "sub", __PV_BITS_31_24
+179  * virt_to_phys는 sub->add가 된다
+180  * 1:   sub virt phy 0x81000000
+181  *      .pushsection .pv_table, "a"
+182  *      .long 1b
+183  *      .popsection
+184  */
+185 /* 11차 A조 분들꺼 참고
+186  * http://www.iamroot.org/xe/FreeBoard/216101
+187  */
+
+http://iamroot.org/wiki/doku.php?id=%EC%8A%A4%ED%84%B0%EB%94%94:kernel_%EC%8A%A4%ED%84%B0%EB%94%94_10%EC%B0%A8_arm_c
+
+#define prefetchw(x) __builtin_prefetch(x,1)
+ref: http://stackoverflow.com/questions/16032202/how-to-use-pld-instruction-in-arm
+
+
