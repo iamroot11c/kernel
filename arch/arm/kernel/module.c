@@ -25,7 +25,7 @@
 #include <asm/smp_plat.h>
 #include <asm/unwind.h>
 
-#ifdef CONFIG_XIP_KERNEL
+#ifdef CONFIG_XIP_KERNEL	// not set
 /*
  * The XIP kernel text is mapped in the module area for modules and
  * some other stuff to work without any indirect relocations.

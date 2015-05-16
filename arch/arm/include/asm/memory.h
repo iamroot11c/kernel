@@ -51,6 +51,7 @@
  * and PAGE_OFFSET - it must be within 32MB of the kernel text.
  */
 #ifndef CONFIG_THUMB2_KERNEL
+// 2015-05-16
 #define MODULES_VADDR		(PAGE_OFFSET - SZ_16M)
 #else
 /* smaller range for Thumb-2 symbols relocation (2^24)*/
@@ -65,6 +66,7 @@
  * The highmem pkmap virtual space shares the end of the module area.
  */
 #ifdef CONFIG_HIGHMEM
+// 2015-05-16
 #define MODULES_END		(PAGE_OFFSET - PMD_SIZE)
 #else
 #define MODULES_END		(PAGE_OFFSET)

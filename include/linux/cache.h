@@ -60,8 +60,8 @@
 #endif
 #endif
 
-#ifndef CONFIG_ARCH_HAS_CACHE_LINE_SIZE
-#define cache_line_size()	L1_CACHE_BYTES
+#ifndef CONFIG_ARCH_HAS_CACHE_LINE_SIZE // not set
+#define cache_line_size()	L1_CACHE_BYTES/*64*/
 #endif
 
 #endif /* __LINUX_CACHE_H */

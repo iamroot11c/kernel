@@ -89,6 +89,7 @@ EXPORT_PER_CPU_SYMBOL(_numa_mem_);
 /*
  * Array of node states.
  */
+// 2015-05-16
 nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
 	[N_POSSIBLE] = NODE_MASK_ALL,
 	[N_ONLINE] = { { [0] = 1UL } },
@@ -2862,7 +2863,11 @@ EXPORT_SYMBOL(get_zeroed_page);
 // __free_pages(page, order);
 void __free_pages(struct page *page, unsigned int order)
 {
+	// 2015-05-16, __free_reserved_page() 수행 중,
+	// init_page_count()을 통해서, count를 1로 set했었다.
+	// 그럼으로, put_page_testzero()는 true를 리턴할 것임.
 	if (put_page_testzero(page)) {
+		// 2015-05-16, order가 0으로 전달되었었다.
 		if (order == 0)
 			free_hot_cold_page(page, 0); // hot
 		else
@@ -5646,9 +5651,15 @@ unsigned long free_reserved_area(void *start, void *end, int poison, char *s)
 }
 EXPORT_SYMBOL(free_reserved_area);
 
+// 2015-05-16
 #ifdef	CONFIG_HIGHMEM
 void free_highmem_page(struct page *page)
 {
+	// totalram_pages
+	// zone->managed_pages
+	// totalhigh_pages
+	// 위 변수를 free할 때, 증가시켜주고 있다.
+	// 그러므로, 위 변수들은 free한 것들의 개수를 의미하지 않을까?하는 생각이다. 
 	__free_reserved_page(page);
 	totalram_pages++;
 	page_zone(page)->managed_pages++;
@@ -5657,6 +5668,8 @@ void free_highmem_page(struct page *page)
 #endif
 
 
+// 2015-05-16
+// mem_init_print_info(NULL);
 void __init mem_init_print_info(const char *str)
 {
 	unsigned long physpages, codesize, datasize, rosize, bss_size;
@@ -5677,6 +5690,8 @@ void __init mem_init_print_info(const char *str)
 	 *    please refer to arch/tile/kernel/vmlinux.lds.S.
 	 * 3) .rodata.* may be embedded into .text or .data sections.
 	 */
+	// start, end 사이에, pos가 존재하는 경우, 
+	// 그 영역을 제외하도록 계산한다.
 #define adj_init_size(start, end, size, pos, adj) \
 	do { \
 		if (start <= pos && pos < end && size > adj) \
@@ -5692,6 +5707,8 @@ void __init mem_init_print_info(const char *str)
 
 #undef	adj_init_size
 
+	// >> 10 : byte to K 단위로 표시.
+	// (PAGE_SHIFT-10) : 한페이지는 4K임을 의미
 	printk("Memory: %luK/%luK available "
 	       "(%luK kernel code, %luK rwdata, %luK rodata, "
 	       "%luK init, %luK bss, %luK reserved"

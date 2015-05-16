@@ -599,6 +599,7 @@ static void __init free_unused_memmap(struct meminfo *mi)
 #endif
 }
 
+// 2015-05-16
 #ifdef CONFIG_HIGHMEM
 static inline void free_area_high(unsigned long pfn, unsigned long end)
 {
@@ -607,13 +608,15 @@ static inline void free_area_high(unsigned long pfn, unsigned long end)
 }
 #endif
 
+// 2015-05-16
 static void __init free_highpages(void)
 {
-#ifdef CONFIG_HIGHMEM
+#ifdef CONFIG_HIGHMEM	// set
 	unsigned long max_low = max_low_pfn + PHYS_PFN_OFFSET;
 	struct memblock_region *mem, *res;
 
 	/* set highmem page free */
+	// mem = memblock.memory.regions
 	for_each_memblock(memory, mem) {
 		unsigned long start = memblock_region_memory_base_pfn(mem);
 		unsigned long end = memblock_region_memory_end_pfn(mem);
@@ -627,9 +630,13 @@ static void __init free_highpages(void)
 			start = max_low;
 
 		/* Find and exclude any reserved regions */
+		// res = memblock.reserved.regions
 		for_each_memblock(reserved, res) {
 			unsigned long res_start, res_end;
 
+			// 위에서는 base를 up하고 있고, 
+			// reserved 영역은 base를 down시키고 있다.
+			// 어떤 차이인가?
 			res_start = memblock_region_reserved_base_pfn(res);
 			res_end = memblock_region_reserved_end_pfn(res);
 
@@ -692,9 +699,13 @@ void __init mem_init(void)
 	free_reserved_area(__va(PHYS_OFFSET), swapper_pg_dir, -1, NULL);
 #endif
 
+	// 2015-05-16, start
 	free_highpages();
+	// 2015-05-16, end
 
+	// 2015-05-16, start
 	mem_init_print_info(NULL);
+	// 2015-05-16, end
 
 #define MLK(b, t) b, t, ((t) - (b)) >> 10
 #define MLM(b, t) b, t, ((t) - (b)) >> 20
@@ -702,7 +713,7 @@ void __init mem_init(void)
 
 	printk(KERN_NOTICE "Virtual kernel memory layout:\n"
 			"    vector  : 0x%08lx - 0x%08lx   (%4ld kB)\n"
-#ifdef CONFIG_HAVE_TCM
+#ifdef CONFIG_HAVE_TCM	// not set
 			"    DTCM    : 0x%08lx - 0x%08lx   (%4ld kB)\n"
 			"    ITCM    : 0x%08lx - 0x%08lx   (%4ld kB)\n"
 #endif
@@ -728,6 +739,7 @@ void __init mem_init(void)
 #endif
 			MLK(FIXADDR_START, FIXADDR_TOP),
 			MLM(VMALLOC_START, VMALLOC_END),
+			// high_memory는 lowmem의 끝을 가리킨다.
 			MLM(PAGE_OFFSET, (unsigned long)high_memory),
 #ifdef CONFIG_HIGHMEM
 			MLM(PKMAP_BASE, (PKMAP_BASE) + (LAST_PKMAP) *

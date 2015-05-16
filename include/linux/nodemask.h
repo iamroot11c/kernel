@@ -95,6 +95,7 @@
 #include <linux/bitmap.h>
 #include <linux/numa.h>
 
+// 2015-05-16
 typedef struct { DECLARE_BITMAP(bits, MAX_NUMNODES); } nodemask_t;
 extern nodemask_t _unused_nodemask_arg_;
 
@@ -403,7 +404,7 @@ enum node_states {
  * The following particular system nodemasks and operations
  * on them manage all possible and online nodes.
  */
-
+// 2015-05-16
 extern nodemask_t node_states[NR_NODE_STATES];
 
 // 2014-11-08, MAX_NUMNODES == 1 
@@ -428,6 +429,7 @@ static inline int num_node_state(enum node_states state)
 	return nodes_weight(node_states[state]);
 }
 
+// 2015-05-16, 전처리 조건에 의해서, 아래가 아닐 것이다!
 #define for_each_node_state(__node, __state) \
 	for_each_node_mask((__node), node_states[__state])
 
@@ -471,6 +473,7 @@ static inline int num_node_state(enum node_states state)
 }
 
 // 2015-03-28;
+// 주의! 한번만 수행되는 loop이다.
 #define for_each_node_state(node, __state) \
 	for ( (node) = 0; (node) == 0; (node) = 1)
 

@@ -16,11 +16,13 @@
  * cache before the transfer is done, causing old data to be seen by
  * the CPU.
  */
-#define ARCH_DMA_MINALIGN	L1_CACHE_BYTES
+// 2015-05-06
+#define ARCH_DMA_MINALIGN/*0x40, 64*/	L1_CACHE_BYTES
 
 /*
  * With EABI on ARMv5 and above we must have 64-bit aligned slab pointers.
  */
+// 2015-05-16
 #if defined(CONFIG_AEABI) && (__LINUX_ARM_ARCH__ >= 5)
 #define ARCH_SLAB_MINALIGN 8
 #endif

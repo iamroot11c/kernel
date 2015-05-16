@@ -457,6 +457,7 @@ static inline struct page *virt_to_head_page(const void *x)
  * Setup the page count before being freed into the page allocator for
  * the first time (boot or memory hotplug)
  */
+// 2015-05-16
 static inline void init_page_count(struct page *page)
 {
 	atomic_set(&page->_count, 1);
@@ -1377,6 +1378,7 @@ extern void adjust_managed_page_count(struct page *page, long count);
 extern void mem_init_print_info(const char *str);
 
 /* Free the reserved page into the buddy system, so it gets managed. */
+// 2015-05-16
 static inline void __free_reserved_page(struct page *page)
 {
 	ClearPageReserved(page);
@@ -1410,14 +1412,19 @@ static inline unsigned long free_initmem_default(int poison)
 				  poison, "unused kernel");
 }
 
+// 2015-05-16
 static inline unsigned long get_num_physpages(void)
 {
 	int nid;
 	unsigned long phys_pages = 0;
 
+    // 주의! 한번만 수행되는 loop이다.
+    // #define for_each_node_state(node, __state) \
+    //      for ( (node) = 0; (node) == 0; (node) = 1)
 	for_each_online_node(nid)
 		phys_pages += node_present_pages(nid);
-
+    //   phys_pages +=   (NODE_DATA(nid)->node_present_pages)
+      
 	return phys_pages;
 }
 
@@ -1884,6 +1891,7 @@ static inline bool page_is_guard(struct page *page)
 	return test_bit(PAGE_DEBUG_FLAG_GUARD, &page->debug_flags);
 }
 #else
+// 2015-05-16
 static inline unsigned int debug_guardpage_minorder(void) { return 0; }
 // 2015-04-18;
 static inline bool page_is_guard(struct page *page) { return false; }

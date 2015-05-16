@@ -141,15 +141,17 @@ size_t ksize(const void *);
  * alignment larger than the alignment of a 64-bit integer.
  * Setting ARCH_KMALLOC_MINALIGN in arch headers allows that.
  */
+// 2015-05-16
+// ARCH_KMALLOC_MINALIGN is true and over 8
 #if defined(ARCH_DMA_MINALIGN) && ARCH_DMA_MINALIGN > 8
-#define ARCH_KMALLOC_MINALIGN ARCH_DMA_MINALIGN
+#define ARCH_KMALLOC_MINALIGN ARCH_DMA_MINALIGN  /* 0x40, 64 */
 #define KMALLOC_MIN_SIZE ARCH_DMA_MINALIGN
 #define KMALLOC_SHIFT_LOW ilog2(ARCH_DMA_MINALIGN)
 #else
 #define ARCH_KMALLOC_MINALIGN __alignof__(unsigned long long)
 #endif
 
-#ifdef CONFIG_SLOB
+#ifdef CONFIG_SLOB  // not set
 /*
  * Common fields provided in kmem_cache by all slab allocators
  * This struct is either used directly by the allocator (SLOB)
@@ -343,11 +345,13 @@ kmem_cache_alloc_node_trace(struct kmem_cache *s,
 }
 #endif /* CONFIG_TRACING */
 
-#ifdef CONFIG_SLAB
+// 2015-05-16
+// slab_def, slub_def는 전처리에 따라서, 확실히 구별된다.
+#ifdef CONFIG_SLAB  // not set
 #include <linux/slab_def.h>
 #endif
 
-#ifdef CONFIG_SLUB
+#ifdef CONFIG_SLUB  // set
 #include <linux/slub_def.h>
 #endif
 

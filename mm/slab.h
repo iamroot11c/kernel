@@ -249,7 +249,7 @@ static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
 struct kmem_cache_node {
 	spinlock_t list_lock;
 
-#ifdef CONFIG_SLAB
+#ifdef CONFIG_SLAB // not set
 	struct list_head slabs_partial;	/* partial list first, better asm code */
 	struct list_head slabs_full;
 	struct list_head slabs_free;
@@ -262,10 +262,10 @@ struct kmem_cache_node {
 	int free_touched;		/* updated without locking */
 #endif
 
-#ifdef CONFIG_SLUB
-	unsigned long nr_partial;
-	struct list_head partial;
-#ifdef CONFIG_SLUB_DEBUG
+#ifdef CONFIG_SLUB  // set
+	unsigned long nr_partial;   // 4
+	struct list_head partial;   // 8
+#ifdef CONFIG_SLUB_DEBUG    // set
 	atomic_long_t nr_slabs;
 	atomic_long_t total_objects;
 	struct list_head full;

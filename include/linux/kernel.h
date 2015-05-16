@@ -33,6 +33,7 @@
 
 #define REPEAT_BYTE(x)	((~0ul / 0xff) * (x))
 
+// 2015-05-16,(64, 4)
 #define ALIGN(x, a)		__ALIGN_KERNEL((x), (a))
 #define __ALIGN_MASK(x, mask)	__ALIGN_KERNEL_MASK((x), (mask))
 // 2015-02-14
@@ -59,6 +60,9 @@
 #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
 // 2015-03-07
 // DIV_ROUND_UP(2, 32) => (33 / 32) => 1
+// 2015-05-16
+// d-1을 하고 있으니, d의 자리의 수는 2의 지수값이 사용되어야 할 것이다.
+// ex) DIV_ROUND_UP(3412, 1024) = 4
 #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))   
 #define DIV_ROUND_UP_ULL(ll,d) \
 	({ unsigned long long _tmp = (ll)+(d)-1; do_div(_tmp, d); _tmp; })

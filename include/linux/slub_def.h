@@ -56,6 +56,7 @@ struct kmem_cache_order_objects {
 	unsigned long x;
 };
 
+// 2015-05-16
 /*
  * Slab cache management.
  */
@@ -95,7 +96,7 @@ struct kmem_cache {
 	 */
 	int remote_node_defrag_ratio;
 #endif
-	struct kmem_cache_node *node[MAX_NUMNODES];
+	struct kmem_cache_node *node[MAX_NUMNODES/*1*/];
 };
 
 #endif /* _LINUX_SLUB_DEF_H */

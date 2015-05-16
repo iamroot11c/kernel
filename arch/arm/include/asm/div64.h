@@ -74,10 +74,10 @@
  * (It is unfortunate that gcc doesn't perform all this internally.)
  */
 // 2015-05-02
+/* 우리가 해당되는 !__builtin_constant_p(__b)에 대해서 알아봅시다. */
 #define do_div(n, base)							\
 ({									\
 	unsigned int __r, __b = (base);					\
-    // 우리가 해당되는 !__builtin_constant_p(__b)에 대해서 알아봅시다.
 	if (!__builtin_constant_p(__b) || __b == 0 ||			\
 	    (__LINUX_ARM_ARCH__ < 4 && (__b & (__b - 1)) != 0)) {	\
 		/* non-constant divisor (or zero): slow path */		\

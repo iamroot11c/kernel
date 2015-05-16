@@ -484,6 +484,8 @@ static void __init mm_init(void)
 				    // 2015-05-09; end
 	// 2015-05-09; 시작
 	mem_init();
+	// 2015-05-16, end
+	// 2015-05-15, start
 	kmem_cache_init();
 	percpu_init_late();
 	pgtable_cache_init();

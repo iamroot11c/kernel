@@ -15,8 +15,10 @@
 #include <linux/bit_spinlock.h>
 #include <linux/interrupt.h>
 #include <linux/bitops.h>
+// 파일은 slub.c이지만, slab.h를 include하고 있음.
 #include <linux/slab.h>
 #include "slab.h"
+//
 #include <linux/proc_fs.h>
 #include <linux/notifier.h>
 #include <linux/seq_file.h>
@@ -116,16 +118,17 @@
 
 static inline int kmem_cache_debug(struct kmem_cache *s)
 {
-#ifdef CONFIG_SLUB_DEBUG
+#ifdef CONFIG_SLUB_DEBUG	// set
 	return unlikely(s->flags & SLAB_DEBUG_FLAGS);
 #else
 	return 0;
 #endif
 }
 
+// 2015-05-16
 static inline bool kmem_cache_has_cpu_partial(struct kmem_cache *s)
 {
-#ifdef CONFIG_SLUB_CPU_PARTIAL
+#ifdef CONFIG_SLUB_CPU_PARTIAL	// set
 	return !kmem_cache_debug(s);
 #else
 	return false;
@@ -159,6 +162,7 @@ static inline bool kmem_cache_has_cpu_partial(struct kmem_cache *s)
  */
 #define MAX_PARTIAL 10
 
+// 2015-05-16
 #define DEBUG_DEFAULT_FLAGS (SLAB_DEBUG_FREE | SLAB_RED_ZONE | \
 				SLAB_POISON | SLAB_STORE_USER)
 
@@ -184,6 +188,7 @@ static inline bool kmem_cache_has_cpu_partial(struct kmem_cache *s)
 #define MAX_OBJS_PER_PAGE	32767 /* since page.objects is u15 */
 
 /* Internal SLUB flags */
+// 2015-05-16
 #define __OBJECT_POISON		0x80000000UL /* Poison object */
 #define __CMPXCHG_DOUBLE	0x40000000UL /* Use cmpxchg_double */
 
@@ -195,9 +200,10 @@ static struct notifier_block slab_notifier;
  * Tracking user of a slab.
  */
 #define TRACK_ADDRS_COUNT 16
+// 2015-05-16
 struct track {
 	unsigned long addr;	/* Called from address */
-#ifdef CONFIG_STACKTRACE
+#ifdef CONFIG_STACKTRACE	// not set
 	unsigned long addrs[TRACK_ADDRS_COUNT];	/* Called from address */
 #endif
 	int cpu;		/* Was running on cpu */
@@ -319,16 +325,19 @@ static inline size_t slab_ksize(const struct kmem_cache *s)
 	return s->size;
 }
 
+// 2015-05-16
+// 계산식의 의미는?
 static inline int order_objects(int order, unsigned long size, int reserved)
 {
 	return ((PAGE_SIZE << order) - reserved) / size;
 }
 
+// 2015-05-16
 static inline struct kmem_cache_order_objects oo_make(int order,
 		unsigned long size, int reserved)
 {
 	struct kmem_cache_order_objects x = {
-		(order << OO_SHIFT) + order_objects(order, size, reserved)
+		(order << OO_SHIFT/*16*/) + order_objects(order, size, reserved)
 	};
 
 	return x;
@@ -436,7 +445,7 @@ static inline bool cmpxchg_double_slab(struct kmem_cache *s, struct page *page,
 	return 0;
 }
 
-#ifdef CONFIG_SLUB_DEBUG
+#ifdef CONFIG_SLUB_DEBUG	// y
 /*
  * Determine a map of object in use on a page.
  *
@@ -456,6 +465,7 @@ static void get_map(struct kmem_cache *s, struct page *page, unsigned long *map)
  * Debug settings:
  */
 #ifdef CONFIG_SLUB_DEBUG_ON
+// 2015-05-16
 static int slub_debug = DEBUG_DEFAULT_FLAGS;
 #else
 static int slub_debug;
@@ -1223,6 +1233,7 @@ out:
 
 __setup("slub_debug", setup_slub_debug);
 
+// 2015-05-16
 static unsigned long kmem_cache_flags(unsigned long object_size,
 	unsigned long flags, const char *name,
 	void (*ctor)(void *))
@@ -1230,6 +1241,8 @@ static unsigned long kmem_cache_flags(unsigned long object_size,
 	/*
 	 * Enable debugging if selected on the kernel commandline.
 	 */
+	// debug flag는 설정되지 않을 것이다.
+	// 왜냐하면, 부팅 commandline에서 slub_debug를 볼 수 없었기 때문이다.
 	if (slub_debug && (!slub_debug_slabs || (name &&
 		!strncmp(slub_debug_slabs, name, strlen(slub_debug_slabs)))))
 		flags |= slub_debug;
@@ -2736,6 +2749,7 @@ static int slub_nomerge;
  * requested a higher mininum order then we start with that one instead of
  * the smallest order which will fit the object.
  */
+// 2015-05-16
 static inline int slab_order(int size, int min_objects,
 				int max_order, int fract_leftover, int reserved)
 {
@@ -2765,6 +2779,7 @@ static inline int slab_order(int size, int min_objects,
 	return order;
 }
 
+// 2015-05-16
 static inline int calculate_order(int size, int reserved)
 {
 	int order;
@@ -2789,6 +2804,7 @@ static inline int calculate_order(int size, int reserved)
 	while (min_objects > 1) {
 		fraction = 16;
 		while (fraction >= 4) {
+			// 2015-05-16
 			order = slab_order(size, min_objects,
 					slub_max_order, fraction, reserved);
 			if (order <= slub_max_order)
@@ -2933,9 +2949,9 @@ static int init_kmem_cache_nodes(struct kmem_cache *s)
 
 static void set_min_partial(struct kmem_cache *s, unsigned long min)
 {
-	if (min < MIN_PARTIAL)
+	if (min < MIN_PARTIAL/*5*/)
 		min = MIN_PARTIAL;
-	else if (min > MAX_PARTIAL)
+	else if (min > MAX_PARTIAL/*10*/)
 		min = MAX_PARTIAL;
 	s->min_partial = min;
 }
@@ -2944,6 +2960,8 @@ static void set_min_partial(struct kmem_cache *s, unsigned long min)
  * calculate_sizes() determines the order and the distribution of data within
  * a slab object.
  */
+// 2015-05-16
+// forced_order = -1
 static int calculate_sizes(struct kmem_cache *s, int forced_order)
 {
 	unsigned long flags = s->flags;
@@ -3028,6 +3046,7 @@ static int calculate_sizes(struct kmem_cache *s, int forced_order)
 	if (forced_order >= 0)
 		order = forced_order;
 	else
+		// 2015-05-16
 		order = calculate_order(size, s->reserved);
 
 	if (order < 0)
@@ -3054,17 +3073,22 @@ static int calculate_sizes(struct kmem_cache *s, int forced_order)
 	return !!oo_objects(s->oo);
 }
 
+// 2015-05-16
+// SLAB_HWCACHE_ALIGN
 static int kmem_cache_open(struct kmem_cache *s, unsigned long flags)
 {
 	s->flags = kmem_cache_flags(s->size, flags, s->name, s->ctor);
 	s->reserved = 0;
 
+	// 2015-05-16, SLAB_DESTROY_BY_RCU가 설정되지 않았으므로,
+	// reserved = 0일 것이다.
 	if (need_reserve_slab_rcu && (s->flags & SLAB_DESTROY_BY_RCU))
 		s->reserved = sizeof(struct rcu_head);
 
+	// 2015-05-16
 	if (!calculate_sizes(s, -1))
 		goto error;
-	if (disable_higher_order_debug) {
+	if (disable_higher_order_debug) { // cmdline에서 설정되어 짐.
 		/*
 		 * Disable debugging flags that store metadata if the min slab
 		 * order increased.
@@ -3077,6 +3101,7 @@ static int kmem_cache_open(struct kmem_cache *s, unsigned long flags)
 		}
 	}
 
+// not set
 #if defined(CONFIG_HAVE_CMPXCHG_DOUBLE) && \
     defined(CONFIG_HAVE_ALIGNED_STRUCT_PAGE)
 	if (system_has_cmpxchg_double() && (s->flags & SLAB_DEBUG_FLAGS) == 0)
@@ -3108,7 +3133,7 @@ static int kmem_cache_open(struct kmem_cache *s, unsigned long flags)
 	 *    50% to keep some capacity around for frees.
 	 */
 	if (!kmem_cache_has_cpu_partial(s))
-		s->cpu_partial = 0;
+		s->cpu_partial = 0;	// 기본적으로 partial 값은 0로 셋팅 될것으로 예상
 	else if (s->size >= PAGE_SIZE)
 		s->cpu_partial = 2;
 	else if (s->size >= 1024)
@@ -3117,6 +3142,7 @@ static int kmem_cache_open(struct kmem_cache *s, unsigned long flags)
 		s->cpu_partial = 13;
 	else
 		s->cpu_partial = 30;
+	// 2015-05-16, 여기까지
 
 #ifdef CONFIG_NUMA
 	s->remote_node_defrag_ratio = 1000;
@@ -3598,19 +3624,26 @@ static struct kmem_cache * __init bootstrap(struct kmem_cache *static_cache)
 	return s;
 }
 
+// 2015-05-16
+// struct kmem_cache는 linux/slub_def.h에 정의되어 있음.
 void __init kmem_cache_init(void)
 {
 	static __initdata struct kmem_cache boot_kmem_cache,
 		boot_kmem_cache_node;
 
+	// no operations, always return 0
 	if (debug_guardpage_minorder())
 		slub_max_order = 0;
 
+	// static 전역 변수
 	kmem_cache_node = &boot_kmem_cache_node;
+	// 전역 변수 - mm/slab_common.c
+        // struct kmem_cache *kmem_cache;
 	kmem_cache = &boot_kmem_cache;
 
+	// 2015-05-16
 	create_boot_cache(kmem_cache_node, "kmem_cache_node",
-		sizeof(struct kmem_cache_node), SLAB_HWCACHE_ALIGN);
+		sizeof(struct kmem_cache_node), SLAB_HWCACHE_ALIGN/*0x00002000UL*/);
 
 	register_hotmemory_notifier(&slab_memory_callback_nb);
 
@@ -3739,10 +3772,13 @@ __kmem_cache_alias(struct mem_cgroup *memcg, const char *name, size_t size,
 	return s;
 }
 
+// 2015-05-16
+// SLAB_HWCACHE_ALIGN
 int __kmem_cache_create(struct kmem_cache *s, unsigned long flags)
 {
 	int err;
 
+	// 2015-05-16
 	err = kmem_cache_open(s, flags);
 	if (err)
 		return err;

@@ -20,7 +20,7 @@
 #include <asm/page.h>
 
 /* Free memory management - zoned buddy allocator.  */
-#ifndef CONFIG_FORCE_MAX_ZONEORDER
+#ifndef CONFIG_FORCE_MAX_ZONEORDER  // not set
 #define MAX_ORDER 11
 #else
 #define MAX_ORDER CONFIG_FORCE_MAX_ZONEORDER // 11
@@ -786,6 +786,7 @@ typedef struct pglist_data {
 #endif
 } pg_data_t;
 
+// 2015-05-16
 #define node_present_pages(nid)	(NODE_DATA(nid)->node_present_pages)
 #define node_spanned_pages(nid)	(NODE_DATA(nid)->node_spanned_pages)
 #ifdef CONFIG_FLAT_NODE_MEM_MAP
