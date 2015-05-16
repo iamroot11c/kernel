@@ -1,0 +1,118 @@
+636                         // 위에서는 base를 up하고 있고, 
+637                         // reserved 영역은 base를 down시키고 있다.
+638                         // 어떤 차이인가?
+
+620                 unsigned long start = memblock_region_memory_base_pfn(mem);
+621                 unsigned long end = memblock_region_memory_end_pfn(mem);
+639                         res_start = memblock_region_reserved_base_pfn(res);
+640                         res_end = memblock_region_reserved_end_pfn(res);
+//////////////////////////////
+
+ 24 /*
+ 25  * On ARM, ordinary assignment (str instruction) doesn't clear the local
+ 26  * strex/ldrex monitor on some implementations. The reason we can use it for
+ 27  * atomic_set() is the clrex or dummy strex done on every exception return.
+ 28  */
+ 29 // volatile의 의미: Cache의 값을 가져오지 않고, 직접 Memory에 접근해서 가져온다.
+ 30 #define atomic_read(v)  (*(volatile int *)&(v)->counter)
+ 31 #define atomic_set(v,i) (((v)->counter) = (i))
+
+* ref
+ - http://www.iamroot.org/xe/Kernel_8_ARM/66152
+ - http://stackcanary.com/?p=661
+ - http://www.mjmwired.net/kernel/Documentation/atomic_ops.txt
+
+VECTORS_BASE빌드하고 나면 생성되는 것을 알겠습니다.
+include/generated/autoconf.h
+
+/arch/arm/Kconfig
+ 216 config VECTORS_BASE            
+ 217     hex
+ 218     default 0xffff0000 if MMU || CPU_HIGH_VECTOR
+ 219     default DRAM_BASE if REMAP_VECTORS_TO_RAM
+ 220     default 0x00000000
+ 221     help               
+ 222       The base address of exception vectors.  This must be two pages
+ 223       in size. 
+=> hex, 
+Menu attributes
+---------------
+
+A menu entry can have a number of attributes. Not all of them are
+applicable everywhere (see syntax).
+
+- type definition: "bool"/"tristate"/"string"/"hex"/"int"
+  Every config option must have a type. There are only two basic types:
+  tristate and string; the other types are based on these two. The type
+  definition optionally accepts an input prompt, so these two examples
+  are equivalent:
+
+	bool "Networking support"
+  and
+	bool
+	prompt "Networking support"
+
+=> if조건에 따라서, default 값이 설정된다.
+
+ 806 config ARCH_EXYNOS
+ 807     bool "Samsung EXYNOS"
+ 808     select ARCH_HAS_CPUFREQ
+ 809     select ARCH_HAS_HOLES_MEMORYMODEL
+ 810     select ARCH_REQUIRE_GPIOLIB
+ 811     select ARCH_SPARSEMEM_ENABLE
+ 812     select ARM_GIC
+ 813     select CLKDEV_LOOKUP
+ 814     select COMMON_CLK
+ 815     select CPU_V7
+ 816     select GENERIC_CLOCKEVENTS
+ 817     select HAVE_CLK
+ 818     select HAVE_S3C2410_I2C if I2C
+ 819     select HAVE_S3C2410_WATCHDOG if WATCHDOG
+ 820     select HAVE_S3C_RTC if RTC_CLASS
+ 821     select NEED_MACH_MEMORY_H
+ 822     select SPARSE_IRQ
+ 823     select USE_OF
+ 824     help
+ 825       Support for SAMSUNG's EXYNOS SoCs (EXYNOS4/5)
+=> data type이 bool이고, 선택되어질 경우, 아래가 선택되어진다.
+
+Kconfig?, 문법
+https://www.kernel.org/doc/Documentation/kbuild/kconfig-language.txt
+- default value: "default" <expr> ["if" <expr>]
+  A config option can have any number of default values. If multiple
+  default values are visible, only the first defined one is active.
+  Default values are not limited to the menu entry where they are
+  defined. This means the default can be defined somewhere else or be
+  overridden by an earlier definition.
+  The default value is only assigned to the config symbol if no other
+  value was set by the user (via the input prompt above). If an input
+  prompt is visible the default value is presented to the user and can
+  be overridden by him.
+  Optionally, dependencies only for this default value can be added with
+  "if".
+
+kmem_cache_init()은 어떤 것을 사용하는가?
+
+The SLUB allocator: http://lwn.net/Articles/229984/
+slob: introduce the SLOB allocator: http://lwn.net/Articles/157944/
+http://events.linuxfoundation.org/sites/events/files/slides/slaballocators.pdf
+우리는 SLUB을 사용하고 있다. .config 설정을 통해서 확인
+mm/Makefile
+obj-$(CONFIG_SLUB) += slub.o
+[Linux] 동적 메모리 할당자 : slab, slub, slob
+http://studyfoss.egloos.com/5332580
+
+
+arch/arm/include/asm/cache.h
+#define ARCH_DMA_MINALIGN   L1_CACHE_BYTES
+
+Slab 할당 잘 모르고, 사이즈 할당
+Object, order의 개념 등
+
+Action Item
+ - slab, slub 공부 좀 해야한다
+
+
+
+
+
