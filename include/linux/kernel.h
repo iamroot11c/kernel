@@ -157,14 +157,14 @@ struct completion;
 struct pt_regs;
 struct user;
 
-#ifdef CONFIG_PREEMPT_VOLUNTARY
+#ifdef CONFIG_PREEMPT_VOLUNTARY // not define
 extern int _cond_resched(void);
 # define might_resched() _cond_resched()
 #else
-# define might_resched() do { } while (0)
+# define might_resched() do { } while (0) // 2015-05-23
 #endif
 
-#ifdef CONFIG_DEBUG_ATOMIC_SLEEP
+#ifdef CONFIG_DEBUG_ATOMIC_SLEEP // not define
   void __might_sleep(const char *file, int line, int preempt_offset);
 /**
  * might_sleep - annotation for functions that can sleep
@@ -181,9 +181,12 @@ extern int _cond_resched(void);
 #else
   static inline void __might_sleep(const char *file, int line,
 				   int preempt_offset) { }
+// 2015-05-23;
 # define might_sleep() do { might_resched(); } while (0)
 #endif
 
+// 2015-05-23;
+// might_sleep_if(gfp_mask & __GFP_WAIT);
 #define might_sleep_if(cond) do { if (cond) might_sleep(); } while (0)
 
 /*

@@ -142,6 +142,7 @@ static inline nodemask_t cpuset_mems_allowed(struct task_struct *p)
 	return node_possible_map;
 }
 
+// 2015-05-23;
 #define cpuset_current_mems_allowed (node_states[N_MEMORY])
 
 // 2015-03-28;
@@ -162,6 +163,7 @@ static inline int cpuset_node_allowed_hardwall(int node, gfp_t gfp_mask)
 	return 1;
 }
 
+// 2015-05-23;
 static inline int cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
 {
 	return 1;
@@ -223,6 +225,7 @@ static inline void set_mems_allowed(nodemask_t nodemask)
 {
 }
 
+// 2015-05-23;
 static inline unsigned int get_mems_allowed(void)
 {
 	return 0;

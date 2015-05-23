@@ -115,11 +115,14 @@ static inline unsigned long global_page_state(enum zone_stat_item item)
 	return x;
 }
 
+// 2015-05-23;
+// zone_page_state(zone, NR_ALLOC_BATCH);
+// zone의 vm_stat멤버에서 item 인덱스의 값을 리턴
 static inline unsigned long zone_page_state(struct zone *zone,
 					enum zone_stat_item item)
 {
 	long x = atomic_long_read(&zone->vm_stat[item]);
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
 	if (x < 0)
 		x = 0;
 #endif

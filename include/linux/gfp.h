@@ -112,7 +112,7 @@ struct vm_area_struct;
 #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
 
 /* This equals 0, but use constants in case they ever change */
-#define GFP_NOWAIT	(GFP_ATOMIC & ~__GFP_HIGH)
+#define GFP_NOWAIT	(GFP_ATOMIC & ~__GFP_HIGH) // (__GFP_HIGH) & ~__GFP_HIGH  
 /* GFP_ATOMIC means both !wait (__GFP_WAIT not set) and use emergency pool */
 #define GFP_ATOMIC	(__GFP_HIGH)
 #define GFP_NOIO	(__GFP_WAIT)
@@ -163,6 +163,11 @@ struct vm_area_struct;
 #define GFP_DMA32	__GFP_DMA32
 
 /* Convert GFP flags to their corresponding migrate type */
+// 2015-05-23;
+// GFP 비트를 검사해서 MIGRATE_TYPES으로 변환 
+// 예를 들어 __GFP_MOVABLE일 때는 MIGRATE_MOVABLE
+//           __GFP_RECLAIMABLE일 때는 MIGRATE_RECLAIMABLE
+// 으로 바꾸어 리턴 
 static inline int allocflags_to_migratetype(gfp_t gfp_flags)
 {
 	WARN_ON((gfp_flags & GFP_MOVABLE_MASK) == GFP_MOVABLE_MASK);
@@ -171,6 +176,8 @@ static inline int allocflags_to_migratetype(gfp_t gfp_flags)
 		return MIGRATE_UNMOVABLE;
 
 	/* Group based on mobility */
+    // 1 비트 좌측으로 쉬프트를 하는것은  
+    // 리턴값을 'MIGRATE_MOVABLE'로 만들기 위함
 	return (((gfp_flags & __GFP_MOVABLE) != 0) << 1) |
 		((gfp_flags & __GFP_RECLAIMABLE) != 0);
 }
@@ -319,6 +326,12 @@ static inline int gfp_zonelist(gfp_t flags)
  */
 // 2015-03-28;
 // node_zonelist(numa_node_id()/*0*/, GFP_KERNEL);
+//
+// 2015-05-23;
+// node_zonelist(nid, gfp_mask);
+//
+// UMA 구조에서는 flasg의 값과 상관없이 gfp_zonelist() 함수는
+// 항상 0을 리턴하여 node_zonelists 배열의 0번 인덱스가 리턴된다.
 static inline struct zonelist *node_zonelist(int nid, gfp_t flags)
 {
 	return NODE_DATA(nid)->node_zonelists + gfp_zonelist(flags)/*0*/;
@@ -336,10 +349,13 @@ struct page *
 __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
 		       struct zonelist *zonelist, nodemask_t *nodemask);
 
+// 2015-05-23;
+// __alloc_pages(gfp_mask, order, &contig_page_data->node_zonelists[0]);
 static inline struct page *
 __alloc_pages(gfp_t gfp_mask, unsigned int order,
 		struct zonelist *zonelist)
 {
+    // 2015-05-23 시작;
 	return __alloc_pages_nodemask(gfp_mask, order, zonelist, NULL);
 }
 
@@ -354,12 +370,17 @@ static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
 }
 
 //14-12-06 구경만 하고 돌아감
+// 2015-05-23 시작;
+// alloc_pages_exact_node(node, flags, order);
 static inline struct page *alloc_pages_exact_node(int nid, gfp_t gfp_mask,
 						unsigned int order)
 {
+    // nid가 0이 아닐경우를 확인 및 최대값 보다 큰지 확인
 	VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES || !node_online(nid));
 
+    // 2015-05-23 시작;
 	return __alloc_pages(gfp_mask, order, node_zonelist(nid, gfp_mask));
+	// __alloc_pages(gfp_mask, order, &contig_page_data->node_zonelists[0]);
 }
 
 #ifdef CONFIG_NUMA

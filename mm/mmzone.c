@@ -51,9 +51,10 @@ struct zone *next_zone(struct zone *zone)
 	return zone;
 }
 
+// 2015-5-23;
 static inline int zref_in_nodemask(struct zoneref *zref, nodemask_t *nodes)
 {
-#ifdef CONFIG_NUMA
+#ifdef CONFIG_NUMA // not define
 	return node_isset(zonelist_node_idx(zref), *nodes);
 #else
 	return 1;
@@ -63,6 +64,14 @@ static inline int zref_in_nodemask(struct zoneref *zref, nodemask_t *nodes)
 /* Returns the next zone at or below highest_zoneidx in a zonelist */
 // 2015-03-28; nodes가 NULL 일 때는 첫 번째 zoneref를 찾을 것으로 예측됨 
 // next_zones_zonelist(zonelist->_zonerefs, offset, null, &zone);
+//
+// 2015-05-23 시작;
+// __alloc_pages_nodemask() 함수에서 호출되어 nodes 포인터는 
+// &cpuset_current_mems_allowed이다. 
+// 그래서 이전에 호출될 때와의 차이가 있다.
+//
+// zone을 구해서 마지막 인자인 **zone에 대입(저장)하고 
+// 구한 zone이 zoneref 구조체의 zone멤버에 저장된 zoneref를 리턴한다. 
 struct zoneref *next_zones_zonelist(struct zoneref *z,
 					enum zone_type highest_zoneidx,
 					nodemask_t *nodes,
@@ -75,10 +84,24 @@ struct zoneref *next_zones_zonelist(struct zoneref *z,
 	if (likely(nodes == NULL))
 		while (zonelist_zone_idx(z) > highest_zoneidx)
 			z++;
-	else
+	else {
+		// 2015-05-23;
+		// CONFIG_NUMA 비 활성화로 zref_in_nodemask() 함수는 항상 1을 리턴
+		//
+		// 이 함수의 첫 번째 인자인 zoneref는 아래와 같다.
+		// &contig_page_data->node_zonelists[0]->_zonerefs
+		// 
+		// _zonerefs는 struct zoneref의 배열로 4개의 요소를 갖는다.
+		// 이 배열의 첫 번재 요소의 멤버 zone_idx 인덱스가 
+		//  highest_zoneidx 인덱스 보다 작거나 같으면 정상적으로
+		// zoneref를 증가가 되며 각 존의 유효성 검사를 수행할 것이다.
+		//
+		// 하지만 zone의 인덱스가 highest_zoneidx 인덱스 보다
+		// 크다면 무한루프에 빠질 수 있을 것 같다.
 		while (zonelist_zone_idx(z) > highest_zoneidx ||
 				(z->zone && !zref_in_nodemask(z, nodes)))
 			z++;
+	}
 
 	*zone = zonelist_zone(z); // 목록의 첫 번째를 구할 것으로 예측됨
 	return z;
