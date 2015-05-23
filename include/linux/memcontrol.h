@@ -465,7 +465,7 @@ static inline void sock_release_memcg(struct sock *sk)
 }
 #endif /* CONFIG_INET && CONFIG_MEMCG_KMEM */
 
-#ifdef CONFIG_MEMCG_KMEM
+#ifdef CONFIG_MEMCG_KMEM // not define
 extern struct static_key memcg_kmem_enabled_key;
 
 extern int memcg_limited_groups_array_size;
@@ -624,6 +624,7 @@ static inline bool memcg_kmem_enabled(void)
 	return false;
 }
 
+// 2015-05-23;
 static inline bool
 memcg_kmem_newpage_charge(gfp_t gfp, struct mem_cgroup **memcg, int order)
 {

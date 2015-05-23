@@ -36,6 +36,7 @@
  */
 #define PAGE_ALLOC_COSTLY_ORDER 3
 
+// 2015-05-23;
 enum {
 	MIGRATE_UNMOVABLE,
 	MIGRATE_RECLAIMABLE,
@@ -669,6 +670,7 @@ struct zonelist_cache {
 	unsigned long last_full_zap;		/* when last zap'd (jiffies) */
 };
 #else
+// 2015-05-23;
 #define MAX_ZONELISTS 1
 struct zonelist_cache;
 #endif
@@ -677,6 +679,7 @@ struct zonelist_cache;
  * This struct contains information about a zone in a zonelist. It is stored
  * here to avoid dereferences into large structures and lookups of tables
  */
+// 2015-05-23;
 struct zoneref {
 	struct zone *zone;	/* Pointer to actual zone */
 	int zone_idx;		/* zone_idx(zoneref->zone) */
@@ -735,7 +738,7 @@ extern struct page *mem_map;
 struct bootmem_data;
 typedef struct pglist_data {
 	struct zone node_zones[MAX_NR_ZONES/*3*/];
-	struct zonelist node_zonelists[MAX_ZONELISTS];
+	struct zonelist node_zonelists[MAX_ZONELISTS /*1*/];
 	int nr_zones;
 #ifdef CONFIG_FLAT_NODE_MEM_MAP	/* means !SPARSEMEM */ 
                                 // not define
@@ -996,11 +999,13 @@ extern struct zone *next_zone(struct zone *zone);
 			; /* do nothing */		\
 		else
 
+// 2015-05-23;
 static inline struct zone *zonelist_zone(struct zoneref *zoneref)
 {
 	return zoneref->zone;
 }
 
+// 2015-05-23;
 static inline int zonelist_zone_idx(struct zoneref *zoneref)
 {
 	return zoneref->zone_idx;
@@ -1048,11 +1053,17 @@ struct zoneref *next_zones_zonelist(struct zoneref *z,
  */
 // 2015-03-28;
 // first_zones_zonelist(zonelist, offset, null, &zone);
+//
+// 2015-05-23 시작;
+// first_zones_zonelist(zonelist, high_zoneidx,
+//                      &cpuset_current_mems_allowed,
+//                      &preferred_zone);
 static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
 					enum zone_type highest_zoneidx,
 					nodemask_t *nodes,
 					struct zone **zone)
 {
+    // &contig_page_data->node_zonelists[0]->_zonerefs
 	return next_zones_zonelist(zonelist->_zonerefs, highest_zoneidx, nodes,
 								zone);
 }
@@ -1068,6 +1079,7 @@ static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
  * This iterator iterates though all zones at or below a given zone index and
  * within a given nodemask
  */
+// 2015-05-23;
 #define for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, nodemask) \
 	for (z = first_zones_zonelist(zlist, highidx, nodemask, &zone);	\
 		zone;							\

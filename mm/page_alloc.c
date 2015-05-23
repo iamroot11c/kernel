@@ -90,7 +90,7 @@ EXPORT_PER_CPU_SYMBOL(_numa_mem_);
  * Array of node states.
  */
 // 2015-05-16
-nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
+nodemask_t node_states[NR_NODE_STATES /*5*/] __read_mostly = {
 	[N_POSSIBLE] = NODE_MASK_ALL,
 	[N_ONLINE] = { { [0] = 1UL } },
 #ifndef CONFIG_NUMA   // not define
@@ -1632,7 +1632,7 @@ failed:
 	return NULL;
 }
 
-#ifdef CONFIG_FAIL_PAGE_ALLOC
+#ifdef CONFIG_FAIL_PAGE_ALLOC // not define
 
 static struct {
 	struct fault_attr attr;
@@ -1701,7 +1701,7 @@ late_initcall(fail_page_alloc_debugfs);
 #endif /* CONFIG_FAULT_INJECTION_DEBUG_FS */
 
 #else /* CONFIG_FAIL_PAGE_ALLOC */
-
+// 2015-05-23;
 static inline bool should_fail_alloc_page(gfp_t gfp_mask, unsigned int order)
 {
 	return false;
@@ -1926,6 +1926,7 @@ static void zlc_clear_zones_full(struct zonelist *zonelist)
 {
 }
 
+// 2015-05-23;
 static bool zone_local(struct zone *local_zone, struct zone *zone)
 {
 	return true;
@@ -1945,6 +1946,15 @@ static inline void init_zone_allows_reclaim(int nid)
  * get_page_from_freelist goes through the zonelist trying to allocate
  * a page.
  */
+// 2015-05-23; 시작
+// gfp_mask에 __GFP_NOTRACK와 __GFP_HARDWALL은 반드시 셋되어있다.
+// alloc_flags: ALLOC_WMARK_LOW|ALLOC_CPUSET|ALLOC_FAIR;
+// migratetype: gfp_mask에 __GFP_MOVABLE이 셋되어있으면 MIGRATE_MOVABLE,
+//              __GFP_RECLAIMABLE일 때는 MIGRATE_RECLAIMABLE로 셋된다.
+//
+// page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask, order,
+//                         zonelist, high_zoneidx, alloc_flags,
+//                         preferred_zone, migratetype);
 static struct page *
 get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
 		struct zonelist *zonelist, int high_zoneidx, int alloc_flags,
@@ -1964,17 +1974,28 @@ zonelist_scan:
 	 * Scan zonelist, looking for a zone with enough free.
 	 * See also __cpuset_node_allowed_softwall() comment in kernel/cpuset.c.
 	 */
+	// #define for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, nodemask) \
+	//  for (z = first_zones_zonelist(zlist, highidx, nodemask, &zone); \
+	//       zone;                           \
+	//       z = next_zones_zonelist(++z, highidx, nodemask, &zone)) \
 	for_each_zone_zonelist_nodemask(zone, z, zonelist,
 						high_zoneidx, nodemask) {
 		unsigned long mark;
 
+		// CONFIG_NUMA not define
 		if (IS_ENABLED(CONFIG_NUMA) && zlc_active &&
 			!zlc_zone_worth_trying(zonelist, z, allowednodes))
 				continue;
+
+		// ALLOC_CPUSET 셋 되어 있음
+		// cpuset_zone_allowed_softwall() 함수는 
+		//  CONFIG_CPUSETS 비 활성화로 항상 1을 리턴
 		if ((alloc_flags & ALLOC_CPUSET) &&
 			!cpuset_zone_allowed_softwall(zone, gfp_mask))
 				continue;
 		BUILD_BUG_ON(ALLOC_NO_WATERMARKS < NR_WMARK);
+
+		// ALLOC_NO_WATERMARKS 셋 되어 있지 않음
 		if (unlikely(alloc_flags & ALLOC_NO_WATERMARKS))
 			goto try_this_zone;
 		/*
@@ -1983,9 +2004,12 @@ zonelist_scan:
 		 * page was allocated in should have no effect on the
 		 * time the page has in memory before being reclaimed.
 		 */
+		// ALLOC_FAIR 셋
+		// zone_local() 함수는 CONFIG_NUMA 비 활성화로 항상 참을 리턴
 		if (alloc_flags & ALLOC_FAIR) {
 			if (!zone_local(preferred_zone, zone))
 				continue;
+			// zone_page_state() 함수는 0이 아닌경우는 다음 zone으로 진행
 			if (zone_page_state(zone, NR_ALLOC_BATCH) <= 0)
 				continue;
 		}
@@ -2015,6 +2039,10 @@ zonelist_scan:
 		 * will require awareness of zones in the
 		 * dirty-throttling and the flusher threads.
 		 */
+
+		// 2015-05-23 여기까지;
+
+		// ALLOC_WMARK_LOW 셋
 		if ((alloc_flags & ALLOC_WMARK_LOW) &&
 		    (gfp_mask & __GFP_WRITE) && !zone_dirty_ok(zone))
 			goto this_zone_full;
@@ -2087,7 +2115,7 @@ try_this_zone:
 this_zone_full:
 		if (IS_ENABLED(CONFIG_NUMA))
 			zlc_mark_zone_full(zonelist, z);
-	}
+	} // for_each
 
 	if (unlikely(IS_ENABLED(CONFIG_NUMA) && page == NULL && zlc_active)) {
 		/* Disable zlc cache for second zonelist scan */
@@ -2732,24 +2760,36 @@ got_pg:
  * This is the 'heart' of the zoned buddy allocator.
  */
 //14-12-06 구경만 하고 돌아감
+//
+// 2015-05-23; 시작
+// __alloc_pages_nodemask(gfp_mask, order, &contig_page_data->node_zonelists[0], NULL);
 struct page *
 __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
 			struct zonelist *zonelist, nodemask_t *nodemask)
 {
-	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
+	enum zone_type high_zoneidx = gfp_zone(gfp_mask); // zone 타입을 확인
 	struct zone *preferred_zone;
 	struct page *page = NULL;
+	// MIGRATE_TYPES을 찾기 위해 allocflags_to_migratetype() 함수 호출
 	int migratetype = allocflags_to_migratetype(gfp_mask);
 	unsigned int cpuset_mems_cookie;
 	int alloc_flags = ALLOC_WMARK_LOW|ALLOC_CPUSET|ALLOC_FAIR;
+	//              = zone_watermarks.WMARK_LOW|0x40|0x100;
 	struct mem_cgroup *memcg = NULL;
 
+	// 이 함수가 호출되기 전 alloc_slab_page() 함수에서 flags에 __GFP_NOTRACK을 셋함
+	// 그러므로 __GFP_NOTRACK은 반드시 셋되어있다.
 	gfp_mask &= gfp_allowed_mask;
 
+	// CONFIG_LOCKDEP 비 활성화로 아무 작업을 하지 않음
 	lockdep_trace_alloc(gfp_mask);
 
+	// 조건이 true 임에도 불구하고
+	// CONFIG_PREEMPT_VOLUNTARY와 CONFIG_DEBUG_ATOMIC_SLEEP이 모두
+	// 비활성화로 아무작업을 하지 않음
 	might_sleep_if(gfp_mask & __GFP_WAIT);
 
+	// CONFIG_FAIL_PAGE_ALLOC 비 활성화로 리턴값은 항상 false 이다.
 	if (should_fail_alloc_page(gfp_mask, order))
 		return NULL;
 
@@ -2765,20 +2805,25 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
 	 * Will only have any effect when __GFP_KMEMCG is set.  This is
 	 * verified in the (always inline) callee
 	 */
+	// CONFIG_MEMCG_KMEM 비 활성화로 리턴값은 항상 true를 이다. 
 	if (!memcg_kmem_newpage_charge(gfp_mask, &memcg, order))
 		return NULL;
 
 retry_cpuset:
+	// CONFIG_CPUSETS 비 활성화로 항상 0을 리턴한다.
 	cpuset_mems_cookie = get_mems_allowed();
 
 	/* The preferred zone is used for statistics later */
+	// 2015-05-23; nodemask는 NULL로 전달되어 &cpuset_current_mems_allowed을 선택
+	// 
+	// zone을 구해 &preferred_zone에 저장
 	first_zones_zonelist(zonelist, high_zoneidx,
 				nodemask ? : &cpuset_current_mems_allowed,
 				&preferred_zone);
 	if (!preferred_zone)
 		goto out;
 
-#ifdef CONFIG_CMA
+#ifdef CONFIG_CMA // not define
 	if (allocflags_to_migratetype(gfp_mask) == MIGRATE_MOVABLE)
 		alloc_flags |= ALLOC_CMA;
 #endif

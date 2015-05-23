@@ -343,9 +343,10 @@ static inline struct kmem_cache_order_objects oo_make(int order,
 	return x;
 }
 
+// 2015-05-23;
 static inline int oo_order(struct kmem_cache_order_objects x)
 {
-	return x.x >> OO_SHIFT;
+	return x.x >> OO_SHIFT; // x.x >> 16; 64KB
 }
 
 static inline int oo_objects(struct kmem_cache_order_objects x)
@@ -1299,6 +1300,8 @@ static inline void slab_free_hook(struct kmem_cache *s, void *x) {}
 /*
  * Slab allocation and freeing
  */
+// 2015-05-23; 시작
+// alloc_slab_page(alloc_gfp, node, oo);
 static inline struct page *alloc_slab_page(gfp_t flags, int node,
 					struct kmem_cache_order_objects oo)
 {
@@ -1306,31 +1309,45 @@ static inline struct page *alloc_slab_page(gfp_t flags, int node,
 
 	flags |= __GFP_NOTRACK;
 
-	if (node == NUMA_NO_NODE)
+	if (node == NUMA_NO_NODE /*-1*/)
 		return alloc_pages(flags, order);
-	else
+	else {
+		// node의 값이 0으로 전달되어 이 함수가 호출될 것으로 판단
 		return alloc_pages_exact_node(node, flags, order);
+	}
 }
 
+// 2015-05-23; 시작
+// allocate_slab(s, 
+//		GFP_NOWAIT/*(__GFP_HIGH) & ~__GFP_HIGH)*/ 
+//			& (GFP_RECLAIM_MASK | GFP_CONSTRAINT_MASK), 
+//		node);
 static struct page *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 {
 	struct page *page;
 	struct kmem_cache_order_objects oo = s->oo;
 	gfp_t alloc_gfp;
 
+	// GFP_NOWAIT/*(__GFP_HIGH) & ~__GFP_HIGH); 연산 결과가 0*/
+	//  & (GFP_RECLAIM_MASK | GFP_CONSTRAINT_MASK)
+	//  &  (__GFP_BITS_MASK & ~(__GFP_WAIT|__GFP_IO|__GFP_FS))
+	// GFP_NOWAIT가 0이므로 다른 상태값과 상관없이 flasg는 '0'으로
+	// 설정된다.
 	flags &= gfp_allowed_mask;
 
 	if (flags & __GFP_WAIT)
 		local_irq_enable();
 
-	flags |= s->allocflags;
+	flags |= s->allocflags; // kmem_cache의 allocflags로 flags가 설정됨
 
 	/*
 	 * Let the initial higher-order allocation fail under memory pressure
 	 * so we fall-back to the minimum order allocation.
 	 */
+	// __GFP_NOFAIL는 alloc_gfp에서 클리어됨
 	alloc_gfp = (flags | __GFP_NOWARN | __GFP_NORETRY) & ~__GFP_NOFAIL;
 
+	// 2015-05-23; 시작
 	page = alloc_slab_page(alloc_gfp, node, oo);
 	if (unlikely(!page)) {
 		oo = s->min;
@@ -1382,6 +1399,9 @@ static void setup_object(struct kmem_cache *s, struct page *page,
 		s->ctor(object);
 }
 
+// 기능: page를 할당, 
+// 2015-05-23; 시작
+// new_slab(kmem_cache_node, GFP_NOWAIT, node);
 static struct page *new_slab(struct kmem_cache *s, gfp_t flags, int node)
 {
 	struct page *page;
@@ -1390,8 +1410,11 @@ static struct page *new_slab(struct kmem_cache *s, gfp_t flags, int node)
 	void *p;
 	int order;
 
+	// GFP_NOWAIT & (__GFP_DMA32|__GFP_HIGHMEM|~__GFP_BITS_MASK)
+	// ((__GFP_HIGH) & ~__GFP_HIGH) & (__GFP_DMA32|__GFP_HIGHMEM|~__GFP_BITS_MASK)
 	BUG_ON(flags & GFP_SLAB_BUG_MASK);
 
+	// 2015-05-23; 시작
 	page = allocate_slab(s,
 		flags & (GFP_RECLAIM_MASK | GFP_CONSTRAINT_MASK), node);
 	if (!page)
@@ -2875,13 +2898,18 @@ static struct kmem_cache *kmem_cache_node;
  * when allocating for the kmalloc_node_cache. This is used for bootstrapping
  * memory on a fresh node that has no slab structures yet.
  */
+// 2015-05-23; 시작
+// early_kmem_cache_node_alloc(0);
+// 이 함수는 slab_state 상태가 'DOWN' 일 때 호출된다.
 static void early_kmem_cache_node_alloc(int node)
 {
 	struct page *page;
 	struct kmem_cache_node *n;
 
+	// 타입의 이름과 같아 주의
 	BUG_ON(kmem_cache_node->size < sizeof(struct kmem_cache_node));
 
+	// 2015-05-23; 시작
 	page = new_slab(kmem_cache_node, GFP_NOWAIT, node);
 
 	BUG_ON(!page);
@@ -2898,7 +2926,7 @@ static void early_kmem_cache_node_alloc(int node)
 	page->inuse = 1;
 	page->frozen = 0;
 	kmem_cache_node->node[node] = n;
-#ifdef CONFIG_SLUB_DEBUG
+#ifdef CONFIG_SLUB_DEBUG // deinfed
 	init_object(kmem_cache_node, n, SLUB_RED_ACTIVE);
 	init_tracking(kmem_cache_node, n);
 #endif
@@ -2922,15 +2950,22 @@ static void free_kmem_cache_nodes(struct kmem_cache *s)
 	}
 }
 
+// 2015-05-23; 시작
 static int init_kmem_cache_nodes(struct kmem_cache *s)
 {
 	int node;
 
+	// #define for_each_node_state(node, __state) \
+	//	     for ( (node) = 0; (node) == 0; (node) = 1
+	// for (node = 0; n == 0; node =1) {
 	for_each_node_state(node, N_NORMAL_MEMORY) {
 		struct kmem_cache_node *n;
 
+		// create_boot_cache() 함수가 호출된 후 slab_stage가 'PARTIAL'로 설저되어
+		// 초기 설정은 'DOWN'
 		if (slab_state == DOWN) {
 			early_kmem_cache_node_alloc(node);
+			// slab_state가 'DOWN'이면 여기까지만 진행
 			continue;
 		}
 		n = kmem_cache_alloc_node(kmem_cache_node,
@@ -3144,9 +3179,10 @@ static int kmem_cache_open(struct kmem_cache *s, unsigned long flags)
 		s->cpu_partial = 30;
 	// 2015-05-16, 여기까지
 
-#ifdef CONFIG_NUMA
+#ifdef CONFIG_NUMA // not define
 	s->remote_node_defrag_ratio = 1000;
 #endif
+	// 2015-05-23; 시작
 	if (!init_kmem_cache_nodes(s))
 		goto error;
 
