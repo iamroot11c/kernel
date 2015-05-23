@@ -1,0 +1,49 @@
+init_kmem_cache_nodes()에서 slab_state는 DOWN이다???
+
+기본적으로 전역변수이고, 이는 DOWN으로 기본 설정된다.
+
+kmem_cache_init() 에서 create_boot_cache() 후에
+slab_state = PARTIAL;로 설정해준다.
+
+이런 사실로 미뤄봤을 때, DOWN이다.
+/////////////////
+
+struct page {
+분석 필요
+
+struct page {
+ 52     /* Second double word */
+ 53     struct {
+ 54         union {
+ 55             pgoff_t index;      /* Our offset within mapping. */
+ 56             void *freelist;     /* slub/slob first free object */
+ 57             bool pfmemalloc;    /* If set by the page allocator,
+ 58                          * ALLOC_NO_WATERMARKS was set
+ 59                          * and the low watermark was not
+ 60                          * met implying that the system
+ 61                          * is under some pressure. The
+ 62                          * caller should try ensure
+ 63                          * this page is only used to
+ 64                          * free other pages.
+ 65                          */
+ 66         };
+
+typedef struct { DECLARE_BITMAP(bits, MAX_NUMNODES); } nodemask_t;
+
+water mark 중요하다.
+
+IS_ENABLED(CONFIG_NUMA) review
+
+ 19 #define __ARG_PLACEHOLDER_1 0,
+ 20 #define config_enabled(cfg) _config_enabled(cfg)
+ 21 #define _config_enabled(value) __config_enabled(__ARG_PLACEHOLDER_##value)
+ 22 #define __config_enabled(arg1_or_junk) ___config_enabled(arg1_or_junk 1, 0)
+ 23 #define ___config_enabled(__ignored, val, ...) val
+
+__ARG_PLACEHOLDER_0은 정의되지 않았다.
+
+vm_stat값의 기능은?
+zone->vm_stat[item]
+
+
+
