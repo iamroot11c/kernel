@@ -23,7 +23,7 @@
 #ifndef CONFIG_FORCE_MAX_ZONEORDER  // not set
 #define MAX_ORDER 11
 #else
-#define MAX_ORDER CONFIG_FORCE_MAX_ZONEORDER // 11
+#define MAX_ORDER CONFIG_FORCE_MAX_ZONEORDER // 11, 2^11 = 2048(0x0800)
 #endif
 // 2015-05-09;
 #define MAX_ORDER_NR_PAGES (1 << (MAX_ORDER - 1)) // 1024 = 1 << (11 - 1);
@@ -236,6 +236,7 @@ struct lruvec {
 /* LRU Isolation modes. */
 typedef unsigned __bitwise__ isolate_mode_t;
 
+// 2015-05-30
 enum zone_watermarks {
 	WMARK_MIN,
 	WMARK_LOW,
@@ -327,6 +328,9 @@ struct zone {
 	/* Fields commonly accessed by the page allocator */
 
 	/* zone watermarks, access with *_wmark_pages(zone) macros */
+    // 2015-05-30
+    // watermark의 종류는 3가지가 존재
+    // MIN, LOW, HIGH
 	unsigned long watermark[NR_WMARK];
 
 	/*
@@ -377,7 +381,7 @@ struct zone {
 	/* see spanned/present_pages for more description */
 	seqlock_t		span_seqlock;
 #endif
-	struct free_area	free_area[MAX_ORDER];
+	struct free_area	free_area[MAX_ORDER/*11*/];
 
 #ifndef CONFIG_SPARSEMEM
 	/*

@@ -1402,6 +1402,7 @@ static void setup_object(struct kmem_cache *s, struct page *page,
 // 기능: page를 할당, 
 // 2015-05-23; 시작
 // new_slab(kmem_cache_node, GFP_NOWAIT, node);
+// 2015-05-30, s는 전역변수의 kmem_cache_node
 static struct page *new_slab(struct kmem_cache *s, gfp_t flags, int node)
 {
 	struct page *page;
@@ -3671,10 +3672,10 @@ void __init kmem_cache_init(void)
 	if (debug_guardpage_minorder())
 		slub_max_order = 0;
 
-	// static 전역 변수
+	// mm/slub.c, static 전역 변수
 	kmem_cache_node = &boot_kmem_cache_node;
 	// 전역 변수 - mm/slab_common.c
-        // struct kmem_cache *kmem_cache;
+        // mm/slab_common.c, struct kmem_cache *kmem_cache;
 	kmem_cache = &boot_kmem_cache;
 
 	// 2015-05-16

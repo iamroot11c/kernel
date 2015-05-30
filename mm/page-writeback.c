@@ -82,17 +82,29 @@ unsigned long dirty_background_bytes;
  * free highmem will not be subtracted from the total free memory
  * for calculating free ratios if vm_highmem_is_dirtyable is true
  */
+// 2015-05-30
+// kernel/sysctl.c <<GLOBAL>>
+//   .data = &vm_highmem_is_dirtyable,
+// 위와 같이 vm_table[]에 등록되고, 
+// 이것에 의해서 값이 변경될 것이라고 추측함.
 int vm_highmem_is_dirtyable;
 
 /*
  * The generator of dirty data starts writeback at this percentage
  */
+// 2015-05-30
 int vm_dirty_ratio = 20;
 
 /*
  * vm_dirty_bytes starts at 0 (disabled) so that it is a function of
  * vm_dirty_ratio * the amount of dirtyable memory
  */
+// 2015-05-30
+// kernel/sysctl.c에서 
+// static struct ctl_table vm_table[]에 아래와 같이 등록되는데
+// .data = &vm_dirty_bytes
+// 이것에 의해서 값이 변경이 일어 날 것이라고 예상한다.
+// 단순 검색으로는 값할당을 확인할 수 없었다.
 unsigned long vm_dirty_bytes;
 
 /*
@@ -198,19 +210,29 @@ static unsigned long writeout_period_time = 0;
  * Returns the zone's number of pages potentially available for dirty
  * page cache.  This is the base value for the per-zone dirty limits.
  */
+// 2015-05-30
+// dirtyable page란
+// Pages in the page cache modified after being brought in are called dirty pages.
+// ref: http://en.wikipedia.org/wiki/Page_cache
+// * dirty page:
+// Dirty means that the data is stored in the Page Cache, but needs to be written to the underlying storage device first.
+// 참고: https://www.thomas-krenn.com/en/wiki/Linux_Page_Cache_Basics
 static unsigned long zone_dirtyable_memory(struct zone *zone)
 {
 	unsigned long nr_pages;
 
 	nr_pages = zone_page_state(zone, NR_FREE_PAGES);
+	// NR_FREE_PAGES가 더 작다면, nr_pages는 0이 될 것이다.
 	nr_pages -= min(nr_pages, zone->dirty_balance_reserve);
 
+	// 기본적으로, NR_INACTIVE_FILE, NR_ACTIVE_FILE은 dirty page이다.
 	nr_pages += zone_page_state(zone, NR_INACTIVE_FILE);
 	nr_pages += zone_page_state(zone, NR_ACTIVE_FILE);
 
 	return nr_pages;
 }
 
+// 2015-05-30
 static unsigned long highmem_dirtyable_memory(unsigned long total)
 {
 #ifdef CONFIG_HIGHMEM
@@ -252,6 +274,7 @@ static unsigned long highmem_dirtyable_memory(unsigned long total)
  * Returns the global number of pages potentially available for dirty
  * page cache.  This is the base value for the global dirty limits.
  */
+// 2015-05-30
 static unsigned long global_dirtyable_memory(void)
 {
 	unsigned long x;
@@ -317,6 +340,7 @@ void global_dirty_limits(unsigned long *pbackground, unsigned long *pdirty)
  * on the zone's dirtyable memory.
  */
 // 2015-05-23 다음주에 여기부터 진행;
+// 2015-05-30, 시작
 static unsigned long zone_dirty_limit(struct zone *zone)
 {
 	unsigned long zone_memory = zone_dirtyable_memory(zone);
@@ -327,7 +351,8 @@ static unsigned long zone_dirty_limit(struct zone *zone)
 		dirty = DIV_ROUND_UP(vm_dirty_bytes, PAGE_SIZE) *
 			zone_memory / global_dirtyable_memory();
 	else
-		dirty = vm_dirty_ratio * zone_memory / 100;
+		dirty = vm_dirty_ratioi/*20*/ * zone_memory / 100;
+		// 100단위로 나눈다.
 
 	if (tsk->flags & PF_LESS_THROTTLE || rt_task(tsk))
 		dirty += dirty / 4;

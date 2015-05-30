@@ -21,6 +21,7 @@ extern int sysctl_stat_interval;
  * generated will simply be the increment of a global address.
  */
 
+// 2015-05-30
 struct vm_event_state {
 	unsigned long event[NR_VM_EVENT_ITEMS];
 };
@@ -40,6 +41,7 @@ static inline void count_vm_event(enum vm_event_item item)
 
 // 2015-04-18;
 // __count_vm_events(PGFREE, 1 << order);
+// 2015-05-30
 static inline void __count_vm_events(enum vm_event_item item, long delta)
 {
 	__this_cpu_add(vm_event_states.event[item], delta);
@@ -105,6 +107,8 @@ static inline void zone_page_state_add(long x, struct zone *zone,
 	atomic_long_add(x, &vm_stat[item]);
 }
 
+// 2015-05-30
+// global vm_stat이 따로 존재한다.
 static inline unsigned long global_page_state(enum zone_stat_item item)
 {
 	long x = atomic_long_read(&vm_stat[item]);
@@ -268,9 +272,16 @@ static inline void drain_zonestat(struct zone *zone,
 			struct per_cpu_pageset *pset) { }
 #endif		/* CONFIG_SMP */
 
+// 2015-05-30
+// __mod_zone_freepage_state(zone, -(1 << order),
+//                get_pageblock_migratetype(page));
+//
 static inline void __mod_zone_freepage_state(struct zone *zone, int nr_pages,
 					     int migratetype)
 {
+    // vm_stat값 업데이트
+    // 인자로 넘어온 음의 값은 delta값으로 사용되어진다.
+    // 기존의 값에서 빼라는 의미로 음의 값을 사용함.
 	__mod_zone_page_state(zone, NR_FREE_PAGES, nr_pages);
 	if (is_migrate_cma(migratetype))
 		__mod_zone_page_state(zone, NR_FREE_CMA_PAGES, nr_pages);

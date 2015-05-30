@@ -23,7 +23,8 @@
 
 #include "internal.h"
 
-#ifdef CONFIG_VM_EVENT_COUNTERS
+#ifdef CONFIG_VM_EVENT_COUNTERS		// y
+// 2015-05-30
 DEFINE_PER_CPU(struct vm_event_state, vm_event_states) = {{0}};
 EXPORT_PER_CPU_SYMBOL(vm_event_states);
 
@@ -220,6 +221,8 @@ void set_pgdat_percpu_threshold(pg_data_t *pgdat,
 // __mod_zone_page_state(lruvec_zone(lruvec), NR_LRU_BASE + lru, -nr_pages)
 // 2015-04-25
 // __mod_zone_page_state(zone, NR_FREE_PAGES, 1);
+// 2015-05-30
+// __mod_zone_page_state(zone, NR_ALLOC_BATCH, -(1 << order));
 void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
 				int delta)
 {

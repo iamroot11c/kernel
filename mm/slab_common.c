@@ -26,6 +26,7 @@
 enum slab_state slab_state;
 LIST_HEAD(slab_caches);
 DEFINE_MUTEX(slab_mutex);
+// 2015-05-30
 struct kmem_cache *kmem_cache;
 
 #ifdef CONFIG_DEBUG_VM

@@ -234,6 +234,7 @@ EXPORT_SYMBOL(nr_node_ids);
 EXPORT_SYMBOL(nr_online_nodes);
 #endif
 
+// 2015-05-30
 int page_group_by_mobility_disabled __read_mostly;
 
 // 2015-01-24;
@@ -300,6 +301,7 @@ static int bad_range(struct zone *zone, struct page *page)
 	return 0;
 }
 #else
+// 2015-05-30
 static inline int bad_range(struct zone *zone, struct page *page)
 {
 	return 0;
@@ -370,6 +372,7 @@ static void free_compound_page(struct page *page)
 	__free_pages_ok(page, compound_order(page));
 }
 
+// 2015-05-30, glance
 void prep_compound_page(struct page *page, unsigned long order)
 {
 	int i;
@@ -415,6 +418,7 @@ static int destroy_compound_page(struct page *page, unsigned long order)
 	return bad;
 }
 
+// 2015-05-30
 static inline void prep_zero_page(struct page *page, int order, gfp_t gfp_flags)
 {
 	int i;
@@ -466,6 +470,7 @@ static inline void set_page_order(struct page *page, int order)
 	__SetPageBuddy(page);
 }
 
+// 2015-05-30
 static inline void rmv_page_order(struct page *page)
 {
 	__ClearPageBuddy(page);
@@ -847,16 +852,19 @@ void __init init_cma_reserved_pageblock(struct page *page)
  *
  * -- nyc
  */
+// 2015-05-30
+// expand(zone, page, order, current_order, area, migratetype);
 static inline void expand(struct zone *zone, struct page *page,
 	int low, int high, struct free_area *area,
 	int migratetype)
 {
+	// 2^high
 	unsigned long size = 1 << high;
 
 	while (high > low) {
 		area--;
 		high--;
-		size >>= 1;
+		size >>= 1;	// 나누기 2
 		VM_BUG_ON(bad_range(zone, &page[size]));
 
 #ifdef CONFIG_DEBUG_PAGEALLOC
@@ -885,6 +893,7 @@ static inline void expand(struct zone *zone, struct page *page,
 /*
  * This page is about to be returned from the page allocator
  */
+// 2015-05-30
 static inline int check_new_page(struct page *page)
 {
 	if (unlikely(page_mapcount(page) |
@@ -898,6 +907,7 @@ static inline int check_new_page(struct page *page)
 	return 0;
 }
 
+// 2015-05-30
 static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
 {
 	int i;
@@ -911,9 +921,10 @@ static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
 	set_page_private(page, 0);
 	set_page_refcounted(page);
 
-	arch_alloc_page(page, order);
-	kernel_map_pages(page, 1 << order, 1);
+	arch_alloc_page(page, order);	// NO OP
+	kernel_map_pages(page, 1 << order, 1);	// NO OP
 
+	// 2015-05-30, 여기까지
 	if (gfp_flags & __GFP_ZERO)
 		prep_zero_page(page, order, gfp_flags);
 
@@ -927,6 +938,7 @@ static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
  * Go through the free lists for the given migratetype and remove
  * the smallest available page from the freelists
  */
+// 2015-05-30
 static inline
 struct page *__rmqueue_smallest(struct zone *zone, unsigned int order,
 						int migratetype)
@@ -936,7 +948,7 @@ struct page *__rmqueue_smallest(struct zone *zone, unsigned int order,
 	struct page *page;
 
 	/* Find a page of the appropriate size in the preferred list */
-	for (current_order = order; current_order < MAX_ORDER; ++current_order) {
+	for (current_order = order; current_order < MAX_ORDER/*11*/; ++current_order) {
 		area = &(zone->free_area[current_order]);
 		if (list_empty(&area->free_list[migratetype]))
 			continue;
@@ -958,6 +970,7 @@ struct page *__rmqueue_smallest(struct zone *zone, unsigned int order,
  * This array describes the order lists are fallen back to when
  * the free lists for the desirable migrate type are depleted
  */
+// 2015-05-30
 static int fallbacks[MIGRATE_TYPES][4] = {
 	[MIGRATE_UNMOVABLE]   = { MIGRATE_RECLAIMABLE, MIGRATE_MOVABLE,     MIGRATE_RESERVE },
 	[MIGRATE_RECLAIMABLE] = { MIGRATE_UNMOVABLE,   MIGRATE_MOVABLE,     MIGRATE_RESERVE },
@@ -978,6 +991,7 @@ static int fallbacks[MIGRATE_TYPES][4] = {
  * Note that start_page and end_pages are not aligned on a pageblock
  * boundary. If alignment is required, use move_freepages_block()
  */
+// 2015-05-30, glance
 int move_freepages(struct zone *zone,
 			  struct page *start_page, struct page *end_page,
 			  int migratetype)
@@ -1022,6 +1036,7 @@ int move_freepages(struct zone *zone,
 	return pages_moved;
 }
 
+// 2015-05-30, just glance
 int move_freepages_block(struct zone *zone, struct page *page,
 				int migratetype)
 {
@@ -1066,6 +1081,7 @@ static void change_pageblock_range(struct page *pageblock_page,
  * Returns the new migratetype of the pageblock (or the same old migratetype
  * if it was unchanged).
  */
+// 2015-05-30, glance
 static int try_to_steal_freepages(struct zone *zone, struct page *page,
 				  int start_type, int fallback_type)
 {
@@ -1075,7 +1091,7 @@ static int try_to_steal_freepages(struct zone *zone, struct page *page,
 		return fallback_type;
 
 	/* Take ownership for orders >= pageblock_order */
-	if (current_order >= pageblock_order) {
+	if (current_order >= pageblock_order/*10*/) {
 		change_pageblock_range(page, current_order, start_type);
 		return start_type;
 	}
@@ -1101,6 +1117,7 @@ static int try_to_steal_freepages(struct zone *zone, struct page *page,
 }
 
 /* Remove an element from the buddy allocator from the fallback list */
+// 2015-05-30
 static inline struct page *
 __rmqueue_fallback(struct zone *zone, int order, int start_migratetype)
 {
@@ -1162,6 +1179,7 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype)
  * Do the hard work of removing an element from the buddy allocator.
  * Call me with the zone->lock already held.
  */
+// 2015-05-30
 static struct page *__rmqueue(struct zone *zone, unsigned int order,
 						int migratetype)
 {
@@ -1179,6 +1197,8 @@ retry_reserve:
 		 * and we want just one call site
 		 */
 		if (!page) {
+			// 실패할 경우, 강제로 MIGRATE_RESERVE로 설정해서, 
+			// 무한 반복되는 것을 방지 할 수 있다.
 			migratetype = MIGRATE_RESERVE;
 			goto retry_reserve;
 		}
@@ -1193,6 +1213,9 @@ retry_reserve:
  * a single hold of the lock, for efficiency.  Add them to the supplied list.
  * Returns the number of new pages which were placed at *list.
  */
+// 2015-05-30
+// rmqueue_bulk(zone, 0, pcp->batch, list,
+//                       migratetype, cold);
 static int rmqueue_bulk(struct zone *zone, unsigned int order,
 			unsigned long count, struct list_head *list,
 			int migratetype, int cold)
@@ -1224,8 +1247,9 @@ static int rmqueue_bulk(struct zone *zone, unsigned int order,
 				mt = migratetype;
 		}
 		set_freepage_migratetype(page, mt);
+		// list head가 순회할 때 마다, 변경된다.
 		list = &page->lru;
-		if (is_migrate_cma(mt))
+		if (is_migrate_cma(mt))	// NO OP, false
 			__mod_zone_page_state(zone, NR_FREE_CMA_PAGES,
 					      -(1 << order));
 	}
@@ -1561,6 +1585,7 @@ int split_free_page(struct page *page)
  * we cheat by calling it from here, in the order > 0 path.  Saves a branch
  * or two.
  */
+// 2015-05-30
 static inline
 struct page *buffered_rmqueue(struct zone *preferred_zone,
 			struct zone *zone, int order, gfp_t gfp_flags,
@@ -1586,6 +1611,8 @@ again:
 				goto failed;
 		}
 
+		// cold는 list tail의 값을 취한다.
+		// 곧, 가장 먼저 할당된 값이다.
 		if (cold)
 			page = list_entry(list->prev, struct page, lru);
 		else
@@ -1616,10 +1643,16 @@ again:
 					  get_pageblock_migratetype(page));
 	}
 
+	// 기존 값에서 -(1 << order)를 더하라. 곧 빼라라는 말과 같음
 	__mod_zone_page_state(zone, NR_ALLOC_BATCH, -(1 << order));
 
+	//  #define __count_zone_vm_events(item, zone, delta) \
+	//          __count_vm_events(item##_NORMAL - ZONE_NORMAL + \
+	//           zone_idx(zone), delta)
+	//
+	// __count_vm_events(PGALLOC_NORMAL/*6*/ - ZONE_NORMAL + zone_idx(zone), delta) 
 	__count_zone_vm_events(PGALLOC, zone, 1 << order);
-	zone_statistics(preferred_zone, zone, gfp_flags);
+	zone_statistics(preferred_zone, zone, gfp_flags);	// NO OP
 	local_irq_restore(flags);
 
 	VM_BUG_ON(bad_range(zone, page));
@@ -1713,6 +1746,7 @@ static inline bool should_fail_alloc_page(gfp_t gfp_mask, unsigned int order)
  * Return true if free pages are above 'mark'. This takes into account the order
  * of the allocation.
  */
+// 2015-05-30
 static bool __zone_watermark_ok(struct zone *z, int order, unsigned long mark,
 		      int classzone_idx, int alloc_flags, long free_pages)
 {
@@ -1727,13 +1761,13 @@ static bool __zone_watermark_ok(struct zone *z, int order, unsigned long mark,
 		min -= min / 2;
 	if (alloc_flags & ALLOC_HARDER)
 		min -= min / 4;
-#ifdef CONFIG_CMA
+#ifdef CONFIG_CMA	// not set
 	/* If allocation can't use CMA areas don't use free CMA pages */
 	if (!(alloc_flags & ALLOC_CMA))
 		free_cma = zone_page_state(z, NR_FREE_CMA_PAGES);
 #endif
 
-	if (free_pages - free_cma <= min + lowmem_reserve)
+	if (free_pages - free_cma/*0*/ <= min + lowmem_reserve)
 		return false;
 	for (o = 0; o < order; o++) {
 		/* At the next order, this order's pages become unavailable */
@@ -1748,6 +1782,7 @@ static bool __zone_watermark_ok(struct zone *z, int order, unsigned long mark,
 	return true;
 }
 
+// 2015-05-30
 bool zone_watermark_ok(struct zone *z, int order, unsigned long mark,
 		      int classzone_idx, int alloc_flags)
 {
@@ -1932,6 +1967,7 @@ static bool zone_local(struct zone *local_zone, struct zone *zone)
 	return true;
 }
 
+// 2015-05-30
 static bool zone_allows_reclaim(struct zone *local_zone, struct zone *zone)
 {
 	return true;
@@ -1978,6 +2014,10 @@ zonelist_scan:
 	//  for (z = first_zones_zonelist(zlist, highidx, nodemask, &zone); \
 	//       zone;                           \
 	//       z = next_zones_zonelist(++z, highidx, nodemask, &zone)) \
+	// 2015-05-30
+	// Page 할당을 위해서, watermark와 같은 것을 따져보고, 
+	// 시도하고, 다시 또 시도해서 실패할 경우, 다음존으로 가서 할당을 시도한다.
+	// 그렇다면, NOMAL존에서 continue/full문이 실행되었다면, HIGHMEM에서 할당을 받기 위해 사도 하지 않을까?
 	for_each_zone_zonelist_nodemask(zone, z, zonelist,
 						high_zoneidx, nodemask) {
 		unsigned long mark;
@@ -2041,17 +2081,23 @@ zonelist_scan:
 		 */
 
 		// 2015-05-23 여기까지;
-
+		
+		// 2015-05-30 시작
 		// ALLOC_WMARK_LOW 셋
 		if ((alloc_flags & ALLOC_WMARK_LOW) &&
 		    (gfp_mask & __GFP_WRITE) && !zone_dirty_ok(zone))
 			goto this_zone_full;
 
+		// flag값에 따라, MIN, LOW, HIGH 인덱스 중 하나 일 것임
+		// flag값의 0, 1번째 비트는, watermark를 저장하고 있다.
 		mark = zone->watermark[alloc_flags & ALLOC_WMARK_MASK];
 		if (!zone_watermark_ok(zone, order, mark,
 				       classzone_idx, alloc_flags)) {
+			// freepages보다 가공한 watermark가 더 큰 값일 때,
+			// 아래를 수행하게 된다.
 			int ret;
 
+			// NUMA니깐 건너띄고
 			if (IS_ENABLED(CONFIG_NUMA) &&
 					!did_zlc_setup && nr_online_nodes > 1) {
 				/*
@@ -2064,6 +2110,7 @@ zonelist_scan:
 				did_zlc_setup = 1;
 			}
 
+			// zone_reclaim_mode만 체크한다. NUMA가 아니기때문에
 			if (zone_reclaim_mode == 0 ||
 			    !zone_allows_reclaim(preferred_zone, zone))
 				goto this_zone_full;
@@ -2085,6 +2132,7 @@ zonelist_scan:
 				/* scanned but unreclaimable */
 				continue;
 			default:
+				// 2015-05-30, 진입조건을 다시 시도해 본다.
 				/* did we reclaim enough */
 				if (zone_watermark_ok(zone, order, mark,
 						classzone_idx, alloc_flags))
@@ -2782,15 +2830,15 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
 	gfp_mask &= gfp_allowed_mask;
 
 	// CONFIG_LOCKDEP 비 활성화로 아무 작업을 하지 않음
-	lockdep_trace_alloc(gfp_mask);
+	lockdep_trace_alloc(gfp_mask);	// NO OP
 
 	// 조건이 true 임에도 불구하고
 	// CONFIG_PREEMPT_VOLUNTARY와 CONFIG_DEBUG_ATOMIC_SLEEP이 모두
 	// 비활성화로 아무작업을 하지 않음
-	might_sleep_if(gfp_mask & __GFP_WAIT);
+	might_sleep_if(gfp_mask & __GFP_WAIT);	// NO OP
 
 	// CONFIG_FAIL_PAGE_ALLOC 비 활성화로 리턴값은 항상 false 이다.
-	if (should_fail_alloc_page(gfp_mask, order))
+	if (should_fail_alloc_page(gfp_mask, order))	// NO OP
 		return NULL;
 
 	/*
@@ -2806,12 +2854,12 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
 	 * verified in the (always inline) callee
 	 */
 	// CONFIG_MEMCG_KMEM 비 활성화로 리턴값은 항상 true를 이다. 
-	if (!memcg_kmem_newpage_charge(gfp_mask, &memcg, order))
+	if (!memcg_kmem_newpage_charge(gfp_mask, &memcg, order))	// NO OP
 		return NULL;
 
 retry_cpuset:
 	// CONFIG_CPUSETS 비 활성화로 항상 0을 리턴한다.
-	cpuset_mems_cookie = get_mems_allowed();
+	cpuset_mems_cookie = get_mems_allowed();	// NO OP
 
 	/* The preferred zone is used for statistics later */
 	// 2015-05-23; nodemask는 NULL로 전달되어 &cpuset_current_mems_allowed을 선택
@@ -2829,6 +2877,7 @@ retry_cpuset:
 #endif
 retry:
 	/* First allocation attempt */
+	// 2015-05-30
 	page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask, order,
 			zonelist, high_zoneidx, alloc_flags,
 			preferred_zone, migratetype);
