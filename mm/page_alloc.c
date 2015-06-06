@@ -372,20 +372,24 @@ static void free_compound_page(struct page *page)
 	__free_pages_ok(page, compound_order(page));
 }
 
+// 2015-06-06
 // 2015-05-30, glance
 void prep_compound_page(struct page *page, unsigned long order)
 {
 	int i;
 	int nr_pages = 1 << order;
-
+	// __free_pages_ok를 page.lru.next 주소에 소멸자로 등록
 	set_compound_page_dtor(page, free_compound_page);
+	// order를 page.lru.prev 주소에 등록
 	set_compound_order(page, order);
 	__SetPageHead(page);
 	for (i = 1; i < nr_pages; i++) {
 		struct page *p = page + i;
 		set_page_count(p, 0);
+		// 파라미터로 넘어온 page를 first page로 저장
 		p->first_page = page;
 		/* Make sure p->first_page is always valid for PageTail() */
+		// write memory barrier 설정
 		smp_wmb();
 		__SetPageTail(p);
 	}
@@ -427,7 +431,9 @@ static inline void prep_zero_page(struct page *page, int order, gfp_t gfp_flags)
 	 * clear_highpage() will use KM_USER0, so it's a bug to use __GFP_ZERO
 	 * and __GFP_HIGHMEM from hard or soft interrupt context.
 	 */
+	// high_mem 영역이면서 인터럽트 중인 경우 버그
 	VM_BUG_ON((gfp_flags & __GFP_HIGHMEM) && in_interrupt());
+	// 2^order의 페이지 수만큼 메모리 해제
 	for (i = 0; i < (1 << order); i++)
 		clear_highpage(page + i);
 }
@@ -1179,6 +1185,7 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype)
  * Do the hard work of removing an element from the buddy allocator.
  * Call me with the zone->lock already held.
  */
+// 2015-06-06
 // 2015-05-30
 static struct page *__rmqueue(struct zone *zone, unsigned int order,
 						int migratetype)
@@ -1601,6 +1608,7 @@ again:
 		struct list_head *list;
 
 		local_irq_save(flags);
+		// zone의 pageset을 가져와서 이 값을 기초로 pcp를 얻는다.
 		pcp = &this_cpu_ptr(zone->pageset)->pcp;
 		list = &pcp->lists[migratetype];
 		if (list_empty(list)) {
@@ -1661,6 +1669,7 @@ again:
 	return page;
 
 failed:
+	// 삭제될 페이지가 존재하지 않는 경우
 	local_irq_restore(flags);
 	return NULL;
 }
@@ -1746,6 +1755,7 @@ static inline bool should_fail_alloc_page(gfp_t gfp_mask, unsigned int order)
  * Return true if free pages are above 'mark'. This takes into account the order
  * of the allocation.
  */
+// 2015-06-06 glance
 // 2015-05-30
 static bool __zone_watermark_ok(struct zone *z, int order, unsigned long mark,
 		      int classzone_idx, int alloc_flags, long free_pages)
@@ -1790,14 +1800,16 @@ bool zone_watermark_ok(struct zone *z, int order, unsigned long mark,
 					zone_page_state(z, NR_FREE_PAGES));
 }
 
+// 2015-06-06
 bool zone_watermark_ok_safe(struct zone *z, int order, unsigned long mark,
 		      int classzone_idx, int alloc_flags)
 {
+	// free_pages = zone->vm_stat[NR_FREE_PAGES]
 	long free_pages = zone_page_state(z, NR_FREE_PAGES);
 
 	if (z->percpu_drift_mark && free_pages < z->percpu_drift_mark)
 		free_pages = zone_page_state_snapshot(z, NR_FREE_PAGES);
-
+	// 2015-06-06 여기까지
 	return __zone_watermark_ok(z, order, mark, classzone_idx, alloc_flags,
 								free_pages);
 }
@@ -2156,15 +2168,18 @@ zonelist_scan:
 		}
 
 try_this_zone:
+		// 현재 cpu에서 사용가능한 페이지를 반환해라
 		page = buffered_rmqueue(preferred_zone, zone, order,
 						gfp_mask, migratetype);
 		if (page)
 			break;
 this_zone_full:
+		// CONFIG_NUMA 미설정
 		if (IS_ENABLED(CONFIG_NUMA))
 			zlc_mark_zone_full(zonelist, z);
 	} // for_each
 
+	// CONFIG_NUMA 미설정
 	if (unlikely(IS_ENABLED(CONFIG_NUMA) && page == NULL && zlc_active)) {
 		/* Disable zlc cache for second zonelist scan */
 		zlc_active = 0;
@@ -2179,6 +2194,7 @@ this_zone_full:
 		 * memory. The caller should avoid the page being used
 		 * for !PFMEMALLOC purposes.
 		 */
+		// alloc_flags는 파라미터로 넘어온 값
 		page->pfmemalloc = !!(alloc_flags & ALLOC_NO_WATERMARKS);
 
 	return page;
@@ -2511,6 +2527,8 @@ __alloc_pages_high_priority(gfp_t gfp_mask, unsigned int order,
 	return page;
 }
 
+// 2015-06-06
+// 단순히 preferred_zone과 일치하는 존에 대해  NR_ALLOC_BATCH 상태 업데이트
 static void reset_alloc_batches(struct zonelist *zonelist,
 				enum zone_type high_zoneidx,
 				struct zone *preferred_zone)
@@ -2518,6 +2536,11 @@ static void reset_alloc_batches(struct zonelist *zonelist,
 	struct zoneref *z;
 	struct zone *zone;
 
+	/*
+	 for (z = first_zones_zonelist(zonelist, highidx, NULL, &zone); \
+		zone;                           \
+		z = next_zones_zonelist(++z, highidx, NULL, &zone)) \
+	*/
 	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
 		/*
 		 * Only reset the batches of zones that were actually
@@ -2527,12 +2550,13 @@ static void reset_alloc_batches(struct zonelist *zonelist,
 		 */
 		if (!zone_local(preferred_zone, zone))
 			continue;
+		// zone의 vm_diff[NR_ALLOC_BATCH] 업데이트  
 		mod_zone_page_state(zone, NR_ALLOC_BATCH,
 			high_wmark_pages(zone) - low_wmark_pages(zone) -
 			atomic_long_read(&zone->vm_stat[NR_ALLOC_BATCH]));
 	}
 }
-
+// 2015-06-06
 static void wake_all_kswapds(unsigned int order,
 			     struct zonelist *zonelist,
 			     enum zone_type high_zoneidx,
@@ -2599,6 +2623,7 @@ bool gfp_pfmemalloc_allowed(gfp_t gfp_mask)
 	return !!(gfp_to_alloc_flags(gfp_mask) & ALLOC_NO_WATERMARKS);
 }
 
+// 2015-06-06
 static inline struct page *
 __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
 	struct zonelist *zonelist, enum zone_type high_zoneidx,
@@ -2633,11 +2658,16 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
 	 * allowed per node queues are empty and that nodes are
 	 * over allocated.
 	 */
+	// CONFIG_NUMA disabled
 	if (IS_ENABLED(CONFIG_NUMA) &&
 	    (gfp_mask & GFP_THISNODE) == GFP_THISNODE)
 		goto nopage;
 
 restart:
+	// kswapd == kernel swap daemon의 약자
+	// paging 기능을 수행할 지에 대해 주기적으로 검사를 하는 데몬
+	// http://www.science.unitn.it/~fiorella/guidelinux/tlk/node39.html
+	// http://wen12ya.net/redhat/entry/document_srl/254/sort_index/regdate/order_type/asc 참고
 	if (!(gfp_mask & __GFP_NO_KSWAPD))
 		wake_all_kswapds(order, zonelist, high_zoneidx, preferred_zone);
 
@@ -2878,6 +2908,7 @@ retry_cpuset:
 retry:
 	/* First allocation attempt */
 	// 2015-05-30
+	// 2015-06-06 완료
 	page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask, order,
 			zonelist, high_zoneidx, alloc_flags,
 			preferred_zone, migratetype);
@@ -2893,6 +2924,7 @@ retry:
 		 * spilling to a remote zone over swapping locally.
 		 */
 		if (alloc_flags & ALLOC_FAIR) {
+			// preferred_zone의 상태 업데이트 후 재시도
 			reset_alloc_batches(zonelist, high_zoneidx,
 					    preferred_zone);
 			alloc_flags &= ~ALLOC_FAIR;
@@ -2921,7 +2953,7 @@ out:
 	if (unlikely(!put_mems_allowed(cpuset_mems_cookie) && !page))
 		goto retry_cpuset;
 
-	memcg_kmem_commit_charge(page, memcg, order);
+	memcg_kmem_commit_charge(page, memcg, order); // NOP
 
 	return page;
 }

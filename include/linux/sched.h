@@ -1668,6 +1668,7 @@ extern void thread_group_cputime_adjusted(struct task_struct *p, cputime_t *ut, 
 #define used_math() tsk_used_math(current)
 
 /* __GFP_IO isn't allowed if PF_MEMALLOC_NOIO is set in current->flags */
+// 2015-06-06
 static inline gfp_t memalloc_noio_flags(gfp_t flags)
 {
 	if (unlikely(current->flags & PF_MEMALLOC_NOIO))

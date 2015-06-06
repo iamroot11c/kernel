@@ -97,6 +97,8 @@ static inline void init_waitqueue_func_entry(wait_queue_t *q,
 	q->func = func;
 }
 
+// 2015-06-06
+// wait queue에 남아 있는 작업이 있는지 여부를 반환
 static inline int waitqueue_active(wait_queue_head_t *q)
 {
 	return !list_empty(&q->task_list);

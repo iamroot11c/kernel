@@ -2711,6 +2711,7 @@ static void age_active_anon(struct zone *zone, struct scan_control *sc)
 	} while (memcg);
 }
 
+// 2015-06-06
 static bool zone_balanced(struct zone *zone, int order,
 			  unsigned long balance_gap, int classzone_idx)
 {
@@ -2718,6 +2719,7 @@ static bool zone_balanced(struct zone *zone, int order,
 				    balance_gap, classzone_idx, 0))
 		return false;
 
+	// CONFIG_COMPACTION not set
 	if (IS_ENABLED(CONFIG_COMPACTION) && order &&
 	    !compaction_suitable(zone, order))
 		return false;
@@ -3274,10 +3276,11 @@ static int kswapd(void *p)
 /*
  * A zone is low on free memory, so wake its kswapd task to service it.
  */
+// 2015-06-06
 void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
 {
 	pg_data_t *pgdat;
-
+	// zone->present_page가 존재하는가?
 	if (!populated_zone(zone))
 		return;
 
@@ -3285,9 +3288,11 @@ void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
 		return;
 	pgdat = zone->zone_pgdat;
 	if (pgdat->kswapd_max_order < order) {
+		// max_order가 파라미터로 넘어간 값보다 큰 경우 재조정
 		pgdat->kswapd_max_order = order;
 		pgdat->classzone_idx = min(pgdat->classzone_idx, classzone_idx);
 	}
+	// pgdat->kswapd_wait에 대기 작업이 존재하는지를 확인
 	if (!waitqueue_active(&pgdat->kswapd_wait))
 		return;
 	if (zone_balanced(zone, order, 0, 0))

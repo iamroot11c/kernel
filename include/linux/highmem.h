@@ -106,7 +106,7 @@ static inline int kmap_atomic_idx(void)
 {
 	return __this_cpu_read(__kmap_atomic_idx) - 1;
 }
-
+// 2015-06-06
 // 2015-01-31,
 // __kmap_atomic_idx에서 하나 뺀다.
 static inline void kmap_atomic_idx_pop(void)
@@ -194,8 +194,11 @@ alloc_zeroed_user_highpage_movable(struct vm_area_struct *vma,
 // 2015-05-30, kmap_atomic, 다시 한번 더 보자
 static inline void clear_highpage(struct page *page)
 {
+    // page 주소와 매핑되는 가상 주소를 구함
 	void *kaddr = kmap_atomic(page);
-	clear_page(kaddr);
+	// 4KB크기만큼 memset
+    clear_page(kaddr);
+    // 가상 주소 언매핑
 	kunmap_atomic(kaddr);
 }
 

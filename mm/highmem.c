@@ -254,7 +254,7 @@ void *kmap_high_get(struct page *page)
 	unsigned long vaddr, flags;
 
 	lock_kmap_any(flags);	// spin lock irq save
-	vaddr = (unsigned long)page_address(page);
+	vaddr = (unsigned long)page_address(page); // page의 가상주소를 얻음. 매핑되는 것이 없는 경우 널 리턴
 	if (vaddr) {
 		BUG_ON(pkmap_count[PKMAP_NR(vaddr)] < 1);
 		pkmap_count[PKMAP_NR(vaddr)]++;	// 호출 및 할당 횟수 저장
@@ -271,6 +271,7 @@ void *kmap_high_get(struct page *page)
  * If ARCH_NEEDS_KMAP_HIGH_GET is not defined then this may be called
  * only from user context.
  */
+// 2015-06-06
 // 2015-01-31
 // pkmap_count를 -1 더한다.
 void kunmap_high(struct page *page)
@@ -283,6 +284,7 @@ void kunmap_high(struct page *page)
 	lock_kmap_any(flags);	// spin_lock_irqsave(&kmap_lock, flags)
 	vaddr = (unsigned long)page_address(page);
 	BUG_ON(!vaddr);
+	// pkmap으로부터의 오프셋을 얻어옴
 	nr = PKMAP_NR(vaddr);
 
 	/*
@@ -310,6 +312,7 @@ void kunmap_high(struct page *page)
 	unlock_kmap_any(flags);		// restore
 
 	/* do wake-up, if needed, race-free outside of the spin lock */
+	// 작업 큐에 1개 이상 대기 중인 것이 있는 경우 깨워준다.
 	if (need_wakeup)
 		wake_up(&pkmap_map_wait);
 }
@@ -352,6 +355,7 @@ static struct page_address_slot *page_slot(const struct page *page)
  *
  * Returns the page's virtual address.
  */
+// 2015-06-06
 // 2015-01-24, 시작
 // 2015-01-31
 void *page_address(const struct page *page)
@@ -359,16 +363,21 @@ void *page_address(const struct page *page)
 	unsigned long flags;
 	void *ret;
 	struct page_address_slot *pas;
-
+	
+	// highmem 영역이 아닌 경우 4kb단위로 align된 page주소를 반환
 	if (!PageHighMem(page))
 		return lowmem_page_address(page);
-
+	
+	// page 주소를 기반으로 hash table에서 
+	// pageslot((page, virtual) 형태의 값을 가지는 링크드 리스트의 헤드)을 얻어옴
 	pas = page_slot(page);
 	ret = NULL;
 	spin_lock_irqsave(&pas->lock, flags);
 	if (!list_empty(&pas->lh)) {
 		struct page_address_map *pam;
 
+		// 만약 pageslot의 값 중 page 주소와 일치하는 항목이 있는 경우
+		// 해당 값과 매핑된 virtual값(가상 주소)을 리턴
 		list_for_each_entry(pam, &pas->lh, list) {
 			if (pam->page == page) {
 				ret = pam->virtual;

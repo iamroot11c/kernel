@@ -635,6 +635,7 @@ static inline void memcg_kmem_uncharge_pages(struct page *page, int order)
 {
 }
 
+// 2015-06-06
 static inline void
 memcg_kmem_commit_charge(struct page *page, struct mem_cgroup *memcg, int order)
 {

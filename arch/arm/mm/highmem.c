@@ -35,7 +35,7 @@ void kunmap(struct page *page)
 	kunmap_high(page);
 }
 EXPORT_SYMBOL(kunmap);
-
+// 2015-06-06
 // 2015-01-24, 시작
 void *kmap_atomic(struct page *page)
 {
@@ -45,6 +45,7 @@ void *kmap_atomic(struct page *page)
 	int type;
 
 	pagefault_disable();
+	// highmem이 아닌 경우 4kb단위 align된 주소를 리턴(직접 매핑된 주소)
 	if (!PageHighMem(page))
 		return page_address(page);
 
@@ -61,10 +62,12 @@ void *kmap_atomic(struct page *page)
 	else
 #endif
 		// 2015-01-31, start
+		// page주소와 매핑되는 가상 주소를 리턴
 		kmap = kmap_high_get(page);
 	if (kmap)
 		return kmap;
 
+	// 리턴받은 가상 주소가 널 포인터인 경우에 대한 후처리
 	type = kmap_atomic_idx_push();
 
 	// idx값 구하는 과정은 의문이다.
@@ -90,7 +93,7 @@ void *kmap_atomic(struct page *page)
 	return (void *)vaddr;
 }
 EXPORT_SYMBOL(kmap_atomic);
-
+// 2015-06-06
 // 2015-01-31
 // 2015-02-07, 끝
 void __kunmap_atomic(void *kvaddr)

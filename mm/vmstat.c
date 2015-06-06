@@ -223,10 +223,15 @@ void set_pgdat_percpu_threshold(pg_data_t *pgdat,
 // __mod_zone_page_state(zone, NR_FREE_PAGES, 1);
 // 2015-05-30
 // __mod_zone_page_state(zone, NR_ALLOC_BATCH, -(1 << order));
+// 2015-06-06
+//// __mod_zone_page_state(zone, NR_ALLOC_BATCH,
+//                        high_wmark_pages(zone) - low_wmark_pages(zone) -
+//                        atomic_long_read(&zone->vm_stat[NR_ALLOC_BATCH]))
 void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
 				int delta)
 {
 	struct per_cpu_pageset __percpu *pcp = zone->pageset;
+	// s8* p = vm_stat_diff[item];
 	s8 __percpu *p = pcp->vm_stat_diff + item;
 	long x;
 	long t;
@@ -395,6 +400,10 @@ EXPORT_SYMBOL(dec_zone_page_state);
 /*
  * Use interrupt disable to serialize counter updates
  */
+// 2015-06-06
+// mod_zone_page_state(zone, NR_ALLOC_BATCH,
+//                          high_wmark_pages(zone) - low_wmark_pages(zone) -
+//                          atomic_long_read(&zone->vm_stat[NR_ALLOC_BATCH]))
 // 2015-01-10
 // mod_zone_page_state(zone, NR_ALLOC_BATCH, zone->managed_pages);
 void mod_zone_page_state(struct zone *zone, enum zone_stat_item item,

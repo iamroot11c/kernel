@@ -97,7 +97,7 @@ static inline void vm_events_fold_cpu(int cpu)
  * Zone based page accounting with per cpu differentials.
  */
 extern atomic_long_t vm_stat[NR_VM_ZONE_STAT_ITEMS];
-
+  
 // 2015-01-10
 // zone->vm_stat는 해당 zone에 대해서 vm_stat는 모든 zone에 대한것으로 판단됨
 static inline void zone_page_state_add(long x, struct zone *zone,
@@ -118,7 +118,7 @@ static inline unsigned long global_page_state(enum zone_stat_item item)
 #endif
 	return x;
 }
-
+// 2015-06-06
 // 2015-05-23;
 // zone_page_state(zone, NR_ALLOC_BATCH);
 // zone의 vm_stat멤버에서 item 인덱스의 값을 리턴
@@ -139,6 +139,8 @@ static inline unsigned long zone_page_state(struct zone *zone,
  * deltas. There is no synchronization so the result cannot be
  * exactly accurate either.
  */
+// 모든 cpu에 item에 대한 delta값을 얻어와 기존 item값에 더하고 있다.
+// 2015-06-06
 static inline unsigned long zone_page_state_snapshot(struct zone *zone,
 					enum zone_stat_item item)
 {
