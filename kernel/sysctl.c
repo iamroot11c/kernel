@@ -1264,7 +1264,7 @@ static struct ctl_table vm_table[] = {
 	},
 	{
 		.procname	= "extfrag_threshold",
-		.data		= &sysctl_extfrag_threshold,
+		.data		= &sysctl_extfrag_threshold, // 2015-06-13;
 		.maxlen		= sizeof(int),
 		.mode		= 0644,
 		.proc_handler	= sysctl_extfrag_handler,

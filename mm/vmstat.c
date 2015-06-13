@@ -621,6 +621,21 @@ struct contig_page_info {
  * migrated. Calculating that is possible, but expensive and can be
  * figured out from userspace
  */
+// 2015-06-13;
+// fill_contig_page_info(zone, order, &info);
+//
+// free_area[0].nr_free = 3;
+// free_area[1].nr_free = 3; 
+// free_area[2].nr_free = 2;
+// free_area[3].nr_free = 2;
+// suitable_order = 1;
+//
+// order가 suitable_order 보다 같거나 클 때, 아래와 같이 계속 누적 
+// order가 1일때는 page가 2개씩 묶고, 2일 때는 4개씩 묶는데
+// 묶는 단위를 suitable_order로 하여 다시 계산
+//  free_blocks_suitable += 3 << (1 - 1);
+//  free_blocks_suitable += 2 << (2 - 1);
+//  free_blocks_suitable += 2 << (3 - 1);
 static void fill_contig_page_info(struct zone *zone,
 				unsigned int suitable_order,
 				struct contig_page_info *info)
@@ -638,10 +653,13 @@ static void fill_contig_page_info(struct zone *zone,
 		blocks = zone->free_area[order].nr_free;
 		info->free_blocks_total += blocks;
 
+		// pags개수를 세기위해 order만큼 곱함
 		/* Count free base pages */
 		info->free_pages += blocks << order;
 
 		/* Count the suitable free blocks */
+		// page를 여러개로 묶었을 때 나오는 총 개수
+		// 묶는 단위(suitable_order)가 order보다 작을때는 세지 않음
 		if (order >= suitable_order)
 			info->free_blocks_suitable += blocks <<
 						(order - suitable_order);
@@ -655,6 +673,13 @@ static void fill_contig_page_info(struct zone *zone,
  * The value can be used to determine if page reclaim or compaction
  * should be used
  */
+// 2015-06-13;
+// 아래와 같이 가정하여 분석
+//  struct contig_page_info {       
+//           unsigned long free_pages;           // 17
+//           unsigned long free_blocks_total;    // 8
+//           unsigned long free_blocks_suitable; // 7(suitable_order가 1일 때)
+//  };
 static int __fragmentation_index(unsigned int order, struct contig_page_info *info)
 {
 	unsigned long requested = 1UL << order;
@@ -673,8 +698,10 @@ static int __fragmentation_index(unsigned int order, struct contig_page_info *in
 	 * 1 => allocation would fail due to fragmentation
 	 */
 	return 1000 - div_u64( (1000+(div_u64(info->free_pages * 1000ULL, requested))), info->free_blocks_total);
+	// 1000 - (( 1000 + (사용가능한 개수 * 1000)/필요한 page 개수) * (order/사용가능한 block 수) );
 }
 
+// 2015-06-13;
 /* Same as __fragmentation index but allocs contig_page_info on stack */
 int fragmentation_index(struct zone *zone, unsigned int order)
 {

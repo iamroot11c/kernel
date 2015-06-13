@@ -2711,20 +2711,25 @@ static void age_active_anon(struct zone *zone, struct scan_control *sc)
 	} while (memcg);
 }
 
-// 2015-06-06
+// 2015-06-06 시작;
+// 2015-06-13 종료;
 static bool zone_balanced(struct zone *zone, int order,
 			  unsigned long balance_gap, int classzone_idx)
 {
+	// 2015-06-06 시작;
+	// 2015-06-13 완료;
 	if (!zone_watermark_ok_safe(zone, order, high_wmark_pages(zone) +
 				    balance_gap, classzone_idx, 0))
 		return false;
 
-	// CONFIG_COMPACTION not set
+	// 2015-06-13 시작;
+	// CONFIG_COMPACTION defined
 	if (IS_ENABLED(CONFIG_COMPACTION) && order &&
-	    !compaction_suitable(zone, order))
-		return false;
+	    !compaction_suitable(zone, order)) // COMPACT_SKIPPED
+		return false;                  // 일 때는 false
 
-	return true;
+	return true;                           // COMPACT_PARTIAL
+	                                       // COMPACT_CONTINUE 일 때
 }
 
 /*
@@ -3276,7 +3281,8 @@ static int kswapd(void *p)
 /*
  * A zone is low on free memory, so wake its kswapd task to service it.
  */
-// 2015-06-06
+// 2015-06-06 시작;
+// 2015-06-13 종료;	
 void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
 {
 	pg_data_t *pgdat;
@@ -3295,10 +3301,15 @@ void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
 	// pgdat->kswapd_wait에 대기 작업이 존재하는지를 확인
 	if (!waitqueue_active(&pgdat->kswapd_wait))
 		return;
+	// 2015-06-06 시작;
 	if (zone_balanced(zone, order, 0, 0))
 		return;
+	// 2015-06-13 종료;
 
 	trace_mm_vmscan_wakeup_kswapd(pgdat->node_id, zone_idx(zone), order);
+
+        // 2015-06-13;	
+	// kswapd_wait에 등록된 콜백함수는 아직 파악하지 못함 
 	wake_up_interruptible(&pgdat->kswapd_wait);
 }
 

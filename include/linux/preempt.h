@@ -22,6 +22,7 @@
 #define inc_preempt_count() add_preempt_count(1)
 #define dec_preempt_count() sub_preempt_count(1)
 
+// 2015-06-13;
 #define preempt_count()	(current_thread_info()->preempt_count)
 
 #ifdef CONFIG_PREEMPT   // set

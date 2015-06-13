@@ -21,6 +21,7 @@
 #define MAX_PRIO		(MAX_RT_PRIO/*100*/ + 40)
 #define DEFAULT_PRIO		(MAX_RT_PRIO + 20)
 
+// 2016-06-13;
 static inline int rt_prio(int prio)
 {
 	if (unlikely(prio < MAX_RT_PRIO))
@@ -28,6 +29,7 @@ static inline int rt_prio(int prio)
 	return 0;
 }
 
+// 2015-06-13;
 static inline int rt_task(struct task_struct *p)
 {
 	return rt_prio(p->prio);

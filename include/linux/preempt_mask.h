@@ -71,8 +71,11 @@
 #error PREEMPT_ACTIVE is too low!
 #endif
 
+// 2015-06-13;
 #define hardirq_count()	(preempt_count() & HARDIRQ_MASK)
 #define softirq_count()	(preempt_count() & SOFTIRQ_MASK)
+// 2015-06-13;
+//current_thread_info()->preempt_count & (HARDIRQ_MASK | SOFTIRQ_MASK 
 #define irq_count()	(preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK \
 				 | NMI_MASK))
 
@@ -85,6 +88,8 @@
 #define in_irq()		(hardirq_count())
 #define in_softirq()		(softirq_count())
 #define in_interrupt()		(irq_count())
+// 2015-06-13;
+// urrent_thread_info()->preempt_count & HARDIRQ_MASK & SOFTIRQ_OFFSET
 #define in_serving_softirq()	(softirq_count() & SOFTIRQ_OFFSET)
 
 /*

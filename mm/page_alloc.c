@@ -1757,6 +1757,11 @@ static inline bool should_fail_alloc_page(gfp_t gfp_mask, unsigned int order)
  */
 // 2015-06-06 glance
 // 2015-05-30
+//
+// 2015-06-13;
+// 가상의 값을 넣어 계산
+// __zone_watermark_ok(z, 0, 132, 0, 0, 3000);
+// __zone_watermark_ok(z, 0, 132, 0, 0, 52);
 static bool __zone_watermark_ok(struct zone *z, int order, unsigned long mark,
 		      int classzone_idx, int alloc_flags, long free_pages)
 {
@@ -1766,6 +1771,7 @@ static bool __zone_watermark_ok(struct zone *z, int order, unsigned long mark,
 	int o;
 	long free_cma = 0;
 
+	// 예를 들어 order가 0이면 free_pages의 값이 변하지 않음
 	free_pages -= (1 << order) - 1;
 	if (alloc_flags & ALLOC_HIGH)
 		min -= min / 2;
@@ -1777,6 +1783,7 @@ static bool __zone_watermark_ok(struct zone *z, int order, unsigned long mark,
 		free_cma = zone_page_state(z, NR_FREE_CMA_PAGES);
 #endif
 
+	// free_pages가 mark보다 작거나 같은지 조사
 	if (free_pages - free_cma/*0*/ <= min + lowmem_reserve)
 		return false;
 	for (o = 0; o < order; o++) {
@@ -1793,6 +1800,10 @@ static bool __zone_watermark_ok(struct zone *z, int order, unsigned long mark,
 }
 
 // 2015-05-30
+//
+// 2015-06-13;
+// zone_watermark_ok(zone, 0, watermark, 0, 0);
+// zone_watermark_ok(zone, order, watermark, 0, 0);
 bool zone_watermark_ok(struct zone *z, int order, unsigned long mark,
 		      int classzone_idx, int alloc_flags)
 {
@@ -1801,6 +1812,7 @@ bool zone_watermark_ok(struct zone *z, int order, unsigned long mark,
 }
 
 // 2015-06-06
+// 2015-06-13 완료;
 bool zone_watermark_ok_safe(struct zone *z, int order, unsigned long mark,
 		      int classzone_idx, int alloc_flags)
 {
@@ -1810,6 +1822,8 @@ bool zone_watermark_ok_safe(struct zone *z, int order, unsigned long mark,
 	if (z->percpu_drift_mark && free_pages < z->percpu_drift_mark)
 		free_pages = zone_page_state_snapshot(z, NR_FREE_PAGES);
 	// 2015-06-06 여기까지
+	
+	// 2015-06-13; 
 	return __zone_watermark_ok(z, order, mark, classzone_idx, alloc_flags,
 								free_pages);
 }
@@ -2003,6 +2017,11 @@ static inline void init_zone_allows_reclaim(int nid)
 // page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask, order,
 //                         zonelist, high_zoneidx, alloc_flags,
 //                         preferred_zone, migratetype);
+//
+// 2015-06-23;
+// get_page_from_freelist(gfp_mask, nodemask, order, zonelist,
+//                        high_zoneidx, alloc_flags & ~ALLOC_NO_WATERMARKS,
+//                        preferred_zone, migratetype);
 static struct page *
 get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
 		struct zonelist *zonelist, int high_zoneidx, int alloc_flags,
@@ -2165,7 +2184,7 @@ zonelist_scan:
 
 				continue;
 			}
-		}
+		} // if (!zone_watermark_ok())
 
 try_this_zone:
 		// 현재 cpu에서 사용가능한 페이지를 반환해라
@@ -2556,7 +2575,8 @@ static void reset_alloc_batches(struct zonelist *zonelist,
 			atomic_long_read(&zone->vm_stat[NR_ALLOC_BATCH]));
 	}
 }
-// 2015-06-06
+// 2015-06-06 시작;
+// 2015-06-13 완료;
 static void wake_all_kswapds(unsigned int order,
 			     struct zonelist *zonelist,
 			     enum zone_type high_zoneidx,
@@ -2569,6 +2589,8 @@ static void wake_all_kswapds(unsigned int order,
 		wakeup_kswapd(zone, order, zone_idx(preferred_zone));
 }
 
+// 2015-06-13 시작;
+// gfp_to_alloc_flags(gfp_mask);
 static inline int
 gfp_to_alloc_flags(gfp_t gfp_mask)
 {
@@ -2593,15 +2615,19 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
 		 */
 		if  (!(gfp_mask & __GFP_NOMEMALLOC))
 			alloc_flags |= ALLOC_HARDER;
+	        // __GFP_WAIT와 __GFP_NOMEMALLOC 플래그가 없다면 ALLOC_HARDER 플래그를 추가
+		
 		/*
 		 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
 		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
 		 */
 		alloc_flags &= ~ALLOC_CPUSET;
 	} else if (unlikely(rt_task(current)) && !in_interrupt())
-		alloc_flags |= ALLOC_HARDER;
+		alloc_flags |= ALLOC_HARDER; // 우선순위와 인터럽트 상태를
+	                                     // 검사해서 플레그 설정을 함
 
-	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
+	// __GFP_NOMEMALLOC: 메모리 할당을 하지 않는 플레그
+	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) { // 실제로 메모리 할당
 		if (gfp_mask & __GFP_MEMALLOC)
 			alloc_flags |= ALLOC_NO_WATERMARKS;
 		else if (in_serving_softirq() && (current->flags & PF_MEMALLOC))
@@ -2611,11 +2637,13 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
 				 unlikely(test_thread_flag(TIF_MEMDIE))))
 			alloc_flags |= ALLOC_NO_WATERMARKS;
 	}
-#ifdef CONFIG_CMA
+#ifdef CONFIG_CMA // not define
 	if (allocflags_to_migratetype(gfp_mask) == MIGRATE_MOVABLE)
 		alloc_flags |= ALLOC_CMA;
 #endif
 	return alloc_flags;
+	//기본 플레그: ALLOC_WMARK_MIN | ALLOC_CPUSET
+	//옵션 플레그: __GFP_HIGH, ALLOC_HARDER, ALLOC_NO_WATERMARKS 
 }
 
 bool gfp_pfmemalloc_allowed(gfp_t gfp_mask)
@@ -2664,35 +2692,46 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
 		goto nopage;
 
 restart:
+	// 2015-06-06 시작;
 	// kswapd == kernel swap daemon의 약자
 	// paging 기능을 수행할 지에 대해 주기적으로 검사를 하는 데몬
 	// http://www.science.unitn.it/~fiorella/guidelinux/tlk/node39.html
 	// http://wen12ya.net/redhat/entry/document_srl/254/sort_index/regdate/order_type/asc 참고
 	if (!(gfp_mask & __GFP_NO_KSWAPD))
 		wake_all_kswapds(order, zonelist, high_zoneidx, preferred_zone);
+	// 2015-06-13 완료;
 
 	/*
 	 * OK, we're below the kswapd watermark and have kicked background
 	 * reclaim. Now things get more complex, so set up alloc_flags according
 	 * to how we want to proceed.
 	 */
+	// 2015-06-13 시작;
 	alloc_flags = gfp_to_alloc_flags(gfp_mask);
+	// 2015-06-13 완료;
 
 	/*
 	 * Find the true preferred zone if the allocation is unconstrained by
 	 * cpusets.
 	 */
+	// 2015-06-13 시작;
 	if (!(alloc_flags & ALLOC_CPUSET) && !nodemask)
 		first_zones_zonelist(zonelist, high_zoneidx, NULL,
 					&preferred_zone);
+	// 2015-06-13 완료;
 
 rebalance:
 	/* This is the last chance, in general, before the goto nopage. */
+	// 2015-06-13 시작;
 	page = get_page_from_freelist(gfp_mask, nodemask, order, zonelist,
 			high_zoneidx, alloc_flags & ~ALLOC_NO_WATERMARKS,
 			preferred_zone, migratetype);
+	// 2015-06-13 완료;
+	
 	if (page)
 		goto got_pg;
+
+	// 2015-06-13 여기까지;
 
 	/* Allocate without watermarks if the context allows */
 	if (alloc_flags & ALLOC_NO_WATERMARKS) {
@@ -2936,6 +2975,8 @@ retry:
 		 * complete.
 		 */
 		gfp_mask = memalloc_noio_flags(gfp_mask);
+		
+		// 2015-06-06 시작;
 		page = __alloc_pages_slowpath(gfp_mask, order,
 				zonelist, high_zoneidx, nodemask,
 				preferred_zone, migratetype);

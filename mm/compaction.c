@@ -893,6 +893,8 @@ static int compact_finished(struct zone *zone,
  *   COMPACT_PARTIAL  - If the allocation would succeed without compaction
  *   COMPACT_CONTINUE - If compaction should run now
  */
+// 2015-06-13;
+// compaction_suitable(zone, order);
 unsigned long compaction_suitable(struct zone *zone, int order)
 {
 	int fragindex;
@@ -927,8 +929,11 @@ unsigned long compaction_suitable(struct zone *zone, int order)
 	 */
 	fragindex = fragmentation_index(zone, order);
 	if (fragindex >= 0 && fragindex <= sysctl_extfrag_threshold)
-		return COMPACT_SKIPPED;
+		return COMPACT_SKIPPED; // 0 <= fragindex <= 500;
+	// sysctl_extfrag_threshold는 초기값이 500이며 
+	// struct ctl_table vm_table[] 배열에 등록되어있어 값이 변할 수 있다.
 
+	// 할당 가능으로 판단되어 인자로 전달된 order로 다시 확인
 	if (fragindex == -1000 && zone_watermark_ok(zone, order, watermark,
 	    0, 0))
 		return COMPACT_PARTIAL;
@@ -1050,6 +1055,7 @@ static unsigned long compact_zone_order(struct zone *zone,
 	return ret;
 }
 
+// 2015-06-13;
 int sysctl_extfrag_threshold = 500;
 
 /**

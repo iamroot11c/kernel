@@ -1062,6 +1062,10 @@ struct zoneref *next_zones_zonelist(struct zoneref *z,
 // first_zones_zonelist(zonelist, high_zoneidx,
 //                      &cpuset_current_mems_allowed,
 //                      &preferred_zone);
+//
+// 2015-06-13
+// first_zones_zonelist(zonelist, high_zoneidx, 
+//                      NULL, &preferred_zone);
 static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
 					enum zone_type highest_zoneidx,
 					nodemask_t *nodes,

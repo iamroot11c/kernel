@@ -88,6 +88,8 @@ static inline int test_and_clear_ti_thread_flag(struct thread_info *ti, int flag
 	return test_and_clear_bit(flag, (unsigned long *)&ti->flags);
 }
 
+// 2015-06-13;
+// test_ti_thread_flag(current_thread_info(), TIF_MEMDIE)
 static inline int test_ti_thread_flag(struct thread_info *ti, int flag)
 {
 	return test_bit(flag, (unsigned long *)&ti->flags);
@@ -101,6 +103,8 @@ static inline int test_ti_thread_flag(struct thread_info *ti, int flag)
 	test_and_set_ti_thread_flag(current_thread_info(), flag)
 #define test_and_clear_thread_flag(flag) \
 	test_and_clear_ti_thread_flag(current_thread_info(), flag)
+// 2015-06-13;
+// test_thread_flag(TIF_MEMDIE)
 #define test_thread_flag(flag) \
 	test_ti_thread_flag(current_thread_info(), flag)
 
