@@ -860,17 +860,22 @@ void __init init_cma_reserved_pageblock(struct page *page)
  */
 // 2015-05-30
 // expand(zone, page, order, current_order, area, migratetype);
+//
+// 2015-06-17, 예를 들어, low(4), high(5) 경우를 따져보자.
+// 이 애기는, order 4에서 free가 없어서, 상위 order인 5에서 메모리 할당.
+// 상위는 현재의 2배의 크기, 시작 포인터는 allocated, 그 다음은 order 4에 붙여져야함.
 static inline void expand(struct zone *zone, struct page *page,
 	int low, int high, struct free_area *area,
 	int migratetype)
 {
 	// 2^high
-	unsigned long size = 1 << high;
+	unsigned long size = 1 << high;	// 5라면, 32
 
 	while (high > low) {
 		area--;
 		high--;
 		size >>= 1;	// 나누기 2
+				// 32였다면, 16으로
 		VM_BUG_ON(bad_range(zone, &page[size]));
 
 #ifdef CONFIG_DEBUG_PAGEALLOC
@@ -890,6 +895,10 @@ static inline void expand(struct zone *zone, struct page *page,
 			continue;
 		}
 #endif
+		// 여기서 size가 중요하다.
+		// order 5에서 할당받았다면, 현재 32만큼 할당 받음.
+		// 여기서 order 4 크기인 16은 할당해주고, 남은 16은 free_list에 추가시켜줘야함.
+		// 그래서 page[16].lru를 free_list에 추가시켜주면 된다.
 		list_add(&page[size].lru, &area->free_list[migratetype]);
 		area->nr_free++;
 		set_page_order(&page[size], high);
