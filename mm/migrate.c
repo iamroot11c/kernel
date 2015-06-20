@@ -64,6 +64,7 @@ int migrate_prep(void)
 }
 
 /* Do the necessary work of migrate_prep but not if it involves other CPUs */
+// 2015-06-20
 int migrate_prep_local(void)
 {
 	lru_add_drain();

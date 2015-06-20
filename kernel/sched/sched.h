@@ -399,6 +399,7 @@ extern struct root_domain def_root_domain;
  * (such as the load balancing or the thread migration code), lock
  * acquire operations must be ordered by ascending &runqueue.
  */
+// 2015-06-20
 struct rq {
 	/* runqueue lock: */
 	raw_spinlock_t lock;
@@ -534,6 +535,8 @@ static inline int cpu_of(struct rq *rq)
 #endif
 }
 
+// 2015-06-20
+// extern 선언
 DECLARE_PER_CPU(struct rq, runqueues);
 
 #define cpu_rq(cpu)		(&per_cpu(runqueues, (cpu)))

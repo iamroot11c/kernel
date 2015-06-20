@@ -105,6 +105,8 @@ static inline int test_ti_thread_flag(struct thread_info *ti, int flag)
 	test_and_clear_ti_thread_flag(current_thread_info(), flag)
 // 2015-06-13;
 // test_thread_flag(TIF_MEMDIE)
+// 2015-06-20
+// (test_thread_flag(TIF_NEED_RESCHED)
 #define test_thread_flag(flag) \
 	test_ti_thread_flag(current_thread_info(), flag)
 

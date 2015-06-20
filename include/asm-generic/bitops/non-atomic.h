@@ -22,6 +22,7 @@ static inline void __set_bit(int nr, volatile unsigned long *addr)
 }
 
 // 2015-01-25
+// 2015-06-20
 static inline void __clear_bit(int nr, volatile unsigned long *addr)
 {
 	unsigned long mask = BIT_MASK(nr);

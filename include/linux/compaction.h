@@ -47,6 +47,7 @@ static inline void defer_compaction(struct zone *zone, int order)
 		zone->compact_defer_shift = COMPACT_MAX_DEFER_SHIFT;
 }
 
+// 2015-06-20
 /* Returns true if compaction should be skipped this time */
 static inline bool compaction_deferred(struct zone *zone, int order)
 {
@@ -68,7 +69,8 @@ static inline bool compaction_restarting(struct zone *zone, int order)
 	if (order < zone->compact_order_failed)
 		return false;
 
-	return zone->compact_defer_shift == COMPACT_MAX_DEFER_SHIFT &&
+    // 64보다 더 크거나 같은 경우인지?
+	return zone->compact_defer_shift == COMPACT_MAX_DEFER_SHIFT/*6*/ &&
 		zone->compact_considered >= 1UL << zone->compact_defer_shift;
 }
 

@@ -951,6 +951,7 @@ void __init memblock_enforce_memory_limit(phys_addr_t limit)
 }
 
 // 이진 탐색, 알고리즘 적용
+// 2015-06-20
 static int __init_memblock memblock_search(struct memblock_type *type, phys_addr_t addr)
 {
 	unsigned int left = 0, right = type->cnt;
@@ -974,6 +975,9 @@ int __init memblock_is_reserved(phys_addr_t addr)
 	return memblock_search(&memblock.reserved, addr) != -1;
 }
 
+// 2015-06-20
+// 물리주소를 통해서 타당한 memblock인지 판단한다.
+// 다시 말해, memblock.memory는 전체 물리 주소 정보를 가지고 있다.
 int __init_memblock memblock_is_memory(phys_addr_t addr)
 {
 	return memblock_search(&memblock.memory, addr) != -1;

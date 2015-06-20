@@ -29,6 +29,7 @@ struct vm_event_state {
 DECLARE_PER_CPU(struct vm_event_state, vm_event_states);
 
 // 2015-04-25
+// 2015-06-20
 static inline void __count_vm_event(enum vm_event_item item)
 {
 	__this_cpu_inc(vm_event_states.event[item]);

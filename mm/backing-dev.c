@@ -543,6 +543,7 @@ int bdi_setup_and_register(struct backing_dev_info *bdi, char *name,
 }
 EXPORT_SYMBOL(bdi_setup_and_register);
 
+// 2015-06-20
 static wait_queue_head_t congestion_wqh[2] = {
 		__WAIT_QUEUE_HEAD_INITIALIZER(congestion_wqh[0]),
 		__WAIT_QUEUE_HEAD_INITIALIZER(congestion_wqh[1])
@@ -618,12 +619,20 @@ EXPORT_SYMBOL(congestion_wait);
  * it is the number of jiffies that were still remaining when the function
  * returned. return_value == timeout implies the function did not sleep.
  */
+// 2015-06-20
+// wait_iff_congested(preferred_zone, BLK_RW_ASYNC/*0*/, HZ/*100*//50);
 long wait_iff_congested(struct zone *zone, int sync, long timeout)
 {
 	long ret;
 	unsigned long start = jiffies;
+	// #define DEFINE_WAIT_FUNC(name, function)                \
+	//     wait_queue_t name = {                       \
+	//         .private    = current,              \
+	//         .func       = function,             \
+	//         .task_list  = LIST_HEAD_INIT((name).task_list), \ 
+	//     }
 	DEFINE_WAIT(wait);
-	wait_queue_head_t *wqh = &congestion_wqh[sync];
+	wait_queue_head_t *wqh = &congestion_wqh[sync];	// 2015-06-29, sync(0)
 
 	/*
 	 * If there is no congestion, or heavy congestion is not being
@@ -644,7 +653,7 @@ long wait_iff_congested(struct zone *zone, int sync, long timeout)
 
 	/* Sleep until uncongested or a write happens */
 	prepare_to_wait(wqh, &wait, TASK_UNINTERRUPTIBLE);
-	ret = io_schedule_timeout(timeout);
+	ret = io_schedule_timeout(timeout); // 2015-06-20, timeout(2)
 	finish_wait(wqh, &wait);
 
 out:

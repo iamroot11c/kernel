@@ -65,6 +65,8 @@ EXPORT_SYMBOL(remove_wait_queue);
  * stops them from bleeding out - it would still allow subsequent
  * loads to move into the critical region).
  */
+// 2015-06-20
+// prepare_to_wait(wqh, &wait, TASK_UNINTERRUPTIBLE);
 void
 prepare_to_wait(wait_queue_head_t *q, wait_queue_t *wait, int state)
 {
@@ -74,6 +76,8 @@ prepare_to_wait(wait_queue_head_t *q, wait_queue_t *wait, int state)
 	spin_lock_irqsave(&q->lock, flags);
 	if (list_empty(&wait->task_list))
 		__add_wait_queue(q, wait);
+	// 2015-06-20,
+	// current->state 설정 TASK_UNINTERRUPTIBLE로 설정
 	set_current_state(state);
 	spin_unlock_irqrestore(&q->lock, flags);
 }
@@ -102,14 +106,16 @@ EXPORT_SYMBOL(prepare_to_wait_exclusive);
  * the wait descriptor from the given waitqueue if still
  * queued.
  */
+// 2015-06-20
 void finish_wait(wait_queue_head_t *q, wait_queue_t *wait)
 {
 	unsigned long flags;
 
 	__set_current_state(TASK_RUNNING);
+	// IF-AND-ONLY-IF operation 필요 충분 조건 연산. 
 	/*
 	 * We can check for list emptiness outside the lock
-	 * IFF:
+	 * IFF: 
 	 *  - we use the "careful" check that verifies both
 	 *    the next and prev pointers, so that there cannot
 	 *    be any half-pending updates in progress on other
@@ -120,6 +126,8 @@ void finish_wait(wait_queue_head_t *q, wait_queue_t *wait)
 	 *    have _one_ other CPU that looks at or modifies
 	 *    the list).
 	 */
+	// 아래 처럼, 순회 없이 동작한다면,
+	// wait->task_list에 붙어있는 나머지 친구들은 붕 뜨는 것 아닌가?
 	if (!list_empty_careful(&wait->task_list)) {
 		spin_lock_irqsave(&q->lock, flags);
 		list_del_init(&wait->task_list);

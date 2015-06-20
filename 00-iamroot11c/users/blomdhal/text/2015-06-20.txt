@@ -1,0 +1,33 @@
+Deprecated
+ 69  * __GFP_NOFAIL: The VM implementation _must_ retry infinitely: the caller
+ 70  * cannot handle allocation failures.  This modifier is deprecated and no new
+ 71  * users should be added.
+
+IFF: IF-AND-ONLY-IF operation 필요 충분 조건 연산. 
+
+memblock_search memblock???
+
+ 59 #define __page_to_pfn(pg)                   \
+ 60 ({  const struct page *__pg = (pg);             \
+ 61     int __sec = page_to_section(__pg);          \
+ 62     (unsigned long)(__pg - __section_mem_map_addr(__nr_to_section(__sec))); \
+ 63 })
+ 64 
+ 65 // 2015-06-20
+ 66 #define __pfn_to_page(pfn)              \
+ 67 ({  unsigned long __pfn = (pfn);            \
+ 68     struct mem_section *__sec = __pfn_to_section(__pfn);    \
+ 69     __section_mem_map_addr(__sec) + __pfn;      \
+ 70 })
+
+ 24 // 2015-01-25
+ 25 static inline void __clear_bit(int nr, volatile unsigned long *addr)
+ 26 {
+ 27     unsigned long mask = BIT_MASK(nr);
+ 28     unsigned long *p = ((unsigned long *)addr) + BIT_WORD(nr);
+ 29 
+ 30     *p &= ~mask;
+ 31 }
+
+
+page->flags

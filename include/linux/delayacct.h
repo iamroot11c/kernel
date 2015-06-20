@@ -132,6 +132,7 @@ static inline void delayacct_tsk_init(struct task_struct *tsk)
 {}
 static inline void delayacct_tsk_free(struct task_struct *tsk)
 {}
+// 2015-06-20
 static inline void delayacct_blkio_start(void)
 {}
 static inline void delayacct_blkio_end(void)

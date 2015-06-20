@@ -328,6 +328,7 @@ static void __init arm_bootmem_free(unsigned long min, unsigned long max_low,
 }
 
 #ifdef CONFIG_HAVE_ARCH_PFN_VALID // true
+// 2015-06-20
 int pfn_valid(unsigned long pfn)
 {
 	return memblock_is_memory(__pfn_to_phys(pfn));

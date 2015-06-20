@@ -110,6 +110,8 @@ void start_bandwidth_timer(struct hrtimer *period_timer, ktime_t period)
 }
 
 DEFINE_MUTEX(sched_domains_mutex);
+// 2015-06-20
+// runqueues의 선언
 DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 
 static void update_rq_clock_task(struct rq *rq, s64 delta);
@@ -2218,6 +2220,7 @@ notrace unsigned long get_parent_ip(unsigned long addr)
 
 // 2015-01-24
 // add_preempt_count(1)
+// 2015-06-20
 void __kprobes add_preempt_count(int val)
 {
 #ifdef CONFIG_DEBUG_PREEMPT
@@ -2377,6 +2380,7 @@ pick_next_task(struct rq *rq)
 // 2015-02-05 흝어봄
 // 분석의 흐름을 이어가기 위해 이 함수를 자세히 분석하지 않음
 // 프로세서의 상태(주기)를 알고 좀 더 분석 할 예정. 꼭!
+// 2015-06-20, skip
 static void __sched __schedule(void)
 {
 	struct task_struct *prev, *next;
@@ -3819,18 +3823,21 @@ SYSCALL_DEFINE0(sched_yield)
 	return 0;
 }
 
+// 2015-06-20
 static inline int should_resched(void)
 {
 	return need_resched() && !(preempt_count() & PREEMPT_ACTIVE);
 }
 
+// 2015-06-20
 static void __cond_resched(void)
 {
-	add_preempt_count(PREEMPT_ACTIVE);
+	add_preempt_count(PREEMPT_ACTIVE);	// PREEMPT_ACTIVE 만큼 더한다.
 	__schedule();
-	sub_preempt_count(PREEMPT_ACTIVE);
+	sub_preempt_count(PREEMPT_ACTIVE);	// PREEMPT_ACTIVE 만큼 뺀다.
 }
 
+// 2015-06-20
 int __sched _cond_resched(void)
 {
 	if (should_resched()) {
@@ -4005,19 +4012,20 @@ void __sched io_schedule(void)
 }
 EXPORT_SYMBOL(io_schedule);
 
+// 2015-06-20
 long __sched io_schedule_timeout(long timeout)
 {
-	struct rq *rq = raw_rq();
+	struct rq *rq = raw_rq();	// runqueues를 가져온다.
 	long ret;
 
-	delayacct_blkio_start();
+	delayacct_blkio_start();	// NO OP
 	atomic_inc(&rq->nr_iowait);
-	blk_flush_plug(current);
+	blk_flush_plug(current);	// glance
 	current->in_iowait = 1;
-	ret = schedule_timeout(timeout);
+	ret = schedule_timeout(timeout);	//glance
 	current->in_iowait = 0;
 	atomic_dec(&rq->nr_iowait);
-	delayacct_blkio_end();
+	delayacct_blkio_end();		// glance
 	return ret;
 }
 

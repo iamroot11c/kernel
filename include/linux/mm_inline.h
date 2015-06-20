@@ -18,11 +18,14 @@
  * could be as far down as __page_cache_release.
  */
 // 2015-04-11
+// 2015-06-20
 static inline int page_is_file_cache(struct page *page)
 {
 	return !PageSwapBacked(page);
 }
 // 2015-04-11
+// 2015-06-20
+// add_page_to_lru_list(page, lruvec, lru);
 static __always_inline void add_page_to_lru_list(struct page *page,
 				struct lruvec *lruvec, enum lru_list lru)
 {
@@ -32,6 +35,7 @@ static __always_inline void add_page_to_lru_list(struct page *page,
     mem_cgroup_update_lru_size(lruvec, lru, nr_pages);
 	// linked list 항목에 추가
     list_add(&page->lru, &lruvec->lists[lru]);
+    // vm_stat에 lru type의 index에 +1 시켜준다.
 	__mod_zone_page_state(lruvec_zone(lruvec), NR_LRU_BASE + lru, nr_pages);
 }
 
@@ -39,6 +43,7 @@ static __always_inline void add_page_to_lru_list(struct page *page,
 // del_page_from_lru_list(page, lruvec, lru + active);
 // __always_inline : inline할 것을 명시해 주는 지시어
 // 2015-04-18
+// 2015-06-20
 static __always_inline void del_page_from_lru_list(struct page *page,
 				struct lruvec *lruvec, enum lru_list lru)
 {

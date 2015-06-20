@@ -1,0 +1,76 @@
+watermark
+The watermark array holds the minimum, low, and high watermarks for this zone.The
+kernel uses watermarks to set benchmarks for suitable per-zone memory consumption,
+varying its aggressiveness as the watermarks vary vis-à-vis free memory.
+
+
+1782         for (o = 0; o < order; o++) {
+1783                 /* At the next order, this order's pages become unavailable */
+1784                 free_pages -= z->free_area[o].nr_free << o;
+1785 
+1786                 /* Require fewer higher order pages to be free */
+1787                 min >>= 1;
+1788 
+1789                 if (free_pages <= min)
+1790                         return false;
+1791         }
+
+ 908         /*
+ 909          * Watermarks for order-0 must be met for compaction. Note the 2UL.
+ 910          * This is because during migration, copies of pages need to be
+ 911          * allocated and for a short time, the footprint is higher
+ 912          */
+ 913         watermark = low_wmark_pages(zone) + (2UL << order);
+
+
+ 624 static void fill_contig_page_info(struct zone *zone,
+ 625                                 unsigned int suitable_order,
+ 626                                 struct contig_page_info *info)
+ 627 {               
+ 628         unsigned int order;
+ 629         
+ 630         info->free_pages = 0;
+ 631         info->free_blocks_total = 0;
+ 632         info->free_blocks_suitable = 0;
+ 633 
+ 634         for (order = 0; order < MAX_ORDER; order++) {
+ 635                 unsigned long blocks;
+ 636 
+ 637                 /* Count number of free blocks */
+ 638                 blocks = zone->free_area[order].nr_free;
+ 639                 info->free_blocks_total += blocks;
+ 640 
+ 641                 /* Count free base pages */
+ 642                 info->free_pages += blocks << order;
+ 643 
+ 644                 /* Count the suitable free blocks */
+ 645                 if (order >= suitable_order)
+ 646                         info->free_blocks_suitable += blocks <<
+ 647                                                 (order - suitable_order);
+ 648         }
+ 649 }
+
+각각의 의미
+ 630         info->free_pages = 0;
+ 631         info->free_blocks_total = 0;
+ 632         info->free_blocks_suitable = 0;
+
+
+void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
+wake_up_interruptible(&pgdat->kswapd_wait);
+은
+
+DEFINE_WAIT(wait);
+ #define DEFINE_WAIT(name) DEFINE_WAIT_FUNC(name, autoremove_wake_function)
+ prepare_to_wait(&pgdat->kswapd_wait, &wait, TASK_INTERRUPTIBLE);
+ kswapd_try_to_sleep
+
+164 int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key)
+
+alloc_flags &= ~ALLOC_CPUSET;
+
+!in_interrupt()
+76 #define irq_count() (preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK \
+ 77                  | NMI_MASK))
+
+_zonerefs

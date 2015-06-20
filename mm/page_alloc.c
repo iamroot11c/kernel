@@ -1253,6 +1253,12 @@ static int rmqueue_bulk(struct zone *zone, unsigned int order,
 		 * merge IO requests if the physical pages are ordered
 		 * properly.
 		 */
+		// 2015-06-20
+		// order 0인 경우 cache 유지를 위해서, 할당받은 page를 pcp->list에 추가시켜준다.
+		// 단 주의 점은, 루프가 돌면서 list 헤더가 변경된다는 점이다.
+		// 일반적으로, list 순회 시 head가 고정되어서, add를 하게되면 최근것이 head 옆에 붙게 되는데
+		// 이 경우 head를 변경 시켜줌으로써 최근 것이 뒤에 붙게 되는 것이다.
+		// 이런 형태는 학부에서 배웠던 형태의 링크드 리스트의 형태이다.  
 		if (likely(cold == 0))
 			list_add(&page->lru, list);
 		else
@@ -2027,10 +2033,16 @@ static inline void init_zone_allows_reclaim(int nid)
 //                         zonelist, high_zoneidx, alloc_flags,
 //                         preferred_zone, migratetype);
 //
-// 2015-06-23;
+// 2015-06-13;
 // get_page_from_freelist(gfp_mask, nodemask, order, zonelist,
 //                        high_zoneidx, alloc_flags & ~ALLOC_NO_WATERMARKS,
 //                        preferred_zone, migratetype);
+//
+// 2015-06-20
+// page = get_page_from_freelist(gfp_mask, nodemask, order,
+//                              zonelist, high_zoneidx, ALLOC_NO_WATERMARKS,
+//                              preferred_zone, migratetype);
+//
 static struct page *
 get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
 		struct zonelist *zonelist, int high_zoneidx, int alloc_flags,
@@ -2076,6 +2088,7 @@ zonelist_scan:
 		BUILD_BUG_ON(ALLOC_NO_WATERMARKS < NR_WMARK);
 
 		// ALLOC_NO_WATERMARKS 셋 되어 있지 않음
+		// 2015-06-20, ALLOC_NO_WATERMARKS을 셋했다.
 		if (unlikely(alloc_flags & ALLOC_NO_WATERMARKS))
 			goto try_this_zone;
 		/*
@@ -2390,6 +2403,16 @@ out:
 
 #ifdef CONFIG_COMPACTION
 /* Try memory compaction for high-order allocations before reclaim */
+// 2015-06-20
+//         page = __alloc_pages_direct_compact(gfp_mask, order,
+//                                          zonelist, high_zoneidx,
+//                                          nodemask,
+//                                          alloc_flags, preferred_zone,
+//                                          migratetype, sync_migration,
+//                                          &contended_compaction,
+//                                          &deferred_compaction,
+//                                          &did_some_progress);
+//
 static struct page *
 __alloc_pages_direct_compact(gfp_t gfp_mask, unsigned int order,
 	struct zonelist *zonelist, enum zone_type high_zoneidx,
@@ -2398,6 +2421,7 @@ __alloc_pages_direct_compact(gfp_t gfp_mask, unsigned int order,
 	bool *contended_compaction, bool *deferred_compaction,
 	unsigned long *did_some_progress)
 {
+	// order는 0 초과
 	if (!order)
 		return NULL;
 
@@ -2535,6 +2559,11 @@ retry:
  * This is called in the allocator slow-path if the allocation request is of
  * sufficient urgency to ignore watermarks and take other desperate measures
  */
+// 2015-06-20
+//
+// page = __alloc_pages_high_priority(gfp_mask, order,
+//                            zonelist, high_zoneidx, nodemask,
+//                            preferred_zone, migratetype);
 static inline struct page *
 __alloc_pages_high_priority(gfp_t gfp_mask, unsigned int order,
 	struct zonelist *zonelist, enum zone_type high_zoneidx,
@@ -2549,7 +2578,7 @@ __alloc_pages_high_priority(gfp_t gfp_mask, unsigned int order,
 			preferred_zone, migratetype);
 
 		if (!page && gfp_mask & __GFP_NOFAIL)
-			wait_iff_congested(preferred_zone, BLK_RW_ASYNC, HZ/50);
+			wait_iff_congested(preferred_zone, BLK_RW_ASYNC/*0*/, HZ/*100*//50);
 	} while (!page && (gfp_mask & __GFP_NOFAIL));
 
 	return page;
@@ -2742,6 +2771,7 @@ rebalance:
 
 	// 2015-06-13 여기까지;
 
+	// 2015-06-20 시작
 	/* Allocate without watermarks if the context allows */
 	if (alloc_flags & ALLOC_NO_WATERMARKS) {
 		/*
@@ -2749,6 +2779,7 @@ rebalance:
 		 * the allocation is high priority and these type of
 		 * allocations are system rather than user orientated
 		 */
+		// NOMAL_ZONE
 		zonelist = node_zonelist(numa_node_id(), gfp_mask);
 
 		page = __alloc_pages_high_priority(gfp_mask, order,
@@ -2758,6 +2789,7 @@ rebalance:
 			goto got_pg;
 		}
 	}
+	// 2015-06-20, 식사전
 
 	/* Atomic allocations - we can't balance anything */
 	if (!wait)
@@ -6514,6 +6546,10 @@ unsigned long get_pageblock_flags_group(struct page *page,
 // 2015-01-24 
 //  set_pageblock_flags_group(page, (unsigned long)migratetype,
 //                           PB_migrate, PB_migrate_end);
+//
+// 2015-06-20
+//   set_pageblock_flags_group(page, 0, PB_migrate_skip,  \
+//                            PB_migrate_skip) 
 //
 void set_pageblock_flags_group(struct page *page, unsigned long flags,
 					int start_bitidx, int end_bitidx)

@@ -367,6 +367,10 @@ EXPORT_SYMBOL_GPL(get_kernel_page);
 // 2015-04-04, 여기까지
 // 2015-04-11 시작
 // pagevec_lru_move_fn(pvec, lru_deactivate_fn, NULL);
+// 2015-06-20
+// pagevec_lru_move_fn(pvec, __pagevec_lru_add_fn, NULL);
+// 2015-06-20
+// pagevec_lru_move_fn(pvec, pagevec_move_tail_fn, &pgmoved);
 static void pagevec_lru_move_fn(struct pagevec *pvec,
 	void (*move_fn)(struct page *page, struct lruvec *lruvec, void *arg),
 	void *arg)
@@ -402,6 +406,9 @@ static void pagevec_lru_move_fn(struct pagevec *pvec,
 	pagevec_reinit(pvec);
 }
 
+// 2015-06-20
+// zone->lruvec
+// (*move_fn)(page, lruvec, arg);
 static void pagevec_move_tail_fn(struct page *page, struct lruvec *lruvec,
 				 void *arg)
 {
@@ -418,11 +425,13 @@ static void pagevec_move_tail_fn(struct page *page, struct lruvec *lruvec,
  * pagevec_move_tail() must be called with IRQ disabled.
  * Otherwise this may cause nasty races.
  */
+// 2015-06-20
 static void pagevec_move_tail(struct pagevec *pvec)
 {
 	int pgmoved = 0;
 
 	pagevec_lru_move_fn(pvec, pagevec_move_tail_fn, &pgmoved);
+	// vm_event_state에 더한다.
 	__count_vm_events(PGROTATED, pgmoved);
 }
 
@@ -450,17 +459,21 @@ void rotate_reclaimable_page(struct page *page)
 // update_page_reclaim_stat(lruvec, file, 0);
 // 2015-04-25
 // update_page_reclaim_stat(lruvec, file, 1);
+// 2015-06-20 - page로부터 추출한 정보를 기초로
+// update_page_reclaim_stat(lruvec, file, active);
 static void update_page_reclaim_stat(struct lruvec *lruvec,
 				     int file, int rotated)
 {
 	struct zone_reclaim_stat *reclaim_stat = &lruvec->reclaim_stat;
 	
+	// index로 사용한 file은 동일하다.
 	reclaim_stat->recent_scanned[file]++;
 	if (rotated)
 		reclaim_stat->recent_rotated[file]++;
 }
 
 // 2015-04-25
+// 2015-06-20
 static void __activate_page(struct page *page, struct lruvec *lruvec,
 			    void *arg)
 {
@@ -470,10 +483,11 @@ static void __activate_page(struct page *page, struct lruvec *lruvec,
 
 		del_page_from_lru_list(page, lruvec, lru);
 		SetPageActive(page);
-		lru += LRU_ACTIVE;
+		lru += LRU_ACTIVE;	// 중요
 		add_page_to_lru_list(page, lruvec, lru);
 		trace_mm_lru_activate(page, page_to_pfn(page));		// debug
 
+		// 전역 vm_event_state 업데이트
 		__count_vm_event(PGACTIVATE);
 		update_page_reclaim_stat(lruvec, file, 1);
 	}
@@ -483,6 +497,9 @@ static void __activate_page(struct page *page, struct lruvec *lruvec,
 static DEFINE_PER_CPU(struct pagevec, activate_page_pvecs);
 
 // 2015-04-25
+// 2015-06-20
+// activate_page_pvecs에 있는 친구들을 __activate_page를 통해서 Active Page로 만들어주고
+// Active pagevec에 추가 시켜준다.
 static void activate_page_drain(int cpu)
 {
 	struct pagevec *pvec = &per_cpu(activate_page_pvecs, cpu);
@@ -659,6 +676,7 @@ void add_page_to_unevictable_list(struct page *page)
  * than the single-page writeout from reclaim.
  */
 // 2015-04-11
+// 2015-06-20
 static void lru_deactivate_fn(struct page *page, struct lruvec *lruvec,
 			      void *arg)
 {
@@ -705,6 +723,7 @@ static void lru_deactivate_fn(struct page *page, struct lruvec *lruvec,
 		 * We moves tha page into tail of inactive.
 		 */
 		list_move_tail(&page->lru, &lruvec->lists[lru]);
+		// 전역, zone의 vm state가 아니다.
 		// vm_event[PGROTATED] += 1;
 		__count_vm_event(PGROTATED);
 	}
@@ -721,6 +740,7 @@ static void lru_deactivate_fn(struct page *page, struct lruvec *lruvec,
  * disabled; or "cpu" is being hot-unplugged, and is already dead.
  */
 // 2015-04-04
+// 2015-06-20
 void lru_add_drain_cpu(int cpu)
 {
 	struct pagevec *pvec = &per_cpu(lru_add_pvec, cpu);
@@ -746,6 +766,7 @@ void lru_add_drain_cpu(int cpu)
 	// 2015-04-25
 	activate_page_drain(cpu);
 	// 2015-04-25
+	// 2015-06-20
 }
 
 /**
@@ -774,10 +795,11 @@ void deactivate_page(struct page *page)
 	}
 }
 
+// 2015-06-20
 void lru_add_drain(void)
 {
 	lru_add_drain_cpu(get_cpu());
-	put_cpu();
+	put_cpu();	// preempt_enble();
 }
 
 static void lru_add_drain_per_cpu(struct work_struct *dummy)
@@ -951,6 +973,9 @@ void lru_add_page_tail(struct page *page, struct page *page_tail,
 }
 #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
 
+// 2015-06-20
+// lruvec = zone->lruvec
+// (*move_fn)(page, lruvec, NULL);
 static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec,
 				 void *arg)
 {
@@ -961,6 +986,7 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec,
 	VM_BUG_ON(PageLRU(page));
 
 	SetPageLRU(page);
+	// lruvec에 page->lru를 추가
 	add_page_to_lru_list(page, lruvec, lru);
 	update_page_reclaim_stat(lruvec, file, active);
 	trace_mm_lru_insertion(page, page_to_pfn(page), lru, trace_pagemap_flags(page));
@@ -971,6 +997,7 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec,
  * on them.  Reinitialises the caller's pagevec.
  */
 // 2015-04-04
+// 2015-06-20
 void __pagevec_lru_add(struct pagevec *pvec)
 {
 	pagevec_lru_move_fn(pvec, __pagevec_lru_add_fn, NULL);

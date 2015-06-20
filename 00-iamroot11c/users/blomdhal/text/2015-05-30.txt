@@ -1,0 +1,41 @@
+[Linux] pageflags로 살펴본 메모리의 일생
+http://egloos.zum.com/studyfoss/v/5512112
+
+watermark
+
+dirtyable pages
+http://en.wikipedia.org/wiki/Page_cache
+
+Memory conservation
+For more details on this topic, see demand paging.
+
+Pages in the page cache modified after being brought in are called dirty pages.[3] Since non-dirty pages in the page cache have identical copies in secondary storage (e.g. hard disk drive or solid-state drive), discarding and reusing their space is much quicker than paging out application memory, and is often preferred over flushing the dirty pages into secondary storage and reusing their space. Executable binaries, such as applications and libraries, are also typically accessed through page cache and mapped to individual process spaces using virtual memory (this is done through the mmap system call on Unix-like operating systems). This not only means that the binary files are shared between separate processes, but also that unused parts of binaries will be flushed out of main memory eventually, leading to memory conservation.
+
+Since cached pages can be easily evicted and re-used, some operating systems, notably Windows NT, even report the page cache usage as "available" memory, while the memory is actually allocated to disk pages. This has led to some confusion about the utilization of page cache in Windows.
+
+/*
+ * dirty page:
+ *  Dirty means that the data is stored in the Page Cache, but needs to be written to the underlying storage device first.
+ * 참고: https://www.thomas-krenn.com/en/wiki/Linux_Page_Cache_Basics
+ *      http://en.wikipedia.org/wiki/Page_cache
+ */
+
+Write-through, write-around, write-back: Cache explained
+http://www.computerweekly.com/feature/Write-through-write-around-write-back-Cache-explained
+
+http://forum.falinux.com/zbxe/index.php?document_srl=576931&mid=lecture_tip
+///
+
+
+__zone_watermark_ok
+
+버디 알고리즘
+http://woodz.tistory.com/57
+
+Action Item
+=> 버디 알고리즘 읽어오자
+
+
+
+
+

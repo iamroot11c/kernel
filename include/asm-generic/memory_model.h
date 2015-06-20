@@ -62,6 +62,7 @@
 	(unsigned long)(__pg - __section_mem_map_addr(__nr_to_section(__sec)));	\
 })
 
+// 2015-06-20
 #define __pfn_to_page(pfn)				\
 ({	unsigned long __pfn = (pfn);			\
 	struct mem_section *__sec = __pfn_to_section(__pfn);	\

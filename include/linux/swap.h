@@ -28,6 +28,7 @@ struct bio;
 				 SWAP_FLAG_DISCARD | SWAP_FLAG_DISCARD_ONCE | \
 				 SWAP_FLAG_DISCARD_PAGES)
 
+// 2015-06-20
 static inline int current_is_kswapd(void)
 {
 	return current->flags & PF_KSWAPD;

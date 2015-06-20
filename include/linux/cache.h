@@ -16,12 +16,14 @@
 #define __read_mostly
 #endif
 
+// 2015-06-20
 #ifndef ____cacheline_aligned
-#define ____cacheline_aligned __attribute__((__aligned__(SMP_CACHE_BYTES)))
+#define ____cacheline_aligned __attribute__((__aligned__(SMP_CACHE_BYTES/*64*/)))
 #endif
 
 #ifndef ____cacheline_aligned_in_smp
 #ifdef CONFIG_SMP
+// 2015-06-20
 #define ____cacheline_aligned_in_smp ____cacheline_aligned
 #else
 #define ____cacheline_aligned_in_smp

@@ -62,10 +62,15 @@
  * such that hidden weak symbol collision, which will cause unrelated
  * variables to share the same address, can be detected during build.
  */
+// 2015-06-20
+// extern 선언을 위한 용도로 사용
+// 그렇기 때문에, DEFINE_PER_CPU_SECTION()이 먼저 선언된 것을 가정하고
+// 사용할 것이다.
 #define DECLARE_PER_CPU_SECTION(type, name, sec)			\
 	extern __PCPU_DUMMY_ATTRS char __pcpu_scope_##name;		\
 	extern __PCPU_ATTRS(sec) __typeof__(type) name
 
+// 2015-06-20
 #define DEFINE_PER_CPU_SECTION(type, name, sec)				\
 	__PCPU_DUMMY_ATTRS char __pcpu_scope_##name;			\
 	extern __PCPU_DUMMY_ATTRS char __pcpu_unique_##name;		\
@@ -91,6 +96,7 @@
  * Variant on the per-CPU variable declaration/definition theme used for
  * ordinary per-CPU variables.
  */
+// 2015-06-20
 #define DECLARE_PER_CPU(type, name)					\
 	DECLARE_PER_CPU_SECTION(type, name, "")
 
@@ -123,6 +129,7 @@
 	DECLARE_PER_CPU_SECTION(type, name, PER_CPU_SHARED_ALIGNED_SECTION) \
 	____cacheline_aligned_in_smp
 
+// 2015-06-20
 #define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)			\
 	DEFINE_PER_CPU_SECTION(type, name, PER_CPU_SHARED_ALIGNED_SECTION) \
 	____cacheline_aligned_in_smp

@@ -168,6 +168,7 @@ extern int vfp_restore_user_hwstate(struct user_vfp __user *,
  * We use bit 30 of the preempt_count to indicate that kernel
  * preemption is occurring.  See <asm/hardirq.h>.
  */
+// 2015-06-20
 #define PREEMPT_ACTIVE	0x40000000
 
 /*

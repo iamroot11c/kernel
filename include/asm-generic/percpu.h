@@ -68,6 +68,7 @@ extern unsigned long __per_cpu_offset[NR_CPUS]; // NR_CPUS = 2;
 #endif
 
 #define __get_cpu_var(var) (*this_cpu_ptr(&(var)))
+// 2015-06-20
 #define __raw_get_cpu_var(var) (*__this_cpu_ptr(&(var)))
 
 #ifdef CONFIG_HAVE_SETUP_PER_CPU_AREA

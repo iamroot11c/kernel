@@ -19,6 +19,7 @@
 #include "internal.h"
 
 #ifdef CONFIG_COMPACTION
+// 2015-06-20
 static inline void count_compact_event(enum vm_event_item item)
 {
 	count_vm_event(item);
@@ -83,6 +84,7 @@ static inline bool isolation_suitable(struct compact_control *cc,
  * should be skipped for page isolation when the migrate and free page scanner
  * meet.
  */
+// 2015-06-20
 static void __reset_isolation_suitable(struct zone *zone)
 {
 	unsigned long start_pfn = zone->zone_start_pfn;
@@ -895,6 +897,9 @@ static int compact_finished(struct zone *zone,
  */
 // 2015-06-13;
 // compaction_suitable(zone, order);
+//
+// 2015-06-20
+// compaction_suitable(zone, cc->order);
 unsigned long compaction_suitable(struct zone *zone, int order)
 {
 	int fragindex;
@@ -941,6 +946,7 @@ unsigned long compaction_suitable(struct zone *zone, int order)
 	return COMPACT_CONTINUE;
 }
 
+// 2015-06-20
 static int compact_zone(struct zone *zone, struct compact_control *cc)
 {
 	int ret;
@@ -982,7 +988,9 @@ static int compact_zone(struct zone *zone, struct compact_control *cc)
 	if (compaction_restarting(zone, cc->order) && !current_is_kswapd())
 		__reset_isolation_suitable(zone);
 
+	// 2015-06-20
 	migrate_prep_local();
+	// 2015-06-20 여기까지
 
 	while ((ret = compact_finished(zone, cc)) == COMPACT_CONTINUE) {
 		unsigned long nr_migrate, nr_remaining;
@@ -1030,6 +1038,10 @@ out:
 	return ret;
 }
 
+// 2015-06-20
+// status = compact_zone_order(zone, order, gfp_mask, sync,
+//                             contended);
+//
 static unsigned long compact_zone_order(struct zone *zone,
 				 int order, gfp_t gfp_mask,
 				 bool sync, bool *contended)
@@ -1070,6 +1082,11 @@ int sysctl_extfrag_threshold = 500;
  *
  * This is the main entry point for direct page compaction.
  */
+// 2015-06-20
+//         *did_some_progress = try_to_compact_pages(zonelist, order, gfp_mask,
+//                                                 nodemask, sync_migration,
+//                                                 contended_compaction);
+//
 unsigned long try_to_compact_pages(struct zonelist *zonelist,
 			int order, gfp_t gfp_mask, nodemask_t *nodemask,
 			bool sync, bool *contended)
@@ -1084,8 +1101,9 @@ unsigned long try_to_compact_pages(struct zonelist *zonelist,
 
 	/* Check if the GFP flags allow compaction */
 	if (!order || !may_enter_fs || !may_perform_io)
-		return rc;
+		return rc;	// COMPACT_SKIPPED
 
+	// vm_stat의 COMPACTSTALL의 값 갱신
 	count_compact_event(COMPACTSTALL);
 
 #ifdef CONFIG_CMA
