@@ -176,11 +176,11 @@ extern phys_addr_t per_cpu_ptr_to_phys(void *addr);
 extern void __bad_size_call_parameter(void);
 
 // 2015-01-10 
-// __this_cpu_read_ 
-// stem__this_cpu_read_1
-// stem__this_cpu_read_2
-// stem__this_cpu_read_4
-// stem__this_cpu_read_8
+// stem == __this_cpu_read_ 
+// -> __this_cpu_read_1
+// -> __this_cpu_read_2
+// -> __this_cpu_read_4
+// -> __this_cpu_read_8
 #define __pcpu_size_call_return(stem, variable)				\
 ({	typeof(variable) pscr_ret__;					\
 	__verify_pcpu_ptr(&(variable));					\
@@ -277,6 +277,10 @@ do {									\
  *    used.
  */
 
+// 2015-06-27
+// _this_cpu_generic_read 함수는 단순히 
+// 1) 인터럽트 비활성화 2) 해당 포인터에서 값을 읽음 3) 인터럽트 활성화 4) 값 반환
+// 을 수행하는 함수이다.
 #define _this_cpu_generic_read(pcp)					\
 ({	typeof(pcp) ret__;						\
 	preempt_disable();						\

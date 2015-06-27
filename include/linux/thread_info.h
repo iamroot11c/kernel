@@ -90,6 +90,8 @@ static inline int test_and_clear_ti_thread_flag(struct thread_info *ti, int flag
 
 // 2015-06-13;
 // test_ti_thread_flag(current_thread_info(), TIF_MEMDIE)
+// 2015-06-27
+// test_ti_thread_flag(task_thread_info(tsk), flag);
 static inline int test_ti_thread_flag(struct thread_info *ti, int flag)
 {
 	return test_bit(flag, (unsigned long *)&ti->flags);

@@ -65,8 +65,11 @@ int migrate_prep(void)
 
 /* Do the necessary work of migrate_prep but not if it involves other CPUs */
 // 2015-06-20
+// 2015-06-27
 int migrate_prep_local(void)
 {
+	// 현재 cpu에 대해 percpu 컨테이너에 저장된 lru값을 페이지의 존 내 lru로 옮기고
+	// 페이지를 일괄 삭제한다.
 	lru_add_drain();
 
 	return 0;

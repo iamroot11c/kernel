@@ -371,6 +371,7 @@ EXPORT_SYMBOL_GPL(get_kernel_page);
 // pagevec_lru_move_fn(pvec, __pagevec_lru_add_fn, NULL);
 // 2015-06-20
 // pagevec_lru_move_fn(pvec, pagevec_move_tail_fn, &pgmoved);
+// pvec 내의 모든 페이지 내 lruvec를 해당 페이지가 속한 zone->lruvec로 옮기고 페이지를 일괄삭제한다.
 static void pagevec_lru_move_fn(struct pagevec *pvec,
 	void (*move_fn)(struct page *page, struct lruvec *lruvec, void *arg),
 	void *arg)
@@ -393,6 +394,7 @@ static void pagevec_lru_move_fn(struct pagevec *pvec,
 		}
 		// 현 버전에서는 zone->lruvec를 반환.
 		lruvec = mem_cgroup_page_lruvec(page, zone);
+		// 이 함수 포인터 내에서 실질적으로 lruvec 값이 이동된다.
 		(*move_fn)(page, lruvec, arg);
 		// 2015-04-11 여기까지.
 		// 함수포인터로 전달받은 lru_deactivate_fn동작 살펴봄.
@@ -407,6 +409,7 @@ static void pagevec_lru_move_fn(struct pagevec *pvec,
 }
 
 // 2015-06-20
+// 2015-06-27
 // zone->lruvec
 // (*move_fn)(page, lruvec, arg);
 static void pagevec_move_tail_fn(struct page *page, struct lruvec *lruvec,
@@ -415,7 +418,10 @@ static void pagevec_move_tail_fn(struct page *page, struct lruvec *lruvec,
 	int *pgmoved = arg;
 
 	if (PageLRU(page) && !PageActive(page) && !PageUnevictable(page)) {
+		// LRU 상태이면서 페이지 비활성화, 꺼내기 가능한 경우
+		// swapback상태 여부 확인, 이 값에 따라 관리되는 컨테이너가 다르다.
 		enum lru_list lru = page_lru_base_type(page);
+		// 파라미터로 넘어온 lruvec의 리스트에 page->lru값을 마지막 항목에 넣는다. 
 		list_move_tail(&page->lru, &lruvec->lists[lru]);
 		(*pgmoved)++;
 	}
@@ -474,6 +480,7 @@ static void update_page_reclaim_stat(struct lruvec *lruvec,
 
 // 2015-04-25
 // 2015-06-20
+// 2015-06-27
 static void __activate_page(struct page *page, struct lruvec *lruvec,
 			    void *arg)
 {
@@ -483,7 +490,7 @@ static void __activate_page(struct page *page, struct lruvec *lruvec,
 
 		del_page_from_lru_list(page, lruvec, lru);
 		SetPageActive(page);
-		lru += LRU_ACTIVE;	// 중요
+		lru += LRU_ACTIVE;	// 중요, active상태 변환
 		add_page_to_lru_list(page, lruvec, lru);
 		trace_mm_lru_activate(page, page_to_pfn(page));		// debug
 
@@ -498,8 +505,10 @@ static DEFINE_PER_CPU(struct pagevec, activate_page_pvecs);
 
 // 2015-04-25
 // 2015-06-20
-// activate_page_pvecs에 있는 친구들을 __activate_page를 통해서 Active Page로 만들어주고
-// Active pagevec에 추가 시켜준다.
+// activate_page_pvecs에 있는 리스트 중 자신의 cpu에 해당하는 페이지에 대해
+// 해당 페이지가 속한 존의 lruvec에 해당 페이지의 lru를 옮긴 후 
+// 엑티브 플래그 세팅 후 페이지를 삭제 시켜준다.
+// 2015-06-27
 static void activate_page_drain(int cpu)
 {
 	struct pagevec *pvec = &per_cpu(activate_page_pvecs, cpu);
@@ -716,6 +725,7 @@ static void lru_deactivate_fn(struct page *page, struct lruvec *lruvec,
 		 * It can make readahead confusing.  But race window
 		 * is _really_ small and  it's non-critical problem.
 		 */
+		// readahead 관련 링크 : https://en.wikipedia.org/wiki/Readahead
 		SetPageReclaim(page);
 	} else {
 		/*
@@ -741,8 +751,12 @@ static void lru_deactivate_fn(struct page *page, struct lruvec *lruvec,
  */
 // 2015-04-04
 // 2015-06-20
+// 2015-06-27
+// 전역변수에 저장된 페이지의 lru 정보를 일괄적으로 해당 페이지가 속한 존으로 옮긴 후
+// 저장된 페이지를 일괄삭제한다. 이에 대한 후처리는 함수포인터를 통해 처리된다.
 void lru_add_drain_cpu(int cpu)
 {
+	// lru_add_pvec은 전역변수 형태로 저장되어 있는 링크드리스트이다.
 	struct pagevec *pvec = &per_cpu(lru_add_pvec, cpu);
 
 	if (pagevec_count(pvec))
@@ -750,6 +764,8 @@ void lru_add_drain_cpu(int cpu)
 
 	pvec = &per_cpu(lru_rotate_pvecs, cpu);
 	if (pagevec_count(pvec)) {
+		// lru_rotate_pvecs내에 1개 이상의 페이지가 존재하는 경우
+		// 동기화를 건 후 pvec의 제일 마지막 리스트에 각 페이지의 lru리스트를 삽입한다.
 		unsigned long flags;
 
 		/* No harm done if a racing interrupt already did this */
@@ -767,6 +783,7 @@ void lru_add_drain_cpu(int cpu)
 	activate_page_drain(cpu);
 	// 2015-04-25
 	// 2015-06-20
+	// 2015-06-27
 }
 
 /**
@@ -976,6 +993,7 @@ void lru_add_page_tail(struct page *page, struct page *page_tail,
 // 2015-06-20
 // lruvec = zone->lruvec
 // (*move_fn)(page, lruvec, NULL);
+// page->lruvec를 파라미터로 넘어온 lruvec 링크드 리스트에 연결하고 연결 상태를 업데이트->
 static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec,
 				 void *arg)
 {
@@ -998,6 +1016,7 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec,
  */
 // 2015-04-04
 // 2015-06-20
+// pvec 내의 모든 페이지에 대해 해당 페이지가 속한 존의 lruvec로 이동 후 페이지 삭제
 void __pagevec_lru_add(struct pagevec *pvec)
 {
 	pagevec_lru_move_fn(pvec, __pagevec_lru_add_fn, NULL);

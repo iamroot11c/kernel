@@ -39,6 +39,8 @@ static inline void count_compact_events(enum vm_event_item item, long delta)
 #define CREATE_TRACE_POINTS
 #include <trace/events/compaction.h>
 
+// 2015-06-27
+// freelist내의 모든 리스트 삭제, 페이지 할당 해제, 해제 횟수 반환
 static unsigned long release_freepages(struct list_head *freelist)
 {
 	struct page *page, *next;
@@ -835,12 +837,16 @@ static isolate_migrate_t isolate_migratepages(struct zone *zone,
 	return ISOLATE_SUCCESS;
 }
 
+// 2015-06-27
+// 식사 전
+// 파라미터로 전달된 zone, cc에 대해 현재 페이지가 압축이 가능한 상태인 상태인지를 체크
 static int compact_finished(struct zone *zone,
 			    struct compact_control *cc)
 {
 	unsigned int order;
 	unsigned long watermark;
-
+	
+	// 현재 태스크가 pending상태이면서 sigkill상태인 경우 부분 압축 가능 리턴
 	if (fatal_signal_pending(current))
 		return COMPACT_PARTIAL;
 
@@ -947,6 +953,7 @@ unsigned long compaction_suitable(struct zone *zone, int order)
 }
 
 // 2015-06-20
+// 2015-06-27
 static int compact_zone(struct zone *zone, struct compact_control *cc)
 {
 	int ret;
@@ -991,7 +998,9 @@ static int compact_zone(struct zone *zone, struct compact_control *cc)
 	// 2015-06-20
 	migrate_prep_local();
 	// 2015-06-20 여기까지
+	// 2015-06-27 완료
 
+	// 2015-06-27	
 	while ((ret = compact_finished(zone, cc)) == COMPACT_CONTINUE) {
 		unsigned long nr_migrate, nr_remaining;
 		int err;
@@ -1032,6 +1041,7 @@ static int compact_zone(struct zone *zone, struct compact_control *cc)
 
 out:
 	/* Release free pages and check accounting */
+	// 2015-06-27 우선 압축 가능하다는 전제 하에 아래 코드 살펴봄
 	cc->nr_freepages -= release_freepages(&cc->freepages);
 	VM_BUG_ON(cc->nr_freepages != 0);
 
@@ -1058,6 +1068,7 @@ static unsigned long compact_zone_order(struct zone *zone,
 	INIT_LIST_HEAD(&cc.freepages);
 	INIT_LIST_HEAD(&cc.migratepages);
 
+	// 2015-06-20
 	ret = compact_zone(zone, &cc);
 
 	VM_BUG_ON(!list_empty(&cc.freepages));
@@ -1114,7 +1125,7 @@ unsigned long try_to_compact_pages(struct zonelist *zonelist,
 	for_each_zone_zonelist_nodemask(zone, z, zonelist, high_zoneidx,
 								nodemask) {
 		int status;
-
+		// 2015-06-20 여기까지
 		status = compact_zone_order(zone, order, gfp_mask, sync,
 						contended);
 		rc = max(status, rc);

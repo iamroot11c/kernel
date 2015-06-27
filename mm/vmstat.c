@@ -235,7 +235,9 @@ void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
 	s8 __percpu *p = pcp->vm_stat_diff + item;
 	long x;
 	long t;
-
+	
+	// __this_cpu_read는 단순히 선점을 한 후(인터럽트 비활성화)
+	// 해당 포인터 p 로부터 지역 변수에 값을 저장하는 기능을 하는 함수이다.
 	x = delta + __this_cpu_read(*p);
 
 	// cpu마다 데이터가 존재할 수 있으며 사용하는 cpu를 찾아서
@@ -251,6 +253,7 @@ void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
 	
 	// *p = x;
 	// (*p) = (*p) + delta;
+	// 단 임계값을 넘은 경우 x가 0으로 보정되었기 때문에 값이 바뀌지 않을 것이다.
 	__this_cpu_write(*p, x);
 }
 EXPORT_SYMBOL(__mod_zone_page_state);

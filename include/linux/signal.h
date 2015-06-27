@@ -54,9 +54,11 @@ static inline void sigdelset(sigset_t *set, int _sig)
 		set->sig[sig / _NSIG_BPW] &= ~(1UL << (sig % _NSIG_BPW));
 }
 
+// 2015-06-27 set->sig 비트필드 검사
 static inline int sigismember(sigset_t *set, int _sig)
 {
 	unsigned long sig = _sig - 1;
+    // _NSIG_WORDS == 64/32
 	if (_NSIG_WORDS == 1)
 		return 1 & (set->sig[0] >> sig);
 	else

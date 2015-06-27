@@ -12,6 +12,7 @@
 
 typedef unsigned long old_sigset_t;		/* at least 32 bits */
 
+// 2015-06-27
 typedef struct {
 	unsigned long sig[_NSIG_WORDS/*2*/];
 } sigset_t;

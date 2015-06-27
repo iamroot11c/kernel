@@ -117,6 +117,8 @@ extern bool is_free_buddy_page(struct page *page);
  * are moved to the end of a zone during a compaction run and the run
  * completes when free_pfn <= migrate_pfn
  */
+// 2015-06-27 
+// 압축 진행 중 페이지를 관리하기 위한 구조체로 보여진다.
 struct compact_control {
 	struct list_head freepages;	/* List of free pages to migrate to */
 	struct list_head migratepages;	/* List of pages being migrated */
