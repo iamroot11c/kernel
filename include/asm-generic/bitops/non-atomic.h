@@ -105,6 +105,7 @@ static inline int __test_and_change_bit(int nr,
  */
 // 2014-12-20;
 // 2015-04-11;
+// 2015-06-27
 // test_bit(PG_compound, &page->flags)
 // page의 flags 멤버에 pageflags.PG_compound이 셋되어있는지 검사
 static inline int test_bit(int nr, const volatile unsigned long *addr)

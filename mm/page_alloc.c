@@ -1777,6 +1777,8 @@ static inline bool should_fail_alloc_page(gfp_t gfp_mask, unsigned int order)
 // 가상의 값을 넣어 계산
 // __zone_watermark_ok(z, 0, 132, 0, 0, 3000);
 // __zone_watermark_ok(z, 0, 132, 0, 0, 52);
+// 파라미터로 넘어온 zone에 대해 사용 가능한 페이지의 개수가 mark보다 많은가(물론 얼마간의 보정이 있다))
+// 사용 가능한 페이지가 많으면 true / 아닌 경우 false
 static bool __zone_watermark_ok(struct zone *z, int order, unsigned long mark,
 		      int classzone_idx, int alloc_flags, long free_pages)
 {
@@ -1803,6 +1805,8 @@ static bool __zone_watermark_ok(struct zone *z, int order, unsigned long mark,
 		return false;
 	for (o = 0; o < order; o++) {
 		/* At the next order, this order's pages become unavailable */
+		// free_area : 버디 할당자를 위해 관리되고 있는 배열
+		//  z->free_area[o].nr_free << o; == 해당 차수에 대해 버디 할당자에서 관리 중인 페이지 개수
 		free_pages -= z->free_area[o].nr_free << o;
 
 		/* Require fewer higher order pages to be free */
@@ -1819,6 +1823,7 @@ static bool __zone_watermark_ok(struct zone *z, int order, unsigned long mark,
 // 2015-06-13;
 // zone_watermark_ok(zone, 0, watermark, 0, 0);
 // zone_watermark_ok(zone, order, watermark, 0, 0);
+// zone_watermark_ok(zone, cc->order, watermark, 0, 0)
 bool zone_watermark_ok(struct zone *z, int order, unsigned long mark,
 		      int classzone_idx, int alloc_flags)
 {
@@ -2431,6 +2436,7 @@ __alloc_pages_direct_compact(gfp_t gfp_mask, unsigned int order,
 	}
 
 	current->flags |= PF_MEMALLOC;
+	// 2015-06-20
 	*did_some_progress = try_to_compact_pages(zonelist, order, gfp_mask,
 						nodemask, sync_migration,
 						contended_compaction);

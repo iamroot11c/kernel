@@ -66,6 +66,8 @@ static __always_inline void del_page_from_lru_list(struct page *page,
  * Returns the base LRU type - file or anon - @page should be on.
  */
 // 2015-04-18;
+// 2015-06-27;
+// swapback 인 경우 INACTIVE_ANON, 아닌 경우 INACTIVE_FILE반환
 static inline enum lru_list page_lru_base_type(struct page *page)
 {
 	if (page_is_file_cache(page))

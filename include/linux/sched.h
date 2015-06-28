@@ -2300,8 +2300,11 @@ static inline void threadgroup_unlock(struct task_struct *tsk) {}
 #endif
 
 #ifndef __HAVE_THREAD_FUNCTIONS
-
+// 2015-06-27
+// 자신의 task에 해당하는 thread_info값이 stack에 저장되어 있다.
 #define task_thread_info(task)	((struct thread_info *)(task)->stack)
+// 2015-06-27
+// fork.c에서 stack멤버 변수에 thread_info 구조체를 할당하여 저장한다.
 #define task_stack_page(task)	((task)->stack)
 
 static inline void setup_thread_stack(struct task_struct *p, struct task_struct *org)
@@ -2362,6 +2365,7 @@ static inline int test_and_clear_tsk_thread_flag(struct task_struct *tsk, int fl
 	return test_and_clear_ti_thread_flag(task_thread_info(tsk), flag);
 }
 
+//2015-06-27
 static inline int test_tsk_thread_flag(struct task_struct *tsk, int flag)
 {
 	return test_ti_thread_flag(task_thread_info(tsk), flag);
@@ -2388,16 +2392,19 @@ static inline int restart_syscall(void)
 	return -ERESTARTNOINTR;
 }
 
+// 2015-06-27
 static inline int signal_pending(struct task_struct *p)
 {
+    // task에 속한 thread_info(stack 멤버변수)를 얻어온 후 어떤 플래그가 세팅되어 있는지 검사 
 	return unlikely(test_tsk_thread_flag(p,TIF_SIGPENDING));
 }
-
+// 2015-06-27
 static inline int __fatal_signal_pending(struct task_struct *p)
 {
 	return unlikely(sigismember(&p->pending.signal, SIGKILL));
 }
 
+// 2015-06-27
 static inline int fatal_signal_pending(struct task_struct *p)
 {
 	return signal_pending(p) && __fatal_signal_pending(p);

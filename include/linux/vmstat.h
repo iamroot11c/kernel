@@ -100,7 +100,8 @@ static inline void vm_events_fold_cpu(int cpu)
 extern atomic_long_t vm_stat[NR_VM_ZONE_STAT_ITEMS];
   
 // 2015-01-10
-// zone->vm_stat는 해당 zone에 대해서 vm_stat는 모든 zone에 대한것으로 판단됨
+// 2015-06-27
+// zone->vm_stat는 해당 zone에 대해서 vm_stat는 전역적으로 카운터를 관리하는 것으로 판단됨
 static inline void zone_page_state_add(long x, struct zone *zone,
 				 enum zone_stat_item item)
 {
