@@ -412,6 +412,7 @@ static void pagevec_lru_move_fn(struct pagevec *pvec,
 // 2015-06-27
 // zone->lruvec
 // (*move_fn)(page, lruvec, arg);
+// 자식이 속한 lruvec->lists에서 가장 마지막으로 이동하는 기능
 static void pagevec_move_tail_fn(struct page *page, struct lruvec *lruvec,
 				 void *arg)
 {

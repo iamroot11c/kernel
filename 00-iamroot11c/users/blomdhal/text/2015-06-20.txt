@@ -31,3 +31,5 @@ memblock_search memblock???
 
 
 page->flags
+
+PageLRU 
