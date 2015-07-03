@@ -43,9 +43,9 @@ void cpu_maps_update_done(void)
 }
 
 // 2015-04-04
-// 117 #define RAW_NOTIFIER_HEAD(name)                 \
-// 118     struct raw_notifier_head name =             \
-// 119         RAW_NOTIFIER_INIT(name)
+// #define RAW_NOTIFIER_HEAD(name)                 \
+//     struct raw_notifier_head name =             \
+//         RAW_NOTIFIER_INIT(name)
 static RAW_NOTIFIER_HEAD(cpu_chain);
 
 /* If set, cpu_up and cpu_down will return -EBUSY and do nothing.
@@ -164,6 +164,9 @@ void cpu_hotplug_enable(void)
 
 // 2015-04-04
 /* Need to know about CPUs going up/down? */
+// static struct notifier_block fnpage_alloc_cpu_notify_nb = {
+//     .notifier_call = page_alloc_cpu_notify, .priority = 0 }; 
+// register_cpu_notifier(&fnpage_alloc_cpu_notify_nb);
 int __ref register_cpu_notifier(struct notifier_block *nb)
 {
 	int ret;
