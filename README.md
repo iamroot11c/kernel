@@ -1,6 +1,6 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
-## Study History ##
+## Study History(일부 기록이 맞지 않을 수 있음) ##
 
 + [58주차]() `2014.06.27` 
  - [kmem_cache_init() 진행중](http://bit.ly/1JcHISc) 
@@ -110,9 +110,11 @@
  - [kernel/arch/arm/mm/mmu.c](http://goo.gl/UwIPp9)
  - devicemaps_init 진행중
 + [23주차]() `2014.10.18`
- - [kernel/arch/arm/mm/mmu.c](http://goo.gl/4VHMHV| init alloc_init_pmd() 진행중 ]] \\   init alloc_init_pmd() 진행중|
-+ [22주차](http://goo.gl/vqkScg) `2014.10.11` | 
- - [kernel/arch/arm/mm/mmu.c]( http://goo.gl/FNzZBW| init alloc_init_pmd() 진행중 ]] \\   init alloc_init_pmd() 진행중|
+ - [kernel/arch/arm/mm/mmu.c](http://goo.gl/4VHMHV)
+ - init alloc_init_pmd() 진행중
++ [22주차](http://goo.gl/vqkScg) `2014.10.11`
+ - [kernel/arch/arm/mm/mmu.c]( http://goo.gl/FNzZBW)
+ - `init alloc_init_pmd()` 진행중
 + [21주차](http://goo.gl/vqkScg) `2014.09.20` 
  - [kernel/arch/arm/mm/mmu.c]( http://goo.gl/FNzZBW)|
  - ??() 진행중|
