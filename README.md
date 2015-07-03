@@ -177,7 +177,8 @@
 # The Linux Kernel review for ARMv7 3.13.0 (exynos 5420)
 * Community name: IAMROOT.ORG ARM kernel study 11th C team
 * Target Soc    : Samsung Exynos 5420 (ARMv7 A7&A15)
+
 > $ make kernelversion
 >> 3.12.20
 
-
+#### [IAMROOT 10차 C조](https://github.com/arm10c/linux-stable) 참조 ####
