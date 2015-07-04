@@ -25,6 +25,8 @@ static inline void count_compact_event(enum vm_event_item item)
 	count_vm_event(item);
 }
 
+// 2015-07-04;
+// count_compact_events(COMPACTMIGRATE_SCANNED, nr_scanned);
 static inline void count_compact_events(enum vm_event_item item, long delta)
 {
 	count_vm_events(item, delta);
@@ -65,13 +67,16 @@ static void map_pages(struct list_head *list)
 	}
 }
 
+// 2015-07-04;
+// migrate_async_suitable(get_pageblock_migratetype(page));
 static inline bool migrate_async_suitable(int migratetype)
 {
-	return is_migrate_cma(migratetype) || migratetype == MIGRATE_MOVABLE;
+	return is_migrate_cma(migratetype)/*false*/ || migratetype == MIGRATE_MOVABLE;
 }
 
 #ifdef CONFIG_COMPACTION
 /* Returns true if the pageblock should be scanned for pages to isolate. */
+// 2015-07-04;
 static inline bool isolation_suitable(struct compact_control *cc,
 					struct page *page)
 {
@@ -133,6 +138,8 @@ void reset_isolation_suitable(pg_data_t *pgdat)
  * If no pages were isolated then mark this pageblock to be skipped in the
  * future. The information is later cleared by __reset_isolation_suitable().
  */
+// 2015-07-04;
+// update_pageblock_skip(cc, valid_page, nr_isolated, true);
 static void update_pageblock_skip(struct compact_control *cc,
 			struct page *page, unsigned long nr_isolated,
 			bool migrate_scanner)
@@ -175,6 +182,7 @@ static void update_pageblock_skip(struct compact_control *cc,
 }
 #endif /* CONFIG_COMPACTION */
 
+// 2015-07-04;
 static inline bool should_release_lock(spinlock_t *lock)
 {
 	return need_resched() || spin_is_contended(lock);
@@ -189,6 +197,9 @@ static inline bool should_release_lock(spinlock_t *lock)
  * Returns true if the lock is held.
  * Returns false if the lock is released and compaction should abort
  */
+// 2015-07-04;
+// compact_checklock_irqsave(&zone->lru_lock, &flags,
+//                                             loked, cc);
 static bool compact_checklock_irqsave(spinlock_t *lock, unsigned long *flags,
 				      bool locked, struct compact_control *cc)
 {
@@ -405,11 +416,19 @@ isolate_freepages_range(struct compact_control *cc,
 }
 
 /* Update the number of anon and file isolated pages in the zone */
+// 2015-07-04; 
+// acct_isolated(zone, locked, cc);
 static void acct_isolated(struct zone *zone, bool locked, struct compact_control *cc)
 {
 	struct page *page;
 	unsigned int count[2] = { 0, };
+	// count[0] - anon cache
+	// count[1] - file cache
 
+	// #define list_for_each_entry(pos, head, member)              \
+	// for (pos = list_entry((head)->next, typeof(*pos), member);  \
+	//             &pos->member != (head);    \
+	//             pos = list_entry(pos->member.next, typeof(*pos), member))
 	list_for_each_entry(page, &cc->migratepages, lru)
 		count[!!page_is_file_cache(page)]++;
 
@@ -418,12 +437,14 @@ static void acct_isolated(struct zone *zone, bool locked, struct compact_control
 		__mod_zone_page_state(zone, NR_ISOLATED_ANON, count[0]);
 		__mod_zone_page_state(zone, NR_ISOLATED_FILE, count[1]);
 	} else {
+		// 인터럽트를 중지하고 __mod_zone_page_state() 함수 호출
 		mod_zone_page_state(zone, NR_ISOLATED_ANON, count[0]);
 		mod_zone_page_state(zone, NR_ISOLATED_FILE, count[1]);
 	}
 }
 
 /* Similar to reclaim, but different enough that they don't share logic */
+// 2015-07-04;
 static bool too_many_isolated(struct zone *zone)
 {
 	unsigned long active, inactive, isolated;
@@ -432,6 +453,7 @@ static bool too_many_isolated(struct zone *zone)
 					zone_page_state(zone, NR_INACTIVE_ANON);
 	active = zone_page_state(zone, NR_ACTIVE_FILE) +
 					zone_page_state(zone, NR_ACTIVE_ANON);
+	// 일시적으로 LRU에서 분리된 페이지
 	isolated = zone_page_state(zone, NR_ISOLATED_FILE) +
 					zone_page_state(zone, NR_ISOLATED_ANON);
 
@@ -458,6 +480,8 @@ static bool too_many_isolated(struct zone *zone)
  * does not modify any cc's fields, in particular it does not modify
  * (or read for that matter) cc->migrate_pfn.
  */
+// 2015-07-04;
+// isolate_migratepages_range(zone, cc, low_pfn, end_pfn, false);
 unsigned long
 isolate_migratepages_range(struct zone *zone, struct compact_control *cc,
 		unsigned long low_pfn, unsigned long end_pfn, bool unevictable)
@@ -483,6 +507,7 @@ isolate_migratepages_range(struct zone *zone, struct compact_control *cc,
 
 		congestion_wait(BLK_RW_ASYNC, HZ/10);
 
+		// 현재 쓰레드를 검사(TIF_SIGPENDING, SIGKILL 등)
 		if (fatal_signal_pending(current))
 			return 0;
 	}
@@ -504,6 +529,7 @@ isolate_migratepages_range(struct zone *zone, struct compact_control *cc,
 		 * into a new MAX_ORDER_NR_PAGES range in case of large
 		 * memory holes within the zone
 		 */
+		// low_pfn이 1024크기로 정렬되었는지 확인 
 		if ((low_pfn & (MAX_ORDER_NR_PAGES - 1)) == 0) {
 			if (!pfn_valid(low_pfn)) {
 				low_pfn += MAX_ORDER_NR_PAGES - 1;
@@ -529,7 +555,7 @@ isolate_migratepages_range(struct zone *zone, struct compact_control *cc,
 			valid_page = page;
 
 		/* If isolation recently failed, do not retry */
-		pageblock_nr = low_pfn >> pageblock_order;
+		pageblock_nr = low_pfn >> pageblock_order/*10*/;
 		if (!isolation_suitable(cc, page))
 			goto next_pageblock;
 
@@ -544,9 +570,11 @@ isolate_migratepages_range(struct zone *zone, struct compact_control *cc,
 		 */
 		if (!cc->sync && last_pageblock_nr != pageblock_nr &&
 		    !migrate_async_suitable(get_pageblock_migratetype(page))) {
+		        // 페이지가 MIGRATE_MOVABLE이 아닐때 
 			cc->finished_update_migrate = true;
 			goto next_pageblock;
 		}
+		// 2015-07-04 식사전;
 
 		/*
 		 * Check may be lockless but that's ok as we recheck later.
@@ -577,6 +605,7 @@ isolate_migratepages_range(struct zone *zone, struct compact_control *cc,
 		 * compound_order() without preventing THP from splitting the
 		 * page underneath us may return surprising results.
 		 */
+		// CONFIG_TRANSPARENT_HUGEPAGE 미 정의로 항상 0을 리턴
 		if (PageTransHuge(page)) {
 			if (!locked)
 				goto next_pageblock;
@@ -615,23 +644,25 @@ isolate_migratepages_range(struct zone *zone, struct compact_control *cc,
 		/* Successfully isolated */
 		cc->finished_update_migrate = true;
 		del_page_from_lru_list(page, lruvec, page_lru(page));
+		// compact_control.migratepages 목록에 page.lru 추가 
 		list_add(&page->lru, migratelist);
 		cc->nr_migratepages++;
 		nr_isolated++;
 
 check_compact_cluster:
 		/* Avoid isolating too much */
-		if (cc->nr_migratepages == COMPACT_CLUSTER_MAX) {
+		if (cc->nr_migratepages == COMPACT_CLUSTER_MAX/*32*/) {
 			++low_pfn;
 			break;
 		}
 
 		continue;
+		// 아래의 다음 pfn을 구하는 부분과 구분
 
 next_pageblock:
 		low_pfn = ALIGN(low_pfn + 1, pageblock_nr_pages) - 1;
 		last_pageblock_nr = pageblock_nr;
-	}
+	} // for
 
 	acct_isolated(zone, locked, cc);
 
@@ -810,6 +841,7 @@ typedef enum {
  * Isolate all pages that can be migrated from the block pointed to by
  * the migrate scanner within compact_control.
  */
+// 2015-07-04 시작;
 static isolate_migrate_t isolate_migratepages(struct zone *zone,
 					struct compact_control *cc)
 {
@@ -822,6 +854,8 @@ static isolate_migrate_t isolate_migratepages(struct zone *zone,
 	end_pfn = ALIGN(low_pfn + 1, pageblock_nr_pages);
 
 	/* Do not cross the free scanner or scan within a memory hole */
+	// end_pfn이 크거나 low_pfn이 유효하지 않은 주소이면
+	// compact_control.migrate_pfn을 end_pfn으로 설정
 	if (end_pfn > cc->free_pfn || !pfn_valid(low_pfn)) {
 		cc->migrate_pfn = end_pfn;
 		return ISOLATE_NONE;
@@ -829,6 +863,7 @@ static isolate_migrate_t isolate_migratepages(struct zone *zone,
 
 	/* Perform the isolation */
 	low_pfn = isolate_migratepages_range(zone, cc, low_pfn, end_pfn, false);
+	// 2015-07-04 여기까지;
 	if (!low_pfn || cc->contended)
 		return ISOLATE_ABORT;
 
@@ -1000,7 +1035,9 @@ static int compact_zone(struct zone *zone, struct compact_control *cc)
 	// 2015-06-20 여기까지
 	// 2015-06-27 완료
 
-	// 2015-06-27	
+	// 2015-06-27
+	// 2015-07-04 시작;
+	// compact_finished() 함수 결과를 받아 진행
 	while ((ret = compact_finished(zone, cc)) == COMPACT_CONTINUE) {
 		unsigned long nr_migrate, nr_remaining;
 		int err;

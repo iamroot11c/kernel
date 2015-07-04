@@ -2436,7 +2436,7 @@ __alloc_pages_direct_compact(gfp_t gfp_mask, unsigned int order,
 	}
 
 	current->flags |= PF_MEMALLOC;
-	// 2015-06-20
+	// 2015-06-20 시작;
 	*did_some_progress = try_to_compact_pages(zonelist, order, gfp_mask,
 						nodemask, sync_migration,
 						contended_compaction);
@@ -2813,6 +2813,7 @@ rebalance:
 	 * Try direct compaction. The first pass is asynchronous. Subsequent
 	 * attempts after direct reclaim are synchronous
 	 */
+	// 2015-06-20 시작;
 	page = __alloc_pages_direct_compact(gfp_mask, order,
 					zonelist, high_zoneidx,
 					nodemask,
@@ -6520,6 +6521,10 @@ static inline int pfn_to_bitidx(struct zone *zone, unsigned long pfn)
  */
 // 2015-04-18;
 // get_pageblock_flags_group(page, PB_migrate, PB_migrate_end);
+//
+// 2015-07-04;
+// get_pageblock_flags_group(page, PB_migrate_skip, PB_migrate_skip);
+// get_pageblock_flags_group(page, PB_migrate, PB_migrate_end)
 unsigned long get_pageblock_flags_group(struct page *page,
 					int start_bitidx, int end_bitidx)
 {
@@ -6556,6 +6561,7 @@ unsigned long get_pageblock_flags_group(struct page *page,
 // 2015-06-20
 //   set_pageblock_flags_group(page, 0, PB_migrate_skip,  \
 //                            PB_migrate_skip) 
+//   set_pageblock_flags_group(page, 1, PB_migrate_skip, PB_migrate_skip);
 //
 void set_pageblock_flags_group(struct page *page, unsigned long flags,
 					int start_bitidx, int end_bitidx)

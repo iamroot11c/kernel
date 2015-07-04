@@ -68,6 +68,7 @@ enum {
 #ifdef CONFIG_CMA   // not set
 #  define is_migrate_cma(migratetype) unlikely((migratetype) == MIGRATE_CMA)
 #else
+// 2015-07-04;
 #  define is_migrate_cma(migratetype) false
 #endif
 
@@ -81,6 +82,9 @@ enum {
 extern int page_group_by_mobility_disabled;
 
 // 2015-04-18;
+// 2015-07-04;
+// MIGRATE_UNMOVABLE, MIGRATE_RECLAIMABLE, 
+// MIGRATE_MOVABLE 등의 상태를 조사
 static inline int get_pageblock_migratetype(struct page *page)
 {
 	return get_pageblock_flags_group(page, PB_migrate, PB_migrate_end);
@@ -1336,6 +1340,7 @@ unsigned long __init node_memmap_size_bytes(int, unsigned long, unsigned long);
 #ifdef CONFIG_HOLES_IN_ZONE // not define
 #define pfn_valid_within(pfn) pfn_valid(pfn)
 #else
+// 2015-07-04;
 #define pfn_valid_within(pfn) (1)
 #endif
 

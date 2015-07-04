@@ -306,6 +306,7 @@ static inline int put_page_testzero(struct page *page)
  */
 // 2015-04-18;
 // page 구조체의 _count 멤버의 값이 0이 아니라면 증가
+// 2015-07-04;
 static inline int get_page_unless_zero(struct page *page)
 {
 	return atomic_inc_not_zero(&page->_count);
@@ -475,6 +476,7 @@ static inline void init_page_count(struct page *page)
  */
 #define PAGE_BUDDY_MAPCOUNT_VALUE (-128)
 
+// 2015-07-04;
 static inline int PageBuddy(struct page *page)
 {
 	return atomic_read(&page->_mapcount) == PAGE_BUDDY_MAPCOUNT_VALUE;
@@ -912,6 +914,7 @@ static inline pgoff_t page_file_index(struct page *page)
  * Return true if this page is mapped into pagetables.
  */
 // 2015-04-11
+// 2015-07-04;
 static inline int page_mapped(struct page *page)
 {
     // 위의 주석으로 추측컨데, pagetable에 매핑되어있는 경우 0보다 큰 값이 저장되는 듯 하다.

@@ -35,6 +35,7 @@
 #include <linux/hardirq.h>		/* in_interrupt() */
 
 
+// 2015-07-04; 컴파일해서 확인!!!
 #ifdef __KERNEL__
 #define RADIX_TREE_MAP_SHIFT	(CONFIG_BASE_SMALL ? 4 : 6)
 #else
@@ -47,6 +48,7 @@
 #define RADIX_TREE_TAG_LONGS	\
 	((RADIX_TREE_MAP_SIZE + BITS_PER_LONG - 1) / BITS_PER_LONG)
 
+// 2015-07-04;
 struct radix_tree_node {
 	unsigned int	height;		/* Height from the bottom */
 	unsigned int	count;

@@ -15,6 +15,7 @@
 // 2015-04-18;
 // atomic_add_unless((v), 1, 0)
 // atomic_t 변수 v와 세번째 인자 u가 같지 않으면 0이 아닌값으로 리턴
+// 2015-07-04;
 static inline int atomic_add_unless(atomic_t *v, int a, int u)
 {
 	return __atomic_add_unless(v, a, u) != u;

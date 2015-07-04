@@ -93,7 +93,7 @@ static inline void balloon_page_free(struct page *page)
 	__free_page(page);
 }
 
-#ifdef CONFIG_BALLOON_COMPACTION
+#ifdef CONFIG_BALLOON_COMPACTION // not define
 extern bool balloon_page_isolate(struct page *page);
 extern void balloon_page_putback(struct page *page);
 extern int balloon_page_migrate(struct page *newpage,
@@ -258,6 +258,7 @@ static inline void balloon_page_delete(struct page *page)
 	list_del(&page->lru);
 }
 
+// 2015-07-04;
 static inline bool balloon_page_movable(struct page *page)
 {
 	return false;

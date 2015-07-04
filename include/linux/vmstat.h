@@ -43,11 +43,14 @@ static inline void count_vm_event(enum vm_event_item item)
 // 2015-04-18;
 // __count_vm_events(PGFREE, 1 << order);
 // 2015-05-30
+//
 static inline void __count_vm_events(enum vm_event_item item, long delta)
 {
 	__this_cpu_add(vm_event_states.event[item], delta);
 }
 
+// 2015-07-04;
+// COMPACTMIGRATE_SCANNED, nr_scanned
 static inline void count_vm_events(enum vm_event_item item, long delta)
 {
 	this_cpu_add(vm_event_states.event[item], delta);
@@ -124,12 +127,20 @@ static inline unsigned long global_page_state(enum zone_stat_item item)
 // 2015-05-23;
 // zone_page_state(zone, NR_ALLOC_BATCH);
 // zone의 vm_stat멤버에서 item 인덱스의 값을 리턴
+//
+// 2015-07-04;
+// zone_page_state(zone, NR_INACTIVE_FILE)
+// zone_page_state(zone, NR_INACTIVE_ANON)
+// zone_page_state(zone, NR_ACTIVE_FILE)
+// zone_page_state(zone, NR_ACTIVE_ANON)
+// zone_page_state(zone, NR_ISOLATED_FILE)
+// zone_page_state(zone, NR_ISOLATED_ANON)
 static inline unsigned long zone_page_state(struct zone *zone,
 					enum zone_stat_item item)
 {
 	long x = atomic_long_read(&zone->vm_stat[item]);
 #ifdef CONFIG_SMP // defined
-	if (x < 0)
+	if (x < 0) // 값이 0보다 작으면 안됨
 		x = 0;
 #endif
 	return x;
@@ -198,7 +209,7 @@ extern void zone_statistics(struct zone *, struct zone *, gfp_t gfp);
 
 extern void inc_zone_state(struct zone *, enum zone_stat_item);
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
 void __mod_zone_page_state(struct zone *, enum zone_stat_item item, int);
 void __inc_zone_page_state(struct page *, enum zone_stat_item);
 void __dec_zone_page_state(struct page *, enum zone_stat_item);

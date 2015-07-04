@@ -239,6 +239,7 @@ static inline void atomic_clear_mask(unsigned long mask, unsigned long *addr)
 
 // 2015-04-18;
 // atomic_add_unless((v), 1, 0);
+// 2015-07-04;
 static inline int __atomic_add_unless(atomic_t *v, int a, int u)
 {
 	int c, old;

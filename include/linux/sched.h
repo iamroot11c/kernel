@@ -133,7 +133,7 @@ print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq);
  */
 #define TASK_RUNNING		0
 #define TASK_INTERRUPTIBLE	1
-#define TASK_UNINTERRUPTIBLE	2
+#define TASK_UNINTERRUPTIBLE	2 // 2015-07-04;
 #define __TASK_STOPPED		4
 #define __TASK_TRACED		8
 /* in tsk->exit_state */
@@ -178,7 +178,8 @@ extern char ___assert_task_state[1 - 2*!!(
 	do { (tsk)->state = (state_value); } while (0)
 // 2015-06-20
 #define set_task_state(tsk, state_value)		\
-	set_mb((tsk)->state, (state_value))
+	set_mb((tsk)->state, (state_value)) 
+// (tsk)->state에 state_value을 저장한 후 barrier() 함수 호출 
 
 /*
  * set_current_state() includes a barrier so that the write of current->state
@@ -195,6 +196,7 @@ extern char ___assert_task_state[1 - 2*!!(
 #define __set_current_state(state_value)			\
 	do { current->state = (state_value); } while (0)
 // 2015-06-20
+// 2015-07-04; set_current_state(TASK_UNINTERRUPTIBLE);
 #define set_current_state(state_value)		\
 	set_mb(current->state, (state_value))
 
@@ -2405,6 +2407,7 @@ static inline int __fatal_signal_pending(struct task_struct *p)
 }
 
 // 2015-06-27
+// 2015-07-04;
 static inline int fatal_signal_pending(struct task_struct *p)
 {
 	return signal_pending(p) && __fatal_signal_pending(p);
@@ -2421,6 +2424,7 @@ static inline int signal_pending_state(long state, struct task_struct *p)
 }
 
 // 2015-06-20
+// 2015-07-04;
 static inline int need_resched(void)
 {
 	return unlikely(test_thread_flag(TIF_NEED_RESCHED));
@@ -2436,6 +2440,7 @@ static inline int need_resched(void)
 extern int _cond_resched(void);
 
 // 2015-06-20
+// 2015-07-04;
 #define cond_resched() ({			\
 	__might_sleep(__FILE__, __LINE__, 0);	\
 	_cond_resched();			\

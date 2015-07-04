@@ -26,9 +26,10 @@
 #include <linux/types.h>
 
 /* Bit indices that affect a whole block of pages */
+// 2015-07-04;
 enum pageblock_bits {
 	PB_migrate,
-	PB_migrate_end = PB_migrate + 3 - 1,
+	PB_migrate_end = PB_migrate + 3 - 1, 
 			/* 3 bits required for migrate types */
 #ifdef CONFIG_COMPACTION // CONFIG_COMPACTION = y 
 	PB_migrate_skip,/* If set the block is skipped by compaction */
@@ -53,6 +54,7 @@ extern int pageblock_order;
 #else /* CONFIG_HUGETLB_PAGE */
 
 /* If huge pages are not used, group by MAX_ORDER_NR_PAGES */
+// 2015-07-04;
 #define pageblock_order		(MAX_ORDER-1) // 11 - 1 = 10
 
 #endif /* CONFIG_HUGETLB_PAGE */
@@ -69,6 +71,7 @@ void set_pageblock_flags_group(struct page *page, unsigned long flags,
 					int start_bitidx, int end_bitidx);
 
 #ifdef CONFIG_COMPACTION
+// 2015-7-04;
 #define get_pageblock_skip(page) \
 			get_pageblock_flags_group(page, PB_migrate_skip,     \
 							PB_migrate_skip)
@@ -76,6 +79,8 @@ void set_pageblock_flags_group(struct page *page, unsigned long flags,
 #define clear_pageblock_skip(page) \
 			set_pageblock_flags_group(page, 0, PB_migrate_skip,  \
 							PB_migrate_skip)
+
+// 2015-07-04;
 #define set_pageblock_skip(page) \
 			set_pageblock_flags_group(page, 1, PB_migrate_skip,  \
 							PB_migrate_skip)

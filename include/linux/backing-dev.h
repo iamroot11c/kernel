@@ -61,6 +61,7 @@ struct bdi_writeback {
 	spinlock_t list_lock;		/* protects the b_* lists */
 };
 
+// 2015-07-04;
 struct backing_dev_info {
 	struct list_head bdi_list;
 	unsigned long ra_pages;	/* max readahead in PAGE_CACHE_SIZE units */
@@ -254,13 +255,14 @@ int bdi_set_max_ratio(struct backing_dev_info *bdi, unsigned int max_ratio);
 #define BDI_CAP_WRITE_MAP	0x00000020
 #define BDI_CAP_EXEC_MAP	0x00000040
 #define BDI_CAP_NO_ACCT_WB	0x00000080
-#define BDI_CAP_SWAP_BACKED	0x00000100
+#define BDI_CAP_SWAP_BACKED	0x00000100 
 #define BDI_CAP_STABLE_WRITES	0x00000200
 #define BDI_CAP_STRICTLIMIT	0x00000400
 
 #define BDI_CAP_VMFLAGS \
 	(BDI_CAP_READ_MAP | BDI_CAP_WRITE_MAP | BDI_CAP_EXEC_MAP)
 
+// 2015-07-04;
 #define BDI_CAP_NO_ACCT_AND_WRITEBACK \
 	(BDI_CAP_NO_WRITEBACK | BDI_CAP_NO_ACCT_DIRTY | BDI_CAP_NO_ACCT_WB)
 

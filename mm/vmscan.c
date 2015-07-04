@@ -1140,6 +1140,10 @@ unsigned long reclaim_clean_pages_from_list(struct zone *zone,
  *
  * returns 0 on success, -ve errno on failure.
  */
+// 2015-07-04
+// __isolate_lru_page(page, mode);
+// ISOLATE_ASYNC_MIGRATE
+// ISOLATE_UNEVICTABLE
 int __isolate_lru_page(struct page *page, isolate_mode_t mode)
 {
 	int ret = -EINVAL;
@@ -1183,7 +1187,7 @@ int __isolate_lru_page(struct page *page, isolate_mode_t mode)
 			 * without blocking
 			 */
 			mapping = page_mapping(page);
-			if (mapping && !mapping->a_ops->migratepage)
+			if (mapping && !mapping->a_ops->migratepage) // 함수포인터를 확인
 				return ret;
 		}
 	}
@@ -1197,6 +1201,7 @@ int __isolate_lru_page(struct page *page, isolate_mode_t mode)
 		 * sure the page is not being freed elsewhere -- the
 		 * page release code relies on it.
 		 */
+		// 정상동작
 		ClearPageLRU(page);
 		ret = 0;
 	}

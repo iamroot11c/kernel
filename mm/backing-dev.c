@@ -583,6 +583,8 @@ EXPORT_SYMBOL(set_bdi_congested);
  * write congestion.  If no backing_devs are congested then just wait for the
  * next write to be completed.
  */
+// 2015-07-04;
+// congestion_wait(BLK_RW_ASYNC, HZ/*100*//10);
 long congestion_wait(int sync, long timeout)
 {
 	long ret;

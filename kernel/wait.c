@@ -67,6 +67,9 @@ EXPORT_SYMBOL(remove_wait_queue);
  */
 // 2015-06-20
 // prepare_to_wait(wqh, &wait, TASK_UNINTERRUPTIBLE);
+//
+// 2015-07-04;
+// prepare_to_wait(wqh, &wait, TASK_UNINTERRUPTIBLE);
 void
 prepare_to_wait(wait_queue_head_t *q, wait_queue_t *wait, int state)
 {
@@ -78,7 +81,7 @@ prepare_to_wait(wait_queue_head_t *q, wait_queue_t *wait, int state)
 		__add_wait_queue(q, wait);
 	// 2015-06-20,
 	// current->state 설정 TASK_UNINTERRUPTIBLE로 설정
-	set_current_state(state);
+	set_current_state(state); // 전달된 상태를 저장
 	spin_unlock_irqrestore(&q->lock, flags);
 }
 EXPORT_SYMBOL(prepare_to_wait);
@@ -107,6 +110,7 @@ EXPORT_SYMBOL(prepare_to_wait_exclusive);
  * queued.
  */
 // 2015-06-20
+// 2015-07-04;
 void finish_wait(wait_queue_head_t *q, wait_queue_t *wait)
 {
 	unsigned long flags;

@@ -384,6 +384,7 @@ static inline int spin_is_locked(spinlock_t *lock)
 	return raw_spin_is_locked(&lock->rlock);
 }
 
+// 2015-07-04;
 static inline int spin_is_contended(spinlock_t *lock)
 {
 	return raw_spin_is_contended(&lock->rlock);

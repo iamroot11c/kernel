@@ -19,6 +19,7 @@
  */
 // 2015-04-11
 // 2015-06-20
+// 2015-07-04;
 static inline int page_is_file_cache(struct page *page)
 {
 	return !PageSwapBacked(page);
@@ -44,6 +45,8 @@ static __always_inline void add_page_to_lru_list(struct page *page,
 // __always_inline : inline할 것을 명시해 주는 지시어
 // 2015-04-18
 // 2015-06-20
+// 2015-07-04;
+// del_page_from_lru_list(page, lruvec, page_lru(page));
 static __always_inline void del_page_from_lru_list(struct page *page,
 				struct lruvec *lruvec, enum lru_list lru)
 {

@@ -36,7 +36,7 @@ static struct backing_dev_info swap_backing_dev_info = {
 	.capabilities	= BDI_CAP_NO_ACCT_AND_WRITEBACK | BDI_CAP_SWAP_BACKED,
 };
 
-struct address_space swapper_spaces[MAX_SWAPFILES] = {
+struct address_space swapper_spaces[MAX_SWAPFILES/*30*/] = {
 	[0 ... MAX_SWAPFILES - 1] = {
 		.page_tree	= RADIX_TREE_INIT(GFP_ATOMIC|__GFP_NOWARN),
 		.a_ops		= &swap_aops,

@@ -285,6 +285,7 @@ static inline struct lruvec *mem_cgroup_zone_lruvec(struct zone *zone,
 }
 
 // 2015-04-18;
+// 2015-07-04;
 static inline struct lruvec *mem_cgroup_page_lruvec(struct page *page,
 						    struct zone *zone)
 {

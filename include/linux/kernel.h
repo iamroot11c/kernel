@@ -179,6 +179,7 @@ extern int _cond_resched(void);
 # define might_sleep() \
 	do { __might_sleep(__FILE__, __LINE__, 0); might_resched(); } while (0)
 #else
+  // 2015-07-04;
   static inline void __might_sleep(const char *file, int line,
 				   int preempt_offset) { }
 // 2015-05-23;

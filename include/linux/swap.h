@@ -42,6 +42,7 @@ static inline int current_is_kswapd(void)
  * on 32-bit-pgoff_t architectures.  And that assumes that the architecture packs
  * the type/offset into the pte as 5/27 as well.
  */
+// 2015-07-04;
 #define MAX_SWAPFILES_SHIFT	5
 
 /*
@@ -53,7 +54,8 @@ static inline int current_is_kswapd(void)
 /*
  * NUMA node memory migration support
  */
-#ifdef CONFIG_MIGRATION
+#ifdef CONFIG_MIGRATION // defined
+// 2015-07-04;
 #define SWP_MIGRATION_NUM 2
 #define SWP_MIGRATION_READ	(MAX_SWAPFILES + SWP_HWPOISON_NUM)
 #define SWP_MIGRATION_WRITE	(MAX_SWAPFILES + SWP_HWPOISON_NUM + 1)
@@ -64,15 +66,18 @@ static inline int current_is_kswapd(void)
 /*
  * Handling of hardware poisoned pages with memory corruption.
  */
-#ifdef CONFIG_MEMORY_FAILURE
+#ifdef CONFIG_MEMORY_FAILURE // not define
 #define SWP_HWPOISON_NUM 1
 #define SWP_HWPOISON		MAX_SWAPFILES
 #else
+// 2015-07-04;
 #define SWP_HWPOISON_NUM 0
 #endif
 
+// 2015-07-04;
 #define MAX_SWAPFILES \
-	((1 << MAX_SWAPFILES_SHIFT) - SWP_MIGRATION_NUM - SWP_HWPOISON_NUM)
+	((1 << MAX_SWAPFILES_SHIFT/*5*/) - SWP_MIGRATION_NUM/*2*/ - SWP_HWPOISON_NUM/*0*/)
+    // 30
 
 /*
  * Magic header for a swap area. The first part of the union is
@@ -369,7 +374,7 @@ static inline void mem_cgroup_uncharge_swap(swp_entry_t ent)
 {
 }
 #endif
-#ifdef CONFIG_SWAP
+#ifdef CONFIG_SWAP // defined
 /* linux/mm/page_io.c */
 extern int swap_readpage(struct page *);
 extern int swap_writepage(struct page *page, struct writeback_control *wbc);

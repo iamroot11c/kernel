@@ -468,11 +468,13 @@ static inline int PageTransTail(struct page *page)
 
 #else
 
+// 2015-07-04;
 static inline int PageTransHuge(struct page *page)
 {
 	return 0;
 }
 
+// 2015-07-04;
 static inline int PageTransCompound(struct page *page)
 {
 	return 0;

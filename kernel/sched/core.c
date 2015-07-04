@@ -2381,6 +2381,7 @@ pick_next_task(struct rq *rq)
 // 분석의 흐름을 이어가기 위해 이 함수를 자세히 분석하지 않음
 // 프로세서의 상태(주기)를 알고 좀 더 분석 할 예정. 꼭!
 // 2015-06-20, skip
+// 2015-07-04; skip
 static void __sched __schedule(void)
 {
 	struct task_struct *prev, *next;
@@ -3826,6 +3827,9 @@ SYSCALL_DEFINE0(sched_yield)
 // 2015-06-20
 static inline int should_resched(void)
 {
+	// 현재 쓰레드가 TIF_NEED_RESCHED 이며
+	// 선점이 활성화(PREEMPT_ACTIVE) 되어있지 않으면 
+	// 스케줄이 필요한것으로 판단됨
 	return need_resched() && !(preempt_count() & PREEMPT_ACTIVE);
 }
 
@@ -3838,6 +3842,7 @@ static void __cond_resched(void)
 }
 
 // 2015-06-20
+// 2015-07-04;
 int __sched _cond_resched(void)
 {
 	if (should_resched()) {
@@ -4013,6 +4018,7 @@ void __sched io_schedule(void)
 EXPORT_SYMBOL(io_schedule);
 
 // 2015-06-20
+// 2015-07-04; io_schedule_timeout(HZ/*100*//10);
 long __sched io_schedule_timeout(long timeout)
 {
 	struct rq *rq = raw_rq();	// runqueues를 가져온다.
