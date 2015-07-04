@@ -2,6 +2,9 @@
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
 
++ [59주차]() `2014.07.04` 
+ - [kmem_cache_init() 진행중](http://bit.ly/1JcHISc) 
+ - __alloc_pages_slowpath() 진행중
 + [58주차]() `2014.06.27` 
  - [kmem_cache_init() 진행중](http://bit.ly/1JcHISc) 
  - __alloc_pages_slowpath() 진행중
