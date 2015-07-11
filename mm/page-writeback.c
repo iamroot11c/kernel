@@ -351,7 +351,7 @@ static unsigned long zone_dirty_limit(struct zone *zone)
 		dirty = DIV_ROUND_UP(vm_dirty_bytes, PAGE_SIZE) *
 			zone_memory / global_dirtyable_memory();
 	else
-		dirty = vm_dirty_ratioi/*20*/ * zone_memory / 100;
+		dirty = vm_dirty_ratio/*20*/ * zone_memory / 100;
 		// 100단위로 나눈다.
 
 	if (tsk->flags & PF_LESS_THROTTLE || rt_task(tsk))

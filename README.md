@@ -3,8 +3,10 @@
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
 
 + [59주차]() `2014.07.04` 
- - [kmem_cache_init() 진행중](http://bit.ly/1JcHISc) 
- - __alloc_pages_slowpath() 진행중
+ - [kmem_cache_init() 진행중](http://bit.ly/1NXKzjv) 
+ - compaction.c:compact_zone() 내부 진행
+ - compact_finished() 함수의 리턴값이 COMPACT_CONTINUE 일 때 while문 실행
+ - isolate_migratepages() 함수 내부 분석중
 + [58주차]() `2014.06.27` 
  - [kmem_cache_init() 진행중](http://bit.ly/1JcHISc) 
  - __alloc_pages_slowpath() 진행중

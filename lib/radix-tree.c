@@ -35,14 +35,14 @@
 #include <linux/hardirq.h>		/* in_interrupt() */
 
 
-// 2015-07-04; 컴파일해서 확인!!!
 #ifdef __KERNEL__
-#define RADIX_TREE_MAP_SHIFT	(CONFIG_BASE_SMALL ? 4 : 6)
+// 2015-07-04;
+#define RADIX_TREE_MAP_SHIFT	(CONFIG_BASE_SMALL/*0*/ ? 4 : 6)
 #else
 #define RADIX_TREE_MAP_SHIFT	3	/* For more stressful testing */
 #endif
 
-#define RADIX_TREE_MAP_SIZE	(1UL << RADIX_TREE_MAP_SHIFT)
+#define RADIX_TREE_MAP_SIZE	(1UL << RADIX_TREE_MAP_SHIFT/*6*/)
 #define RADIX_TREE_MAP_MASK	(RADIX_TREE_MAP_SIZE-1)
 
 #define RADIX_TREE_TAG_LONGS	\
@@ -62,7 +62,7 @@ struct radix_tree_node {
 
 #define RADIX_TREE_INDEX_BITS  (8 /* CHAR_BIT */ * sizeof(unsigned long))
 #define RADIX_TREE_MAX_PATH (DIV_ROUND_UP(RADIX_TREE_INDEX_BITS, \
-					  RADIX_TREE_MAP_SHIFT))
+					  RADIX_TREE_MAP_SHIFT/*6*/))
 
 /*
  * The height_to_maxindex array needs to be one deeper than the maximum

@@ -4056,7 +4056,7 @@ static void build_zonelists(pg_data_t *pgdat)
 	//
 	for (node = local_node + 1; node < MAX_NUMNODES; node++) {
 		if (!node_online(node)) // !node_online(0)
-			continue;!      //  -> !(node == 0)
+			continue;      //  -> !(node == 0)
 		// node가 0일 때만 실행
 		j = build_zonelists_node(NODE_DATA(node), zonelist, j);
 	}
