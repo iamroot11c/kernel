@@ -264,6 +264,7 @@ static inline bool balloon_page_movable(struct page *page)
 	return false;
 }
 
+// 2015-07-11
 static inline bool isolated_balloon_page(struct page *page)
 {
 	return false;

@@ -305,22 +305,27 @@ void __inc_zone_page_state(struct page *page, enum zone_stat_item item)
 }
 EXPORT_SYMBOL(__inc_zone_page_state);
 
+// 2015-07-11
 void __dec_zone_state(struct zone *zone, enum zone_stat_item item)
 {
 	struct per_cpu_pageset __percpu *pcp = zone->pageset;
 	s8 __percpu *p = pcp->vm_stat_diff + item;
 	s8 v, t;
 
+	// -1 더한 값을 v에 저장
 	v = __this_cpu_dec_return(*p);
 	t = __this_cpu_read(pcp->stat_threshold);
 	if (unlikely(v < - t)) {
-		s8 overstep = t >> 1;
+		// ex) -3 < -2
+		s8 overstep = t >> 1;	// 2로 나눈다.
 
+		// zone_page_state_add(4, zone, item);
 		zone_page_state_add(v - overstep, zone, item);
 		__this_cpu_write(*p, overstep);
 	}
 }
 
+// 2015-07-11
 void __dec_zone_page_state(struct page *page, enum zone_stat_item item)
 {
 	__dec_zone_state(page_zone(page), item);
@@ -447,6 +452,7 @@ void inc_zone_page_state(struct page *page, enum zone_stat_item item)
 }
 EXPORT_SYMBOL(inc_zone_page_state);
 
+// 2015-07-11
 void dec_zone_page_state(struct page *page, enum zone_stat_item item)
 {
 	unsigned long flags;

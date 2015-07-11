@@ -598,11 +598,15 @@ int remove_mapping(struct address_space *mapping, struct page *page)
  *
  * lru_lock must not be held, interrupts must be enabled.
  */
+// 2015-07-11
 void putback_lru_page(struct page *page)
 {
 	bool is_unevictable;
 	int was_unevictable = PageUnevictable(page);
 
+	// lru이면 bug???, 함수명과 어울리지 않아 보임
+	// 주석을 참고해 보면, isolated page를 lru list에 put하려는게 목적임으로
+	// 이미 lru page라는 것은 잘못된 것이다.
 	VM_BUG_ON(PageLRU(page));
 
 redo:
@@ -636,6 +640,7 @@ redo:
 		 */
 		smp_mb();
 	}
+	// 2015-07-11, 식사전
 
 	/*
 	 * page's status can change while we move it among lru. If an evictable
@@ -3658,6 +3663,7 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
  * (2) page is part of an mlocked VMA
  *
  */
+// 2015-07-11
 int page_evictable(struct page *page)
 {
 	return !mapping_unevictable(page_mapping(page)) && !PageMlocked(page);

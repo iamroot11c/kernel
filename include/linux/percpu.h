@@ -26,6 +26,7 @@
  * Must be an lvalue. Since @var must be a simple identifier,
  * we force a syntax error here if it isn't.
  */
+// 2015-07-11
 #define get_cpu_var(var) (*({				\
 	preempt_disable();				\
 	&__get_cpu_var(var); }))
@@ -34,6 +35,7 @@
  * The weird & is necessary because sparse considers (void)(var) to be
  * a direct dereference of percpu variable (var).
  */
+// 2015-07-11
 #define put_cpu_var(var) do {				\
 	(void)&(var);					\
 	preempt_enable();				\
@@ -684,6 +686,7 @@ do {									\
 
 #define __this_cpu_sub_return(pcp, val)	__this_cpu_add_return(pcp, -(typeof(pcp))(val))
 #define __this_cpu_inc_return(pcp)	__this_cpu_add_return(pcp, 1)
+// 2015-07-11
 #define __this_cpu_dec_return(pcp)	__this_cpu_add_return(pcp, -1)
 
 #define __this_cpu_generic_xchg(pcp, nval)				\

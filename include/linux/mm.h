@@ -436,6 +436,8 @@ static inline void get_huge_page_tail(struct page *page)
 
 extern bool __get_page_tail(struct page *page);
 
+// 2015-07-11
+// page->_count 값을 1 증가
 static inline void get_page(struct page *page)
 {
 	if (unlikely(PageTail(page)))
@@ -477,6 +479,7 @@ static inline void init_page_count(struct page *page)
 #define PAGE_BUDDY_MAPCOUNT_VALUE (-128)
 
 // 2015-07-04;
+// 2015-07-11
 static inline int PageBuddy(struct page *page)
 {
 	return atomic_read(&page->_mapcount) == PAGE_BUDDY_MAPCOUNT_VALUE;
@@ -488,6 +491,7 @@ static inline void __SetPageBuddy(struct page *page)
 	atomic_set(&page->_mapcount, PAGE_BUDDY_MAPCOUNT_VALUE);
 }
 
+// 2015-07-11
 static inline void __ClearPageBuddy(struct page *page)
 {
 	VM_BUG_ON(!PageBuddy(page));
@@ -639,15 +643,18 @@ static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
 /* NODE:ZONE or SECTION:ZONE is used to ID a zone for the buddy allocator */
 #ifdef NODE_NOT_IN_PAGE_FLAGS
 #define ZONEID_SHIFT		(SECTIONS_SHIFT + ZONES_SHIFT)
-#define ZONEID_PGOFF		((SECTIONS_PGOFF < ZONES_PGOFF)? \
+#define ZONEID_PGOFF		((SECTIONS_PGOFF/*28*/ < ZONES_PGOFF/*26*/)? \
 						SECTIONS_PGOFF : ZONES_PGOFF)
 #else
-#define ZONEID_SHIFT		(NODES_SHIFT + ZONES_SHIFT)
-#define ZONEID_PGOFF		((NODES_PGOFF < ZONES_PGOFF)? \
+// 2015-07-11, 2
+#define ZONEID_SHIFT		(NODES_SHIFT/*0*/ + ZONES_SHIFT/*2*/)   // 2
+// 2015-07-11, 26
+#define ZONEID_PGOFF		((NODES_PGOFF/*28*/ < ZONES_PGOFF/*26*/)? \
 						NODES_PGOFF : ZONES_PGOFF)
 #endif
 
-#define ZONEID_PGSHIFT		(ZONEID_PGOFF * (ZONEID_SHIFT != 0))
+// 2015-07-11
+#define ZONEID_PGSHIFT		(ZONEID_PGOFF/*26*/ * (ZONEID_SHIFT/*2*/ != 0)) // 26
 
 #if SECTIONS_WIDTH+NODES_WIDTH+ZONES_WIDTH > BITS_PER_LONG - NR_PAGEFLAGS
 #error SECTIONS_WIDTH+NODES_WIDTH+ZONES_WIDTH > BITS_PER_LONG - NR_PAGEFLAGS
@@ -657,7 +664,7 @@ static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
 #define NODES_MASK		((1UL << NODES_WIDTH) - 1) // ((1<<0)-1) == 0
 #define SECTIONS_MASK		((1UL << SECTIONS_WIDTH) - 1) // ((1<<4)-1) == 0b1111
 #define LAST_NID_MASK		((1UL << LAST_NID_WIDTH) - 1)
-#define ZONEID_MASK		((1UL << ZONEID_SHIFT) - 1)
+#define ZONEID_MASK		((1UL << ZONEID_SHIFT/*2*/) - 1)    // 3 == 0b11
 
 // 2015-01-24
 static inline enum zone_type page_zonenum(const struct page *page)
@@ -678,9 +685,10 @@ static inline enum zone_type page_zonenum(const struct page *page)
  * We only guarantee that it will return the same value for two combinable
  * pages in a zone.
  */
+// 2015-07-11
 static inline int page_zone_id(struct page *page)
 {
-	return (page->flags >> ZONEID_PGSHIFT) & ZONEID_MASK;
+	return (page->flags >> ZONEID_PGSHIFT/*26*/) & ZONEID_MASK/*0b11*/;
 }
 
 static inline int zone_to_nid(struct zone *zone)
@@ -726,6 +734,7 @@ static inline int page_nid_last(struct page *page)
 extern int page_nid_xchg_last(struct page *page, int nid);
 
 // 2015-04-18;
+// 2015-07-11, 이것 사용 안 함, CONFIG_NUMA_BALANCING, not set
 static inline void page_nid_reset_last(struct page *page)
 {
 	int nid = (1 << LAST_NID_SHIFT/*0*/) - 1;
@@ -1899,6 +1908,7 @@ static inline bool page_is_guard(struct page *page)
 // 2015-05-16
 static inline unsigned int debug_guardpage_minorder(void) { return 0; }
 // 2015-04-18;
+// 2015-07-11
 static inline bool page_is_guard(struct page *page) { return false; }
 #endif /* CONFIG_DEBUG_PAGEALLOC */
 

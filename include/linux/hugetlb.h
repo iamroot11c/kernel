@@ -100,6 +100,7 @@ unsigned long hugetlb_change_protection(struct vm_area_struct *vma,
 
 #else /* !CONFIG_HUGETLB_PAGE */
 
+// 2015-07-11
 static inline int PageHuge(struct page *page)
 {
 	return 0;

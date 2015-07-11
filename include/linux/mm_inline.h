@@ -27,6 +27,9 @@ static inline int page_is_file_cache(struct page *page)
 // 2015-04-11
 // 2015-06-20
 // add_page_to_lru_list(page, lruvec, lru);
+// 2015-07-11
+// add_page_to_lru_list(page, lruvec, LRU_UNEVICTABLE);
+//
 static __always_inline void add_page_to_lru_list(struct page *page,
 				struct lruvec *lruvec, enum lru_list lru)
 {
@@ -47,6 +50,7 @@ static __always_inline void add_page_to_lru_list(struct page *page,
 // 2015-06-20
 // 2015-07-04;
 // del_page_from_lru_list(page, lruvec, page_lru(page));
+// 2015-07-11
 static __always_inline void del_page_from_lru_list(struct page *page,
 				struct lruvec *lruvec, enum lru_list lru)
 {
