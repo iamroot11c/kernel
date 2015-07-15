@@ -875,6 +875,8 @@ static isolate_migrate_t isolate_migratepages(struct zone *zone,
 // 2015-06-27
 // 식사 전
 // 파라미터로 전달된 zone, cc에 대해 현재 페이지가 압축이 가능한 상태인 상태인지를 체크
+//
+// 2015-07-11, COMPACT_CONTINUE일때, while loop를 실행되고 있다.
 static int compact_finished(struct zone *zone,
 			    struct compact_control *cc)
 {
@@ -922,7 +924,7 @@ static int compact_finished(struct zone *zone,
 			return COMPACT_PARTIAL;
 
 		/* Job done if allocation would set block type */
-		if (cc->order >= pageblock_order && area->nr_free)
+		if (cc->order >= pageblock_order/*10*/ && area->nr_free)
 			return COMPACT_PARTIAL;
 	}
 
@@ -1046,7 +1048,9 @@ static int compact_zone(struct zone *zone, struct compact_control *cc)
 		switch (isolate_migratepages(zone, cc)) {
 		case ISOLATE_ABORT:
 			ret = COMPACT_PARTIAL;
+			// 2015-07-11 시작
 			putback_movable_pages(&cc->migratepages);
+			// 2015-07-11, 여기까지
 			cc->nr_migratepages = 0;
 			goto out;
 		case ISOLATE_NONE:

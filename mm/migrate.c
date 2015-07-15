@@ -99,17 +99,30 @@ void putback_lru_pages(struct list_head *l)
  * This function shall be used instead of putback_lru_pages(),
  * whenever the isolated pageset has been built by isolate_migratepages_range()
  */
+// 2015-07-11
+// putback_movable_pages(&cc->migratepages);
 void putback_movable_pages(struct list_head *l)
 {
 	struct page *page;
 	struct page *page2;
 
+	//
+	//#define list_for_each_entry_safe(pos, n, head, member)          \
+	//     for (pos = list_entry((head)->next, typeof(*pos), member),  \
+	//          n = list_entry(pos->member.next, typeof(*pos), member); \
+	//          &pos->member != (head);                    \
+	//          pos = n, n = list_entry(n->member.next, typeof(*n), member))
+	//
+	//          page는 cc->migratepages를 통해서 구하고
+	//          page2는 위의 page->lru를 통해서 구한다.
 	list_for_each_entry_safe(page, page2, l, lru) {
 		if (unlikely(PageHuge(page))) {
 			putback_active_hugepage(page);
 			continue;
 		}
-		list_del(&page->lru);
+		list_del(&page->lru);	// cc->migratepages에서 삭제됨.
+		// NR_ISOLATED_ANON, NR_ISOLATED_FILE 둘 중 하나로 결정된다.
+		// dec는 1 감소를 의미
 		dec_zone_page_state(page, NR_ISOLATED_ANON +
 				page_is_file_cache(page));
 		if (unlikely(isolated_balloon_page(page)))

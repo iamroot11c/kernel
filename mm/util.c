@@ -384,6 +384,7 @@ unsigned long vm_mmap(struct file *file, unsigned long addr,
 EXPORT_SYMBOL(vm_mmap);
 
 // 2015-07-04;
+// 2015-07-11
 struct address_space *page_mapping(struct page *page)
 {
 	struct address_space *mapping = page->mapping;

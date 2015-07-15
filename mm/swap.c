@@ -41,6 +41,7 @@
 /* How many pages do we try to swap or page in/out together? */
 int page_cluster;
 
+// 2015-07-11
 static DEFINE_PER_CPU(struct pagevec, lru_add_pvec);
 static DEFINE_PER_CPU(struct pagevec, lru_rotate_pvecs);
 static DEFINE_PER_CPU(struct pagevec, lru_deactivate_pvecs);
@@ -50,14 +51,19 @@ static DEFINE_PER_CPU(struct pagevec, lru_deactivate_pvecs);
  * freed via pagevecs.  But it gets used by networking.
  */
 // 2015-04-18;
+// 2015-07-11
+// page를 lru list에서 제거하는 기능 from zone->lruvec
+// page는 lru page여야하는 필요조건이 성립
 static void __page_cache_release(struct page *page)
 {
+	// page가 기본적으로 LRU 페이지여야 한다.
 	if (PageLRU(page)) {
 		struct zone *zone = page_zone(page);
 		struct lruvec *lruvec;
 		unsigned long flags;
 
 		spin_lock_irqsave(&zone->lru_lock, flags);
+		// zone->lruvec
 		lruvec = mem_cgroup_page_lruvec(page, zone);
 		VM_BUG_ON(!PageLRU(page));
 		__ClearPageLRU(page);
@@ -68,6 +74,8 @@ static void __page_cache_release(struct page *page)
 }
 
 // 2015-04-25
+// 2015-07-11
+// 버디 할당자에서 order 0인 경우에 관리하는 list에 추가하는 기능
 static void __put_single_page(struct page *page)
 {
 	// page를 LRU list에서 삭제
@@ -77,17 +85,20 @@ static void __put_single_page(struct page *page)
 }
 
 // 2015-04-18;
+// 2015-07-11
 static void __put_compound_page(struct page *page)
 {
 	compound_page_dtor *dtor;
 
 	__page_cache_release(page);
 	// (compound_page_dtor *)page[1].lru.next
+	// free_compound_page가 할당 될 것으로 예상함
 	dtor = get_compound_page_dtor(page);
 	(*dtor)(page);
 }
 
 // 2015-04-18;
+// 2015-07-11
 static void put_compound_page(struct page *page)
 {
 	// page의 flags에서 PG_head_tail_mask가 있는지 확인
@@ -218,6 +229,7 @@ out_put_single:
 	}
 }
 
+// 2015-07-11
 void put_page(struct page *page)
 {
 	if (unlikely(PageCompound(page)))
@@ -231,6 +243,7 @@ EXPORT_SYMBOL(put_page);
  * This function is exported but must not be called by anything other
  * than get_page(). It implements the slow path of get_page().
  */
+// 2015-07-11, glance
 bool __get_page_tail(struct page *page)
 {
 	/*
@@ -617,11 +630,14 @@ EXPORT_SYMBOL(mark_page_accessed);
  * pagevec is drained. This gives a chance for the caller of __lru_cache_add()
  * have the page added to the active list using mark_page_accessed().
  */
+// 2015-07-11
+// lru_add_pvec에 page를 추가하는 기능
 void __lru_cache_add(struct page *page)
 {
 	struct pagevec *pvec = &get_cpu_var(lru_add_pvec);
 
 	page_cache_get(page);
+	// 공간이 없는 경우, pvec의 page들을 zone의 vec으로 옮긴다.
 	if (!pagevec_space(pvec))
 		__pagevec_lru_add(pvec);
 	pagevec_add(pvec, page);
@@ -633,6 +649,7 @@ EXPORT_SYMBOL(__lru_cache_add);
  * lru_cache_add - add a page to a page list
  * @page: the page to be added to the LRU.
  */
+// 2015-07-11
 void lru_cache_add(struct page *page)
 {
 	VM_BUG_ON(PageActive(page) && PageUnevictable(page));
@@ -650,12 +667,16 @@ void lru_cache_add(struct page *page)
  * while it's locked or otherwise "invisible" to other tasks.  This is
  * difficult to do when using the pagevec cache, so bypass that.
  */
+// 2015-07-11
+// page를 zone->lruvec의 LRU_UNEVICTABLE에 추가함
+// 추가하려는 page는 not Active, unevictable, LRU 형태이다.
 void add_page_to_unevictable_list(struct page *page)
 {
 	struct zone *zone = page_zone(page);
 	struct lruvec *lruvec;
 
 	spin_lock_irq(&zone->lru_lock);
+	// zone->lruvec을 리턴
 	lruvec = mem_cgroup_page_lruvec(page, zone);
 	ClearPageActive(page);
 	SetPageUnevictable(page);
@@ -1018,6 +1039,8 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec,
 // 2015-04-04
 // 2015-06-20
 // pvec 내의 모든 페이지에 대해 해당 페이지가 속한 존의 lruvec로 이동 후 페이지 삭제
+// 2015-07-11
+// pagevec_lru_move_fn에서 pvec의 page들을 해제하고 초기화하는 기능을 담당한다.
 void __pagevec_lru_add(struct pagevec *pvec)
 {
 	pagevec_lru_move_fn(pvec, __pagevec_lru_add_fn, NULL);

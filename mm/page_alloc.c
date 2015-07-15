@@ -367,8 +367,10 @@ out:
  * This usage means that zero-order pages may not be compound.
  */
 // 2015-04-18;
+// 2015-07-11
 static void free_compound_page(struct page *page)
 {
+	// compound_order == 0으로 가정
 	__free_pages_ok(page, compound_order(page));
 }
 
@@ -470,6 +472,8 @@ static inline void clear_page_guard_flag(struct page *page) { }
 #endif
 
 // 2015-04-18;
+// 2015-07-11
+// private 값 설정, buddy 설정
 static inline void set_page_order(struct page *page, int order)
 {
 	set_page_private(page, order);
@@ -477,6 +481,8 @@ static inline void set_page_order(struct page *page, int order)
 }
 
 // 2015-05-30
+// 2015-07-11
+// remove page order
 static inline void rmv_page_order(struct page *page)
 {
 	__ClearPageBuddy(page);
@@ -500,6 +506,16 @@ static inline void rmv_page_order(struct page *page)
  *
  * Assumption: *_mem_map is contiguous at least up to MAX_ORDER
  */
+// 2015-07-11, 버디를 구한다. 정말 머리 좋다.
+// 예를 들어, order 0일때는 아래와 같고
+// 0, 1
+// 1, 0
+// order 2일때는
+// 0, 4
+// 1, 5
+// 3, 7
+// 4, 0
+//
 static inline unsigned long
 __find_buddy_index(unsigned long page_idx, unsigned int order)
 {
@@ -522,15 +538,19 @@ __find_buddy_index(unsigned long page_idx, unsigned int order)
  * For recording page's order, we use page_private(page).
  */
 // 2015-04-18;
+// 2015-07-11
 static inline int page_is_buddy(struct page *page, struct page *buddy,
 								int order)
 {
+	// 항상 true
 	if (!pfn_valid_within(page_to_pfn(buddy)))
 		return 0;
 
+	// page, buddy가 같은 zone에 있는지?
 	if (page_zone_id(page) != page_zone_id(buddy))
 		return 0;
 
+	// page_is_guard() 항상 false
 	if (page_is_guard(buddy) && page_order(buddy) == order) {
 		VM_BUG_ON(page_count(buddy) != 0);
 		return 1;
@@ -571,6 +591,9 @@ static inline int page_is_buddy(struct page *page, struct page *buddy,
 // __free_one_page(page, zone, order, migratetype);
 // 2015-04-25, __free_one_page(page, zone, 0, mt);    
 // 이벤트 발생 시 호출되는 CB임으로 아래는 충분히 분석하지 않았음.
+// 
+// 2015-07-11, 정상적으로 호출되었으니, 제대로 보고 있는 중
+// 결국에는 해당 page를 free_list에 추가하는 기능
 static inline void __free_one_page(struct page *page,
 		struct zone *zone, unsigned int order,
 		int migratetype)
@@ -588,20 +611,26 @@ static inline void __free_one_page(struct page *page,
 
 	VM_BUG_ON(migratetype == -1);
 
+	// page_idx는 0 ~ 1023의 값을 가진다.
+	// pfn이 1023을 넘어가면 0부터 다시 시작
 	page_idx = page_to_pfn(page) & ((1 << MAX_ORDER) - 1);
 
 	VM_BUG_ON(page_idx & ((1 << order) - 1));
 	VM_BUG_ON(bad_range(zone, page));
 
+	// order를 구하기 위함
+	// order 0으로 가정
 	while (order < MAX_ORDER-1) {
+		// page_idx(0), order(0)인 경우, buddy_idx는 1
 		buddy_idx = __find_buddy_index(page_idx, order);
-		buddy = page + (buddy_idx - page_idx);
+		buddy = page + (buddy_idx - page_idx);	// buddy page이다.
 		if (!page_is_buddy(page, buddy, order))
 			break;
 		/*
 		 * Our buddy is free or it is CONFIG_DEBUG_PAGEALLOC guard page,
 		 * merge with it and move up one order.
 		 */
+		// page_is_guard 항상 false
 		if (page_is_guard(buddy)) {
 			clear_page_guard_flag(buddy);
 			set_page_private(page, 0);
@@ -612,6 +641,7 @@ static inline void __free_one_page(struct page *page,
 			zone->free_area[order].nr_free--;
 			rmv_page_order(buddy);
 		}
+		// ???
 		combined_idx = buddy_idx & page_idx;
 		page = page + (combined_idx - page_idx);
 		page_idx = combined_idx;
@@ -657,7 +687,7 @@ static inline int free_pages_check(struct page *page)
 		bad_page(page);
 		return 1;
 	}
-	page_nid_reset_last(page);
+	page_nid_reset_last(page);	// NO OP
 	if (page->flags & PAGE_FLAGS_CHECK_AT_PREP)
 		page->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
 	return 0;
@@ -733,6 +763,7 @@ static void free_pcppages_bulk(struct zone *zone, int count,
 
 // 2015-04-18;
 // free_one_page(page_zone(page), page, order, migratetype);
+// 2015-07-11
 static void free_one_page(struct zone *zone, struct page *page, int order,
 				int migratetype)
 {
@@ -747,6 +778,7 @@ static void free_one_page(struct zone *zone, struct page *page, int order,
 
 // 2015-04-18;
 // 2015-04-25, free_pages_prepare(page, 0)
+// 2015-07-11
 static bool free_pages_prepare(struct page *page, unsigned int order)
 {
 	int i;
@@ -755,7 +787,7 @@ static bool free_pages_prepare(struct page *page, unsigned int order)
 	trace_mm_page_free(page, order);
 
 	// CONFIG_KMEMCHECK 비 활성화로 아래 함수는 아무작업도 하지 않음
-	kmemcheck_free_shadow(page, order);
+	kmemcheck_free_shadow(page, order);	// NO OP
 
 	if (PageAnon(page))
 		page->mapping = NULL;
@@ -773,10 +805,10 @@ static bool free_pages_prepare(struct page *page, unsigned int order)
 
 	// ARM은 page를 해제하는 함수를 제공하지 않음
 	// s390, powerpc는 함수를 제공
-	arch_free_page(page, order);
+	arch_free_page(page, order);	// NO OP
 
 	// CONFIG_DEBUG_PAGEALLOC 미 정의로 아무작업도 하지 않음
-	kernel_map_pages(page, 1 << order, 0);
+	kernel_map_pages(page, 1 << order, 0);		// NO OP
 
 	return true;
 }
@@ -785,6 +817,7 @@ static bool free_pages_prepare(struct page *page, unsigned int order)
 //
 // 2015-05-09;
 // __free_pages_ok(page, order);
+// 2015-07-11, order 0으로 가정
 static void __free_pages_ok(struct page *page, unsigned int order)
 {
 	unsigned long flags;
@@ -1432,7 +1465,7 @@ void mark_free_pages(struct zone *zone)
  */
 // 2015-04-25
 //
-// 2015-05-09;
+// 2015-05-09;, 2015-07-11
 // free_hot_cold_page(page, 0);
 void free_hot_cold_page(struct page *page, int cold)
 {

@@ -1352,6 +1352,7 @@ out:
  */
 // 2015-04-11
 // 2015-06-20
+// 현재 우리 arch에서는 zone->lruvec을 리턴
 struct lruvec *mem_cgroup_page_lruvec(struct page *page, struct zone *zone)
 {
 	struct mem_cgroup_per_zone *mz;

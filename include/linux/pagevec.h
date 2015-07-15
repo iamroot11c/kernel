@@ -48,14 +48,19 @@ static inline unsigned pagevec_count(struct pagevec *pvec)
 	return pvec->nr;
 }
 
+// 2015-07-11
+// 잉여 자원을 리턴
 static inline unsigned pagevec_space(struct pagevec *pvec)
 {
-	return PAGEVEC_SIZE - pvec->nr;
+	return PAGEVEC_SIZE/*14*/ - pvec->nr;
 }
 
 /*
  * Add a page to a pagevec.  Returns the number of slots still available.
  */
+// 2015-07-11
+// page를 pvec에 삽입
+// 남은 공간을 리턴
 static inline unsigned pagevec_add(struct pagevec *pvec, struct page *page)
 {
 	pvec->pages[pvec->nr++] = page;
