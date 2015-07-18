@@ -2441,6 +2441,7 @@ extern int _cond_resched(void);
 
 // 2015-06-20
 // 2015-07-04;
+// 2015-07-18; glance
 #define cond_resched() ({			\
 	__might_sleep(__FILE__, __LINE__, 0);	\
 	_cond_resched();			\

@@ -11,6 +11,7 @@ static inline bool is_migrate_isolate(int migratetype)
 	return migratetype == MIGRATE_ISOLATE;
 }
 #else
+// 2015-07-18
 static inline bool is_migrate_isolate_page(struct page *page)
 {
 	return false;

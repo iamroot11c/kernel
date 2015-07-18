@@ -69,6 +69,7 @@ static void map_pages(struct list_head *list)
 
 // 2015-07-04;
 // migrate_async_suitable(get_pageblock_migratetype(page));
+// 2015-07-18
 static inline bool migrate_async_suitable(int migratetype)
 {
 	return is_migrate_cma(migratetype)/*false*/ || migratetype == MIGRATE_MOVABLE;
@@ -77,12 +78,14 @@ static inline bool migrate_async_suitable(int migratetype)
 #ifdef CONFIG_COMPACTION
 /* Returns true if the pageblock should be scanned for pages to isolate. */
 // 2015-07-04;
+// 2015-07-18; 
+// isolation_suitable(cc, page)
 static inline bool isolation_suitable(struct compact_control *cc,
 					struct page *page)
 {
 	if (cc->ignore_skip_hint)
 		return true;
-
+	// page 내 플레그에 PB_migrate_skip의 존재 여부 확인 
 	return !get_pageblock_skip(page);
 }
 
@@ -200,6 +203,9 @@ static inline bool should_release_lock(spinlock_t *lock)
 // 2015-07-04;
 // compact_checklock_irqsave(&zone->lru_lock, &flags,
 //                                             loked, cc);
+// 2015-07-18
+// compact_checklock_irqsave(&cc->zone->lock, &flags, locked, cc);
+// 설정을 확인하여 가능한 경우 락을 걸어준다.
 static bool compact_checklock_irqsave(spinlock_t *lock, unsigned long *flags,
 				      bool locked, struct compact_control *cc)
 {
@@ -230,22 +236,28 @@ static inline bool compact_trylock_irqsave(spinlock_t *lock,
 }
 
 /* Returns true if the page is within a block suitable for migration to */
+// 2015-07-18
 static bool suitable_migration_target(struct page *page)
 {
+	// 2015-07-18 
+	// page에 설정된 PB_migrate ~ PB_migrate_end 까지의 비트를 얻어온다.
 	int migratetype = get_pageblock_migratetype(page);
 
 	/* Don't interfere with memory hot-remove or the min_free_kbytes blocks */
 	if (migratetype == MIGRATE_RESERVE)
 		return false;
 
+	// 현 분석 사양에서는 항상 false
 	if (is_migrate_isolate(migratetype))
 		return false;
 
 	/* If the page is a large free page, then allow migration */
+	// 2015-07-18
 	if (PageBuddy(page) && page_order(page) >= pageblock_order)
 		return true;
 
 	/* If the block is MIGRATE_MOVABLE or MIGRATE_CMA, allow migration */
+	// 2015-07-18
 	if (migrate_async_suitable(migratetype))
 		return true;
 
@@ -259,6 +271,8 @@ static bool suitable_migration_target(struct page *page)
  * pages inside of the pageblock (even though it may still end up isolating
  * some pages).
  */
+// 2015-07-18
+// isolate_freepages_block(cc, pfn, end_pfn, freelist, false);
 static unsigned long isolate_freepages_block(struct compact_control *cc,
 				unsigned long blockpfn,
 				unsigned long end_pfn,
@@ -273,6 +287,7 @@ static unsigned long isolate_freepages_block(struct compact_control *cc,
 	cursor = pfn_to_page(blockpfn);
 
 	/* Isolate free pages. */
+	// blockpfn~end_pfn까지의 page를 isolate시킨다.
 	for (; blockpfn < end_pfn; blockpfn++, cursor++) {
 		int isolated, i;
 		struct page *page = cursor;
@@ -323,15 +338,16 @@ static unsigned long isolate_freepages_block(struct compact_control *cc,
 		}
 
 isolate_fail:
+		// 2015-07-18 분석 시 strict 값이 false로 전달, 다음 pfn의 값에 대해 검사할 것이다.
 		if (strict)
 			break;
 		else
 			continue;
 
 	}
-
+	
 	trace_mm_compaction_isolate_freepages(nr_scanned, total_isolated);
-
+	// 2015-07-18 여기까지
 	/*
 	 * If strict isolation is requested by CMA then check that all the
 	 * pages requested were isolated. If there were any failures, 0 is
@@ -688,6 +704,7 @@ next_pageblock:
  * Based on information in the current compact_control, find blocks
  * suitable for isolating free pages from and then isolate them.
  */
+// 2015-07-18
 static void isolate_freepages(struct zone *zone,
 				struct compact_control *cc)
 {
@@ -718,6 +735,7 @@ static void isolate_freepages(struct zone *zone,
 	 * pages on cc->migratepages. We stop searching if the migrate
 	 * and free page scanners meet or enough free pages are isolated.
 	 */
+	// pfn == cc->free_pfn으로 초기 세팅이 되어있다.
 	for (; pfn > low_pfn && cc->nr_migratepages > nr_freepages;
 					pfn -= pageblock_nr_pages) {
 		unsigned long isolated;
@@ -728,7 +746,8 @@ static void isolate_freepages(struct zone *zone,
 		 * to schedule.
 		 */
 		cond_resched();
-
+		
+		// memblock에 해당 pfn이 존재하는지 여부 확인
 		if (!pfn_valid(pfn))
 			continue;
 
@@ -740,14 +759,17 @@ static void isolate_freepages(struct zone *zone,
 		 * pages do not belong to a single zone.
 		 */
 		page = pfn_to_page(pfn);
+		// 얻어온 page의 zone이 압축 대상의 zone과 일치하는 지 여부 확인 
 		if (page_zone(page) != zone)
 			continue;
-
+		// 2015-07-18 식사 전
 		/* Check the block is suitable for migration */
+		// 2015-07-18 시작
 		if (!suitable_migration_target(page))
 			continue;
 
 		/* If isolation recently failed, do not retry */
+		// 2015-07-18 시작
 		if (!isolation_suitable(cc, page))
 			continue;
 
@@ -788,6 +810,8 @@ static void isolate_freepages(struct zone *zone,
  * This is a migrate-callback that "allocates" freepages by taking pages
  * from the isolated freelists in the block we are migrating to.
  */
+// 2015-07-18
+//  get_new_page(page, private, &result);
 static struct page *compaction_alloc(struct page *migratepage,
 					unsigned long data,
 					int **result)
@@ -797,6 +821,7 @@ static struct page *compaction_alloc(struct page *migratepage,
 
 	/* Isolate free pages if necessary */
 	if (list_empty(&cc->freepages)) {
+		// 2015-07-18
 		isolate_freepages(cc->zone, cc);
 
 		if (list_empty(&cc->freepages))
@@ -1057,7 +1082,9 @@ static int compact_zone(struct zone *zone, struct compact_control *cc)
 		case ISOLATE_SUCCESS:
 			;
 		}
-
+		// 2015-07-18 시작
+		// 현재 블럭이 아닌 다른 page 블럭에 대해 압축을 해야 하며,
+		//  isolate에 성공한 경우에 대한 처리
 		nr_migrate = cc->nr_migratepages;
 		err = migrate_pages(&cc->migratepages, compaction_alloc,
 				(unsigned long)cc,
@@ -1078,7 +1105,7 @@ static int compact_zone(struct zone *zone, struct compact_control *cc)
 				goto out;
 			}
 		}
-	}
+	} // while ((ret = compact_finished(zone, cc)) == COMPACT_CONTINUE) 끝
 
 out:
 	/* Release free pages and check accounting */

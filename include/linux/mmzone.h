@@ -86,6 +86,7 @@ extern int page_group_by_mobility_disabled;
 // MIGRATE_UNMOVABLE, MIGRATE_RECLAIMABLE, 
 // MIGRATE_MOVABLE 등의 상태를 조사
 // 2015-07-11
+// 2015-07-18
 static inline int get_pageblock_migratetype(struct page *page)
 {
 	return get_pageblock_flags_group(page, PB_migrate, PB_migrate_end);
@@ -570,7 +571,7 @@ static inline int zone_is_oom_locked(const struct zone *zone)
 {
 	return test_bit(ZONE_OOM_LOCKED, &zone->flags);
 }
-
+// 2015-07-18. 존이 사용하고 있는 page 중 마지막 pfn값을 리턴
 static inline unsigned long zone_end_pfn(const struct zone *zone)
 {
 	return zone->zone_start_pfn + zone->spanned_pages;
@@ -1221,8 +1222,13 @@ extern struct mem_section mem_section[NR_SECTION_ROOTS][SECTIONS_PER_ROOT];
 #endif
 
 // 2014-12-27;
+// 2015-07-18
 static inline struct mem_section *__nr_to_section(unsigned long nr)
 {
+    // 이상한 점. memsection은 config 설정 상 원소 1개를 가지는 포인터의 배열이지만
+    // mem_section[SECTION_NR_TO_ROOT(nr)][nr & SECTION_ROOT_MASK] 구문을 통해
+    // 설정한 배열 크기 이상에 해당되는 주소를 얻어와 반환하고 있다.
+    // 즉 buffer overflow가 일어나고 있다.
 	if (!mem_section[SECTION_NR_TO_ROOT(nr)])
 		return NULL;
 	return &mem_section[SECTION_NR_TO_ROOT(nr)][nr & SECTION_ROOT_MASK];
