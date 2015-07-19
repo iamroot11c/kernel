@@ -323,15 +323,19 @@ static unsigned long isolate_freepages_block(struct compact_control *cc,
 			goto isolate_fail;
 
 		/* Found a free page, break it into order-0 pages */
+		// 2015-07-18
+		// freelist로부터, 할당 받은 page의 order만큼의 page 갯수를 리턴받음
 		isolated = split_free_page(page);
 		total_isolated += isolated;
 		for (i = 0; i < isolated; i++) {
+			// NOTE: cc에 freepages에 page들을 추가하고 있다.
 			list_add(&page->lru, freelist);
 			page++;
 		}
 
 		/* If a page was split, advance to the end of it */
 		if (isolated) {
+			// -1은 for loop의 ++연산을 고려한 것 아닐까?
 			blockpfn += isolated - 1;
 			cursor += isolated - 1;
 			continue;
@@ -784,6 +788,7 @@ static void isolate_freepages(struct zone *zone,
 		 */
 		end_pfn = ALIGN(pfn + 1, pageblock_nr_pages);
 		end_pfn = min(end_pfn, z_end_pfn);
+		// 2015-07-19, start
 		isolated = isolate_freepages_block(cc, pfn, end_pfn,
 						   freelist, false);
 		nr_freepages += isolated;
