@@ -761,6 +761,7 @@ static inline void page_nid_reset_last(struct page *page)
 #endif
 
 // 2015-01-24
+// 2015-07-18
 static inline struct zone *page_zone(const struct page *page)
 {
 	return &NODE_DATA(page_to_nid(page))->node_zones[page_zonenum(page)];

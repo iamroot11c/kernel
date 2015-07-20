@@ -884,6 +884,8 @@ out:
  * Obtain the lock on page, remove all ptes and migrate the page
  * to the newly allocated page in newpage.
  */
+// 2015-07-18
+// unmap_and_move(get_new_page, private, page, pass > 2, mode); get_new_page == compaction_alloc 함수
 static int unmap_and_move(new_page_t get_new_page, unsigned long private,
 			struct page *page, int force, enum migrate_mode mode)
 {
@@ -1041,6 +1043,11 @@ out:
  *
  * Returns the number of pages that were not migrated, or an error code.
  */
+
+//2015-07-18 시작
+// migrate_pages(&cc->migratepages, compaction_alloc,(unsigned long)cc,
+//		cc->sync ? MIGRATE_SYNC_LIGHT : MIGRATE_ASYNC,
+// 		MR_COMPACTION);
 int migrate_pages(struct list_head *from, new_page_t get_new_page,
 		unsigned long private, enum migrate_mode mode, int reason)
 {
@@ -1058,10 +1065,24 @@ int migrate_pages(struct list_head *from, new_page_t get_new_page,
 
 	for(pass = 0; pass < 10 && retry; pass++) {
 		retry = 0;
-
+		//#define list_for_each_entry_safe(pos, n, head, member)          \
+		//    for (pos = list_entry((head)->next, typeof(*pos), member),  
+		//         n = list_entry(pos->member.next, typeof(*pos), member); \
+		//         &pos->member != (head);                    \
+		//        pos = n, n = list_entry(n->member.next, typeof(*n), member))
+		// ->
+		/*
+			for (page = container_of(from->next, typeof(*page), lru), 
+			     page2 = container_of(page->lru.next), typeof(*page), lru);
+				&page->lru != from;
+					page = page2,
+					page2 = container_of(page2->lru.next, typeof(*page), lru)
+			
+		  -> lru->next가 from일 때까지 순회(from에 연결된 리스트를 전부 순회) 
+		*/
 		list_for_each_entry_safe(page, page2, from, lru) {
 			cond_resched();
-
+			// PageHuge(page) == false
 			if (PageHuge(page))
 				rc = unmap_and_move_huge_page(get_new_page,
 						private, page, pass > 2, mode);

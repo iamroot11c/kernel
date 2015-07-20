@@ -482,9 +482,11 @@ static inline void set_page_order(struct page *page, int order)
 
 // 2015-05-30
 // 2015-07-11
+// 2015-07-18
 // remove page order
 static inline void rmv_page_order(struct page *page)
 {
+	// 버디 할당자 플래그 제거 및 차수 제거
 	__ClearPageBuddy(page);
 	set_page_private(page, 0);
 }
@@ -1548,6 +1550,7 @@ void free_hot_cold_page_list(struct list_head *list, int cold)
  * Note: this is probably too low level an operation for use in drivers.
  * Please consult with lkml before using this in your driver.
  */
+// 2015-07-18
 void split_page(struct page *page, unsigned int order)
 {
 	int i;
@@ -1563,12 +1566,12 @@ void split_page(struct page *page, unsigned int order)
 	if (kmemcheck_page_is_tracked(page))
 		split_page(virt_to_page(page[0].shadow), order);
 #endif
-
+	// 1번째 페이지 부터 레퍼런스 카운트를 1로 설정
 	for (i = 1; i < (1 << order); i++)
 		set_page_refcounted(page + i);
 }
 EXPORT_SYMBOL_GPL(split_page);
-
+// 2015-07-18
 static int __isolate_free_page(struct page *page, unsigned int order)
 {
 	unsigned long watermark;
@@ -1583,9 +1586,11 @@ static int __isolate_free_page(struct page *page, unsigned int order)
 	if (!is_migrate_isolate(mt)) {
 		/* Obey watermarks as if the page was being allocated */
 		watermark = low_wmark_pages(zone) + (1 << order);
+		// zone의 freePage가 계산된 watermark값보다 큰 경우 true
 		if (!zone_watermark_ok(zone, 0, watermark, 0, 0))
 			return 0;
-
+		// page에 해당되는 만큼 freelist에서 제거되었기 때문에
+		// 제거할 페이지의 차수만큼 zone의 free 페이지 개수를 빼준다.
 		__mod_zone_freepage_state(zone, -(1UL << order), mt);
 	}
 
@@ -1600,11 +1605,12 @@ static int __isolate_free_page(struct page *page, unsigned int order)
 		for (; page < endpage; page += pageblock_nr_pages) {
 			int mt = get_pageblock_migratetype(page);
 			if (!is_migrate_isolate(mt) && !is_migrate_cma(mt))
+				// pageblock_order단위로 page구조체에 MIGRATE_MOVABLE플래그 설정
 				set_pageblock_migratetype(page,
 							  MIGRATE_MOVABLE);
 		}
 	}
-
+	// isolate에 성공한 페이지 개수 리턴
 	return 1UL << order;
 }
 
@@ -1618,18 +1624,22 @@ static int __isolate_free_page(struct page *page, unsigned int order)
  * Note: this is probably too low level an operation for use in drivers.
  * Please consult with lkml before using this in your driver.
  */
+// 2015-07-18
+// split_free_page(page)
 int split_free_page(struct page *page)
 {
 	unsigned int order;
 	int nr_pages;
-
+	// order = page->private;
 	order = page_order(page);
-
+	// 2015-07-18
+	// isolate에 성공한 페이지 개수 반환
 	nr_pages = __isolate_free_page(page, order);
 	if (!nr_pages)
 		return 0;
 
 	/* Split into individual pages */
+	// isolate된 페이지들에 대해 레퍼런스 카운트를 1로 설정
 	set_page_refcounted(page);
 	split_page(page, order);
 	return nr_pages;
@@ -1857,6 +1867,8 @@ static bool __zone_watermark_ok(struct zone *z, int order, unsigned long mark,
 // zone_watermark_ok(zone, 0, watermark, 0, 0);
 // zone_watermark_ok(zone, order, watermark, 0, 0);
 // zone_watermark_ok(zone, cc->order, watermark, 0, 0)
+// 2015-07-18
+// zone_watermark_ok(zone, 0, watermark, 0, 0)
 bool zone_watermark_ok(struct zone *z, int order, unsigned long mark,
 		      int classzone_idx, int alloc_flags)
 {
@@ -6558,6 +6570,8 @@ static inline int pfn_to_bitidx(struct zone *zone, unsigned long pfn)
 // 2015-07-04;
 // get_pageblock_flags_group(page, PB_migrate_skip, PB_migrate_skip);
 // get_pageblock_flags_group(page, PB_migrate, PB_migrate_end)
+// 2015-07-18
+// get_pageblock_flags_group(page, PB_migrate_skip, PB_migrate_skip)
 unsigned long get_pageblock_flags_group(struct page *page,
 					int start_bitidx, int end_bitidx)
 {
