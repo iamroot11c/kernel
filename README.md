@@ -1,11 +1,12 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
-+ [62주차]() `2015.07.25
- - [kmem_cache_init() 진행중](http://bit.ly/1fT7MIE)
++ [62주차]() `2015.07.25`
+ - [kmem_cache_init() 진행중](http://bit.ly/1enUphX)
  - mm/migrate.c:__unmap_and_move() 진행중
  - get_new_page() 함수 분석완료
  - lock_page() 함수 분석 완료
+ - 금주 회식으로 7(19)시 종료 및 차주 휴가
 + [61차]() `2015.07.18`
  - [kmem_cache_init() 진행중](http://bit.ly/1fT7MIE)
  - compaction.c:compact_zone() 내부 진행
