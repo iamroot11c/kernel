@@ -162,6 +162,7 @@ extern int _cond_resched(void);
 # define might_resched() _cond_resched()
 #else
 # define might_resched() do { } while (0) // 2015-05-23
+                                          // 2015-07-25;
 #endif
 
 #ifdef CONFIG_DEBUG_ATOMIC_SLEEP // not define
@@ -183,6 +184,7 @@ extern int _cond_resched(void);
   static inline void __might_sleep(const char *file, int line,
 				   int preempt_offset) { }
 // 2015-05-23;
+// 2015-07-25;
 # define might_sleep() do { might_resched(); } while (0)
 #endif
 

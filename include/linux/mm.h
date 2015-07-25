@@ -384,6 +384,8 @@ static inline void compound_unlock_irqrestore(struct page *page,
 // 2015-04-18;
 // 인자로 주어진 page가 끝이라면 첫 번째 page를 구하며,
 // 마지막이 아니라면 바로 리턴함
+//
+// 2015-07-25;
 static inline struct page *compound_head(struct page *page)
 {
 	if (unlikely(PageTail(page))) {
@@ -418,6 +420,8 @@ static inline int page_mapcount(struct page *page)
 	return atomic_read(&(page)->_mapcount) + 1;
 }
 
+// 2015-07-25;
+// page_count(page);
 static inline int page_count(struct page *page)
 {
 	return atomic_read(&compound_head(page)->_count);

@@ -400,6 +400,8 @@ extern struct root_domain def_root_domain;
  * acquire operations must be ordered by ascending &runqueue.
  */
 // 2015-06-20
+// 2015-07-25;
+// 오름차순으로 락을 획득
 struct rq {
 	/* runqueue lock: */
 	raw_spinlock_t lock;

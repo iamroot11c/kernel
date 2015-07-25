@@ -176,6 +176,7 @@ void delete_from_page_cache(struct page *page)
 }
 EXPORT_SYMBOL(delete_from_page_cache);
 
+// 2015-07-25;
 static int sleep_on_page(void *word)
 {
 	io_schedule();
@@ -635,10 +636,24 @@ EXPORT_SYMBOL(end_page_writeback);
  * __lock_page - get a lock on the page, assuming we need to sleep to get it
  * @page: the page to lock
  */
+// 2015-07-25;
 void __lock_page(struct page *page)
 {
+	/*
+        #define DEFINE_WAIT_BIT(name, word, bit)				\
+	struct wait_bit_queue name = {					\
+		.key = __WAIT_BIT_KEY_INITIALIZER(word, bit),		\
+		.wait	= {						\
+			.private	= current,			\
+			.func		= wake_bit_function,		\
+			.task_list	=				\
+				LIST_HEAD_INIT((name).wait.task_list),	\
+		},							\
+	}
+	*/
 	DEFINE_WAIT_BIT(wait, &page->flags, PG_locked);
 
+	// 2015-07-25;
 	__wait_on_bit_lock(page_waitqueue(page), &wait, sleep_on_page,
 							TASK_UNINTERRUPTIBLE);
 }

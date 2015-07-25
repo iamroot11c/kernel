@@ -27,6 +27,10 @@ static inline void count_compact_event(enum vm_event_item item)
 
 // 2015-07-04;
 // count_compact_events(COMPACTMIGRATE_SCANNED, nr_scanned);
+//
+// 2015-07-25;
+// count_compact_events(COMPACTFREE_SCANNED, nr_scanned);
+// count_compact_events(COMPACTISOLATED, total_isolated);
 static inline void count_compact_events(enum vm_event_item item, long delta)
 {
 	count_vm_events(item, delta);
@@ -57,12 +61,18 @@ static unsigned long release_freepages(struct list_head *freelist)
 	return count;
 }
 
+// 2015-07-25;
+// map_pages(freelist);
 static void map_pages(struct list_head *list)
 {
 	struct page *page;
 
+	// 리스트를 모두 순회하는데 호출되는 함수는 아무역활이 없어서
+	// 비 효율적으로 생각된다.
 	list_for_each_entry(page, list, lru) {
+		// HAVE_ARCH_ALLOC_PAGE 미 설정으로 함수는 아무 역활이 없음
 		arch_alloc_page(page, 0);
+		// CONFIG_DEBUG_PAGEALLOC 미 설정으로 함수는 아무 역활이 없음
 		kernel_map_pages(page, 1, 1);
 	}
 }
@@ -94,7 +104,7 @@ static inline bool isolation_suitable(struct compact_control *cc,
  * should be skipped for page isolation when the migrate and free page scanner
  * meet.
  */
-// 2015-06-20
+// 2015-06-20; 오류사항이 있을 때 호출
 static void __reset_isolation_suitable(struct zone *zone)
 {
 	unsigned long start_pfn = zone->zone_start_pfn;
@@ -143,6 +153,9 @@ void reset_isolation_suitable(pg_data_t *pgdat)
  */
 // 2015-07-04;
 // update_pageblock_skip(cc, valid_page, nr_isolated, true);
+//
+// 2015-07-25;
+// update_pageblock_skip(cc, valid_page, total_isolated, false);
 static void update_pageblock_skip(struct compact_control *cc,
 			struct page *page, unsigned long nr_isolated,
 			bool migrate_scanner)
@@ -157,7 +170,7 @@ static void update_pageblock_skip(struct compact_control *cc,
 
 	if (!nr_isolated) {
 		unsigned long pfn = page_to_pfn(page);
-		set_pageblock_skip(page);
+		set_pageblock_skip(page); // 페이지의 skip 플레그를 설정
 
 		/* Update where compaction should restart */
 		if (migrate_scanner) {
@@ -165,6 +178,17 @@ static void update_pageblock_skip(struct compact_control *cc,
 			    pfn > zone->compact_cached_migrate_pfn)
 				zone->compact_cached_migrate_pfn = pfn;
 		} else {
+			// 2015-07-25
+			// isolate_freepages() 함수에서 
+			// isolate_freepages_block() 함수를 실행한 후 
+			// compact_control.finished_update_free
+			// 멤버변수를 true로 변경하는데
+			//
+			// 지금은 isolate_freepages_block() 함수 내부를 수행하고
+			// 있어 이 값은 'false'로 설정되어 있다. 
+			//
+			// compact_cached_free_pfn의 값이 pfn으로 변경되면
+			// 압축의 범위가 넓어지게 된다.
 			if (!cc->finished_update_free &&
 			    pfn < zone->compact_cached_free_pfn)
 				zone->compact_cached_free_pfn = pfn;
@@ -273,6 +297,8 @@ static bool suitable_migration_target(struct page *page)
  */
 // 2015-07-18
 // isolate_freepages_block(cc, pfn, end_pfn, freelist, false);
+//
+// 2015-07-25 완료;
 static unsigned long isolate_freepages_block(struct compact_control *cc,
 				unsigned long blockpfn,
 				unsigned long end_pfn,
@@ -352,11 +378,14 @@ isolate_fail:
 	
 	trace_mm_compaction_isolate_freepages(nr_scanned, total_isolated);
 	// 2015-07-18 여기까지
+	
+	// 2015-07-25 시작;
 	/*
 	 * If strict isolation is requested by CMA then check that all the
 	 * pages requested were isolated. If there were any failures, 0 is
 	 * returned and CMA will fail.
 	 */
+	// strict = false; // 함수의 마지막 인자;
 	if (strict && blockpfn < end_pfn)
 		total_isolated = 0;
 
@@ -364,13 +393,16 @@ isolate_fail:
 		spin_unlock_irqrestore(&cc->zone->lock, flags);
 
 	/* Update the pageblock-skip if the whole pageblock was scanned */
+	// 2015-07-25;
 	if (blockpfn == end_pfn)
 		update_pageblock_skip(cc, valid_page, total_isolated, false);
 
+	// 2015-07-25;
 	count_compact_events(COMPACTFREE_SCANNED, nr_scanned);
 	if (total_isolated)
 		count_compact_events(COMPACTISOLATED, total_isolated);
 	return total_isolated;
+	// 2015-07-25 완료;
 }
 
 /**
@@ -709,6 +741,7 @@ next_pageblock:
  * suitable for isolating free pages from and then isolate them.
  */
 // 2015-07-18
+// 2015-07-25 완료;
 static void isolate_freepages(struct zone *zone,
 				struct compact_control *cc)
 {
@@ -791,6 +824,8 @@ static void isolate_freepages(struct zone *zone,
 		// 2015-07-19, start
 		isolated = isolate_freepages_block(cc, pfn, end_pfn,
 						   freelist, false);
+	        // 2015-07-25, 완료;
+
 		nr_freepages += isolated;
 
 		/*
@@ -800,15 +835,21 @@ static void isolate_freepages(struct zone *zone,
 		 */
 		if (isolated) {
 			cc->finished_update_free = true;
+			// pfn은 계속 감소되어 
+			// high_pfn의 최초의 값으로 유지될 것 같다.
 			high_pfn = max(high_pfn, pfn);
 		}
-	}
+	} // for
 
 	/* split_free_page does not map the pages */
+	// 2015-07-25;
+	// no op; // HAVE_ARCH_ALLOC_PAGE, CONFIG_DEBUG_PAGEALLOC 미 설정
 	map_pages(freelist);
 
 	cc->free_pfn = high_pfn;
 	cc->nr_freepages = nr_freepages;
+
+	// 2015-07-25 완료;
 }
 
 /*
@@ -817,6 +858,7 @@ static void isolate_freepages(struct zone *zone,
  */
 // 2015-07-18
 //  get_new_page(page, private, &result);
+// 2015-07-25 완료;
 static struct page *compaction_alloc(struct page *migratepage,
 					unsigned long data,
 					int **result)
@@ -828,7 +870,9 @@ static struct page *compaction_alloc(struct page *migratepage,
 	if (list_empty(&cc->freepages)) {
 		// 2015-07-18
 		isolate_freepages(cc->zone, cc);
+		// 2015-07-25 완료;
 
+		// 2015-07-25 목록을 확인
 		if (list_empty(&cc->freepages))
 			return NULL;
 	}
@@ -838,6 +882,8 @@ static struct page *compaction_alloc(struct page *migratepage,
 	cc->nr_freepages--;
 
 	return freepage;
+
+	// 2015-07-25 완료;
 }
 
 /*

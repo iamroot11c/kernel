@@ -738,6 +738,10 @@ static int move_to_new_page(struct page *newpage, struct page *page,
 	return rc;
 }
 
+// 2015-07-25;
+// __unmap_and_move(page, newpage, force, mode);
+//  newpage == get_new_page(page, private, &result);
+// mode == cc->sync ? MIGRATE_SYNC_LIGHT : MIGRATE_ASYNC;
 static int __unmap_and_move(struct page *page, struct page *newpage,
 				int force, enum migrate_mode mode)
 {
@@ -747,6 +751,7 @@ static int __unmap_and_move(struct page *page, struct page *newpage,
 	struct anon_vma *anon_vma = NULL;
 
 	if (!trylock_page(page)) {
+		// 락을 이미 소유하고 있을 때
 		if (!force || mode == MIGRATE_ASYNC)
 			goto out;
 
@@ -768,6 +773,7 @@ static int __unmap_and_move(struct page *page, struct page *newpage,
 
 		lock_page(page);
 	}
+	// 2015-07-25 여기까지;
 
 	/* charge against new page */
 	mem_cgroup_prepare_migration(page, newpage, &mem);
@@ -885,22 +891,27 @@ out:
  * to the newly allocated page in newpage.
  */
 // 2015-07-18
-// unmap_and_move(get_new_page, private, page, pass > 2, mode); get_new_page == compaction_alloc 함수
+// unmap_and_move(get_new_page, private, page, pass > 2, mode); 
+//  get_new_page == compaction_alloc 함수
+//  mode == cc->sync ? MIGRATE_SYNC_LIGHT : MIGRATE_ASYNC;
 static int unmap_and_move(new_page_t get_new_page, unsigned long private,
 			struct page *page, int force, enum migrate_mode mode)
 {
 	int rc = 0;
 	int *result = NULL;
 	struct page *newpage = get_new_page(page, private, &result);
+	// 2015-07-25 완료;
 
 	if (!newpage)
 		return -ENOMEM;
 
+	// 2015-07-25;
 	if (page_count(page) == 1) {
 		/* page was freed from under us. So we are done. */
 		goto out;
 	}
 
+	// CONFIG_TRANSPARENT_HUGEPAGE not define
 	if (unlikely(PageTransHuge(page)))
 		if (unlikely(split_huge_page(page)))
 			goto out;

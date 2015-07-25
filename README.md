@@ -1,106 +1,111 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
-+ [60주차]() `2015.07.18` 
- - [kmem_cache_init() 진행중](http://bit.ly/1fT7MIE) 
++ [62주차]() `2015.07.25
+ - [kmem_cache_init() 진행중](http://bit.ly/1fT7MIE)
+ - mm/migrate.c:__unmap_and_move() 진행중
+ - get_new_page() 함수 분석완료
+ - lock_page() 함수 분석 완료
++ [61차]() `2015.07.18`
+ - [kmem_cache_init() 진행중](http://bit.ly/1fT7MIE)
  - compaction.c:compact_zone() 내부 진행
  - compact_finished() 함수의 리턴값이 COMPACT_CONTINUE 일 때 while문 실행
  - isolate_migratepages() 함수 내부 분석중
  - isolate_migratepageblock() 함수 분석 진행
-+ [60주차]() `2015.07.11` 
- - [kmem_cache_init() 진행중](http://bit.ly/1UNGhju) 
++ [60주차]() `2015.07.11`
+ - [kmem_cache_init() 진행중](http://bit.ly/1UNGhju)
  - compaction.c:compact_zone() 내부 진행
  - compact_finished() 함수의 리턴값이 COMPACT_CONTINUE 일 때 while문 실행
  - isolate_migratepages() 함수 내부 분석중
  - putback_movable_pages() 완료
-+ [59주차]() `2014.07.04` 
- - [kmem_cache_init() 진행중](http://bit.ly/1NXKzjv) 
++ [59주차]() `2015.07.04`
+ - [kmem_cache_init() 진행중](http://bit.ly/1NXKzjv)
  - compaction.c:compact_zone() 내부 진행
  - compact_finished() 함수의 리턴값이 COMPACT_CONTINUE 일 때 while문 실행
  - isolate_migratepages() 함수 내부 분석중
-+ [58주차]() `2014.06.27` 
- - [kmem_cache_init() 진행중](http://bit.ly/1JcHISc) 
++ [58주차]() `2015.06.27`
+ - [kmem_cache_init() 진행중](http://bit.ly/1JcHISc)
  - __alloc_pages_slowpath() 진행중
-+ [57주차]() `2014.06.20` 
++ [57주차]() `2015.06.20` 
  - [kmem_cache_init() 진행중](http://bit.ly/1GykIvK)
  - __alloc_pages_slowpath() 진행중
-+ [56주차]() `2014.06.13` 
++ [56주차]() `2015.06.13`
  - [kmem_cache_init() 진행중](http://bit.ly/1TiYgxA)
  - __alloc_pages_slowpath() 진행중
-+ [55주차]() `2014.06.06` 
++ [55주차]() `2015.06.06` 
  - [kmem_cache_init() 진행중](http://bit.ly/1GqTZob)
  - kmem_cache_init() 진행중
-+ [54주차]() `2014.05.30` 
++ [54주차]() `2015.05.30` 
  - [kmem_cache_init() 진행중](http://bit.ly/1Qhjo2P)
  - kmem_cache_init() 진행중
-+ [53주차]() `2014.05.23` 
++ [53주차]() `2015.05.23` 
  - [kmem_cache_init() 진행중](https://goo.gl/EyFOvb)
  - kmem_cache_init() 진행중
-+ [52주차]() `2014.05.16` 
++ [52주차]() `2015.05.16` 
  - [kmem_cache_init() 진행중](https://goo.gl/lVgK8v)
  - kmem_cache_init() 진행중
-+ [51주차]() `2014.05.09` 
++ [51주차]() `2015.05.09` 
  - [mem_init() 진행중](https://goo.gl/BIS8O2)
  - mem_init() 진행중
-+ [50주차]() `2014.05.02` 
++ [50주차]() `2015.05.02` 
  - [init/main.c](https://goo.gl/CWZolG)
  - parse_args(..., &unknown_bootoption) 
  - sort_main_extable()
  - vfs_caches_init_early()
-+ [49주차]() `2014.04.25` 
++ [49주차]() `2015.04.25` 
  - [init/main.c](http://goo.gl/BSNhP3)
  - page_alloc_init() 완료
-+ [48주차]() `2014.04.18` 
++ [48주차]() `2015.04.18` 
  - [page_alloc_init() 진행중](http://goo.gl/F3H2T6)
  - page_alloc_cpu_notify() 분석중
  - page_alloc_init() 함수에서는page_alloc_cpu_notify() 함수를 등록하는데 등록된 함수는 CPU가 종료될 때 호출되어 부팅단계에서 분석하기에는 어려움이 있어 중단함
-+ [47주차]() `2014.04.11` 
++ [47주차]() `2015.04.11` 
  - [page_alloc_init() 진행중](http://goo.gl/J6axwE)
  - page_alloc_cpu_notify() 분석중
-+ [46주차]() `2014.04.06` 
++ [46주차]() `2015.04.06` 
  - [page_alloc_init() 진행중]( http://goo.gl/90fl06)
  -  page_alloc_init() 함수에서는 page_alloc_cpu_notify() 함수를 등록
-+ [45주차]() `2014.03.28` 
++ [45주차]() `2015.03.28` 
  - mm/page_alloc.c build_all_zonelists() 분석중
  - __build_all_zonelists()
  - mminit_verify_zonelist()
-+ [44주차]() `2014.03.21` 
++ [44주차]() `2015.03.21`
  - [Something]( http://goo.gl/0E3rBp)
-+ [43주차]() `2014.03.14` 
++ [43주차]() `2015.03.14`
  - [mm/percpu.c pcpu_embed_first_chunk()](http://goo.gl/520gnX)
  - setup_per_cpu_areas() 분석 중
-+ [42주차]() `2014.03.07` 
++ [42주차]() `2015.03.07`
  - [init/main.c kernel/smp.c setup_nr_cpu_ids()]( http://goo.gl/o4RuKP)
  - init_mm, init_task 분석
-+ [41주차]() `2014.02.28` 
++ [41주차]() `2015.02.28`
  - [init/main.c, arch/arm/kernel/setup.c]( http://goo.gl/cc433Q)
- - setup_arch() 분석 완료 
-+ [40주차]() `2014.02.14` 
+ - setup_arch() 분석 완료
++ [40주차]() `2015.02.14`
  - [arch/arm/kernel/setup.c, arch/arm/kernel/devtree.c](http://goo.gl/psYle3)
  - arm_dt_init_cpu_maps() 분석 완료
-+ [39주차]() `2014.02.07` 
++ [39주차]() `2015.02.07`
  - [mm/flush.c:drivers/of/fdt.c](http://goo.gl/2KBzee)
  -  paging_init() 분석 완료
  - __unflatten_device_tree() 진행중
-+ [38주차]() `2014.01.31` 
++ [38주차]() `2015.01.31` 
  - [mm/flush.c]( http://goo.gl/NWj838)
  -  __flush_dcache_page()
  - __flush_dcache_page()
-+ [37주차]() `2014.01.24` 
++ [37주차]() `2015.01.24` 
  - [page_alloc.c \\ arm/mm/page_alloc.c](http://goo.gl/vDJUm7)
  - bootmem_init() 분석 완료
  - __flush_dcache_page() 진행중
-+ [36주차]() `2014.01.17` 
++ [36주차]() `2015.01.17`
  - [mm/page_alloc.c](http://goo.gl/sJ3pBR)
  - free_area_init_core()
  - memmap_init_zone()
-+ [35주차]() `2014.01.10` 
++ [35주차]() `2015.01.10`
  - [mm/page_alloc.c](http://goo.gl/mqFj8S)
  - free_area_init_core()
 + [34주차]() `2014.01.03`
  - [arch/arm/mm/init.c](http://goo.gl/CjjZ7e)
  - arm_bootmem_free() 진행중
- - sparse_init() 완료  
+ - sparse_init() 완료
 + [33주차]() `2014.12.27` 
  - [arch/arm/mm/init.c](http://goo.gl/CjjZ7e)
  - bootmem_init() 진행중

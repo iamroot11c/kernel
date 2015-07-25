@@ -197,6 +197,7 @@ extern char ___assert_task_state[1 - 2*!!(
 	do { current->state = (state_value); } while (0)
 // 2015-06-20
 // 2015-07-04; set_current_state(TASK_UNINTERRUPTIBLE);
+// 2015-07-25; set_current_state(TASK_UNINTERRUPTIBLE);
 #define set_current_state(state_value)		\
 	set_mb(current->state, (state_value))
 

@@ -6610,6 +6610,9 @@ unsigned long get_pageblock_flags_group(struct page *page,
 //                            PB_migrate_skip) 
 //   set_pageblock_flags_group(page, 1, PB_migrate_skip, PB_migrate_skip);
 //
+// 2015-07-25;
+// set_pageblock_flags_group(page, 1, PB_migrate_skip, PB_migrate_skip);
+//
 void set_pageblock_flags_group(struct page *page, unsigned long flags,
 					int start_bitidx, int end_bitidx)
 {

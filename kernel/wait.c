@@ -86,6 +86,8 @@ prepare_to_wait(wait_queue_head_t *q, wait_queue_t *wait, int state)
 }
 EXPORT_SYMBOL(prepare_to_wait);
 
+// 2015-07-25;
+// prepare_to_wait_exclusive(wq, &q->wait, wq, TASK_UNINTERRUPTIBLE);
 void
 prepare_to_wait_exclusive(wait_queue_head_t *q, wait_queue_t *wait, int state)
 {
@@ -111,6 +113,7 @@ EXPORT_SYMBOL(prepare_to_wait_exclusive);
  */
 // 2015-06-20
 // 2015-07-04;
+// 2015-07-24;
 void finish_wait(wait_queue_head_t *q, wait_queue_t *wait)
 {
 	unsigned long flags;
@@ -173,6 +176,7 @@ void abort_exclusive_wait(wait_queue_head_t *q, wait_queue_t *wait,
 }
 EXPORT_SYMBOL(abort_exclusive_wait);
 
+// 2015-07-25 glance;
 int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key)
 {
 	int ret = default_wake_function(wait, mode, sync, key);
@@ -183,6 +187,7 @@ int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *
 }
 EXPORT_SYMBOL(autoremove_wake_function);
 
+// 2015-07-25;
 int wake_bit_function(wait_queue_t *wait, unsigned mode, int sync, void *arg)
 {
 	struct wait_bit_key *key = arg;
@@ -229,6 +234,9 @@ int __sched out_of_line_wait_on_bit(void *word, int bit,
 }
 EXPORT_SYMBOL(out_of_line_wait_on_bit);
 
+// 2015-07-25;
+// __wait_on_bit_lock(page_waitqueue(page), &wait, sleep_on_page,
+//                                                 TASK_UNINTERRUPTIBLE);
 int __sched
 __wait_on_bit_lock(wait_queue_head_t *wq, struct wait_bit_queue *q,
 			int (*action)(void *), unsigned mode)
@@ -237,8 +245,18 @@ __wait_on_bit_lock(wait_queue_head_t *wq, struct wait_bit_queue *q,
 		int ret;
 
 		prepare_to_wait_exclusive(wq, &q->wait, mode);
-		if (!test_bit(q->key.bit_nr, q->key.flags))
+		// PG_locked를 확인
+		if (!test_bit(q->key.bit_nr, q->key.flags)) {
 			continue;
+			// PG_locked이 이미 설정되어 있어
+			// test_and_set_bit() 함수를 호출하면
+			// 결과가 참(true)가 되어 무한루프가
+			// 생기지 않을까?
+			//
+			//
+		}
+
+		// 스케쥴링을 함
 		ret = action(q->key.flags);
 		if (!ret)
 			continue;

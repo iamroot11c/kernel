@@ -52,6 +52,9 @@ static inline void __count_vm_events(enum vm_event_item item, long delta)
 
 // 2015-07-04;
 // COMPACTMIGRATE_SCANNED, nr_scanned
+//
+// 2015-7-25;
+// COMPACTFREE_SCANNED, nr_scanned
 static inline void count_vm_events(enum vm_event_item item, long delta)
 {
 	this_cpu_add(vm_event_states.event[item], delta);

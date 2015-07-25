@@ -339,16 +339,28 @@ static inline void __clear_page_locked(struct page *page)
 	__clear_bit(PG_locked, &page->flags);
 }
 
+// 2015-07-25;
+// 이 함수는 반드시 락을 설정하고 있다.
+// true: 최초의 락을 획득
+// false: 이미 락을 소유하고 있음
 static inline int trylock_page(struct page *page)
 {
-	return (likely(!test_and_set_bit_lock(PG_locked, &page->flags)));
+    // 새로운 플레그로 바꾸고
+    // 이전의 플레그 값과 새로운 플레그 값이 같다면 'false'
+    // 같지 않다면 'true'를 리턴
+    //
+    // 그리고 이 함수는 그 결과를 반전해서 리턴
+    // 즉 바꾸지 못하면 true, 바꾸면 false
+    return (likely(!test_and_set_bit_lock(PG_locked, &page->flags)));
 }
 
 /*
  * lock_page may only be called if we have the page's inode pinned.
  */
+// 2015-07-25;
 static inline void lock_page(struct page *page)
 {
+    // no op; // CONFIG_PREEMPT_VOLUNTARY, CONFIG_DEBUG_ATOMIC_SLEEP 미 설정
 	might_sleep();
 	if (!trylock_page(page))
 		__lock_page(page);

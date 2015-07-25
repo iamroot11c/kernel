@@ -2584,6 +2584,7 @@ asmlinkage void __sched preempt_schedule_irq(void)
 
 #endif /* CONFIG_PREEMPT */
 
+// 2015-07-25 glance;
 int default_wake_function(wait_queue_t *curr, unsigned mode, int wake_flags,
 			  void *key)
 {
@@ -4002,6 +4003,7 @@ EXPORT_SYMBOL_GPL(yield_to);
  * This task is about to go to sleep on IO. Increment rq->nr_iowait so
  * that process accounting knows that this is a task in IO wait state.
  */
+// 2015-07-25; glance
 void __sched io_schedule(void)
 {
 	struct rq *rq = raw_rq();

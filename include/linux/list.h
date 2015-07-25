@@ -153,6 +153,8 @@ static inline void list_replace_init(struct list_head *old,
  * @entry: the element to delete from the list.
  */
 // 2015-06-20
+// 2015-07-25; 
+// 리스트에서 자기는 빠지고 리스를 자기자신으로 가르켜 초기화 함
 static inline void list_del_init(struct list_head *entry)
 {
 	__list_del_entry(entry);
@@ -220,6 +222,7 @@ static inline int list_empty(const struct list_head *head)
  * if another CPU could re-list_add() it.
  */
 // 2015-06-20
+// 2015-07-25; 자기자신을 가르키는지 확인
 static inline int list_empty_careful(const struct list_head *head)
 {
 	struct list_head *next = head->next;
