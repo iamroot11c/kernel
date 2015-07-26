@@ -751,7 +751,7 @@ static int __unmap_and_move(struct page *page, struct page *newpage,
 	struct anon_vma *anon_vma = NULL;
 
 	if (!trylock_page(page)) {
-		// 락을 이미 소유하고 있을 때
+		// PG_lock이 이미 설정되어 있을 때
 		if (!force || mode == MIGRATE_ASYNC)
 			goto out;
 
