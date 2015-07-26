@@ -340,9 +340,10 @@ static inline void __clear_page_locked(struct page *page)
 }
 
 // 2015-07-25;
-// 이 함수는 반드시 락을 설정하고 있다.
-// true: 최초의 락을 획득
-// false: 이미 락을 소유하고 있음
+// NOTE: 여기서 lock은 spin lock과 같은 동기화 주제들과는 다른 내용이다.
+// 이 함수는 반드시 PG_locked을 설정하고 있다.
+// true: PG_locked 최초 설정
+// false: 이미 PG_locked이 이미 설정되어 있었음.
 static inline int trylock_page(struct page *page)
 {
     // 새로운 플레그로 바꾸고

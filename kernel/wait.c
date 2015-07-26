@@ -95,6 +95,7 @@ prepare_to_wait_exclusive(wait_queue_head_t *q, wait_queue_t *wait, int state)
 
 	wait->flags |= WQ_FLAG_EXCLUSIVE;
 	spin_lock_irqsave(&q->lock, flags);
+	// wait->task_list를 wait_queue_head_t에 추가 시킨다.
 	if (list_empty(&wait->task_list))
 		__add_wait_queue_tail(q, wait);
 	set_current_state(state);
@@ -262,6 +263,7 @@ __wait_on_bit_lock(wait_queue_head_t *wq, struct wait_bit_queue *q,
 			continue;
 		abort_exclusive_wait(wq, &q->wait, mode, &q->key);
 		return ret;
+	// 이미 PG_locked된 상태에서, while을 진입한다면, 무한루프 아닐까?
 	} while (test_and_set_bit(q->key.bit_nr, q->key.flags));
 	finish_wait(wq, &q->wait);
 	return 0;
