@@ -775,7 +775,11 @@ static int __unmap_and_move(struct page *page, struct page *newpage,
 	}
 	// 2015-07-25 여기까지;
 
+	
+	// CONFIG_MEMCG not deine;
+	// mem_cgroup_prepare_migration no op.;
 	/* charge against new page */
+	// 2015-08-08 시작;
 	mem_cgroup_prepare_migration(page, newpage, &mem);
 
 	if (PageWriteback(page)) {
@@ -791,6 +795,7 @@ static int __unmap_and_move(struct page *page, struct page *newpage,
 		}
 		if (!force)
 			goto uncharge;
+		// 2015-08-08;
 		wait_on_page_writeback(page);
 	}
 	/*

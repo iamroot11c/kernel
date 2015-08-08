@@ -82,6 +82,7 @@ static inline struct anon_vma *anon_vma_alloc(void)
 	return anon_vma;
 }
 
+// 2015-08-08;
 static inline void anon_vma_free(struct anon_vma *anon_vma)
 {
 	VM_BUG_ON(atomic_read(&anon_vma->refcount));
@@ -103,11 +104,16 @@ static inline void anon_vma_free(struct anon_vma *anon_vma)
 	 * LOCK should suffice since the actual taking of the lock must
 	 * happen _before_ what follows.
 	 */
+	//  rw_semaphore 구조체의 activity 멤버변수가 0인지 조사
 	if (rwsem_is_locked(&anon_vma->root->rwsem)) {
 		anon_vma_lock_write(anon_vma);
 		anon_vma_unlock_write(anon_vma);
 	}
 
+	// anon_vma_init() 함수가 아직 호출되지 않아서 
+	// anon_vma_cachep 전역변수가 초기화되지 않음
+	//
+	// anon_vma_init() 함수는 init/main.c:start_kernel() 함수에서 호출
 	kmem_cache_free(anon_vma_cachep, anon_vma);
 }
 
@@ -400,18 +406,26 @@ void __init anon_vma_init(void)
  * that the anon_vma pointer from page->mapping is valid if there is a
  * mapcount, we can dereference the anon_vma after observing those.
  */
+// 2015-08-08;
 struct anon_vma *page_get_anon_vma(struct page *page)
 {
 	struct anon_vma *anon_vma = NULL;
 	unsigned long anon_mapping;
 
 	rcu_read_lock();
+	// #define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
+	// page 구조체의 mapping 멤버변수의 주소를 구함
 	anon_mapping = (unsigned long) ACCESS_ONCE(page->mapping);
+	// PAGE_MAPPING_ANON 플레그가 설정되지 않으면 함수 종료
 	if ((anon_mapping & PAGE_MAPPING_FLAGS) != PAGE_MAPPING_ANON)
 		goto out;
+	// page 구조체의 _mapcount 멤버변수의 값이 0보다 같거나 크면
+	// 함수 종료
 	if (!page_mapped(page))
 		goto out;
 
+	// 위에서 구한 주소에서 PAGE_MAPPING_ANON을 빼서 
+	// anon_vma 구조체의 메모리 주소로 변환(케스팅)
 	anon_vma = (struct anon_vma *) (anon_mapping - PAGE_MAPPING_ANON);
 	if (!atomic_inc_not_zero(&anon_vma->refcount)) {
 		anon_vma = NULL;
@@ -1677,6 +1691,7 @@ int try_to_munlock(struct page *page)
 		return try_to_unmap_file(page, TTU_MUNLOCK);
 }
 
+// 2015-08-08;
 void __put_anon_vma(struct anon_vma *anon_vma)
 {
 	struct anon_vma *root = anon_vma->root;

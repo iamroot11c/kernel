@@ -894,6 +894,7 @@ struct address_space *page_file_mapping(struct page *page)
 	return page->mapping;
 }
 
+// 2015-08-08;
 static inline int PageAnon(struct page *page)
 {
 	return ((unsigned long)page->mapping & PAGE_MAPPING_ANON) != 0;
@@ -929,6 +930,7 @@ static inline pgoff_t page_file_index(struct page *page)
  */
 // 2015-04-11
 // 2015-07-04;
+// 2015-08-08;
 static inline int page_mapped(struct page *page)
 {
     // 위의 주석으로 추측컨데, pagetable에 매핑되어있는 경우 0보다 큰 값이 저장되는 듯 하다.

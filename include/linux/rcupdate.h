@@ -84,7 +84,7 @@ extern void do_trace_rcu_torture_read(const char *rcutorturename,
 
 /* Exported common interfaces */
 
-#ifdef CONFIG_PREEMPT_RCU
+#ifdef CONFIG_PREEMPT_RCU // defined
 
 /**
  * call_rcu() - Queue an RCU callback for invocation after a grace period.

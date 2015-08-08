@@ -42,11 +42,18 @@ EXPORT_SYMBOL(down_read_trylock);
 /*
  * lock for writing
  */
+// 2015-08-08
 void __sched down_write(struct rw_semaphore *sem)
 {
-	might_sleep();
+	might_sleep(); // no op.
+	
+	// CONFIG_LOCKDEP이 설정되지 않아 아무 역활이 없다.
+	// no op.
 	rwsem_acquire(&sem->dep_map, 0, 0, _RET_IP_);
 
+	//#define LOCK_CONTENDED(_lock, try, lock) \
+	//    lock(_lock)
+	// __down_write(sem);
 	LOCK_CONTENDED(sem, __down_write_trylock, __down_write);
 }
 
@@ -81,8 +88,11 @@ EXPORT_SYMBOL(up_read);
 /*
  * release a write lock
  */
+// 2015-08-08;
 void up_write(struct rw_semaphore *sem)
 {
+	// CONFIG_LOCKDEP 미 정의로 아무 역활이 없다.
+	// no op.
 	rwsem_release(&sem->dep_map, 1, _RET_IP_);
 
 	__up_write(sem);

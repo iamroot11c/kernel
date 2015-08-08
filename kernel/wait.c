@@ -209,6 +209,9 @@ EXPORT_SYMBOL(wake_bit_function);
  * waiting, the actions of __wait_on_bit() and __wait_on_bit_lock() are
  * permitted return codes. Nonzero return codes halt waiting and return.
  */
+// 2015-08-08;
+// __wait_on_bit(page_waitqueue(page), &wait, sleep_on_page,
+//                                            TASK_UNINTERRUPTIBLE)
 int __sched
 __wait_on_bit(wait_queue_head_t *wq, struct wait_bit_queue *q,
 			int (*action)(void *), unsigned mode)
@@ -219,6 +222,9 @@ __wait_on_bit(wait_queue_head_t *wq, struct wait_bit_queue *q,
 		prepare_to_wait(wq, &q->wait, mode);
 		if (test_bit(q->key.bit_nr, q->key.flags))
 			ret = (*action)(q->key.flags);
+		// 조건이 변경될 때까지 계속 대기
+		// 예를 들어 PageWriteback이 설정되어 있들때
+		// 쓰기작업이 완료될 때까지 대기
 	} while (test_bit(q->key.bit_nr, q->key.flags) && !ret);
 	finish_wait(wq, &q->wait);
 	return ret;

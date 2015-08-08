@@ -242,6 +242,7 @@ struct rcu_node {
 #define RCU_NEXT_TAIL		3
 #define RCU_NEXT_SIZE		4
 
+// 2015-08-08;
 /* Per-CPU data for read-copy update. */
 struct rcu_data {
 	/* 1) quiescent-state and grace-period handling : */
@@ -255,7 +256,7 @@ struct rcu_data {
 	bool		preemptible;	/* Preemptible RCU? */
 	struct rcu_node *mynode;	/* This CPU's leaf of hierarchy */
 	unsigned long grpmask;		/* Mask to apply to leaf qsmask. */
-#ifdef CONFIG_RCU_CPU_STALL_INFO
+#ifdef CONFIG_RCU_CPU_STALL_INFO // not define
 	unsigned long	ticks_this_gp;	/* The number of scheduling-clock */
 					/*  ticks this CPU has handled */
 					/*  during and after the last grace */
@@ -321,12 +322,12 @@ struct rcu_data {
 
 	/* 6) _rcu_barrier() and OOM callbacks. */
 	struct rcu_head barrier_head;
-#ifdef CONFIG_RCU_FAST_NO_HZ
+#ifdef CONFIG_RCU_FAST_NO_HZ // not define
 	struct rcu_head oom_head;
 #endif /* #ifdef CONFIG_RCU_FAST_NO_HZ */
 
 	/* 7) Callback offloading. */
-#ifdef CONFIG_RCU_NOCB_CPU
+#ifdef CONFIG_RCU_NOCB_CPU // not define 
 	struct rcu_head *nocb_head;	/* CBs waiting for kthread. */
 	struct rcu_head **nocb_tail;
 	atomic_long_t nocb_q_count;	/* # CBs waiting for kthread */
@@ -338,7 +339,7 @@ struct rcu_data {
 #endif /* #ifdef CONFIG_RCU_NOCB_CPU */
 
 	/* 8) RCU CPU stall data. */
-#ifdef CONFIG_RCU_CPU_STALL_INFO
+#ifdef CONFIG_RCU_CPU_STALL_INFO // not define
 	unsigned int softirq_snap;	/* Snapshot of softirq activity. */
 #endif /* #ifdef CONFIG_RCU_CPU_STALL_INFO */
 

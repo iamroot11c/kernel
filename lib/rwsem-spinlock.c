@@ -14,19 +14,32 @@ enum rwsem_waiter_type {
 	RWSEM_WAITING_FOR_READ
 };
 
+// 2015-08-08;
 struct rwsem_waiter {
 	struct list_head list;
 	struct task_struct *task;
 	enum rwsem_waiter_type type;
 };
 
+// 2015-08-08;
 int rwsem_is_locked(struct rw_semaphore *sem)
 {
 	int ret = 1;
 	unsigned long flags;
 
+//#define raw_spin_trylock_irqsave(lock, flags) \
+//({ \
+//    local_irq_save(flags); \
+//    raw_spin_trylock(lock) ? \
+//    1 : ({ local_irq_restore(flags); 0; }); \
+//})	
 	if (raw_spin_trylock_irqsave(&sem->wait_lock, flags)) {
 		ret = (sem->activity != 0);
+		//#define raw_spin_unlock_irqrestore(lock, flags)     \
+		//    do {                            \
+		//        typecheck(unsigned long, flags);        \
+		//        _raw_spin_unlock_irqrestore(lock, flags);   \
+		//    } while (0)
 		raw_spin_unlock_irqrestore(&sem->wait_lock, flags);
 	}
 	return ret;
@@ -61,6 +74,8 @@ EXPORT_SYMBOL(__init_rwsem);
  * - woken process blocks are discarded from the list after having task zeroed
  * - writers are only woken if wakewrite is non-zero
  */
+// 2015-08-08;
+// __rwsem_do_wake(sem, 1);
 static inline struct rw_semaphore *
 __rwsem_do_wake(struct rw_semaphore *sem, int wakewrite)
 {
@@ -70,6 +85,7 @@ __rwsem_do_wake(struct rw_semaphore *sem, int wakewrite)
 
 	waiter = list_entry(sem->wait_list.next, struct rwsem_waiter, list);
 
+	// 쓰기는 동시에 할 수 없어 발견 즉시 바로 함수 종료
 	if (waiter->type == RWSEM_WAITING_FOR_WRITE) {
 		if (wakewrite)
 			/* Wake up a writer. Note that we do not grant it the
@@ -77,6 +93,8 @@ __rwsem_do_wake(struct rw_semaphore *sem, int wakewrite)
 			wake_up_process(waiter->task);
 		goto out;
 	}
+
+	// RWSEM_WAITING_FOR_READ 일 때
 
 	/* grant an infinite number of read locks to the front of the queue */
 	woken = 0;
@@ -88,13 +106,17 @@ __rwsem_do_wake(struct rw_semaphore *sem, int wakewrite)
 		smp_mb();
 		waiter->task = NULL;
 		wake_up_process(tsk);
-		put_task_struct(tsk);
+		put_task_struct(tsk); // 흝어봄
 		woken++;
+		// 목록의 헤더까지 순회
 		if (next == &sem->wait_list)
 			break;
 		waiter = list_entry(next, struct rwsem_waiter, list);
+
+                // RWSEM_WAITING_FOR_WRITE 타입이 발견되면 바로 탈출
 	} while (waiter->type != RWSEM_WAITING_FOR_WRITE);
 
+	// RWSEM_WAITING_FOR_READ 타입의 개수  
 	sem->activity += woken;
 
  out:
@@ -184,12 +206,19 @@ int __down_read_trylock(struct rw_semaphore *sem)
 /*
  * get a write lock on the semaphore
  */
+// 2015-08-08;
+// __down_write_nested(sem, 0);
 void __sched __down_write_nested(struct rw_semaphore *sem, int subclass)
 {
 	struct rwsem_waiter waiter;
 	struct task_struct *tsk;
 	unsigned long flags;
 
+	//#define raw_spin_lock_irqsave(lock, flags)          \
+	//    do {                        \
+	//            typecheck(unsigned long, flags);    \
+	//                    flags = _raw_spin_lock_irqsave(lock);   \
+	//    } while (0)
 	raw_spin_lock_irqsave(&sem->wait_lock, flags);
 
 	/* set up my own style of waitqueue */
@@ -264,6 +293,7 @@ void __up_read(struct rw_semaphore *sem)
 /*
  * release a write lock on the semaphore
  */
+// 2015-08-08;
 void __up_write(struct rw_semaphore *sem)
 {
 	unsigned long flags;

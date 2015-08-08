@@ -91,6 +91,7 @@ static inline void ksm_exit(struct mm_struct *mm)
 {
 }
 
+// 2015-08-08;
 static inline int PageKsm(struct page *page)
 {
 	return 0;

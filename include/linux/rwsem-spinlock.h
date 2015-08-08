@@ -20,6 +20,7 @@
  * - if activity is -1 then there is one active writer
  * - if wait_list is not empty, then there are processes waiting for the semaphore
  */
+// 2015-08-08;
 struct rw_semaphore {
 	__s32			activity;
 	raw_spinlock_t		wait_lock;

@@ -2709,11 +2709,15 @@ redo:
 
 }
 
+// 2015-08-08;
+// kmem_cache_free(anon_vma_cachep, anon_vma);
 void kmem_cache_free(struct kmem_cache *s, void *x)
 {
 	s = cache_from_obj(s, x);
 	if (!s)
 		return;
+	// 2015-08-08 여기까지...
+	
 	slab_free(s, virt_to_head_page(x), x, _RET_IP_);
 	trace_kmem_cache_free(_RET_IP_, x);
 }

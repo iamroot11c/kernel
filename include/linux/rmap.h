@@ -24,6 +24,7 @@
  * the anon_vma object itself: we're guaranteed no page can be
  * pointing to this anon_vma once its vma list is empty.
  */
+// 2015-08-08;
 struct anon_vma {
 	struct anon_vma *root;		/* Root of this anon_vma tree */
 	struct rw_semaphore rwsem;	/* W: modification, R: walking the list */
@@ -90,6 +91,7 @@ static inline void get_anon_vma(struct anon_vma *anon_vma)
 
 void __put_anon_vma(struct anon_vma *anon_vma);
 
+// 2015-08-08;
 static inline void put_anon_vma(struct anon_vma *anon_vma)
 {
 	if (atomic_dec_and_test(&anon_vma->refcount))
@@ -118,11 +120,13 @@ static inline void vma_unlock_anon_vma(struct vm_area_struct *vma)
 		up_write(&anon_vma->root->rwsem);
 }
 
+// 2015-08-08;
 static inline void anon_vma_lock_write(struct anon_vma *anon_vma)
 {
 	down_write(&anon_vma->root->rwsem);
 }
 
+// 2015-08-08;
 static inline void anon_vma_unlock_write(struct anon_vma *anon_vma)
 {
 	up_write(&anon_vma->root->rwsem);

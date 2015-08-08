@@ -912,6 +912,7 @@ int wake_bit_function(wait_queue_t *wait, unsigned mode, int sync, void *key);
 #define DEFINE_WAIT(name) DEFINE_WAIT_FUNC(name, autoremove_wake_function)
 
 // 2015-07-25;
+// 2015-08-08;
 #define DEFINE_WAIT_BIT(name, word, bit)				\
 	struct wait_bit_queue name = {					\
 		.key = __WAIT_BIT_KEY_INITIALIZER(word, bit),		\

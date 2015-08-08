@@ -113,7 +113,7 @@ void slabinfo_show_stats(struct seq_file *m, struct kmem_cache *s);
 ssize_t slabinfo_write(struct file *file, const char __user *buffer,
 		       size_t count, loff_t *ppos);
 
-#ifdef CONFIG_MEMCG_KMEM
+#ifdef CONFIG_MEMCG_KMEM // not define
 static inline bool is_root_cache(struct kmem_cache *s)
 {
 	return !s->memcg_params || s->memcg_params->is_root_cache;
@@ -193,6 +193,7 @@ static inline void memcg_release_pages(struct kmem_cache *s, int order)
 {
 }
 
+// 2015-08-08;
 static inline bool slab_equal_or_root(struct kmem_cache *s,
 				      struct kmem_cache *p)
 {
@@ -215,6 +216,8 @@ static inline struct kmem_cache *memcg_root_cache(struct kmem_cache *s)
 }
 #endif
 
+// 2015-08-08;
+// cache_from_obj(anon_vma_cachep, anon_vma);
 static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
 {
 	struct kmem_cache *cachep;
@@ -227,11 +230,17 @@ static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
 	 * to not do even the assignment. In that case, slab_equal_or_root
 	 * will also be a constant.
 	 */
+    // CONFIG_MEMCG_KMEM 미 정의로 memcg_kmem_enabled() 함수는 항상 false를 리턴
+    // anon_vma_cachep 변수가 아직 할당이 안된걸로 파악되는데 아래는 
+    // 할당이 안된 구조체의 멤버를 접근하고 있어 심각한 문제가 발생할 것으로 
+    // 생각된다... 다시 확인해 보자!
 	if (!memcg_kmem_enabled() && !unlikely(s->flags & SLAB_DEBUG_FREE))
 		return s;
 
 	page = virt_to_head_page(x);
 	cachep = page->slab_cache;
+    // CONFIG_MEMCG_KMEM 미 정의로 slab_equal_or_root() 함수는
+    // 항상 true를 리턴
 	if (slab_equal_or_root(cachep, s))
 		return cachep;
 

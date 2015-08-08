@@ -160,7 +160,7 @@ extern int mmap_min_addr_handler(struct ctl_table *table, int write,
 typedef int (*initxattrs) (struct inode *inode,
 			   const struct xattr *xattr_array, void *fs_data);
 
-#ifdef CONFIG_SECURITY
+#ifdef CONFIG_SECURITY // not define
 
 struct security_mnt_opts {
 	char **mnt_opts;
@@ -2316,6 +2316,7 @@ static inline int security_task_create(unsigned long clone_flags)
 	return 0;
 }
 
+// 2015-08-08;
 static inline void security_task_free(struct task_struct *task)
 { }
 

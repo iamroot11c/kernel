@@ -177,6 +177,7 @@ void delete_from_page_cache(struct page *page)
 EXPORT_SYMBOL(delete_from_page_cache);
 
 // 2015-07-25;
+// 2015-08-08;
 static int sleep_on_page(void *word)
 {
 	io_schedule();
@@ -543,6 +544,8 @@ EXPORT_SYMBOL(__page_cache_alloc);
  * at a cost of "thundering herd" phenomena during rare hash
  * collisions.
  */
+// 2015-08-08;
+// page에 대한 wait_queue_head를 찾음
 static wait_queue_head_t *page_waitqueue(struct page *page)
 {
 	const struct zone *zone = page_zone(page);
@@ -555,9 +558,20 @@ static inline void wake_up_page(struct page *page, int bit)
 	__wake_up_bit(page_waitqueue(page), &page->flags, bit);
 }
 
+// 2015-08-08;
 void wait_on_page_bit(struct page *page, int bit_nr)
 {
 	DEFINE_WAIT_BIT(wait, &page->flags, bit_nr);
+	// #define DEFINE_WAIT_BIT(name, word, bit)                \
+	//     struct wait_bit_queue name = {                  \
+	//         .key = __WAIT_BIT_KEY_INITIALIZER(word, bit),       \
+	//         .wait   = {                     \
+	//             .private    = current,          \
+	//             .func       = wake_bit_function,        \
+	//             .task_list  =               \
+	//                 LIST_HEAD_INIT((name).wait.task_list),  \
+	//         },                          \ 
+	//    }   
 
 	if (test_bit(bit_nr, &page->flags))
 		__wait_on_bit(page_waitqueue(page), &wait, sleep_on_page,

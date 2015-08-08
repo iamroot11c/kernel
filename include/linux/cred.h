@@ -104,9 +104,10 @@ extern int in_egroup_p(kgid_t);
  * same context as task->real_cred.
  *   => task->cred 2번째 경우, 일반적으로 첫번째와 동일한 값을 가짐.
  */
+// 2015-08-08;
 struct cred {
 	atomic_t	usage;
-#ifdef CONFIG_DEBUG_CREDENTIALS
+#ifdef CONFIG_DEBUG_CREDENTIALS // not define
 	atomic_t	subscribers;	/* number of processes subscribed */
 	void		*put_addr;
 	unsigned	magic;
@@ -164,7 +165,7 @@ extern void __init cred_init(void);
 /*
  * check for validity of credentials
  */
-#ifdef CONFIG_DEBUG_CREDENTIALS
+#ifdef CONFIG_DEBUG_CREDENTIALS // not define
 extern void __invalid_creds(const struct cred *, const char *, unsigned);
 extern void __validate_process_creds(struct task_struct *,
 				     const char *, unsigned);
@@ -190,6 +191,7 @@ do {								\
 
 extern void validate_creds_for_do_exit(struct task_struct *);
 #else
+// 2015-08-08;
 static inline void validate_creds(const struct cred *cred)
 {
 }
@@ -245,13 +247,16 @@ static inline const struct cred *get_cred(const struct cred *cred)
  * on task_struct are attached by const pointers to prevent accidental
  * alteration of otherwise immutable credential sets.
  */
+// 2015-08-08 glance;
 static inline void put_cred(const struct cred *_cred)
 {
+    // 상수를 비 상수로 캐스팅
 	struct cred *cred = (struct cred *) _cred;
 
+    // no op.
 	validate_creds(cred);
 	if (atomic_dec_and_test(&(cred)->usage))
-		__put_cred(cred);
+		__put_cred(cred); // 사용중이지 않을때 호출
 }
 
 /**

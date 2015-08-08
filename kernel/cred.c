@@ -72,9 +72,10 @@ static inline int read_cred_subscribers(const struct cred *cred)
 #endif
 }
 
+// 2015-08-08;
 static inline void alter_cred_subscribers(const struct cred *_cred, int n)
 {
-#ifdef CONFIG_DEBUG_CREDENTIALS
+#ifdef CONFIG_DEBUG_CREDENTIALS // not define
 	struct cred *cred = (struct cred *) _cred;
 
 	atomic_add(n, &cred->subscribers);
@@ -123,6 +124,7 @@ static void put_cred_rcu(struct rcu_head *rcu)
  *
  * Destroy a set of credentials on which no references remain.
  */
+// 2015-08-08 glance;
 void __put_cred(struct cred *cred)
 {
 	kdebug("__put_cred(%p{%d,%d})", cred,
@@ -130,7 +132,7 @@ void __put_cred(struct cred *cred)
 	       read_cred_subscribers(cred));
 
 	BUG_ON(atomic_read(&cred->usage) != 0);
-#ifdef CONFIG_DEBUG_CREDENTIALS
+#ifdef CONFIG_DEBUG_CREDENTIALS // not define
 	BUG_ON(read_cred_subscribers(cred) != 0);
 	cred->magic = CRED_MAGIC_DEAD;
 	cred->put_addr = __builtin_return_address(0);
@@ -145,6 +147,7 @@ EXPORT_SYMBOL(__put_cred);
 /*
  * Clean up a task's credentials when it exits
  */
+// 2015-08-08 glance;
 void exit_creds(struct task_struct *tsk)
 {
 	struct cred *cred;
@@ -155,6 +158,7 @@ void exit_creds(struct task_struct *tsk)
 
 	cred = (struct cred *) tsk->real_cred;
 	tsk->real_cred = NULL;
+	// CONFIG_DEBUG_CREDENTIALS 미 정의로 아무 역확이 없음
 	validate_creds(cred);
 	alter_cred_subscribers(cred, -1);
 	put_cred(cred);

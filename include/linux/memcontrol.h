@@ -320,6 +320,7 @@ static inline struct cgroup_subsys_state
 	return NULL;
 }
 
+// 2015-08-08;
 static inline void
 mem_cgroup_prepare_migration(struct page *page, struct page *newpage,
 			     struct mem_cgroup **memcgp)
@@ -620,6 +621,7 @@ memcg_kmem_get_cache(struct kmem_cache *cachep, gfp_t gfp)
 #define for_each_memcg_cache_index(_idx)	\
 	for (; NULL; )
 
+// 2015-08-08;
 static inline bool memcg_kmem_enabled(void)
 {
 	return false;

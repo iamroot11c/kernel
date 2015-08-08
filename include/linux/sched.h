@@ -177,6 +177,7 @@ extern char ___assert_task_state[1 - 2*!!(
 #define __set_task_state(tsk, state_value)		\
 	do { (tsk)->state = (state_value); } while (0)
 // 2015-06-20
+// 2015-08-08;
 #define set_task_state(tsk, state_value)		\
 	set_mb((tsk)->state, (state_value)) 
 // (tsk)->state에 state_value을 저장한 후 barrier() 함수 호출 
@@ -1574,6 +1575,7 @@ extern void free_task(struct task_struct *tsk);
 
 extern void __put_task_struct(struct task_struct *t);
 
+// 2015-08-08 glance;
 static inline void put_task_struct(struct task_struct *t)
 {
 	if (atomic_dec_and_test(&t->usage))
