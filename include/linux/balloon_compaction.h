@@ -117,14 +117,18 @@ static inline void balloon_mapping_free(struct address_space *balloon_mapping)
  * helps us skip ballooned pages that are locked for compaction or release, thus
  * mitigating their racy check at balloon_page_movable()
  */
+// 2015-08-15
 static inline bool page_flags_cleared(struct page *page)
 {
-	return !(page->flags & PAGE_FLAGS_CHECK_AT_PREP);
+    // PAGE_FLAGS_CHECK_AT_PREP, 
+    // ref : enum pageflags 
+	return !(page->flags & PAGE_FLAGS_CHECK_AT_PREP/*0x001F_FFFF*/);
 }
 
 /*
  * __is_movable_balloon_page - helper to perform @page mapping->flags tests
  */
+// 2015-08-15
 static inline bool __is_movable_balloon_page(struct page *page)
 {
 	struct address_space *mapping = page->mapping;
@@ -145,15 +149,17 @@ static inline bool __is_movable_balloon_page(struct page *page)
  * under the proper page lock, at the functions that will be coping with the
  * balloon page case.
  */
+// 2015-08-15
 static inline bool balloon_page_movable(struct page *page)
 {
 	/*
 	 * Before dereferencing and testing mapping->flags, let's make sure
 	 * this is not a page that uses ->mapping in a different way
 	 */
+    // 아래 세계의 조건이 balloon page인 것으로 보인다.
 	if (page_flags_cleared(page) && !page_mapped(page) &&
 	    page_count(page) == 1)
-		return __is_movable_balloon_page(page);
+		return __is_movable_balloon_page(page); // movable 체크
 
 	return false;
 }
@@ -280,6 +286,7 @@ static inline void balloon_page_putback(struct page *page)
 	return;
 }
 
+// 2015-08-15
 static inline int balloon_page_migrate(struct page *newpage,
 				struct page *page, enum migrate_mode mode)
 {

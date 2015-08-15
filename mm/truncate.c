@@ -66,6 +66,10 @@ void do_invalidatepage(struct page *page, unsigned int offset,
  * out all the buffers on a page without actually doing it through
  * the VM. Can you say "ext3 is horribly ugly"? Tought you could.
  */
+// 2015-08-15
+// cancel_dirty_page(page, PAGE_CACHE_SIZE/*4096*/);
+// 1. page의 zone에 vm_stat값을 dec, 
+// 2. backing_dev_info의 stat값을 dec
 void cancel_dirty_page(struct page *page, unsigned int account_size)
 {
 	if (TestClearPageDirty(page)) {
@@ -75,7 +79,7 @@ void cancel_dirty_page(struct page *page, unsigned int account_size)
 			dec_bdi_stat(mapping->backing_dev_info,
 					BDI_RECLAIMABLE);
 			if (account_size)
-				task_io_account_cancelled_write(account_size);
+				task_io_account_cancelled_write(account_size);	// NO OP
 		}
 	}
 }

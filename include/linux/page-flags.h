@@ -101,13 +101,13 @@ enum pageflags {
 #ifdef CONFIG_MMU
 	PG_mlocked,		/* Page is vma mlocked */
 #endif
-#ifdef CONFIG_ARCH_USES_PG_UNCACHED
+#ifdef CONFIG_ARCH_USES_PG_UNCACHED // not set
 	PG_uncached,		/* Page has been mapped as uncached */
 #endif
-#ifdef CONFIG_MEMORY_FAILURE
+#ifdef CONFIG_MEMORY_FAILURE    // not set
 	PG_hwpoison,		/* hardware poisoned page. Don't touch */
 #endif
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+#ifdef CONFIG_TRANSPARENT_HUGEPAGE  // not set
 	PG_compound_lock,
 #endif
 	__NR_PAGEFLAGS,
@@ -469,6 +469,7 @@ static inline int PageTransTail(struct page *page)
 #else
 
 // 2015-07-04;
+// 2015-08-15
 static inline int PageTransHuge(struct page *page)
 {
 	return 0;
@@ -543,10 +544,12 @@ static inline void ClearPageSlabPfmemalloc(struct page *page)
  * Pages being prepped should not have any flags set.  It they are set,
  * there has been a kernel bug or struct page corruption.
  */
-#define PAGE_FLAGS_CHECK_AT_PREP	((1 << NR_PAGEFLAGS) - 1)
+// 2015-08-15
+#define PAGE_FLAGS_CHECK_AT_PREP	((1 << NR_PAGEFLAGS/*21*/) - 1) // 0x001F_FFFF
 
+// 2015-08-15
 #define PAGE_FLAGS_PRIVATE				\
-	(1 << PG_private | 1 << PG_private_2)
+	(1 << PG_private/*11*/ | 1 << PG_private_2/*12*/)   // 0x0006_0000
 /**
  * page_has_private - Determine if page has private stuff
  * @page: The page to be checked
@@ -554,9 +557,10 @@ static inline void ClearPageSlabPfmemalloc(struct page *page)
  * Determine if a page has private stuff, indicating that release routines
  * should be invoked upon it.
  */
+// 2015-08-15
 static inline int page_has_private(struct page *page)
 {
-	return !!(page->flags & PAGE_FLAGS_PRIVATE);
+	return !!(page->flags & PAGE_FLAGS_PRIVATE/*0x0006_0000*/);
 }
 
 #endif /* !__GENERATING_BOUNDS_H */

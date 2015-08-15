@@ -811,6 +811,7 @@ static int __unmap_and_move(struct page *page, struct page *newpage,
 		 * Only page_lock_anon_vma_read() understands the subtleties of
 		 * getting a hold on an anon_vma from outside one of its mms.
 		 */
+		// 2015-08-08
 		anon_vma = page_get_anon_vma(page);
 		if (anon_vma) {
 			/*
@@ -843,6 +844,7 @@ static int __unmap_and_move(struct page *page, struct page *newpage,
 		 * in order to avoid burning cycles at rmap level, and perform
 		 * the page migration right away (proteced by page lock).
 		 */
+		// NO OP, return 0;
 		rc = balloon_page_migrate(newpage, page, mode);
 		goto uncharge;
 	}
@@ -868,6 +870,7 @@ static int __unmap_and_move(struct page *page, struct page *newpage,
 		goto skip_unmap;
 	}
 
+	// 2015-08-15, 식사전
 	/* Establish migration ptes or remove ptes */
 	try_to_unmap(page, TTU_MIGRATION|TTU_IGNORE_MLOCK|TTU_IGNORE_ACCESS);
 

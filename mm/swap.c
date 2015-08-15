@@ -76,6 +76,7 @@ static void __page_cache_release(struct page *page)
 // 2015-04-25
 // 2015-07-11
 // 버디 할당자에서 order 0인 경우에 관리하는 list에 추가하는 기능
+// 2015-08-15
 static void __put_single_page(struct page *page)
 {
 	// page를 LRU list에서 삭제
@@ -230,6 +231,7 @@ out_put_single:
 }
 
 // 2015-07-11
+// 2015-08-15
 void put_page(struct page *page)
 {
 	if (unlikely(PageCompound(page)))

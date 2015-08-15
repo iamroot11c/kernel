@@ -376,8 +376,10 @@ static inline void lockdep_on(void)
 }
 
 // 2015-08-08;
+// 2015-08-15
 # define lock_acquire(l, s, t, r, c, n, i)	do { } while (0)
 // 2015-08-08;
+// 2015-08-15
 # define lock_release(l, n, i)			do { } while (0)
 # define lock_set_class(l, n, k, s, i)		do { } while (0)
 # define lock_set_subclass(l, s, i)		do { } while (0)
@@ -489,6 +491,7 @@ static inline void print_irqtrace_events(struct task_struct *curr)
 #else
  // 2015-08-08;
  #define lock_acquire_exclusive(l, s, t, n, i)		lock_acquire(l, s, t, 0, 1, n, i)
+// 2015-08-15
  #define lock_acquire_shared(l, s, t, n, i)		lock_acquire(l, s, t, 1, 1, n, i)
  #define lock_acquire_shared_recursive(l, s, t, n, i)	lock_acquire(l, s, t, 2, 1, n, i)
 #endif
@@ -508,7 +511,10 @@ static inline void print_irqtrace_events(struct task_struct *curr)
 // 2015-08-08;
 #define rwsem_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
 #define rwsem_acquire_nest(l, s, t, n, i)	lock_acquire_exclusive(l, s, t, n, i)
+// 2015-08-15
 #define rwsem_acquire_read(l, s, t, i)		lock_acquire_shared(l, s, t, NULL, i)
+// 2015-08-15
+// rwsem_release(&sem->dep_map, 1, _RET_IP_);
 # define rwsem_release(l, n, i)			lock_release(l, n, i)
 
 #define lock_map_acquire(l)			lock_acquire_exclusive(l, 0, 0, NULL, _THIS_IP_)

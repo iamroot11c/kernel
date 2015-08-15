@@ -2670,6 +2670,7 @@ slab_empty:
  * If fastpath is not possible then fall back to __slab_free where we deal
  * with all sorts of special processing.
  */
+// 2015-08-15, glance
 static __always_inline void slab_free(struct kmem_cache *s,
 			struct page *page, void *x, unsigned long addr)
 {
@@ -2711,13 +2712,18 @@ redo:
 
 // 2015-08-08;
 // kmem_cache_free(anon_vma_cachep, anon_vma);
+// 2015-08-15
+// kmem_cache_free(bh_cachep, bh);
+//
 void kmem_cache_free(struct kmem_cache *s, void *x)
 {
+	// 2015-08-08, s가 null임을 가정하고, return 함.
 	s = cache_from_obj(s, x);
 	if (!s)
 		return;
 	// 2015-08-08 여기까지...
 	
+	// 2015-08-15, 시작, slab_free 다음에 보자
 	slab_free(s, virt_to_head_page(x), x, _RET_IP_);
 	trace_kmem_cache_free(_RET_IP_, x);
 }

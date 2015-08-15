@@ -685,6 +685,7 @@ do {									\
 #endif
 
 #define __this_cpu_sub_return(pcp, val)	__this_cpu_add_return(pcp, -(typeof(pcp))(val))
+// 2015-08-15
 #define __this_cpu_inc_return(pcp)	__this_cpu_add_return(pcp, 1)
 // 2015-07-11
 #define __this_cpu_dec_return(pcp)	__this_cpu_add_return(pcp, -1)

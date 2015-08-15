@@ -71,6 +71,8 @@ void percpu_counter_set(struct percpu_counter *fbc, s64 amount)
 }
 EXPORT_SYMBOL(percpu_counter_set);
 
+// 2015-08-15
+//  __percpu_counter_add(&bdi->bdi_stat[item], amount/*-1*/, BDI_STAT_BATCH/*16*/);
 void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch)
 {
 	s64 count;
@@ -83,6 +85,8 @@ void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch)
 		raw_spin_unlock(&fbc->lock);
 		__this_cpu_write(*fbc->counters, 0);
 	} else {
+		// 위와는 달리, count에는 더하지 않는다.
+		// counters에 write한다
 		__this_cpu_write(*fbc->counters, count);
 	}
 	preempt_enable();

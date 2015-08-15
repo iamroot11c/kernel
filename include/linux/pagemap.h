@@ -20,11 +20,11 @@
  * allocation mode flags.
  */
 enum mapping_flags {
-	AS_EIO		= __GFP_BITS_SHIFT + 0,	/* IO error on async write */
+	AS_EIO		= __GFP_BITS_SHIFT/*25*/ + 0,	/* IO error on async write */
 	AS_ENOSPC	= __GFP_BITS_SHIFT + 1,	/* ENOSPC on async write */
 	AS_MM_ALL_LOCKS	= __GFP_BITS_SHIFT + 2,	/* under mm_take_all_locks() */
 	AS_UNEVICTABLE	= __GFP_BITS_SHIFT + 3,	/* e.g., ramdisk, SHM_LOCK */
-	AS_BALLOON_MAP  = __GFP_BITS_SHIFT + 4, /* balloon page special map */
+	AS_BALLOON_MAP  = __GFP_BITS_SHIFT/*25*/ + 4, /* balloon page special map */
 };
 
 static inline void mapping_set_error(struct address_space *mapping, int error)
@@ -65,9 +65,10 @@ static inline void mapping_clear_balloon(struct address_space *mapping)
 	clear_bit(AS_BALLOON_MAP, &mapping->flags);
 }
 
+// 2015-08-15
 static inline int mapping_balloon(struct address_space *mapping)
 {
-	return mapping && test_bit(AS_BALLOON_MAP, &mapping->flags);
+	return mapping && test_bit(AS_BALLOON_MAP/*29*/, &mapping->flags);
 }
 
 static inline gfp_t mapping_gfp_mask(struct address_space * mapping)
@@ -100,6 +101,9 @@ static inline void mapping_set_gfp_mask(struct address_space *m, gfp_t mask)
 
 // 2015-07-11
 #define page_cache_get(page)		get_page(page)
+// 2015-08-15
+// compound page가 아니라면, single page에 cache에 추가하는 기능
+// buddy 할당자에서 order 0인 경우 사용
 #define page_cache_release(page)	put_page(page)
 void release_pages(struct page **pages, int nr, int cold);
 

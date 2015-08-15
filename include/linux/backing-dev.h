@@ -38,6 +38,7 @@ enum bdi_state {
 
 typedef int (congested_fn)(void *, int);
 
+// 2015-08-15
 enum bdi_stat_item {
 	BDI_RECLAIMABLE,
 	BDI_WRITEBACK,
@@ -46,7 +47,8 @@ enum bdi_stat_item {
 	NR_BDI_STAT_ITEMS
 };
 
-#define BDI_STAT_BATCH (8*(1+ilog2(nr_cpu_ids)))
+// 2015-08-15
+#define BDI_STAT_BATCH (8*(1+/*1*/ilog2(nr_cpu_ids/*2*/)))  // 16
 
 struct bdi_writeback {
 	struct backing_dev_info *bdi;	/* our parent bdi */
@@ -139,10 +141,11 @@ static inline int wb_has_dirty_io(struct bdi_writeback *wb)
 	       !list_empty(&wb->b_more_io);
 }
 
+// 2015-08-15
 static inline void __add_bdi_stat(struct backing_dev_info *bdi,
 		enum bdi_stat_item item, s64 amount)
 {
-	__percpu_counter_add(&bdi->bdi_stat[item], amount, BDI_STAT_BATCH);
+	__percpu_counter_add(&bdi->bdi_stat[item], amount, BDI_STAT_BATCH/*16*/);
 }
 
 static inline void __inc_bdi_stat(struct backing_dev_info *bdi,
@@ -161,12 +164,14 @@ static inline void inc_bdi_stat(struct backing_dev_info *bdi,
 	local_irq_restore(flags);
 }
 
+// 2015-08-15
 static inline void __dec_bdi_stat(struct backing_dev_info *bdi,
 		enum bdi_stat_item item)
 {
 	__add_bdi_stat(bdi, item, -1);
 }
 
+// 2015-08-15
 static inline void dec_bdi_stat(struct backing_dev_info *bdi,
 		enum bdi_stat_item item)
 {
@@ -323,6 +328,8 @@ static inline bool bdi_cap_writeback_dirty(struct backing_dev_info *bdi)
 	return !(bdi->capabilities & BDI_CAP_NO_WRITEBACK);
 }
 
+// 2015-08-15
+// 0이면 true 리턴
 static inline bool bdi_cap_account_dirty(struct backing_dev_info *bdi)
 {
 	return !(bdi->capabilities & BDI_CAP_NO_ACCT_DIRTY);
@@ -345,6 +352,7 @@ static inline bool mapping_cap_writeback_dirty(struct address_space *mapping)
 	return bdi_cap_writeback_dirty(mapping->backing_dev_info);
 }
 
+// 2015-08-15
 static inline bool mapping_cap_account_dirty(struct address_space *mapping)
 {
 	return bdi_cap_account_dirty(mapping->backing_dev_info);

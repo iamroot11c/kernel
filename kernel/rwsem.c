@@ -15,11 +15,16 @@
 /*
  * lock for reading
  */
+// 2015-08-15
 void __sched down_read(struct rw_semaphore *sem)
 {
 	might_sleep();
-	rwsem_acquire_read(&sem->dep_map, 0, 0, _RET_IP_);
+	rwsem_acquire_read(&sem->dep_map, 0, 0, _RET_IP_);	// NO OP
 
+	// #define LOCK_CONTENDED(_lock, try, lock) \
+	//      lock(_lock)
+	//
+	// ===> __down_read(sem);
 	LOCK_CONTENDED(sem, __down_read_trylock, __down_read);
 }
 
@@ -28,6 +33,7 @@ EXPORT_SYMBOL(down_read);
 /*
  * trylock for reading -- returns 1 if successful, 0 if contention
  */
+// 2015-08-15
 int down_read_trylock(struct rw_semaphore *sem)
 {
 	int ret = __down_read_trylock(sem);
@@ -76,9 +82,11 @@ EXPORT_SYMBOL(down_write_trylock);
 /*
  * release a read lock
  */
+// 2015-08-15
+// 세마포어 반납
 void up_read(struct rw_semaphore *sem)
 {
-	rwsem_release(&sem->dep_map, 1, _RET_IP_);
+	rwsem_release(&sem->dep_map, 1, _RET_IP_);	// NO OP
 
 	__up_read(sem);
 }

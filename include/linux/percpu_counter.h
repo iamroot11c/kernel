@@ -15,9 +15,10 @@
 
 #ifdef CONFIG_SMP
 
+// 2015-08-15
 struct percpu_counter {
 	raw_spinlock_t lock;
-	s64 count;
+	s64 count;              // 아래 counters와 차이점?
 #ifdef CONFIG_HOTPLUG_CPU
 	struct list_head list;	/* All percpu_counters are on a list */
 #endif
@@ -38,6 +39,7 @@ int __percpu_counter_init(struct percpu_counter *fbc, s64 amount,
 
 void percpu_counter_destroy(struct percpu_counter *fbc);
 void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
+// 2015-08-15
 void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch);
 s64 __percpu_counter_sum(struct percpu_counter *fbc);
 int percpu_counter_compare(struct percpu_counter *fbc, s64 rhs);

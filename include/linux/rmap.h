@@ -61,6 +61,7 @@ struct anon_vma {
  * The "rb" field indexes on an interval tree the anon_vma_chains
  * which link all the VMAs associated with this anon_vma.
  */
+// 2015-08-15
 struct anon_vma_chain {
 	struct vm_area_struct *vma;
 	struct anon_vma *anon_vma;
@@ -72,6 +73,7 @@ struct anon_vma_chain {
 #endif
 };
 
+// 2015-08-15
 enum ttu_flags {
 	TTU_UNMAP = 0,			/* unmap mode */
 	TTU_MIGRATION = 1,		/* migration mode */
@@ -92,10 +94,11 @@ static inline void get_anon_vma(struct anon_vma *anon_vma)
 void __put_anon_vma(struct anon_vma *anon_vma);
 
 // 2015-08-08;
+// 2015-08-15
 static inline void put_anon_vma(struct anon_vma *anon_vma)
 {
 	if (atomic_dec_and_test(&anon_vma->refcount))
-		__put_anon_vma(anon_vma);
+		__put_anon_vma(anon_vma);   // 2015-08-08
 }
 
 static inline struct anon_vma *page_anon_vma(struct page *page)
@@ -132,11 +135,13 @@ static inline void anon_vma_unlock_write(struct anon_vma *anon_vma)
 	up_write(&anon_vma->root->rwsem);
 }
 
+// 2015-08-15
 static inline void anon_vma_lock_read(struct anon_vma *anon_vma)
 {
 	down_read(&anon_vma->root->rwsem);
 }
 
+// 2015-08-15
 static inline void anon_vma_unlock_read(struct anon_vma *anon_vma)
 {
 	up_read(&anon_vma->root->rwsem);

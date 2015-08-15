@@ -2482,6 +2482,7 @@ static inline void sched_submit_work(struct task_struct *tsk)
 		blk_schedule_flush_plug(tsk);
 }
 
+// 2015-08-15, glance
 asmlinkage void __sched schedule(void)
 {
 	struct task_struct *tsk = current;

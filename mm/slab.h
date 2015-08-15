@@ -218,6 +218,9 @@ static inline struct kmem_cache *memcg_root_cache(struct kmem_cache *s)
 
 // 2015-08-08;
 // cache_from_obj(anon_vma_cachep, anon_vma);
+// 
+// 2015-08-15
+// 현재 우리 구조는, page->slab_cache을 리턴
 static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
 {
 	struct kmem_cache *cachep;

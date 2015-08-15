@@ -14,8 +14,9 @@
 #include <linux/wait.h>
 #include <linux/atomic.h>
 
-#ifdef CONFIG_BLOCK
+#ifdef CONFIG_BLOCK // define
 
+// 2015-08-15
 enum bh_state_bits {
 	BH_Uptodate,	/* Contains valid data */
 	BH_Dirty,	/* Is dirty */
@@ -48,6 +49,7 @@ enum bh_state_bits {
 struct page;
 struct buffer_head;
 struct address_space;
+// 2015-08-15
 typedef void (bh_end_io_t)(struct buffer_head *bh, int uptodate);
 
 /*
@@ -59,6 +61,7 @@ typedef void (bh_end_io_t)(struct buffer_head *bh, int uptodate);
  * a page (via a page_mapping) and for wrapping bio submission
  * for backward compatibility reasons (e.g. submit_bh).
  */
+// 2015-08-15
 struct buffer_head {
 	unsigned long b_state;		/* buffer state bitmap (see above) */
 	struct buffer_head *b_this_page;/* circular list of page's buffers */
@@ -133,6 +136,7 @@ BUFFER_FNS(Defer_Completion, defer_completion)
 
 #define bh_offset(bh)		((unsigned long)(bh)->b_data & ~PAGE_MASK)
 
+// 2015-08-15
 /* If we *know* page->private refers to buffer_heads */
 #define page_buffers(page)					\
 	({							\

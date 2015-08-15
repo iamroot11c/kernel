@@ -171,12 +171,13 @@ static inline unsigned int cpumask_first(const struct cpumask *srcp)
  */
 // 2015-02-28;
 // cpumask_next(n, cpu_possible_mask); // n is -1, 1, 2, 3, ... , n.
+// 2015-08-15
 static inline unsigned int cpumask_next(int n, const struct cpumask *srcp)
 {
 	/* -1 is a legal arg here. */
 	if (n != -1)
 		cpumask_check(n); // 경고 출력
-	return find_next_bit(cpumask_bits(srcp), nr_cpumask_bits, n+1);
+	return find_next_bit(cpumask_bits(srcp), nr_cpumask_bits/*2*/, n+1);
 }
 
 /**
@@ -735,6 +736,7 @@ extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
 
 // 2015-02-28;
 #define for_each_possible_cpu(cpu) for_each_cpu((cpu), cpu_possible_mask)
+// 2015-08-15
 #define for_each_online_cpu(cpu)   for_each_cpu((cpu), cpu_online_mask)
 #define for_each_present_cpu(cpu)  for_each_cpu((cpu), cpu_present_mask)
 
@@ -758,6 +760,7 @@ void init_cpu_online(const struct cpumask *src);
  * This does the conversion, and can be used as a constant initializer.
  */
 //to_cpumask(cpu_possible_bits);
+// 2015-08-15, to_cpumask(cpu_online_bits)
 #define to_cpumask(bitmap)						\
 	((struct cpumask *)(1 ? (bitmap)				\
 			    : (void *)sizeof(__check_is_bitmap(bitmap))))

@@ -456,6 +456,7 @@ out:
  * atomic op -- the trylock. If we fail the trylock, we fall back to getting a
  * reference like with page_get_anon_vma() and then block on the mutex.
  */
+// 2015-08-15
 struct anon_vma *page_lock_anon_vma_read(struct page *page)
 {
 	struct anon_vma *anon_vma = NULL;
@@ -485,6 +486,7 @@ struct anon_vma *page_lock_anon_vma_read(struct page *page)
 	}
 
 	/* trylock failed, we got to sleep */
+	// anon_vma->refcount이 0이었다면
 	if (!atomic_inc_not_zero(&anon_vma->refcount)) {
 		anon_vma = NULL;
 		goto out;
@@ -498,8 +500,9 @@ struct anon_vma *page_lock_anon_vma_read(struct page *page)
 
 	/* we pinned the anon_vma, its safe to sleep */
 	rcu_read_unlock();
-	anon_vma_lock_read(anon_vma);
+	anon_vma_lock_read(anon_vma);	// 세마포어 획득
 
+	// 감소하고 0이 리턴되었다면, (anon_vma->refcount이 0이었다면)
 	if (atomic_dec_and_test(&anon_vma->refcount)) {
 		/*
 		 * Oops, we held the last refcount, release the lock
@@ -526,10 +529,11 @@ void page_unlock_anon_vma_read(struct anon_vma *anon_vma)
 /*
  * At what user virtual address is page expected in @vma?
  */
+// 2015-08-15
 static inline unsigned long
 __vma_address(struct page *page, struct vm_area_struct *vma)
 {
-	pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
+	pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT/*12*/ - PAGE_SHIFT/*12*/);
 
 	if (unlikely(is_vm_hugetlb_page(vma)))
 		pgoff = page->index << huge_page_order(page_hstate(page));
@@ -537,6 +541,7 @@ __vma_address(struct page *page, struct vm_area_struct *vma)
 	return vma->vm_start + ((pgoff - vma->vm_pgoff) << PAGE_SHIFT);
 }
 
+// 2015-08-15
 inline unsigned long
 vma_address(struct page *page, struct vm_area_struct *vma)
 {
@@ -1453,6 +1458,7 @@ static int try_to_unmap_cluster(unsigned long cursor, unsigned int *mapcount,
 	return ret;
 }
 
+// 2015-08-15
 bool is_vma_temporary_stack(struct vm_area_struct *vma)
 {
 	int maybe_stack = vma->vm_flags & (VM_GROWSDOWN | VM_GROWSUP);
@@ -1483,6 +1489,8 @@ bool is_vma_temporary_stack(struct vm_area_struct *vma)
  * vm_flags for that VMA.  That should be OK, because that vma shouldn't be
  * 'LOCKED.
  */
+// 2015-08-15
+// flags :  TTU_MIGRATION|TTU_IGNORE_MLOCK|TTU_IGNORE_ACCESS
 static int try_to_unmap_anon(struct page *page, enum ttu_flags flags)
 {
 	struct anon_vma *anon_vma;
@@ -1494,7 +1502,14 @@ static int try_to_unmap_anon(struct page *page, enum ttu_flags flags)
 	if (!anon_vma)
 		return ret;
 
-	pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
+	pgoff = page->index << (PAGE_CACHE_SHIFT/*12*/ - PAGE_SHIFT/*12*/);
+
+
+	// #define anon_vma_interval_tree_foreach(avc, root, start, last)       \
+	//      for (avc = anon_vma_interval_tree_iter_first(root, start, last); \
+	//           avc; avc = anon_vma_interval_tree_iter_next(avc, start, last))
+	//
+	//           anon_vma_interval_tree_iter_first(avc, pgoff, pgoff)
 	anon_vma_interval_tree_foreach(avc, &anon_vma->rb_root, pgoff, pgoff) {
 		struct vm_area_struct *vma = avc->vma;
 		unsigned long address;
@@ -1512,12 +1527,13 @@ static int try_to_unmap_anon(struct page *page, enum ttu_flags flags)
 			continue;
 
 		address = vma_address(page, vma);
+		// 2015-08-15, 여기까지
 		ret = try_to_unmap_one(page, vma, address, flags);
 		if (ret != SWAP_AGAIN || !page_mapped(page))
 			break;
 	}
 
-	page_unlock_anon_vma_read(anon_vma);
+	page_unlock_anon_vma_read(anon_vma);	// 세마포어 반납
 	return ret;
 }
 
@@ -1646,14 +1662,16 @@ out:
  * SWAP_FAIL	- the page is unswappable
  * SWAP_MLOCK	- page is mlocked.
  */
+// 2015-08-15
+// try_to_unmap(page, TTU_MIGRATION|TTU_IGNORE_MLOCK|TTU_IGNORE_ACCESS);
 int try_to_unmap(struct page *page, enum ttu_flags flags)
 {
 	int ret;
 
 	BUG_ON(!PageLocked(page));
-	VM_BUG_ON(!PageHuge(page) && PageTransHuge(page));
+	VM_BUG_ON(!PageHuge(page) && PageTransHuge(page)/* NO OP */);
 
-	if (unlikely(PageKsm(page)))
+	if (unlikely(PageKsm(page)))	// NO OP
 		ret = try_to_unmap_ksm(page, flags);
 	else if (PageAnon(page))
 		ret = try_to_unmap_anon(page, flags);

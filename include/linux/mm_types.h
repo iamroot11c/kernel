@@ -134,6 +134,11 @@ struct page {
 
 	/* Remainder is not double word aligned */
 	union {
+        // 2015-08-15, 그때, 그때 달라요.
+        // 일반적으로 buffer_heads
+        // PagePrivate : buffer_heads
+        // PageSwapCache : swp_entry_t
+        // PG_buddy : buddy system
 		unsigned long private;		/* Mapping-private opaque data:
 					 	 * usually used for buffer_heads
 						 * if PagePrivate set; used for
@@ -226,6 +231,7 @@ struct vm_region {
  * space that has a special rule for the page-fault handlers (ie a shared
  * library, the executable area etc).
  */
+// 2015-08-15
 struct vm_area_struct {
 	/* The first cache line has the info for VMA tree walking. */
 
@@ -324,6 +330,7 @@ struct mm_rss_stat {
 };
 
 struct kioctx_table;
+// 2015-08-15
 struct mm_struct {
 	struct vm_area_struct * mmap;		/* list of VMAs */
 	struct rb_root mm_rb;

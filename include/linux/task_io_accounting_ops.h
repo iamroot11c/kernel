@@ -6,7 +6,7 @@
 
 #include <linux/sched.h>
 
-#ifdef CONFIG_TASK_IO_ACCOUNTING
+#ifdef CONFIG_TASK_IO_ACCOUNTING    // not set
 static inline void task_io_account_read(size_t bytes)
 {
 	current->ioac.read_bytes += bytes;
@@ -73,6 +73,7 @@ static inline unsigned long task_io_get_oublock(const struct task_struct *p)
 	return 0;
 }
 
+// 2015-08-15
 static inline void task_io_account_cancelled_write(size_t bytes)
 {
 }

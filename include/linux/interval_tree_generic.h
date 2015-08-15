@@ -189,3 +189,156 @@ ITPREFIX ## _iter_next(ITSTRUCT *node, ITTYPE start, ITTYPE last)	      \
 			return node;					      \
 	}								      \
 }
+
+/*
+// Callbacks for augmented rbtree insert and remove                 
+                                          
+static inline unsigned long __anon_vma_interval_tree_compute_subtree_last(struct anon_vma_chain *node)        
+{                                         
+    unsigned long max = avc_last_pgoff(node), subtree_last;                  
+    if (node->rb.rb_left) {                         
+        subtree_last = rb_entry(node->rb.rb_left,           
+                    struct anon_vma_chain, rb)->rb_subtree_last;       
+        if (max < subtree_last)                       
+            max = subtree_last;                   
+    }                                     
+    if (node->rb.rb_right) {                        
+        subtree_last = rb_entry(node->rb.rb_right,              
+                    struct anon_vma_chain, rb)->rb_subtree_last;       
+        if (max < subtree_last)                       
+            max = subtree_last;                   
+    }                                     
+    return max;                               
+}                                         
+                                          
+RB_DECLARE_CALLBACKS(static, __anon_vma_interval_tree_augment, struct anon_vma_chain, rb,        
+             unsigned long, rb_subtree_last, __anon_vma_interval_tree_compute_subtree_last)    
+
+//Insert / remove interval nodes from the tree                 
+                                          
+static inline void __anon_vma_interval_tree_insert(struct anon_vma_chain *node, struct rb_root *root)       
+{                                         
+    struct rb_node **link = &root->rb_node, *rb_parent = NULL;        
+    unsigned long start = avc_start_pgoff(node), last = avc_last_pgoff(node);            
+    struct anon_vma_chain *parent;                             
+                                          
+    while (*link) {                               
+        rb_parent = *link;                        
+        parent = rb_entry(rb_parent, struct anon_vma_chain, rb);             
+        if (parent->rb_subtree_last < last)                     
+            parent->rb_subtree_last = last;                 
+        if (start < avc_start_pgoff(parent))                      
+            link = &parent->rb.rb_left;                 
+        else                                  
+            link = &parent->rb.rb_right;                
+    }                                     
+                                          
+    node->rb_subtree_last = last;                           
+    rb_link_node(&node->rb, rb_parent, link);               
+    rb_insert_augmented(&node->rb, root, &__anon_vma_interval_tree_augment);        
+}                                         
+                                          
+static inline void __anon_vma_interval_tree_remove(struct anon_vma_chain *node, struct rb_root *root)       
+{                                         
+    rb_erase_augmented(&node->rb, root, &__anon_vma_interval_tree_augment);         
+}                    
+
+//                                       
+// Iterate over intervals intersecting [start;last]               
+//                                       
+// Note that a node's interval intersects [start;last] iff:           
+//  Cond1: avc_start_pgoff(node) <= last                         
+//  and                                        
+//  Cond2: start <= avc_last_pgoff(node)                         
+                                        
+                                          
+static struct anon_vma_chain *                                
+__anon_vma_interval_tree_subtree_search(struct anon_vma_chain *node, unsigned long start, unsigned long last)        
+{                                         
+    while (true) {                                
+        //                               
+        // Loop invariant: start <= node->rb_subtree_last           
+        // (Cond2 is satisfied by one of the subtree nodes)       
+                                        
+        if (node->rb.rb_left) {                     
+            struct anon_vma_chain *left = rb_entry(node->rb.rb_left,         
+                          struct anon_vma_chain, rb);        
+            if (start <= left->rb_subtree_last) {               
+                //                       
+                // Some nodes in left subtree satisfy Cond2.  
+                // Iterate to find the leftmost such node N.  
+                // If it also satisfies Cond1, that's the     
+                // match we are looking for. Otherwise, there 
+                // is no matching interval as nodes to the    
+                // right of N can't satisfy Cond1 either.     
+                                        
+                node = left;                      
+                continue;                     
+            }                             
+        }                                 
+
+        if (avc_start_pgoff(node) <= last) {        // Cond1        
+            if (start <= avc_last_pgoff(node))  // Cond2        
+                return node;    // node is leftmost match   
+            if (node->rb.rb_right) {                
+                node = rb_entry(node->rb.rb_right,          
+                        struct anon_vma_chain, rb);          
+                if (start <= node->rb_subtree_last)             
+                    continue;                 
+            }                             
+        }                                 
+        return NULL;    // No match                     
+    }                                     
+}                                         
+                                          
+static inline struct anon_vma_chain *                              
+__anon_vma_interval_tree_iter_first(struct rb_root *root, unsigned long start, unsigned long last)      
+{                                         
+    struct anon_vma_chain *node;                               
+                                          
+    if (!root->rb_node)                           
+        return NULL;                              
+    node = rb_entry(root->rb_node, struct anon_vma_chain, rb);               
+    if (node->rb_subtree_last < start)                          
+        return NULL;                              
+    return __anon_vma_interval_tree_subtree_search(node, start, last);            
+}                                         
+
+static inline struct anon_vma_chain *                             
+__anon_vma_interval_tree_iter_next(struct anon_vma_chain *node, unsigned long start, unsigned long last)         
+{                                         
+    struct rb_node *rb = node->rb.rb_right, *prev;              
+                                          
+    while (true) {                                
+        //                               
+        // Loop invariants:                       
+        //  Cond1: avc_start_pgoff(node) <= last                 
+        //  rb == node->rb.rb_right                    
+        //                               
+        // First, search right subtree if suitable            
+                                        
+        if (rb) {                             
+            struct anon_vma_chain *right = rb_entry(rb, struct anon_vma_chain, rb);       
+            if (start <= right->rb_subtree_last)                
+                return __anon_vma_interval_tree_subtree_search(right,     
+                                start, last); 
+        }                                 
+                                          
+        // Move up the tree until we come from a node's left child  
+        do {                                  
+            rb = rb_parent(&node->rb);                  
+            if (!rb)                          
+                return NULL;                      
+            prev = &node->rb;                   
+            node = rb_entry(rb, struct anon_vma_chain, rb);              
+            rb = node->rb.rb_right;                 
+        } while (prev == rb);                         
+                                          
+        // Check if the node intersects [start;last]            
+        if (last < avc_start_pgoff(node))       // !Cond1           
+            return NULL;                          
+        else if (start <= avc_last_pgoff(node))     // Cond2        
+            return node;                          
+    }                                     
+}
+*/

@@ -9,6 +9,7 @@
 #include <linux/sched.h>
 #include <linux/export.h>
 
+// 2015-08-15
 enum rwsem_waiter_type {
 	RWSEM_WAITING_FOR_WRITE,
 	RWSEM_WAITING_FOR_READ
@@ -126,6 +127,7 @@ __rwsem_do_wake(struct rw_semaphore *sem, int wakewrite)
 /*
  * wake a single writer
  */
+// 2015-08-15
 static inline struct rw_semaphore *
 __rwsem_wake_one_writer(struct rw_semaphore *sem)
 {
@@ -140,6 +142,7 @@ __rwsem_wake_one_writer(struct rw_semaphore *sem)
 /*
  * get a read lock on the semaphore
  */
+// 2015-08-15
 void __sched __down_read(struct rw_semaphore *sem)
 {
 	struct rwsem_waiter waiter;
@@ -148,6 +151,7 @@ void __sched __down_read(struct rw_semaphore *sem)
 
 	raw_spin_lock_irqsave(&sem->wait_lock, flags);
 
+	// 최초의 경우 아래가 해당될 것으로 보인다.
 	if (sem->activity >= 0 && list_empty(&sem->wait_list)) {
 		/* granted */
 		sem->activity++;
@@ -184,6 +188,7 @@ void __sched __down_read(struct rw_semaphore *sem)
 /*
  * trylock for reading -- returns 1 if successful, 0 if contention
  */
+// 2015-08-15
 int __down_read_trylock(struct rw_semaphore *sem)
 {
 	unsigned long flags;
@@ -278,6 +283,7 @@ int __down_write_trylock(struct rw_semaphore *sem)
 /*
  * release a read lock on the semaphore
  */
+// 2015-08-15
 void __up_read(struct rw_semaphore *sem)
 {
 	unsigned long flags;

@@ -127,6 +127,7 @@ void __wait_on_buffer(struct buffer_head * bh)
 }
 EXPORT_SYMBOL(__wait_on_buffer);
 
+// 2015-08-15
 static void
 __clear_page_buffers(struct page *page)
 {
@@ -503,8 +504,10 @@ EXPORT_SYMBOL(mark_buffer_async_write);
 /*
  * The buffer's backing address_space's private_lock must be held
  */
+// 2015-08-15
 static void __remove_assoc_queue(struct buffer_head *bh)
 {
+	// list에서 제거, 이것을 remove queue라고 표현한 것 같다.
 	list_del_init(&bh->b_assoc_buffers);
 	WARN_ON(!bh->b_assoc_map);
 	if (buffer_write_io_error(bh))
@@ -3187,12 +3190,17 @@ EXPORT_SYMBOL(sync_dirty_buffer);
  *
  * try_to_free_buffers() is non-blocking.
  */
+// 2015-08-15
+// static임으로 buffer.c에서만 사용가능
 static inline int buffer_busy(struct buffer_head *bh)
 {
 	return atomic_read(&bh->b_count) |
-		(bh->b_state & ((1 << BH_Dirty) | (1 << BH_Lock)));
+		(bh->b_state & ((1 << BH_Dirty/*1*/) | (1 << BH_Lock/*2*/)));
 }
 
+// 2015-08-15
+// static임으로 buffer.c에서만 사용가능
+// buffer가 busy하면 return 0
 static int
 drop_buffers(struct page *page, struct buffer_head **buffers_to_free)
 {
@@ -3222,6 +3230,7 @@ failed:
 	return 0;
 }
 
+// 2015-08-15
 int try_to_free_buffers(struct page *page)
 {
 	struct address_space * const mapping = page->mapping;
@@ -3255,7 +3264,7 @@ int try_to_free_buffers(struct page *page)
 	 * dirty bit from being lost.
 	 */
 	if (ret)
-		cancel_dirty_page(page, PAGE_CACHE_SIZE);
+		cancel_dirty_page(page, PAGE_CACHE_SIZE/*4096*/);
 	spin_unlock(&mapping->private_lock);
 out:
 	if (buffers_to_free) {
@@ -3301,23 +3310,32 @@ SYSCALL_DEFINE2(bdflush, int, func, long, data)
 /*
  * Buffer-head allocation
  */
+// 2015-08-15
 static struct kmem_cache *bh_cachep __read_mostly;
 
 /*
  * Once the number of bh's in the machine exceeds this level, we start
  * stripping them in writeback.
  */
+// 2015-08-15
+// 이 변수도 buffer_init()시 설정된다. 그러므로, 아직까지는 0이다.
 static unsigned long max_buffer_heads;
 
+// 2015-08-15
 int buffer_heads_over_limit;
 
+// 2015-08-15
 struct bh_accounting {
 	int nr;			/* Number of live bh's */
 	int ratelimit;		/* Limit cacheline bouncing */
 };
 
+// 2015-08-15
 static DEFINE_PER_CPU(struct bh_accounting, bh_accounting) = {0, 0};
 
+// 2015-08-15
+// bh_accounting.ratelimit이 4096을 초과하는 경우에만,
+// bh_accounting.ratelimit을 재설정하고, buffer_heads_over_limit을 설정한다.
 static void recalc_bh_state(void)
 {
 	int i;
@@ -3326,6 +3344,14 @@ static void recalc_bh_state(void)
 	if (__this_cpu_inc_return(bh_accounting.ratelimit) - 1 < 4096)
 		return;
 	__this_cpu_write(bh_accounting.ratelimit, 0);
+	// 
+	// #define for_each_online_cpu(cpu)   for_each_cpu((cpu), cpu_online_mask)
+	//
+	// #define for_each_cpu(cpu, mask)             \
+	//      for ((cpu) = -1;                \
+	//          (cpu) = cpumask_next((cpu), (mask)),    \
+	//          (cpu) < nr_cpu_ids;)
+	//
 	for_each_online_cpu(i)
 		tot += per_cpu(bh_accounting, i).nr;
 	buffer_heads_over_limit = (tot > max_buffer_heads);
@@ -3345,9 +3371,12 @@ struct buffer_head *alloc_buffer_head(gfp_t gfp_flags)
 }
 EXPORT_SYMBOL(alloc_buffer_head);
 
+// 2015-08-15
 void free_buffer_head(struct buffer_head *bh)
 {
 	BUG_ON(!list_empty(&bh->b_assoc_buffers));
+	// 2015-08-15, bh_cachep은 아직 설정되지 않았다.
+	// 이는 start_kernel -> buffer_init()에서 설정된다.
 	kmem_cache_free(bh_cachep, bh);
 	preempt_disable();
 	__this_cpu_dec(bh_accounting.nr);

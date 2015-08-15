@@ -89,10 +89,14 @@ void anon_vma_interval_tree_remove(struct anon_vma_chain *node,
 	__anon_vma_interval_tree_remove(node, root);
 }
 
+// 2015-08-15
+// &anon_vma->rb_root, pgoff, pgoff
 struct anon_vma_chain *
 anon_vma_interval_tree_iter_first(struct rb_root *root,
 				  unsigned long first, unsigned long last)
 {
+	// __anon_vma_interval_tree_iter_first는
+	// 매트로 INTERVAL_TREE_DEFINE에 의해서 생성된다.
 	return __anon_vma_interval_tree_iter_first(root, first, last);
 }
 

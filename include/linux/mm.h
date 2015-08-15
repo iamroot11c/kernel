@@ -141,9 +141,10 @@ extern unsigned int kobjsize(const void *objp);
 #endif
 
 #ifndef VM_GROWSUP
-# define VM_GROWSUP	VM_NONE
+# define VM_GROWSUP	VM_NONE     // 2015-08-15
 #endif
 
+// 2015-08-15
 /* Bits set in the VMA until the stack is in its final location */
 #define VM_STACK_INCOMPLETE_SETUP	(VM_RAND_READ | VM_SEQ_READ)
 
@@ -250,6 +251,7 @@ struct vm_operations_struct {
 struct mmu_gather;
 struct inode;
 
+// 2015-08-15
 #define page_private(page)		((page)->private)
 #define set_page_private(page, v)	((page)->private = (v))
 
@@ -422,6 +424,7 @@ static inline int page_mapcount(struct page *page)
 
 // 2015-07-25;
 // page_count(page);
+// 2015-08-15
 static inline int page_count(struct page *page)
 {
 	return atomic_read(&compound_head(page)->_count);
