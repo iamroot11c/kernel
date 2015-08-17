@@ -149,7 +149,7 @@ static inline bool __is_movable_balloon_page(struct page *page)
  * under the proper page lock, at the functions that will be coping with the
  * balloon page case.
  */
-// 2015-08-15
+// 2015-08-15, NOTE: Not here
 static inline bool balloon_page_movable(struct page *page)
 {
 	/*
@@ -265,6 +265,7 @@ static inline void balloon_page_delete(struct page *page)
 }
 
 // 2015-07-04;
+// 2015-08-15, 미안해요, 스터디 시간에 잘못 드라이빙 되었군요...
 static inline bool balloon_page_movable(struct page *page)
 {
 	return false;

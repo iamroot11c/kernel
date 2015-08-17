@@ -780,7 +780,7 @@ static int __unmap_and_move(struct page *page, struct page *newpage,
 	// mem_cgroup_prepare_migration no op.;
 	/* charge against new page */
 	// 2015-08-08 시작;
-	mem_cgroup_prepare_migration(page, newpage, &mem);
+	mem_cgroup_prepare_migration(page, newpage, &mem);	// NOTE!!!, 건너뜀...
 
 	if (PageWriteback(page)) {
 		/*
