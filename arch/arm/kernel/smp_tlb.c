@@ -117,9 +117,10 @@ void flush_tlb_mm(struct mm_struct *mm)
 	broadcast_tlb_mm_a15_erratum(mm);
 }
 
+// 2015-08-22
 void flush_tlb_page(struct vm_area_struct *vma, unsigned long uaddr)
 {
-	if (tlb_ops_need_broadcast()) {
+	if (tlb_ops_need_broadcast()) {	// false
 		struct tlb_args ta;
 		ta.ta_vma = vma;
 		ta.ta_start = uaddr;

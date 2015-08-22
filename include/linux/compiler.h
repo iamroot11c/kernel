@@ -41,7 +41,7 @@
 # define __percpu	__attribute__((noderef, address_space(3)))
 #ifdef CONFIG_SPARSE_RCU_POINTER
 # define __rcu		__attribute__((noderef, address_space(4)))
-#else
+#else   /* ! __CHECKER__ */
 # define __rcu
 #endif
 extern void __chk_user_ptr(const volatile void __user *);

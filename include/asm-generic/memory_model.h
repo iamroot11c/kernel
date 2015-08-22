@@ -57,6 +57,7 @@
  * Note: section's mem_map is encorded to reflect its start_pfn.
  * section[i].section_mem_map == mem_map's address - start_pfn;
  */
+// 2015-08-22
 #define __page_to_pfn(pg)					\
 ({	const struct page *__pg = (pg);				\
 	int __sec = page_to_section(__pg);			\
@@ -72,6 +73,7 @@
 })
 #endif /* CONFIG_FLATMEM/DISCONTIGMEM/SPARSEMEM */
 
+// 2015-08-22
 #define page_to_pfn __page_to_pfn
 #define pfn_to_page __pfn_to_page
 

@@ -2,11 +2,15 @@
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
 
++ [65주차]() `2015.08.22`
+ - [kmem_cache_init() 진행중]()
+ - mm/migrate.c:__unmap_and_move() 진행중
+ - 
 
 + [64주차]() `2015.08.15`
  - [kmem_cache_init() 진행중](http://bit.ly/1IQSM7s)
  - mm/migrate.c:__unmap_and_move() 진행중
- - mm/memcontrol.c:mem_cgroup_prepare_migration() 진행중
+ - TODO
 
 + [63주차]() `2015.08.08`
  - [kmem_cache_init() 진행중](http://bit.ly/1EfFUDJ)

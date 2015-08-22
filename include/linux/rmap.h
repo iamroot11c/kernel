@@ -197,6 +197,7 @@ int page_referenced_one(struct page *, struct vm_area_struct *,
 
 #define TTU_ACTION(x) ((x) & TTU_ACTION_MASK)
 
+// 2015-08-22, by CONFIG_MMU
 int try_to_unmap(struct page *, enum ttu_flags flags);
 int try_to_unmap_one(struct page *, struct vm_area_struct *,
 			unsigned long address, enum ttu_flags flags);
@@ -207,6 +208,8 @@ int try_to_unmap_one(struct page *, struct vm_area_struct *,
 pte_t *__page_check_address(struct page *, struct mm_struct *,
 				unsigned long, spinlock_t **, int);
 
+// 2015-08-22
+// page_check_address(page, mm, address, &ptl, 0);
 static inline pte_t *page_check_address(struct page *page, struct mm_struct *mm,
 					unsigned long address,
 					spinlock_t **ptlp, int sync)

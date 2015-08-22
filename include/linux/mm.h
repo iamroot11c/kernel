@@ -86,6 +86,7 @@ extern unsigned int kobjsize(const void *objp);
 
 #define VM_READ		0x00000001	/* currently active flags */
 #define VM_WRITE	0x00000002
+// 2015-08-22
 #define VM_EXEC		0x00000004
 #define VM_SHARED	0x00000008
 
@@ -784,9 +785,11 @@ static inline void set_page_section(struct page *page, unsigned long section)
 	page->flags |= (section & SECTIONS_MASK) << SECTIONS_PGSHIFT;
 }
 
+// 2015-08-22
+// page->flags의 상위 4비트를 얻어온다.
 static inline unsigned long page_to_section(const struct page *page)
 {
-	return (page->flags >> SECTIONS_PGSHIFT) & SECTIONS_MASK;
+	return (page->flags >> SECTIONS_PGSHIFT/*28*/) & SECTIONS_MASK/*0b1111*/;
 }
 #endif
 
@@ -1313,7 +1316,8 @@ static inline pmd_t *pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long a
 }
 #endif /* CONFIG_MMU && !__ARCH_HAS_4LEVEL_HACK */
 
-#if USE_SPLIT_PTLOCKS
+// 2015-08-22
+#if USE_SPLIT_PTLOCKS   // 0
 /*
  * We tuck a spinlock to guard each pagetable page into its struct page,
  * at page->private, with BUILD_BUG_ON to make sure that this will not
@@ -1332,6 +1336,7 @@ static inline pmd_t *pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long a
  */
 #define pte_lock_init(page)	do {} while (0)
 #define pte_lock_deinit(page)	do {} while (0)
+// 2015-08-22
 #define pte_lockptr(mm, pmd)	({(void)(pmd); &(mm)->page_table_lock;})
 #endif /* USE_SPLIT_PTLOCKS */
 
@@ -1356,6 +1361,7 @@ static inline void pgtable_page_dtor(struct page *page)
 	__pte;						\
 })
 
+// 2015-08-22
 #define pte_unmap_unlock(pte, ptl)	do {		\
 	spin_unlock(ptl);				\
 	pte_unmap(pte);					\

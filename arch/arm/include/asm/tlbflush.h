@@ -237,6 +237,7 @@ extern void __cpu_flush_kern_tlb_range(unsigned long, unsigned long);
 
 extern struct cpu_tlb_fns cpu_tlb;
 
+// 2015-08-22
 #define __cpu_tlb_flags			cpu_tlb.tlb_flags
 
 /*
@@ -501,12 +502,15 @@ local_flush_tlb_page(struct vm_area_struct *vma, unsigned long uaddr)
 		dsb(nsh);
 }
 
+// 2015-08-22
 static inline void
 __flush_tlb_page(struct vm_area_struct *vma, unsigned long uaddr)
 {
 	const unsigned int __tlb_flag = __cpu_tlb_flags;
 
+    // 상위 12비트 이상의 값 + 하위 1byte 값이 더해진 값이다.
 	uaddr = (uaddr & PAGE_MASK) | ASID(vma->vm_mm);
+    // 2015-08-22, 여기까지
 
 	if (tlb_flag(TLB_WB))
 		dsb(ishst);
@@ -709,7 +713,7 @@ static inline void clean_pmd_entry(void *pmd)
 #define local_flush_tlb_range(vma,start,end)	__cpu_flush_user_tlb_range(start,end,vma)
 #define local_flush_tlb_kernel_range(s,e)	__cpu_flush_kern_tlb_range(s,e)
 
-#ifndef CONFIG_SMP
+#ifndef CONFIG_SMP // CONFIG_SMP = y
 #define flush_tlb_all		local_flush_tlb_all
 #define flush_tlb_mm		local_flush_tlb_mm
 #define flush_tlb_page		local_flush_tlb_page

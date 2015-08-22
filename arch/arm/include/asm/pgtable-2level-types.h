@@ -50,10 +50,13 @@ typedef struct { pteval_t pgprot; } pgprot_t;
  */
 typedef pteval_t pte_t;
 typedef pmdval_t pmd_t;
+// 2015-08-22, 배열로 typedef하군요...
 typedef pmdval_t pgd_t[2];
 typedef pteval_t pgprot_t;
 
+// 2015-08-22
 #define pte_val(x)      (x)
+// 2015-08-22
 #define pmd_val(x)      (x)
 #define pgd_val(x)	((x)[0])
 #define pgprot_val(x)   (x) // 2015-01-31

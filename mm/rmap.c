@@ -581,6 +581,9 @@ unsigned long page_address_in_vma(struct page *page, struct vm_area_struct *vma)
 	return address;
 }
 
+// 2015-08-22
+// mm_find_pmd(mm, address);
+// 분석해 보니, pgd를 pmt_t로 type casting하더라.
 pmd_t *mm_find_pmd(struct mm_struct *mm, unsigned long address)
 {
 	pgd_t *pgd;
@@ -591,6 +594,7 @@ pmd_t *mm_find_pmd(struct mm_struct *mm, unsigned long address)
 	if (!pgd_present(*pgd))
 		goto out;
 
+	// no pud라서 일전의 pgd 유지
 	pud = pud_offset(pgd, address);
 	if (!pud_present(*pud))
 		goto out;
@@ -611,6 +615,10 @@ out:
  *
  * On success returns with pte mapped and locked.
  */
+// 2015-08-22
+//
+// __cond_lock(*ptlp, ptep = __page_check_address(page, mm, address,
+//                               ptlp, sync/*0*/));
 pte_t *__page_check_address(struct page *page, struct mm_struct *mm,
 			  unsigned long address, spinlock_t **ptlp, int sync)
 {
@@ -618,7 +626,7 @@ pte_t *__page_check_address(struct page *page, struct mm_struct *mm,
 	pte_t *pte;
 	spinlock_t *ptl;
 
-	if (unlikely(PageHuge(page))) {
+	if (unlikely(PageHuge(page))) {		// NO OP
 		/* when pud is not present, pte will be NULL */
 		pte = huge_pte_offset(mm, address);
 		if (!pte)
@@ -632,19 +640,26 @@ pte_t *__page_check_address(struct page *page, struct mm_struct *mm,
 	if (!pmd)
 		return NULL;
 
+	// NO OP
 	if (pmd_trans_huge(*pmd))
 		return NULL;
 
+	// 1. pte를 구한다.
 	pte = pte_offset_map(pmd, address);
 	/* Make a quick check before getting the lock */
+	// 2015-08-22, sync(0)
 	if (!sync && !pte_present(*pte)) {
-		pte_unmap(pte);
+		pte_unmap(pte);	// NO OP
 		return NULL;
 	}
 
+	// 2015-08-22
+	// #define pte_lockptr(mm, pmd)    ({(void)(pmd); &(mm)->page_table_lock;})
 	ptl = pte_lockptr(mm, pmd);
 check:
 	spin_lock(ptl);
+	// 2. 구한 pte의 유효성을 체크한다.
+	// page와 pte를 이용해서, pfn 비교를 통해서
 	if (pte_present(*pte) && page_to_pfn(page) == pte_pfn(*pte)) {
 		*ptlp = ptl;
 		return pte;
@@ -1202,6 +1217,13 @@ out:
  * Subfunctions of try_to_unmap: try_to_unmap_one called
  * repeatedly from try_to_unmap_ksm, try_to_unmap_anon or try_to_unmap_file.
  */
+// 2015-08-22 시작
+// try_to_unmap(page, TTU_MIGRATION|TTU_IGNORE_MLOCK|TTU_IGNORE_ACCESS);
+//
+// address = vma_address(page, vma);
+// // 2015-08-15, 여기까지
+// ret = try_to_unmap_one(page, vma, address, flags);
+//
 int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 		     unsigned long address, enum ttu_flags flags)
 {
@@ -1211,7 +1233,9 @@ int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 	spinlock_t *ptl;
 	int ret = SWAP_AGAIN;
 
+	// 2015-08-22
 	pte = page_check_address(page, mm, address, &ptl, 0);
+	// 2015-08-22
 	if (!pte)
 		goto out;
 
@@ -1220,6 +1244,7 @@ int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 	 * If it's recently referenced (perhaps page_referenced
 	 * skipped over this mm) then we should reactivate it.
 	 */
+	// 2015-08-22, TTU_MIGRATION|TTU_IGNORE_MLOCK|TTU_IGNORE_ACCESS
 	if (!(flags & TTU_IGNORE_MLOCK)) {
 		if (vma->vm_flags & VM_LOCKED)
 			goto out_mlock;
@@ -1227,6 +1252,8 @@ int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 		if (TTU_ACTION(flags) == TTU_MUNLOCK)
 			goto out_unmap;
 	}
+
+	// 2015-08-22, TTU_MIGRATION|TTU_IGNORE_MLOCK|TTU_IGNORE_ACCESS
 	if (!(flags & TTU_IGNORE_ACCESS)) {
 		if (ptep_clear_flush_young_notify(vma, address, pte)) {
 			ret = SWAP_FAIL;
@@ -1235,6 +1262,8 @@ int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
   	}
 
 	/* Nuke the page table entry. */
+	// 2015-08-22
+	// flush icache
 	flush_cache_page(vma, address, page_to_pfn(page));
 	pteval = ptep_clear_flush(vma, address, pte);
 

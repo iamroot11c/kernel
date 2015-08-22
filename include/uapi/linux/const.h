@@ -18,6 +18,7 @@
 #else
 #define __AC(X,Y)	(X##Y)
 #define _AC(X,Y)	__AC(X,Y)
+// 2015-08-22
 #define _AT(T,X)	((T)(X))
 #endif
 

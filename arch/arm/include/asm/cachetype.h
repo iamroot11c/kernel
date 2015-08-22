@@ -11,11 +11,14 @@
 
 extern unsigned int cacheid;
 
-#define cache_is_vivt()			cacheid_is(CACHEID_VIVT)
+// 2015-08-22
+#define cache_is_vivt()			cacheid_is(CACHEID_VIVT/*0*/)
 #define cache_is_vipt()			cacheid_is(CACHEID_VIPT)
 #define cache_is_vipt_nonaliasing()	cacheid_is(CACHEID_VIPT_NONALIASING)
-#define cache_is_vipt_aliasing()	cacheid_is(CACHEID_VIPT_ALIASING)
-#define icache_is_vivt_asid_tagged()	cacheid_is(CACHEID_ASID_TAGGED)
+// 2015-08-22
+#define cache_is_vipt_aliasing()	cacheid_is(CACHEID_VIPT_ALIASING/*4*/)
+// 2015-08-22
+#define icache_is_vivt_asid_tagged()	cacheid_is(CACHEID_ASID_TAGGED/*8*/)
 #define icache_is_vipt_aliasing()	cacheid_is(CACHEID_VIPT_I_ALIASING)
 #define icache_is_pipt()		cacheid_is(CACHEID_PIPT)
 
@@ -26,10 +29,12 @@ extern unsigned int cacheid;
  * - v7+ VIPT never aliases on D-side
  */
 #if __LINUX_ARM_ARCH__ >= 7
-#define __CACHEID_ARCH_MIN	(CACHEID_VIPT_NONALIASING |\
-				 CACHEID_ASID_TAGGED |\
-				 CACHEID_VIPT_I_ALIASING |\
-				 CACHEID_PIPT)
+// 2015-08-22, (2 | 8 | 16 | 32), 1, 3, 4, 5 번째 비트 셋
+// 0b111010 == 0x3A
+#define __CACHEID_ARCH_MIN	(CACHEID_VIPT_NONALIASING/*2*/ |\
+				 CACHEID_ASID_TAGGED/*8*/ |\
+				 CACHEID_VIPT_I_ALIASING/*16*/|\
+				 CACHEID_PIPT/*32*/)
 #elif __LINUX_ARM_ARCH__ >= 6
 #define	__CACHEID_ARCH_MIN	(~CACHEID_VIVT)
 #else
@@ -39,21 +44,27 @@ extern unsigned int cacheid;
 /*
  * Mask out support which isn't configured
  */
-#if defined(CONFIG_CPU_CACHE_VIVT) && !defined(CONFIG_CPU_CACHE_VIPT)
+#if defined(CONFIG_CPU_CACHE_VIVT/*N*/) && !defined(CONFIG_CPU_CACHE_VIPT/*Y*/)
 #define __CACHEID_ALWAYS	(CACHEID_VIVT)
 #define __CACHEID_NEVER		(~CACHEID_VIVT)
-#elif !defined(CONFIG_CPU_CACHE_VIVT) && defined(CONFIG_CPU_CACHE_VIPT)
+#elif !defined(CONFIG_CPU_CACHE_VIVT/*N*/) && defined(CONFIG_CPU_CACHE_VIPT/*Y*/)
+// 2015-08-22
 #define __CACHEID_ALWAYS	(0)
-#define __CACHEID_NEVER		(CACHEID_VIVT)
+// 2015-08-22
+#define __CACHEID_NEVER		(CACHEID_VIVT/*1*/)
 #else
 #define __CACHEID_ALWAYS	(0)
 #define __CACHEID_NEVER		(0)
 #endif
 
+// 2015-08-22
+// cacheid_is(CACHEID_VIVT/*0*/), 0리턴
+// cacheid_is(CACHEID_VIPT_ALIASING/*4*/, 0리턴)
+// cacheid_is(CACHEID_ASID_TAGGED/*8*/)
 static inline unsigned int __attribute__((pure)) cacheid_is(unsigned int mask)
 {
-	return (__CACHEID_ALWAYS & mask) |
-	       (~__CACHEID_NEVER & __CACHEID_ARCH_MIN & mask & cacheid);
+	return (__CACHEID_ALWAYS/*0*/ & mask) |
+	       (~__CACHEID_NEVER/*0xFFFF_FFFE*/ & __CACHEID_ARCH_MIN/* 0b111010 */ & mask & cacheid);
 }
 
 #endif

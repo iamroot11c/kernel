@@ -116,7 +116,8 @@
  * entries are stored 1024 bytes below.
  */
 #define L_PTE_VALID		(_AT(pteval_t, 1) << 0)		/* Valid */
-#define L_PTE_PRESENT		(_AT(pteval_t, 1) << 0)
+// 2015-8-22, (pteval_t)(1) << 0 == 1
+#define L_PTE_PRESENT		(_AT(pteval_t, 1) << 0) 
 #define L_PTE_YOUNG		(_AT(pteval_t, 1) << 1)
 #define L_PTE_FILE		(_AT(pteval_t, 1) << 2)	/* only when !PRESENT */
 #define L_PTE_DIRTY		(_AT(pteval_t, 1) << 6)
@@ -152,10 +153,12 @@
  */
 #define pud_none(pud)		(0)
 #define pud_bad(pud)		(0)
+// 2015-08-22
 #define pud_present(pud)	(1)
 #define pud_clear(pudp)		do { } while (0)
 #define set_pud(pud,pudp)	do { } while (0)
 
+// 2015-08-22, no pud라서 pud는 pgd값이다.
 static inline pmd_t *pmd_offset(pud_t *pud, unsigned long addr)
 {
 	// 전달받은 값을 그대로 type cast 후 :리턴
@@ -196,6 +199,7 @@ static inline pmd_t *pmd_offset(pud_t *pud, unsigned long addr)
 
 // 2015-01-31
 // set_pte_ext(ptep, pte, 0);
+// 2015-08-22, set_pte_ext(ptep, __pte(0), 0)
 #define set_pte_ext(ptep,pte,ext) cpu_set_pte_ext(ptep,pte,ext)
 
 #endif /* __ASSEMBLY__ */

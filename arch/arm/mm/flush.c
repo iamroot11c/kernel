@@ -21,7 +21,7 @@
 
 #include "mm.h"
 
-#ifdef CONFIG_CPU_CACHE_VIPT
+#ifdef CONFIG_CPU_CACHE_VIPT	// y
 
 // 2015-02-07, vaddr을 임의로 주어 계산 및 명령어 확인
 static void flush_pfn_alias(unsigned long pfn, unsigned long vaddr)
@@ -93,19 +93,21 @@ void flush_cache_range(struct vm_area_struct *vma, unsigned long start, unsigned
 		__flush_icache_all();
 }
 
+// 2015-08-22
 void flush_cache_page(struct vm_area_struct *vma, unsigned long user_addr, unsigned long pfn)
 {
-	if (cache_is_vivt()) {
+	if (cache_is_vivt()) {	// false
 		vivt_flush_cache_page(vma, user_addr, pfn);
 		return;
 	}
 
-	if (cache_is_vipt_aliasing()) {
+	if (cache_is_vipt_aliasing()) {	// false
 		flush_pfn_alias(pfn, user_addr);
 		__flush_icache_all();
 	}
 
-	if (vma->vm_flags & VM_EXEC && icache_is_vivt_asid_tagged())
+	// fluch icache
+	if (vma->vm_flags & VM_EXEC/*4*/ && icache_is_vivt_asid_tagged())
 		__flush_icache_all();
 }
 

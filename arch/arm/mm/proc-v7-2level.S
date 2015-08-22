@@ -73,6 +73,7 @@ ENDPROC(cpu_v7_switch_mm)
  *	- ext	- value for extended PTE bits
  */
 // 2015-01-31
+// 2015-08-22
 ENTRY(cpu_v7_set_pte_ext)
 #ifdef CONFIG_MMU
 	str	r1, [r0]			@ linux version
@@ -107,6 +108,10 @@ ENTRY(cpu_v7_set_pte_ext)
  THUMB(	add	r0, r0, #2048 )
  THUMB(	str	r3, [r0] )
 	ALT_SMP(W(nop))
+	// 2015-08-22, DCCMVAC 
+	// Clean data cache line by MVA to PoC,
+	// PoC = to Point of Coherence
+	// MVA = Modified virtual address
 	ALT_UP (mcr	p15, 0, r0, c7, c10, 1)		@ flush_pte
 							// DCCMVAC, clean data cache line 
 #endif

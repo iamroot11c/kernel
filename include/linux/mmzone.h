@@ -1209,11 +1209,12 @@ struct mem_section {
 #define SECTIONS_PER_ROOT	1
 #endif
 
-#define SECTION_NR_TO_ROOT(sec)	((sec) / SECTIONS_PER_ROOT)
+// 2015-08-22
+#define SECTION_NR_TO_ROOT(sec)	((sec) / SECTIONS_PER_ROOT/*예상:512*/)
 #define NR_SECTION_ROOTS	DIV_ROUND_UP(NR_MEM_SECTIONS, SECTIONS_PER_ROOT)
 // #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
 //                         1 = ((16 + 512 - 1) / 512)
-#define SECTION_ROOT_MASK	(SECTIONS_PER_ROOT - 1)
+#define SECTION_ROOT_MASK	(SECTIONS_PER_ROOT - 1)     // 1
 
 #ifdef CONFIG_SPARSEMEM_EXTREME
 extern struct mem_section *mem_section[NR_SECTION_ROOTS];
@@ -1223,6 +1224,7 @@ extern struct mem_section mem_section[NR_SECTION_ROOTS][SECTIONS_PER_ROOT];
 
 // 2014-12-27;
 // 2015-07-18
+// 2015-08-22
 static inline struct mem_section *__nr_to_section(unsigned long nr)
 {
     // 이상한 점. memsection은 config 설정 상 원소 1개를 가지는 포인터의 배열이지만
@@ -1244,10 +1246,11 @@ extern unsigned long usemap_size(void);
 #define	SECTION_MARKED_PRESENT	(1UL<<0)
 #define SECTION_HAS_MEM_MAP	(1UL<<1)
 #define SECTION_MAP_LAST_BIT	(1UL<<2)
-#define SECTION_MAP_MASK	(~(SECTION_MAP_LAST_BIT-1))
+#define SECTION_MAP_MASK	(~(SECTION_MAP_LAST_BIT-1)) // 0b11 == 3
 #define SECTION_NID_SHIFT	2
 
 // 2015-01-17
+// 2015-08-22
 static inline struct page *__section_mem_map_addr(struct mem_section *section)
 {
 	unsigned long map = section->section_mem_map;

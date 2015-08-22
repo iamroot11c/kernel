@@ -13,11 +13,12 @@
 /*
  * Return true if we are running on a SMP platform
  */
+// 2015-08-22
 static inline bool is_smp(void)
 {
 #ifndef CONFIG_SMP
 	return false;
-#elif defined(CONFIG_SMP_ON_UP)
+#elif defined(CONFIG_SMP_ON_UP) // y
 	extern unsigned int smp_on_up;
 	return !!smp_on_up;
 #else
@@ -29,12 +30,20 @@ static inline bool is_smp(void)
 #ifndef CONFIG_MMU
 #define tlb_ops_need_broadcast()	0
 #else
+// 2015-08-22
+// [15:12] Maintenance broadcast
+// Indicates whether cache, TLB and branch predictor operations are broadcast:
+// 0x2 / 
+// Cache, TLB and branch predictor operations affect structures according
+// to shareability and defined behavior of instructions.
+//
+// 우리는 false이다.
 static inline int tlb_ops_need_broadcast(void)
 {
 	if (!is_smp())
 		return 0;
 
-	return ((read_cpuid_ext(CPUID_EXT_MMFR3) >> 12) & 0xf) < 2;
+	return ((read_cpuid_ext(CPUID_EXT_MMFR3/*"c1, 7"*/)/*0x02102211*/ >> 12)/*0x2102*/ & 0xf)/*2*/ < 2;
 }
 #endif
 

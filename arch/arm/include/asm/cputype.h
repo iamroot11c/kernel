@@ -34,6 +34,7 @@
 #define CPUID_EXT_MMFR0	"c1, 4"
 #define CPUID_EXT_MMFR1	"c1, 5"
 #define CPUID_EXT_MMFR2	"c1, 6"
+// 2015-08-22
 #define CPUID_EXT_MMFR3	"c1, 7"
 #define CPUID_EXT_ISAR0	"c2, 0"
 #define CPUID_EXT_ISAR1	"c2, 1"
@@ -99,6 +100,15 @@ extern unsigned int processor_id;
  * any is_smp() tests, which can cause undefined instruction aborts on
  * ARM1136 r0 due to the missing extended CP15 registers.
  */
+// 2015-08-22
+// read_cpuid_ext("c1, 7")
+// ID_MMFR3 / 0x02102211 / Memory Model Feature Register 3
+// The ID_MMFR3 is:
+//    - A read-only register.
+//    - Common to the Secure and Non-secure states.
+//    - Only accessible from PL1 or higher.
+//
+//
 #define read_cpuid_ext(ext_reg)						\
 	({								\
 		unsigned int __val;					\

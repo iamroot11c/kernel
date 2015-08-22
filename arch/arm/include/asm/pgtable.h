@@ -181,10 +181,13 @@ extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
 // 현재 구조에서는 2단계 페이징 시스템을 사용하기 때문에 해당 값은 21
 // pgd size는 2MB이기 때문에 2MB만큼 shift한것.
 // http://www.iamroot.org/xe/Kernel_10_ARM/176798
-#define pgd_index(addr)		((addr) >> PGDIR_SHIFT)
+// 2015-08-22
+#define pgd_index(addr)		((addr) >> PGDIR_SHIFT/*21*/)
 
 // mm->pgd == swapper_pg_dir
 // == &swapper_pg_dir[pgd_index(addr)]
+// 
+// 2015-08-22
 #define pgd_offset(mm, addr)	((mm)->pgd + pgd_index(addr))
 
 /* to find an entry in a kernel page-table-directory */
@@ -192,21 +195,27 @@ extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
 
 // return (pmd.pmd == 0)
 #define pmd_none(pmd)		(!pmd_val(pmd))
+// 2015-08-22
 #define pmd_present(pmd)	(pmd_val(pmd))
 
+// 2015-08-22
+// 가상주소를 pte_t형으로 리턴
 static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 {
 	// pmd.pmd 값을 PAGE_MASK 단위로 ALIGN
 	// (S32) -> 32비트 머신인가, 64비트 머신인가에 따라 
 	// PAGE_MASK값이 다를 수 있기 때문에
 	// 명시적으로 마스크에 대한 값을 표시
-	return __va(pmd_val(pmd) & PHYS_MASK & (s32)PAGE_MASK);
+	return __va(pmd_val(pmd) & PHYS_MASK/* 0xFFFF_FFFF */ & (s32)PAGE_MASK/* 0xFFFF_F000 */);
 }
 
 #define pmd_page(pmd)		pfn_to_page(__phys_to_pfn(pmd_val(pmd) & PHYS_MASK))
 
-#ifndef CONFIG_HIGHPTE
+#ifndef CONFIG_HIGHPTE  // Not set
+// 2015-08-22
+// argument가 pointer가 아니라, *(pmd)이다.
 #define __pte_map(pmd)		pmd_page_vaddr(*(pmd))
+// 2015-08-22
 #define __pte_unmap(pte)	do { } while (0)
 #else
 #define __pte_map(pmd)		(pte_t *)kmap_atomic(pmd_page(*(pmd)))
@@ -214,14 +223,18 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 #endif
 
 // pte bit(20:12) 값 추출
-#define pte_index(addr)		(((addr) >> PAGE_SHIFT) & (PTRS_PER_PTE - 1))
+// 2015-08-22
+#define pte_index(addr)		(((addr) >> PAGE_SHIFT/*12*/) & (PTRS_PER_PTE - 1)/*0x01FF*/)
 // vaddr -> pmd[0] 4kb align + vaddr[20:12]
 #define pte_offset_kernel(pmd,addr)	(pmd_page_vaddr(*(pmd)) + pte_index(addr))
 
+// 2015-08-22
 #define pte_offset_map(pmd,addr)	(__pte_map(pmd) + pte_index(addr))
+// 2015-08-22
 #define pte_unmap(pte)			__pte_unmap(pte)
-
-#define pte_pfn(pte)		((pte_val(pte) & PHYS_MASK) >> PAGE_SHIFT)
+// 2015-08-22
+// 아래 연산을통해 추론해 보면, pte는 물리주소임을 알 수 있다.
+#define pte_pfn(pte)		((pte_val(pte) & PHYS_MASK/* 0xFFFF_FFFF*/) >> PAGE_SHIFT/*12*/)
 // 물리 주소와, PTE mask값을 or하면, pte가 된다.
 #define pfn_pte(pfn,prot)	__pte(__pfn_to_phys(pfn) | pgprot_val(prot))
 
@@ -229,10 +242,13 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 // 2015-01-31
 #define mk_pte(page,prot)	pfn_pte(page_to_pfn(page), prot)
 
+// 2015-08-22
+// Data cache clear by MVA to PoC, VMSA
 #define pte_clear(mm,addr,ptep)	set_pte_ext(ptep, __pte(0), 0)
 
 #define pte_none(pte)		(!pte_val(pte))
-#define pte_present(pte)	(pte_val(pte) & L_PTE_PRESENT)
+// 2015-08-22
+#define pte_present(pte)	(pte_val(pte) & L_PTE_PRESENT/*1*/)
 #define pte_write(pte)		(!(pte_val(pte) & L_PTE_RDONLY))
 #define pte_dirty(pte)		(pte_val(pte) & L_PTE_DIRTY)
 #define pte_young(pte)		(pte_val(pte) & L_PTE_YOUNG)

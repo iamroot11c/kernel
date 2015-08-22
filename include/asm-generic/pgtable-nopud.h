@@ -24,6 +24,7 @@ typedef struct { pgd_t pgd; } pud_t;
  */
 static inline int pgd_none(pgd_t pgd)		{ return 0; }
 static inline int pgd_bad(pgd_t pgd)		{ return 0; }
+// 2015-08-22, compile 통해 확인
 static inline int pgd_present(pgd_t pgd)	{ return 1; }
 static inline void pgd_clear(pgd_t *pgd)	{ }
 #define pud_ERROR(pud)				(pgd_ERROR((pud).pgd))
@@ -35,9 +36,10 @@ static inline void pgd_clear(pgd_t *pgd)	{ }
  */
 #define set_pgd(pgdptr, pgdval)			set_pud((pud_t *)(pgdptr), (pud_t) { pgdval })
 
+// 2015-08-22
 static inline pud_t * pud_offset(pgd_t * pgd, unsigned long address)
 {
-		// 전달받은 값을 그대로 리턴 
+	// 전달받은 값을 그대로 리턴 
 	return (pud_t *)pgd;
 }
 

@@ -80,11 +80,13 @@ int pmdp_clear_flush_young(struct vm_area_struct *vma,
 #endif
 
 #ifndef __HAVE_ARCH_PTEP_GET_AND_CLEAR
+// 2015-08-22
 static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
 				       unsigned long address,
 				       pte_t *ptep)
 {
 	pte_t pte = *ptep;
+    // Data cache clear by MVA to PoC, VMSA
 	pte_clear(mm, address, ptep);
 	return pte;
 }
@@ -130,6 +132,7 @@ static inline void pte_clear_not_present_full(struct mm_struct *mm,
 #endif
 
 #ifndef __HAVE_ARCH_PTEP_CLEAR_FLUSH
+// 2015-08-22
 extern pte_t ptep_clear_flush(struct vm_area_struct *vma,
 			      unsigned long address,
 			      pte_t *ptep);
@@ -217,6 +220,8 @@ static inline int pmd_same(pmd_t pmd_a, pmd_t pmd_b)
 #endif
 
 #ifndef pte_accessible
+// 2015-08-22
+// 무조건 1을 리턴
 # define pte_accessible(mm, pte)	((void)(pte), 1)
 #endif
 
@@ -529,6 +534,7 @@ static inline unsigned long my_zero_pfn(unsigned long addr)
 #ifdef CONFIG_MMU
 
 #ifndef CONFIG_TRANSPARENT_HUGEPAGE
+// 2015-08-22
 static inline int pmd_trans_huge(pmd_t pmd)
 {
 	return 0;

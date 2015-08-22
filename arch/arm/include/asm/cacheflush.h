@@ -189,6 +189,14 @@ extern void copy_to_user_page(struct vm_area_struct *, struct page *,
 	    : : "r" (0));
 
 /* Invalidate I-cache inner shareable */
+// 2015-08-22
+// ICIALLUIS 
+// Invalidate all instruction caches to *PoU Inner Shareable, see the ARM
+// Architecture Reference Manual
+//
+// * : PoU = Point of Unification. If BROADCASTINNER is LOW, 
+// the PoU is in the L1 data cache. If BROADCASTINNER is HIGH then
+// the PoU is outside of the processor and is dependent on the external memory system.
 #define __flush_icache_all_v7_smp()					\
 	asm("mcr	p15, 0, %0, c7, c1, 0"				\
 	    : : "r" (0));
@@ -202,6 +210,7 @@ extern void copy_to_user_page(struct vm_area_struct *, struct page *,
 	defined(CONFIG_SMP_ON_UP)
 #define __flush_icache_preferred	__cpuc_flush_icache_all
 #elif __LINUX_ARM_ARCH__ >= 7 && defined(CONFIG_SMP)
+// 2015-08-22
 #define __flush_icache_preferred	__flush_icache_all_v7_smp
 #elif __LINUX_ARM_ARCH__ == 6 && defined(CONFIG_ARM_ERRATA_411920)
 #define __flush_icache_preferred	__cpuc_flush_icache_all
@@ -209,8 +218,10 @@ extern void copy_to_user_page(struct vm_area_struct *, struct page *,
 #define __flush_icache_preferred	__flush_icache_all_generic
 #endif
 
+// 2015-08-22
 static inline void __flush_icache_all(void)
 {
+    // i-cache flush
 	__flush_icache_preferred();
 	dsb();
 }
@@ -252,7 +263,7 @@ vivt_flush_cache_page(struct vm_area_struct *vma, unsigned long user_addr, unsig
 	}
 }
 
-#ifndef CONFIG_CPU_CACHE_VIPT
+#ifndef CONFIG_CPU_CACHE_VIPT       // set
 #define flush_cache_mm(mm) \
 		vivt_flush_cache_mm(mm)
 #define flush_cache_range(vma,start,end) \

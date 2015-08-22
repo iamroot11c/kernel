@@ -88,6 +88,7 @@
 #define PTE_SMALL_AP_URO_SRW	(_AT(pteval_t, 0xaa) << 4)
 #define PTE_SMALL_AP_URW_SRW	(_AT(pteval_t, 0xff) << 4)
 
-#define PHYS_MASK		(~0UL)
+// 2015-08-22
+#define PHYS_MASK		(~0UL)      // 0xFFFF_FFFF
 
 #endif
