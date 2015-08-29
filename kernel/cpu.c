@@ -684,6 +684,7 @@ EXPORT_SYMBOL(cpu_possible_mask);
 
 // 2015-08-15
 static DECLARE_BITMAP(cpu_online_bits, CONFIG_NR_CPUS) __read_mostly;
+// 2015-08-29
 const struct cpumask *const cpu_online_mask = to_cpumask(cpu_online_bits);
 EXPORT_SYMBOL(cpu_online_mask);
 

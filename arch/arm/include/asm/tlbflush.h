@@ -67,7 +67,7 @@
 
 #define v4_tlb_flags	(TLB_V4_U_FULL | TLB_V4_U_PAGE)
 
-#ifdef CONFIG_CPU_TLB_V4WT
+#ifdef CONFIG_CPU_TLB_V4WT  // not set
 # define v4_possible_flags	v4_tlb_flags
 # define v4_always_flags	v4_tlb_flags
 # ifdef _TLB
@@ -76,7 +76,9 @@
 #  define _TLB v4
 # endif
 #else
+// 2015-08-29
 # define v4_possible_flags	0
+// 2015-08-29
 # define v4_always_flags	(-1UL)
 #endif
 
@@ -92,7 +94,9 @@
 #  define _TLB fa
 # endif
 #else
+// 2015-08-29
 # define fa_possible_flags	0
+// 2015-08-29
 # define fa_always_flags	(-1UL)
 #endif
 
@@ -100,7 +104,7 @@
 			 TLB_V4_I_FULL | TLB_V4_D_FULL | \
 			 TLB_V4_I_PAGE | TLB_V4_D_PAGE)
 
-#ifdef CONFIG_CPU_TLB_V4WBI
+#ifdef CONFIG_CPU_TLB_V4WBI // not set
 # define v4wbi_possible_flags	v4wbi_tlb_flags
 # define v4wbi_always_flags	v4wbi_tlb_flags
 # ifdef _TLB
@@ -109,7 +113,9 @@
 #  define _TLB v4wbi
 # endif
 #else
+// 2015-08-29
 # define v4wbi_possible_flags	0
+// 2015-08-29
 # define v4wbi_always_flags	(-1UL)
 #endif
 
@@ -126,7 +132,9 @@
 #  define _TLB v4wbi
 # endif
 #else
+// 2015-08-29
 # define fr_possible_flags	0
+// 2015-08-29
 # define fr_always_flags	(-1UL)
 #endif
 
@@ -143,7 +151,9 @@
 #  define _TLB v4wb
 # endif
 #else
+// 2015-08-29
 # define v4wb_possible_flags	0
+// 2015-08-29
 # define v4wb_always_flags	(-1UL)
 #endif
 
@@ -162,13 +172,17 @@
 #  define _TLB v6wbi
 # endif
 #else
+// 2015-08-29
 # define v6wbi_possible_flags	0
+// 2015-08-29
 # define v6wbi_always_flags	(-1UL)
 #endif
 
+// 2015-08-29
 #define v7wbi_tlb_flags_smp	(TLB_WB | TLB_BARRIER | \
 				 TLB_V7_UIS_FULL | TLB_V7_UIS_PAGE | \
 				 TLB_V7_UIS_ASID | TLB_V7_UIS_BP)
+// 2015-08-29
 #define v7wbi_tlb_flags_up	(TLB_WB | TLB_DCLEAN | TLB_BARRIER | \
 				 TLB_V6_U_FULL | TLB_V6_U_PAGE | \
 				 TLB_V6_U_ASID | TLB_V6_BP)
@@ -180,8 +194,11 @@
 // CONFIG_SMP_ON_UP, CONFIG_SMP 두 값이 설정이 되어있지만
 // 첫 번째 항목이 먼저 있기 때문에 해당 위치의 플래그가 세팅된다.
 // DCLEAN config
+// 2015-08-29
 #  define v7wbi_possible_flags	(v7wbi_tlb_flags_smp | v7wbi_tlb_flags_up)
 // DCLEAN nonConfig
+// 2015-08-29
+// => TLB_WB | TLB_BARRIER
 #  define v7wbi_always_flags	(v7wbi_tlb_flags_smp & v7wbi_tlb_flags_up)
 
 # elif defined(CONFIG_SMP)
@@ -297,25 +314,31 @@ extern struct cpu_tlb_fns cpu_tlb;
  */
  // config 옵션이 걸리지 않은 경우는 0으로 설정
  // 0 | .... my_config_flag == my_config_flag만 남을 것이다. 
-#define possible_tlb_flags	(v4_possible_flags | \
-				 v4wbi_possible_flags | \
-				 fr_possible_flags | \
-				 v4wb_possible_flags | \
-				 fa_possible_flags | \
-				 v6wbi_possible_flags | \
-				 v7wbi_possible_flags)
+ // 2015-08-29
+ // TLB_WB | TLB_BARRIER | TLB_V7_UIS_FULL | TLB_V7_UIS_PAGE | TLB_V7_UIS_ASID | TLB_V7_UIS_BP
+ // TLB_WB | TLB_DCLEAN | TLB_BARRIER | TLB_V6_U_FULL | TLB_V6_U_PAGE | TLB_V6_U_ASID | TLB_V6_BP
+#define possible_tlb_flags	(v4_possible_flags/*0*/ | \
+				 v4wbi_possible_flags /*0*/ | \
+				 fr_possible_flags/*0*/  | \
+				 v4wb_possible_flags/*0*/  | \
+				 fa_possible_flags/*0*/  | \
+				 v6wbi_possible_flags/*0*/  | \
+				 v7wbi_possible_flags/*가능한 flag 모두*/)
 
 // config옵션이 걸리지 않은 경우는 (-1)UL로 설정
 // (-1)UL & .... my_config_flag == my_config_flag만 남을 것이다.
-#define always_tlb_flags	(v4_always_flags & \
-				 v4wbi_always_flags & \
-				 fr_always_flags & \
-				 v4wb_always_flags & \
-				 fa_always_flags & \
-				 v6wbi_always_flags & \
-				 v7wbi_always_flags)
+// 2015-08-29
+// 결과적으로, TLB_WB | TLB_BARRIER
+#define always_tlb_flags	(v4_always_flags/*0xFFFF_FFFF, -1UL*/ & \
+				 v4wbi_always_flags/*0xFFFF_FFFF, -1UL*/ & \
+				 fr_always_flags /*0xFFFF_FFFF, -1UL*/& \
+				 v4wb_always_flags /*0xFFFF_FFFF, -1UL*/& \
+				 fa_always_flags /*0xFFFF_FFFF, -1UL*/& \
+				 v6wbi_always_flags /*0xFFFF_FFFF, -1UL*/& \
+				 v7wbi_always_flags/*TLB_WB | TLB_BARRIER*/)
 
-#define tlb_flag(f)	((always_tlb_flags & (f)) || (__tlb_flag & possible_tlb_flags & (f)))
+// 2015-08-29
+#define tlb_flag(f)	((always_tlb_flags/*TLB_WB | TLB_BARRIER*/ & (f)) || (__tlb_flag & possible_tlb_flags & (f)))
 
 	/* f == tlb_DCLEAN, tlb_L2CLEAN
 	 arg => [0] = 0, [1] = 0이 세팅된 주소가 넘어온다.
@@ -463,6 +486,7 @@ static inline void __flush_tlb_mm(struct mm_struct *mm)
 		dsb(ish);
 }
 
+// 2015-08-29
 static inline void
 __local_flush_tlb_page(struct vm_area_struct *vma, unsigned long uaddr)
 {
@@ -471,6 +495,9 @@ __local_flush_tlb_page(struct vm_area_struct *vma, unsigned long uaddr)
 
 	uaddr = (uaddr & PAGE_MASK) | ASID(vma->vm_mm);
 
+    // TLB_WB | TLB_BARRIER | TLB_V7_UIS_FULL | TLB_V7_UIS_PAGE | TLB_V7_UIS_ASID | TLB_V7_UIS_BP
+    // TLB_WB | TLB_DCLEAN | TLB_BARRIER | TLB_V6_U_FULL | TLB_V6_U_PAGE | TLB_V6_U_ASID | TLB_V6_BP
+    // false
 	if (possible_tlb_flags & (TLB_V4_U_PAGE|TLB_V4_D_PAGE|TLB_V4_I_PAGE|TLB_V4_I_FULL) &&
 	    cpumask_test_cpu(smp_processor_id(), mm_cpumask(vma->vm_mm))) {
 		tlb_op(TLB_V4_U_PAGE, "c8, c7, 1", uaddr);
@@ -480,9 +507,27 @@ __local_flush_tlb_page(struct vm_area_struct *vma, unsigned long uaddr)
 			asm("mcr p15, 0, %0, c8, c5, 0" : : "r" (zero) : "cc");
 	}
 
-	tlb_op(TLB_V6_U_PAGE, "c8, c7, 1", uaddr);
-	tlb_op(TLB_V6_D_PAGE, "c8, c6, 1", uaddr);
-	tlb_op(TLB_V6_I_PAGE, "c8, c5, 1", uaddr);
+    // #define tlb_op(f, regs, arg)    __tlb_op(f, "p15, 0, %0, " regs, arg)
+    //  __tlb_op(TLB_V6_U_PAGE, "p15, 0, %0, " "c8, c7, 1", uaddr)
+    //
+    // #define __tlb_op(f, insnarg, arg)                   \
+    //     do {                                \
+    //         if (always_tlb_flags & (f))             \
+    //             asm("mcr " insnarg              \
+    //                 : : "r" (arg) : "cc");          \
+    //         else if (possible_tlb_flags & (f))      \
+    //             /* '__tlb_flag'와 'f'가 같은지 먼저 확인 */ \
+    //             asm("tst %1, %2\n\t"                \
+    //                 "mcrne " insnarg                \
+    //                 : : "r" (arg), "r" (__tlb_flag), "Ir" (f)   \
+    //                 : "cc");                    \
+    //     } while (0)
+    //  
+    // uaddr을 코프로세서에 write
+	tlb_op(TLB_V6_U_PAGE, "c8, c7, 1", uaddr); // Invalidate unified TLB entry by MVA and ASID
+
+	tlb_op(TLB_V6_D_PAGE, "c8, c6, 1", uaddr);  // NO OP
+	tlb_op(TLB_V6_I_PAGE, "c8, c5, 1", uaddr);  // NO OP
 }
 
 static inline void
@@ -512,18 +557,23 @@ __flush_tlb_page(struct vm_area_struct *vma, unsigned long uaddr)
 	uaddr = (uaddr & PAGE_MASK) | ASID(vma->vm_mm);
     // 2015-08-22, 여기까지
 
+    // TLB_WB | TLB_BARRIER 임으로 true
+    // 실질적인 flush 동작 이전에 수행해야할 명령들 수행
 	if (tlb_flag(TLB_WB))
-		dsb(ishst);
+		dsb(ishst); // ishst, write
 
+    // 2015-08-29
 	__local_flush_tlb_page(vma, uaddr);
-#ifdef CONFIG_ARM_ERRATA_720789
+#ifdef CONFIG_ARM_ERRATA_720789     // not set
 	tlb_op(TLB_V7_UIS_PAGE, "c8, c3, 3", uaddr & PAGE_MASK);
 #else
+    // 2015-08-29
 	tlb_op(TLB_V7_UIS_PAGE, "c8, c3, 1", uaddr);
 #endif
 
+    // TLB_WB | TLB_BARRIER 임으로 true
 	if (tlb_flag(TLB_BARRIER))
-		dsb(ish);
+		dsb(ish);   // ish, read and write
 }
 
 // 2015-01-31, kaddr은 PAGE_MASK를 씌운 값이다.
@@ -618,7 +668,7 @@ static inline void __flush_bp_all(void)
 }
 
 #include <asm/cputype.h>
-#ifdef CONFIG_ARM_ERRATA_798181
+#ifdef CONFIG_ARM_ERRATA_798181 // not set
 static inline int erratum_a15_798181(void)
 {
 	unsigned int midr = read_cpuid_id();
@@ -638,11 +688,13 @@ static inline void dummy_flush_tlb_a15_erratum(void)
 	dsb(ish);
 }
 #else
+// 2015-08-29
 static inline int erratum_a15_798181(void)
 {
 	return 0;
 }
 
+// 2015-08-29
 static inline void dummy_flush_tlb_a15_erratum(void)
 {
 }

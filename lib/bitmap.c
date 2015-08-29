@@ -181,11 +181,13 @@ void __bitmap_shift_left(unsigned long *dst,
 }
 EXPORT_SYMBOL(__bitmap_shift_left);
 
+// 2015-08-29
+// bits(2)
 int __bitmap_and(unsigned long *dst, const unsigned long *bitmap1,
 				const unsigned long *bitmap2, int bits)
 {
 	int k;
-	int nr = BITS_TO_LONGS(bits);
+	int nr = BITS_TO_LONGS(bits);	// 1
 	unsigned long result = 0;
 
 	for (k = 0; k < nr; k++)

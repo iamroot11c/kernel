@@ -153,6 +153,7 @@ extern int bitmap_ord_to_pos(const unsigned long *bitmap, int n, int bits);
 // cpu 상태를 표시하는데 필요한 비트수를 십진수로 계산
 // 즉 cpu가 2개일 때 비트 2개로 표현할 수 있으며 이를 
 // 십진수로 표시하면 '3'이다
+// 2015-08-29
 #define BITMAP_LAST_WORD_MASK(nbits)					\
 (									\
 	((nbits) % BITS_PER_LONG) ?					\
@@ -162,6 +163,7 @@ extern int bitmap_ord_to_pos(const unsigned long *bitmap, int n, int bits);
 // BITS_PER_LONG - 32bit: 32
 // __builtin_constant_p() 함수는 컴파일 타임에 nbits가 상수인지 검사
 // 2015-03-21 확인. nbits가 상수이면서 BITS_PER_LONG보다 작은 경우 참
+// 2015-08-29
 #define small_const_nbits(nbits) \
 	(__builtin_constant_p(nbits) && (nbits) <= BITS_PER_LONG)
 
@@ -189,21 +191,26 @@ static inline void bitmap_fill(unsigned long *dst, int nbits)
 	dst[nlongs - 1] = BITMAP_LAST_WORD_MASK(nbits);
 }
 
+// 2015-08-29
 static inline void bitmap_copy(unsigned long *dst, const unsigned long *src,
 			int nbits)
 {
 	if (small_const_nbits(nbits))
 		*dst = *src;
 	else {
+        // nbits : 2로 가정
+        // len = 1 * 4
 		int len = BITS_TO_LONGS(nbits) * sizeof(unsigned long);
 		memcpy(dst, src, len);
 	}
 }
 
+// 2015-08-29
+// src1, src2 비교해서, 범위 내에서 서로 1인 경우 유무를, bool 형태로 리턴
 static inline int bitmap_and(unsigned long *dst, const unsigned long *src1,
 			const unsigned long *src2, int nbits)
 {
-	if (small_const_nbits(nbits))
+	if (small_const_nbits(nbits))   // 2015-08-29, nbits가 2임으로 여기를 탈 것 같다.
 		return (*dst = *src1 & *src2) != 0;
 	return __bitmap_and(dst, src1, src2, nbits);
 }
@@ -290,6 +297,8 @@ static inline int bitmap_full(const unsigned long *src, int nbits)
 
 // 2015-02-28;
 // bitmap_weight(cpumask_bits(srcp), nr_cpumask_bits);
+// 2015-08-29
+// bitmap_weight(cpumask_bits(srcp), nr_cpumask_bits/*2*/);
 static inline int bitmap_weight(const unsigned long *src, int nbits)
 {
 	if (small_const_nbits(nbits)) // nbits가 0에서 32 사이의 값 

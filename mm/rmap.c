@@ -1266,6 +1266,7 @@ int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 	// flush icache
 	flush_cache_page(vma, address, page_to_pfn(page));
 	pteval = ptep_clear_flush(vma, address, pte);
+	// 2015-08-29, 여기까지
 
 	/* Move the dirty bit to the physical page now the pte is gone. */
 	if (pte_dirty(pteval))

@@ -11,6 +11,7 @@
 #include <linux/bitmap.h>
 #include <linux/bug.h>
 
+// 2015-08-29
 typedef struct cpumask { DECLARE_BITMAP(bits, NR_CPUS); } cpumask_t;
 // typedef struct cpumask { unsigned long bits[BITS_TO_LONGS(NR_CPUS)]; } cpumask_t;
 
@@ -88,6 +89,7 @@ extern const struct cpumask *const cpu_active_mask;
 #define num_possible_cpus()	cpumask_weight(cpu_possible_mask)
 #define num_present_cpus()	cpumask_weight(cpu_present_mask)
 #define num_active_cpus()	cpumask_weight(cpu_active_mask)
+// 2015-08-29
 #define cpu_online(cpu)		cpumask_test_cpu((cpu), cpu_online_mask)
 #define cpu_possible(cpu)	cpumask_test_cpu((cpu), cpu_possible_mask)
 #define cpu_present(cpu)	cpumask_test_cpu((cpu), cpu_present_mask)
@@ -172,6 +174,7 @@ static inline unsigned int cpumask_first(const struct cpumask *srcp)
 // 2015-02-28;
 // cpumask_next(n, cpu_possible_mask); // n is -1, 1, 2, 3, ... , n.
 // 2015-08-15
+// 2015-08-29
 static inline unsigned int cpumask_next(int n, const struct cpumask *srcp)
 {
 	/* -1 is a legal arg here. */
@@ -195,6 +198,7 @@ static inline unsigned int cpumask_next_zero(int n, const struct cpumask *srcp)
 	return find_next_zero_bit(cpumask_bits(srcp), nr_cpumask_bits, n+1);
 }
 
+// 2015-08-29
 int cpumask_next_and(int n, const struct cpumask *, const struct cpumask *);
 int cpumask_any_but(const struct cpumask *mask, unsigned int cpu);
 
@@ -272,6 +276,7 @@ static inline void cpumask_set_cpu(unsigned int cpu, struct cpumask *dstp)
  * @cpu: cpu number (< nr_cpu_ids)
  * @dstp: the cpumask pointer
  */
+// 2015-08-29
 static inline void cpumask_clear_cpu(int cpu, struct cpumask *dstp)
 {
 	clear_bit(cpumask_check(cpu), cpumask_bits(dstp));
@@ -286,6 +291,7 @@ static inline void cpumask_clear_cpu(int cpu, struct cpumask *dstp)
  *
  * No static inline type checking - see Subtlety (1) above.
  */
+// 2015-08-29
 #define cpumask_test_cpu(cpu, cpumask) \
 	test_bit(cpumask_check(cpu), cpumask_bits((cpumask)))
 
@@ -343,12 +349,15 @@ static inline void cpumask_clear(struct cpumask *dstp)
  *
  * If *@dstp is empty, returns 0, else returns 1
  */
+// 2015-08-29
+// 2015-08-29
+// cpumask_and(cfd->cpumask, mask, cpu_online_mask);
 static inline int cpumask_and(struct cpumask *dstp,
 			       const struct cpumask *src1p,
 			       const struct cpumask *src2p)
 {
 	return bitmap_and(cpumask_bits(dstp), cpumask_bits(src1p),
-				       cpumask_bits(src2p), nr_cpumask_bits);
+				       cpumask_bits(src2p), nr_cpumask_bits/*2*/);
 }
 
 /**
@@ -470,9 +479,10 @@ static inline bool cpumask_full(const struct cpumask *srcp)
  */
 // 2015-02-28;
 // cpumask_weight(cpu_possible_mask)
+// 2015-08-29
 static inline unsigned int cpumask_weight(const struct cpumask *srcp)
 {
-	return bitmap_weight(cpumask_bits(srcp), nr_cpumask_bits);
+	return bitmap_weight(cpumask_bits(srcp), nr_cpumask_bits/*2*/);
 }
 
 /**
@@ -506,10 +516,12 @@ static inline void cpumask_shift_left(struct cpumask *dstp,
  * @dstp: the result
  * @srcp: the input cpumask
  */
+// 2015-08-29
+// cpumask_copy(cfd->cpumask_ipi, cfd->cpumask);
 static inline void cpumask_copy(struct cpumask *dstp,
 				const struct cpumask *srcp)
 {
-	bitmap_copy(cpumask_bits(dstp), cpumask_bits(srcp), nr_cpumask_bits);
+	bitmap_copy(cpumask_bits(dstp), cpumask_bits(srcp), nr_cpumask_bits/*2*/);
 }
 
 /**
@@ -527,6 +539,8 @@ static inline void cpumask_copy(struct cpumask *dstp,
  *
  * Returns >= nr_cpu_ids if no cpus set in both.  See also cpumask_next_and().
  */
+// 2015-08-29
+// cpumask_first_and(mask, cpu_online_mask);
 #define cpumask_first_and(src1p, src2p) cpumask_next_and(-1, (src1p), (src2p))
 
 /**
@@ -675,7 +689,7 @@ static inline size_t cpumask_size(void)
  * This code makes NR_CPUS length memcopy and brings to a memory corruption.
  * cpumask_copy() provide safe copy functionality.
  */
-#ifdef CONFIG_CPUMASK_OFFSTACK
+#ifdef CONFIG_CPUMASK_OFFSTACK  // not set
 typedef struct cpumask *cpumask_var_t;
 
 bool alloc_cpumask_var_node(cpumask_var_t *mask, gfp_t flags, int node);
@@ -687,6 +701,7 @@ void free_cpumask_var(cpumask_var_t mask);
 void free_bootmem_cpumask_var(cpumask_var_t mask);
 
 #else
+// 2015-08-29
 typedef struct cpumask cpumask_var_t[1];
 
 static inline bool alloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)

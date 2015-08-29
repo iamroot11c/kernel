@@ -451,8 +451,10 @@ void __init set_smp_cross_call(void (*fn)(const struct cpumask *, unsigned int))
 		smp_cross_call = fn;
 }
 
+// 2015-08-29
 void arch_send_call_function_ipi_mask(const struct cpumask *mask)
 {
+	// 설정된 적이 없는데 어떻게 호출 되는가?
 	smp_cross_call(mask, IPI_CALL_FUNC);
 }
 
@@ -461,6 +463,7 @@ void arch_send_wakeup_ipi_mask(const struct cpumask *mask)
 	smp_cross_call(mask, IPI_WAKEUP);
 }
 
+// 2015-08-29
 void arch_send_call_function_single_ipi(int cpu)
 {
 	smp_cross_call(cpumask_of(cpu), IPI_CALL_FUNC_SINGLE);

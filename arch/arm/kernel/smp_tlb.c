@@ -70,6 +70,7 @@ static inline void ipi_flush_bp_all(void *ignored)
 	local_flush_bp_all();
 }
 
+// 2015-08-29
 static void ipi_flush_tlb_a15_erratum(void *arg)
 {
 	dmb();
@@ -84,17 +85,18 @@ static void broadcast_tlb_a15_erratum(void)
 	smp_call_function(ipi_flush_tlb_a15_erratum, NULL, 1);
 }
 
+// 2015-08-29
 static void broadcast_tlb_mm_a15_erratum(struct mm_struct *mm)
 {
 	int this_cpu;
 	cpumask_t mask = { CPU_BITS_NONE };
 
-	if (!erratum_a15_798181())
+	if (!erratum_a15_798181())	// return 0
 		return;
 
-	dummy_flush_tlb_a15_erratum();
+	dummy_flush_tlb_a15_erratum();	// NO OP
 	this_cpu = get_cpu();
-	a15_erratum_get_cpumask(this_cpu, mm, &mask);
+	a15_erratum_get_cpumask(this_cpu, mm, &mask);	// NO OP
 	smp_call_function_many(&mask, ipi_flush_tlb_a15_erratum, NULL, 1);
 	put_cpu();
 }
@@ -127,7 +129,8 @@ void flush_tlb_page(struct vm_area_struct *vma, unsigned long uaddr)
 		on_each_cpu_mask(mm_cpumask(vma->vm_mm), ipi_flush_tlb_page,
 					&ta, 1);
 	} else
-		__flush_tlb_page(vma, uaddr);
+		__flush_tlb_page(vma, uaddr);	// 2015-08-29
+	// 2015-08-29, 식사전
 	broadcast_tlb_mm_a15_erratum(vma->vm_mm);
 }
 

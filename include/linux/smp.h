@@ -14,7 +14,9 @@
 
 extern void cpu_idle(void);
 
+// 2015-08-25
 typedef void (*smp_call_func_t)(void *info);
+// 2015-08-25
 struct call_single_data {
 	struct list_head list;
 	smp_call_func_t func;
@@ -92,6 +94,7 @@ extern void smp_cpus_done(unsigned int max_cpus);
  * Call a function on all other processors
  */
 int smp_call_function(smp_call_func_t func, void *info, int wait);
+// 2015-08-29
 void smp_call_function_many(const struct cpumask *mask,
 			    smp_call_func_t func, void *info, bool wait);
 
@@ -186,7 +189,9 @@ static inline void __smp_call_function_single(int cpuid,
 # define smp_processor_id() raw_smp_processor_id()
 #endif
 
+// 2015-08-29
 #define get_cpu()		({ preempt_disable(); smp_processor_id(); })
+// 2015-08-29
 #define put_cpu()		preempt_enable()
 
 /*

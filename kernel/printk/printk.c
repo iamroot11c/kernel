@@ -72,6 +72,7 @@ int console_printk[4] = {
  * Low level drivers may need that to know if they can schedule in
  * their unblank() callback or not. So let's export it.
  */
+// 2015-08-29
 int oops_in_progress;
 EXPORT_SYMBOL(oops_in_progress);
 

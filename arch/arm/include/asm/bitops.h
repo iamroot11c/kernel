@@ -207,6 +207,10 @@ extern int _find_next_bit_be(const unsigned long *p, int size, int offset);
 #define find_first_bit(p,sz)		_find_first_bit_le(p,sz)
 // 2015-02-28;
 // find_next_bit(cpu_possible_mask->bits, 2, n+1);
+// 2015-08-29
+// find_next_bit(cpu_possible_mask->bits, 2, n+1);
+// 메모리 p 의 off 번째 비트부터 첫번째 찾은 1 인 비트값을 돌려줌
+// ref: http://forum.falinux.com/zbxe/index.php?document_srl=533512&mid=Kernel_API
 #define find_next_bit(p,sz,off)		_find_next_bit_le(p,sz,off)
 
 #else

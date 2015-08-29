@@ -71,6 +71,7 @@
 	extern __PCPU_ATTRS(sec) __typeof__(type) name
 
 // 2015-06-20
+// 2015-08-20
 #define DEFINE_PER_CPU_SECTION(type, name, sec)				\
 	__PCPU_DUMMY_ATTRS char __pcpu_scope_##name;			\
 	extern __PCPU_DUMMY_ATTRS char __pcpu_unique_##name;		\
@@ -130,8 +131,9 @@
 	____cacheline_aligned_in_smp
 
 // 2015-06-20
+// 2015-08-29
 #define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)			\
-	DEFINE_PER_CPU_SECTION(type, name, PER_CPU_SHARED_ALIGNED_SECTION) \
+	DEFINE_PER_CPU_SECTION(type, name, PER_CPU_SHARED_ALIGNED_SECTION/*"..shared_aligned"*/) \
 	____cacheline_aligned_in_smp
 
 #define DECLARE_PER_CPU_ALIGNED(type, name)				\

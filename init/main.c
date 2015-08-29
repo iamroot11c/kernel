@@ -110,6 +110,7 @@ extern void tc_init(void);
  * operations which are not allowed with IRQ disabled are allowed while the
  * flag is set.
  */
+// 2015-08-29
 bool early_boot_irqs_disabled __read_mostly;
 
 enum system_states system_state __read_mostly;

@@ -34,10 +34,13 @@ EXPORT_SYMBOL(__next_cpu_nr);
  *
  * Returns >= nr_cpu_ids if no further cpus set in both.
  */
+// 2015-08-29
+// cpumask_next_and(-1, (src1p), (src2p))
+// cpumask_next_and(cpu, mask, cpu_online_mask);
 int cpumask_next_and(int n, const struct cpumask *src1p,
 		     const struct cpumask *src2p)
 {
-	while ((n = cpumask_next(n, src1p)) < nr_cpu_ids)
+	while ((n = cpumask_next(n, src1p)) < nr_cpu_ids/*2*/)
 		if (cpumask_test_cpu(n, src2p))
 			break;
 	return n;

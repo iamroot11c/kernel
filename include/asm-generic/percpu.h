@@ -69,6 +69,7 @@ extern unsigned long __per_cpu_offset[NR_CPUS]; // NR_CPUS = 2;
 #endif
 
 // 2015-07-11
+// 2015-08-29
 #define __get_cpu_var(var) (*this_cpu_ptr(&(var)))
 // 2015-06-20
 #define __raw_get_cpu_var(var) (*__this_cpu_ptr(&(var)))
@@ -106,6 +107,7 @@ extern void setup_per_cpu_areas(void);
 #define PER_CPU_SHARED_ALIGNED_SECTION ""
 #define PER_CPU_ALIGNED_SECTION ""
 #else
+// 2015-08-29, compile 통해 확인
 #define PER_CPU_SHARED_ALIGNED_SECTION "..shared_aligned"
 #define PER_CPU_ALIGNED_SECTION "..shared_aligned"
 #endif

@@ -118,6 +118,7 @@
 	})
 
 // _flags = current of cpsr;
+// 2015-08-29
 #define irqs_disabled()					\
 	({						\
 		unsigned long _flags;			\

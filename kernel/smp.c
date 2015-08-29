@@ -15,24 +15,32 @@
 
 #include "smpboot.h"
 
-#ifdef CONFIG_USE_GENERIC_SMP_HELPERS
+#ifdef CONFIG_USE_GENERIC_SMP_HELPERS	// y
 enum {
 	CSD_FLAG_LOCK		= 0x01,
 };
 
+// 2015-08-29
 struct call_function_data {
 	struct call_single_data	__percpu *csd;
 	cpumask_var_t		cpumask;
 	cpumask_var_t		cpumask_ipi;
 };
 
+// 2015-08-29
+// #define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)           \
+//     DEFINE_PER_CPU_SECTION(type, name, PER_CPU_SHARED_ALIGNED_SECTION/*"..shared_aligned"*/) \
+//     ____cacheline_aligned_in_smp
+
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct call_function_data, cfd_data);
 
+// 2015-08-29
 struct call_single_queue {
 	struct list_head	list;
 	raw_spinlock_t		lock;
 };
 
+// 2015-08-29
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct call_single_queue, call_single_queue);
 
 static int
@@ -103,12 +111,14 @@ void __init call_function_init(void)
  * previous function call. For multi-cpu calls its even more interesting
  * as we'll have to ensure no other cpu is observing our csd.
  */
+// 2015-08-29
 static void csd_lock_wait(struct call_single_data *csd)
 {
 	while (csd->flags & CSD_FLAG_LOCK)
 		cpu_relax();
 }
 
+// 2015-08-29
 static void csd_lock(struct call_single_data *csd)
 {
 	csd_lock_wait(csd);
@@ -139,6 +149,7 @@ static void csd_unlock(struct call_single_data *csd)
  * for execution on the given CPU. data must already have
  * ->func, ->info, and ->flags set.
  */
+// 2015-08-29, glance
 static
 void generic_exec_single(int cpu, struct call_single_data *csd, int wait)
 {
@@ -209,6 +220,7 @@ static DEFINE_PER_CPU_SHARED_ALIGNED(struct call_single_data, csd_data);
  *
  * Returns 0 on success, else a negative status code.
  */
+// 2015-08,29, glance
 int smp_call_function_single(int cpu, smp_call_func_t func, void *info,
 			     int wait)
 {
@@ -255,6 +267,7 @@ int smp_call_function_single(int cpu, smp_call_func_t func, void *info,
 		}
 	}
 
+	// enable preempt
 	put_cpu();
 
 	return err;
@@ -355,6 +368,8 @@ void __smp_call_function_single(int cpu, struct call_single_data *csd,
  * hardware interrupt handler or from a bottom half handler. Preemption
  * must be disabled when calling this function.
  */
+// 2015-08-29
+// smp_call_function_many(&mask, ipi_flush_tlb_a15_erratum, NULL, 1);
 void smp_call_function_many(const struct cpumask *mask,
 			    smp_call_func_t func, void *info, bool wait)
 {
@@ -367,6 +382,7 @@ void smp_call_function_many(const struct cpumask *mask,
 	 * send smp call function interrupt to this cpu and as such deadlocks
 	 * can't happen.
 	 */
+	// early_boot_irqs_disabled은 start_kernel 시작 시 true, 거의 끝날 때즘 false로 세팅
 	WARN_ON_ONCE(cpu_online(this_cpu) && irqs_disabled()
 		     && !oops_in_progress && !early_boot_irqs_disabled);
 
@@ -386,6 +402,7 @@ void smp_call_function_many(const struct cpumask *mask,
 
 	/* Fastpath: do that cpu by itself. */
 	if (next_cpu >= nr_cpu_ids) {
+		// 2015-08-29, 나중에
 		smp_call_function_single(cpu, func, info, wait);
 		return;
 	}
@@ -404,8 +421,13 @@ void smp_call_function_many(const struct cpumask *mask,
 	 * again when another CPU sends another IPI for a SMP function call, so
 	 * cfd->cpumask will be zero.
 	 */
+	// 2015-08-29
 	cpumask_copy(cfd->cpumask_ipi, cfd->cpumask);
 
+	// #define for_each_cpu(cpu, mask)             \
+	//      for ((cpu) = -1;                \
+	//          (cpu) = cpumask_next((cpu), (mask)),    \
+	//          (cpu) < nr_cpu_ids;)
 	for_each_cpu(cpu, cfd->cpumask) {
 		struct call_single_data *csd = per_cpu_ptr(cfd->csd, cpu);
 		struct call_single_queue *dst =
@@ -422,6 +444,8 @@ void smp_call_function_many(const struct cpumask *mask,
 	}
 
 	/* Send a message to all CPUs in the map */
+	// 2015-08-29
+	// 좀 이상하다. 우리 arch에서는 설정된 적이 없는데 함수포인터 형태로 호출되고 있다.
 	arch_send_call_function_ipi_mask(cfd->cpumask_ipi);
 
 	if (wait) {
@@ -515,7 +539,8 @@ static int __init maxcpus(char *str)
 early_param("maxcpus", maxcpus);
 
 /* Setup number of possible processor ids */
-int nr_cpu_ids __read_mostly = NR_CPUS;
+// 2015-08-29
+int nr_cpu_ids __read_mostly = NR_CPUS/*2*/;
 //__read_mostly	: 이 데이터는 자주 수정되지 않으며, 대부분 읽기 연산만 이루어진다라는 것을 
 //컴파일러에게 알려줌 	20140712
 EXPORT_SYMBOL(nr_cpu_ids);

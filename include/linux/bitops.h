@@ -62,9 +62,13 @@ static __inline__ int get_count_order(unsigned int count)
 }
 
 // 2015-02-28;
+// 2015-08-29, 하위 2비트
+// hweight_long(*src & BITMAP_LAST_WORD_MASK(nbits))
+// hweight란 Hamming Weight이고, 값중에서 0이 아닌 값을 개수를 의미
+// ex) c = 0b0010111의 hweight값은 4이다.
 static inline unsigned long hweight_long(unsigned long w)
 {
-	return sizeof(w) == 4 ? hweight32(w) : hweight64(w);
+	return sizeof(w) == 4 ? hweight32(w)/*w: 0b11, 2*/: hweight64(w);
 }
 
 /**
