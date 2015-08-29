@@ -2,12 +2,12 @@
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
 
-+ [66주차]() `2015.08.29`
++ [66주차](http://bit.ly/1KsZanU) `2015.08.29`
  - [kmem_cache_init() 진행중]()
  - mm/migrate.c:__unmap_and_move() 진행중
  - __flush_tlb_page() 완료
 
-+ [65주차]() `2015.08.22`
++ [65주차](http://bit.ly/1LBKIIM) `2015.08.22`
  - [kmem_cache_init() 진행중]()
  - mm/migrate.c:__unmap_and_move() 진행중
  - 
