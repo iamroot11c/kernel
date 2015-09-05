@@ -1,6 +1,10 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [67주차](http://bit.ly/1FpdBmU) `2015.09.05`
+ - [kmem_cache_init() 진행중]()
+ - mm/migrate.c:__unmap_and_move() 진행중
+ - include/linux/workqueue.h:queue_delayed_work() 진행중
 
 + [66주차](http://bit.ly/1KsZanU) `2015.08.29`
  - [kmem_cache_init() 진행중]()
@@ -10,7 +14,6 @@
 + [65주차](http://bit.ly/1LBKIIM) `2015.08.22`
  - [kmem_cache_init() 진행중]()
  - mm/migrate.c:__unmap_and_move() 진행중
- - 
 
 + [64주차]() `2015.08.15`
  - [kmem_cache_init() 진행중](http://bit.ly/1IQSM7s)
