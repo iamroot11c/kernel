@@ -49,12 +49,14 @@
 	((RADIX_TREE_MAP_SIZE + BITS_PER_LONG - 1) / BITS_PER_LONG)
 
 // 2015-07-04;
+// 2015-09-05;
 struct radix_tree_node {
 	unsigned int	height;		/* Height from the bottom */
 	unsigned int	count;
 	union {
 		struct radix_tree_node *parent;	/* Used when ascending tree */
 		struct rcu_head	rcu_head;	/* Used when freeing node */
+		                                // types.h:struct callback_head
 	};
 	void __rcu	*slots[RADIX_TREE_MAP_SIZE];
 	unsigned long	tags[RADIX_TREE_MAX_TAGS][RADIX_TREE_TAG_LONGS];
@@ -102,9 +104,12 @@ static inline void *ptr_to_indirect(void *ptr)
 	return (void *)((unsigned long)ptr | RADIX_TREE_INDIRECT_PTR);
 }
 
+// 2015-09-05;
+// indirect_to_ptr(root->rnode)
 static inline void *indirect_to_ptr(void *ptr)
 {
-	return (void *)((unsigned long)ptr & ~RADIX_TREE_INDIRECT_PTR);
+	// 0번째 비트를 제외한 나머지 비트들의 값을 읽음
+	return (void *)((unsigned long)ptr & ~RADIX_TREE_INDIRECT_PTR/*1*/);
 }
 
 static inline gfp_t root_gfp_mask(struct radix_tree_root *root)
@@ -124,12 +129,15 @@ static inline void tag_clear(struct radix_tree_node *node, unsigned int tag,
 	__clear_bit(offset, node->tags[tag]);
 }
 
+// 2015-09-05;
+// tag_get(slot, tag, offset);
 static inline int tag_get(struct radix_tree_node *node, unsigned int tag,
 		int offset)
 {
 	return test_bit(offset, node->tags[tag]);
 }
 
+// 2015-09-05;
 static inline void root_tag_set(struct radix_tree_root *root, unsigned int tag)
 {
 	root->gfp_mask |= (__force gfp_t)(1 << (tag + __GFP_BITS_SHIFT));
@@ -145,9 +153,10 @@ static inline void root_tag_clear_all(struct radix_tree_root *root)
 	root->gfp_mask &= __GFP_BITS_MASK;
 }
 
+// 2015-09-05;
 static inline int root_tag_get(struct radix_tree_root *root, unsigned int tag)
 {
-	return (__force unsigned)root->gfp_mask & (1 << (tag + __GFP_BITS_SHIFT));
+	return (__force unsigned)root->gfp_mask & (1 << (tag + __GFP_BITS_SHIFT/*25*/));
 }
 
 /*
@@ -550,6 +559,9 @@ EXPORT_SYMBOL(radix_tree_lookup);
  *	Returns the address of the tagged item.   Setting a tag on a not-present
  *	item is a bug.
  */
+// 2015-09-05;
+// radix_tree_tag_set(&mapping->page_tree,
+//                    page_index(page), PAGECACHE_TAG_DIRTY);
 void *radix_tree_tag_set(struct radix_tree_root *root,
 			unsigned long index, unsigned int tag)
 {
@@ -560,14 +572,14 @@ void *radix_tree_tag_set(struct radix_tree_root *root,
 	BUG_ON(index > radix_tree_maxindex(height));
 
 	slot = indirect_to_ptr(root->rnode);
-	shift = (height - 1) * RADIX_TREE_MAP_SHIFT;
+	shift = (height - 1) * RADIX_TREE_MAP_SHIFT/*6*/;
 
 	while (height > 0) {
 		int offset;
 
-		offset = (index >> shift) & RADIX_TREE_MAP_MASK;
+		offset = (index >> shift) & RADIX_TREE_MAP_MASK/*RADIX_TREE_MAP_SIZE-1*/;
 		if (!tag_get(slot, tag, offset))
-			tag_set(slot, tag, offset);
+			tag_set(slot, tag, offset); // 노드에 해당하는 오프셋을 설정
 		slot = slot->slots[offset];
 		BUG_ON(slot == NULL);
 		shift -= RADIX_TREE_MAP_SHIFT;

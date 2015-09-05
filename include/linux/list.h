@@ -596,6 +596,8 @@ static inline void INIT_HLIST_NODE(struct hlist_node *h)
 	h->pprev = NULL;
 }
 
+// 2015-09-05;
+// pprev 멤버변수가 없을 때 참
 static inline int hlist_unhashed(const struct hlist_node *h)
 {
 	return !h->pprev;

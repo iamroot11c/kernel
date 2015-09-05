@@ -524,6 +524,7 @@ struct posix_acl;
  * the RCU path lookup and 'stat' data) fields at the beginning
  * of the 'struct inode'
  */
+// 2015-09-05;
 struct inode {
 	umode_t			i_mode;
 	unsigned short		i_opflags;
@@ -531,7 +532,7 @@ struct inode {
 	kgid_t			i_gid;
 	unsigned int		i_flags;
 
-#ifdef CONFIG_FS_POSIX_ACL
+#ifdef CONFIG_FS_POSIX_ACL // defined
 	struct posix_acl	*i_acl;
 	struct posix_acl	*i_default_acl;
 #endif
@@ -540,7 +541,7 @@ struct inode {
 	struct super_block	*i_sb;
 	struct address_space	*i_mapping;
 
-#ifdef CONFIG_SECURITY
+#ifdef CONFIG_SECURITY // not define
 	void			*i_security;
 #endif
 
@@ -592,7 +593,7 @@ struct inode {
 	const struct file_operations	*i_fop;	/* former ->i_op->default_file_ops */
 	struct file_lock	*i_flock;
 	struct address_space	i_data;
-#ifdef CONFIG_QUOTA
+#ifdef CONFIG_QUOTA // not define
 	struct dquot		*i_dquot[MAXQUOTAS];
 #endif
 	struct list_head	i_devices;
@@ -604,17 +605,18 @@ struct inode {
 
 	__u32			i_generation;
 
-#ifdef CONFIG_FSNOTIFY
+#ifdef CONFIG_FSNOTIFY // defined
 	__u32			i_fsnotify_mask; /* all events this inode cares about */
 	struct hlist_head	i_fsnotify_marks;
 #endif
 
-#ifdef CONFIG_IMA
+#ifdef CONFIG_IMA // not define
 	atomic_t		i_readcount; /* struct files open RO */
 #endif
 	void			*i_private; /* fs or device private pointer */
 };
 
+// 2015-09-05;
 static inline int inode_unhashed(struct inode *inode)
 {
 	return hlist_unhashed(&inode->i_hash);
@@ -1243,6 +1245,7 @@ struct sb_writers {
 #endif
 };
 
+// 2015-09-05;
 struct super_block {
 	struct list_head	s_list;		/* Keep this first */
 	dev_t			s_dev;		/* search index; _not_ kdev_t */
@@ -1260,14 +1263,14 @@ struct super_block {
 	struct rw_semaphore	s_umount;
 	int			s_count;
 	atomic_t		s_active;
-#ifdef CONFIG_SECURITY
+#ifdef CONFIG_SECURITY // not define
 	void                    *s_security;
 #endif
 	const struct xattr_handler **s_xattr;
 
 	struct list_head	s_inodes;	/* all inodes */
 	struct hlist_bl_head	s_anon;		/* anonymous dentries for (nfs) exporting */
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
 	struct list_head __percpu *s_files;
 #else
 	struct list_head	s_files;
@@ -2056,7 +2059,7 @@ extern void final_putname(struct filename *name);
 extern void putname(struct filename *name);
 #endif
 
-#ifdef CONFIG_BLOCK
+#ifdef CONFIG_BLOCK // defined
 extern int register_blkdev(unsigned int, const char *);
 extern void unregister_blkdev(unsigned int, const char *);
 extern struct block_device *bdget(dev_t);

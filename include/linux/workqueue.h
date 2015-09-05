@@ -23,10 +23,12 @@ void delayed_work_timer_fn(unsigned long __data);
  * The first word is the work queue pointer and the flags rolled into
  * one
  */
+// 2015-09-05;
 #define work_data_bits(work) ((unsigned long *)(&(work)->data))
 
 enum {
 	WORK_STRUCT_PENDING_BIT	= 0,	/* work item is pending execution */
+                                    // 2015-09-05;
 	WORK_STRUCT_DELAYED_BIT	= 1,	/* work item is delayed */
 	WORK_STRUCT_PWQ_BIT	= 2,	/* data points to pwq */
 	WORK_STRUCT_LINKED_BIT	= 3,	/* next work is linked to this one */
@@ -57,6 +59,7 @@ enum {
 	WORK_NO_COLOR		= WORK_NR_COLORS,
 
 	/* special cpu IDs */
+    // 2015-09-05;
 	WORK_CPU_UNBOUND	= NR_CPUS,
 	WORK_CPU_END		= NR_CPUS + 1,
 
@@ -97,6 +100,7 @@ enum {
 	WORKER_DESC_LEN		= 24,
 };
 
+// 2015-09-05;
 struct work_struct {
 	atomic_long_t data;
 	struct list_head entry;
@@ -110,6 +114,7 @@ struct work_struct {
 #define WORK_DATA_STATIC_INIT()	\
 	ATOMIC_LONG_INIT(WORK_STRUCT_NO_POOL | WORK_STRUCT_STATIC)
 
+// 2015-09-05;
 struct delayed_work {
 	struct work_struct work;
 	struct timer_list timer;
@@ -518,6 +523,8 @@ static inline bool queue_work(struct workqueue_struct *wq,
  *
  * Equivalent to queue_delayed_work_on() but tries to use the local CPU.
  */
+// 2015-09-05;
+// queue_delayed_work(bdi_wq, &bdi->wb.dwork, timeout);
 static inline bool queue_delayed_work(struct workqueue_struct *wq,
 				      struct delayed_work *dwork,
 				      unsigned long delay)

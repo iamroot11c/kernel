@@ -910,6 +910,7 @@ static inline int PageAnon(struct page *page)
  * Return the pagecache index of the passed page.  Regular pagecache pages
  * use ->index whereas swapcache pages use ->private
  */
+// 2015-09-05;
 static inline pgoff_t page_index(struct page *page)
 {
 	if (unlikely(PageSwapCache(page)))

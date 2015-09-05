@@ -264,6 +264,7 @@ struct per_cpu_pages {
 	struct list_head lists[MIGRATE_PCPTYPES]; //3
 };
 
+// 2015-09-05;
 struct per_cpu_pageset {
 	struct per_cpu_pages pcp;
 #ifdef CONFIG_NUMA // not define

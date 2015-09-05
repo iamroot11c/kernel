@@ -654,6 +654,8 @@ EXPORT_SYMBOL(mark_buffer_dirty_inode);
  * If warn is true, then emit a warning if the page is not uptodate and has
  * not been truncated.
  */
+// 2015-09-05;
+// __set_page_dirty(page, mapping, 1);
 static void __set_page_dirty(struct page *page,
 		struct address_space *mapping, int warn)
 {
@@ -695,27 +697,29 @@ static void __set_page_dirty(struct page *page,
  * FIXME: may need to call ->reservepage here as well.  That's rather up to the
  * address_space though.
  */
+// 2015-09-05;
 int __set_page_dirty_buffers(struct page *page)
 {
 	int newly_dirty;
 	struct address_space *mapping = page_mapping(page);
 
-	if (unlikely(!mapping))
+	if (unlikely(!mapping)) // mapping 변수가 NULL 인지 확인
 		return !TestSetPageDirty(page);
 
 	spin_lock(&mapping->private_lock);
 	if (page_has_buffers(page)) {
-		struct buffer_head *head = page_buffers(page);
+		struct buffer_head *head = page_buffers(page); // (page)->private
 		struct buffer_head *bh = head;
 
 		do {
-			set_buffer_dirty(bh);
+			set_buffer_dirty(bh); // set_bit(BH_Dirty, &(bh)->b_state);
 			bh = bh->b_this_page;
 		} while (bh != head);
 	}
 	newly_dirty = !TestSetPageDirty(page);
 	spin_unlock(&mapping->private_lock);
 
+	// 2015-09-05;
 	if (newly_dirty)
 		__set_page_dirty(page, mapping, 1);
 	return newly_dirty;

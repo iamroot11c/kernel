@@ -1269,7 +1269,7 @@ int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 	// 2015-08-29, 여기까지
 
 	/* Move the dirty bit to the physical page now the pte is gone. */
-	if (pte_dirty(pteval))
+	if (pte_dirty(pteval)) // pteval & (pteval_t)1 << 6
 		set_page_dirty(page);
 
 	/* Update high watermark before we lower rss */

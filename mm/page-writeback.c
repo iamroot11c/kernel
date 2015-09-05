@@ -111,6 +111,7 @@ unsigned long vm_dirty_bytes;
  * The interval between `kupdate'-style writebacks
  */
 unsigned int dirty_writeback_interval = 5 * 100; /* centiseconds */
+                                                 // 500mS
 
 EXPORT_SYMBOL_GPL(dirty_writeback_interval);
 
@@ -122,6 +123,8 @@ unsigned int dirty_expire_interval = 30 * 100; /* centiseconds */
 /*
  * Flag that makes the machine dump writes/reads and block dirtyings.
  */
+// 2015-09-05;
+// vm_table 목록에서 변수를 포인터로 연결함
 int block_dump;
 
 /*
@@ -2147,18 +2150,21 @@ int __set_page_dirty_no_writeback(struct page *page)
  * Helper function for set_page_dirty family.
  * NOTE: This relies on being atomic wrt interrupts.
  */
+// 2015-09-05;
+// account_page_dirtied(page, mapping);
 void account_page_dirtied(struct page *page, struct address_space *mapping)
 {
+	// 확인하지 않고 지나감
 	trace_writeback_dirty_page(page, mapping);
 
-	if (mapping_cap_account_dirty(mapping)) {
+	if (mapping_cap_account_dirty(mapping)) { // BDI_CAP_NO_ACCT_DIRTY 비트 클리어 확인
 		__inc_zone_page_state(page, NR_FILE_DIRTY);
 		__inc_zone_page_state(page, NR_DIRTIED);
 		__inc_bdi_stat(mapping->backing_dev_info, BDI_RECLAIMABLE);
 		__inc_bdi_stat(mapping->backing_dev_info, BDI_DIRTIED);
-		task_io_account_write(PAGE_CACHE_SIZE);
+		task_io_account_write(PAGE_CACHE_SIZE); // 빈 함수
 		current->nr_dirtied++;
-		this_cpu_inc(bdp_ratelimits);
+		this_cpu_inc(bdp_ratelimits); // bdp_ratelimits 변수 1 증가
 	}
 }
 EXPORT_SYMBOL(account_page_dirtied);
@@ -2267,11 +2273,16 @@ EXPORT_SYMBOL(redirty_page_for_writepage);
  * If the mapping doesn't provide a set_page_dirty a_op, then
  * just fall through and assume that it wants buffer_heads.
  */
+// 2015-09-05;
 int set_page_dirty(struct page *page)
 {
 	struct address_space *mapping = page_mapping(page);
 
 	if (likely(mapping)) {
+		// mapping 변수의 PAGE_MAPPING_ANON/*1*/ 비트가 클리어 되어 있으며,
+		// 나머지 비트는 셋 되어 있다
+		
+		// 함수 포인터를 얻음
 		int (*spd)(struct page *) = mapping->a_ops->set_page_dirty;
 		/*
 		 * readahead/lru_deactivate_page could remain
@@ -2284,12 +2295,15 @@ int set_page_dirty(struct page *page)
 		 * process. But it's a trivial problem.
 		 */
 		ClearPageReclaim(page);
-#ifdef CONFIG_BLOCK
+#ifdef CONFIG_BLOCK // defined
 		if (!spd)
-			spd = __set_page_dirty_buffers;
+			spd = __set_page_dirty_buffers; // 기본 함수
 #endif
 		return (*spd)(page);
 	}
+	
+	// mapping 변수의 PAGE_MAPPING_ANON/*1*/ 비트가 셋되어 있다
+	
 	if (!PageDirty(page)) {
 		if (!TestSetPageDirty(page))
 			return 1;

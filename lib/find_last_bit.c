@@ -18,6 +18,8 @@
 #ifndef find_last_bit
 // 2015-03-14; 시작
 // find_last_bit(cpumask_bits(cpu_possible_mask),NR_CPUS);
+// 2015-09-05;
+// MSB 부터 LSB 방향으로 찾음
 unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 {
 	unsigned long words;

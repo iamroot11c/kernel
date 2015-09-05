@@ -250,7 +250,9 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 // 2015-08-22
 #define pte_present(pte)	(pte_val(pte) & L_PTE_PRESENT/*1*/)
 #define pte_write(pte)		(!(pte_val(pte) & L_PTE_RDONLY))
-#define pte_dirty(pte)		(pte_val(pte) & L_PTE_DIRTY)
+// 2015-09-05
+// pte_dirty(pteval)
+#define pte_dirty(pte)		(pte_val(pte) & L_PTE_DIRTY) // pteval & (pteval_t)1 << 6
 #define pte_young(pte)		(pte_val(pte) & L_PTE_YOUNG)
 #define pte_exec(pte)		(!(pte_val(pte) & L_PTE_XN))
 #define pte_special(pte)	(0)

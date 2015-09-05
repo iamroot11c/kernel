@@ -59,9 +59,9 @@ EXPORT_SYMBOL(jiffies_64);
 /*
  * per-CPU timer vector definitions:
  */
-#define TVN_BITS (CONFIG_BASE_SMALL ? 4 : 6)
+#define TVN_BITS (CONFIG_BASE_SMALL ? 4 : 6) // 6
 #define TVR_BITS (CONFIG_BASE_SMALL ? 6 : 8)
-#define TVN_SIZE (1 << TVN_BITS)
+#define TVN_SIZE (1 << TVN_BITS) // 1 << 6
 #define TVR_SIZE (1 << TVR_BITS)
 #define TVN_MASK (TVN_SIZE - 1)
 #define TVR_MASK (TVR_SIZE - 1)
@@ -75,6 +75,7 @@ struct tvec_root {
 	struct list_head vec[TVR_SIZE];
 };
 
+// 2015-09-05;
 struct tvec_base {
 	spinlock_t lock;
 	struct timer_list *running_timer;
@@ -103,6 +104,7 @@ static inline unsigned int tbase_get_irqsafe(struct tvec_base *base)
 	return ((unsigned int)(unsigned long)base & TIMER_IRQSAFE);
 }
 
+// 2015-09-05;
 static inline struct tvec_base *tbase_get_base(struct tvec_base *base)
 {
 	return ((struct tvec_base *)((unsigned long)base & ~TIMER_FLAG_MASK));
@@ -700,9 +702,10 @@ static int detach_if_pending(struct timer_list *timer, struct tvec_base *base,
  * possible to set timer->base = NULL and drop the lock: the timer remains
  * locked.
  */
+// 2015-09-05;
 static struct tvec_base *lock_timer_base(struct timer_list *timer,
 					unsigned long *flags)
-	__acquires(timer->base->lock)
+	__acquires(timer->base->lock) // Sparse
 {
 	struct tvec_base *base;
 
@@ -711,7 +714,7 @@ static struct tvec_base *lock_timer_base(struct timer_list *timer,
 		base = tbase_get_base(prelock_base);
 		if (likely(base != NULL)) {
 			spin_lock_irqsave(&base->lock, *flags);
-			if (likely(prelock_base == timer->base))
+			if (likely(prelock_base == timer->base)) // 탈출조건
 				return base;
 			/* The timer has migrated to another CPU */
 			spin_unlock_irqrestore(&base->lock, *flags);
@@ -720,6 +723,8 @@ static struct tvec_base *lock_timer_base(struct timer_list *timer,
 	}
 }
 
+// 2015-09-05;
+// __mod_timer(timer, expires, false, TIMER_NOT_PINNED/*0*/);
 static inline int
 __mod_timer(struct timer_list *timer, unsigned long expires,
 						bool pending_only, int pinned)
@@ -728,10 +733,11 @@ __mod_timer(struct timer_list *timer, unsigned long expires,
 	unsigned long flags;
 	int ret = 0 , cpu;
 
-	timer_stats_timer_set_start_info(timer);
+	timer_stats_timer_set_start_info(timer); // No OP.
 	BUG_ON(!timer->function);
 
 	base = lock_timer_base(timer, &flags);
+	// 2015-09-05 여기까지;
 
 	ret = detach_if_pending(timer, base, false);
 	if (!ret && pending_only)
@@ -800,6 +806,7 @@ EXPORT_SYMBOL(mod_timer_pending);
  *   4) use the bitmask to round down the maximum time, so that all last
  *      bits are zeros
  */
+// 2015-09-05;
 static inline
 unsigned long apply_slack(struct timer_list *timer, unsigned long expires)
 {
@@ -849,6 +856,7 @@ unsigned long apply_slack(struct timer_list *timer, unsigned long expires)
  * (ie. mod_timer() of an inactive timer returns 0, mod_timer() of an
  * active timer returns 1.)
  */
+// 2015-09-05;
 int mod_timer(struct timer_list *timer, unsigned long expires)
 {
 	expires = apply_slack(timer, expires);
@@ -907,6 +915,7 @@ EXPORT_SYMBOL(mod_timer_pinned);
  * Timers with an ->expires field in the past will be executed in the next
  * timer tick.
  */
+// 2015-09-05;
 void add_timer(struct timer_list *timer)
 {
 	BUG_ON(timer_pending(timer));

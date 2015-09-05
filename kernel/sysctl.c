@@ -1317,7 +1317,7 @@ static struct ctl_table vm_table[] = {
 	},
 	{
 		.procname	= "block_dump",
-		.data		= &block_dump,
+		.data		= &block_dump, // 2015-09-05;
 		.maxlen		= sizeof(block_dump),
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec,

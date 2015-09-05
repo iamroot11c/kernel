@@ -136,6 +136,7 @@ enum pageflags {
  */
 // 2015-04-11;
 // TESTPAGEFLAG(Compound, compound)
+// 2015-09-05;
 #define TESTPAGEFLAG(uname, lname)					\
 static inline int Page##uname(const struct page *page)			\
 			{ return test_bit(PG_##lname, &page->flags); }

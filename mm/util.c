@@ -385,6 +385,7 @@ EXPORT_SYMBOL(vm_mmap);
 
 // 2015-07-04;
 // 2015-07-11
+// 2015-09-05;
 struct address_space *page_mapping(struct page *page)
 {
 	struct address_space *mapping = page->mapping;
@@ -398,7 +399,7 @@ struct address_space *page_mapping(struct page *page)
 
 		entry.val = page_private(page);
 		mapping = swap_address_space(entry);
-	} else if ((unsigned long)mapping & PAGE_MAPPING_ANON)
+	} else if ((unsigned long)mapping & PAGE_MAPPING_ANON/*1*/)
 		mapping = NULL;
 	return mapping;
 }

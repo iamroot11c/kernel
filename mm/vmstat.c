@@ -283,6 +283,7 @@ EXPORT_SYMBOL(__mod_zone_page_state);
  * in between and therefore the atomicity vs. interrupt cannot be exploited
  * in a useful way here.
  */
+// 2015-09-05;
 void __inc_zone_state(struct zone *zone, enum zone_stat_item item)
 {
 	struct per_cpu_pageset __percpu *pcp = zone->pageset;
@@ -291,7 +292,7 @@ void __inc_zone_state(struct zone *zone, enum zone_stat_item item)
 
 	v = __this_cpu_inc_return(*p);
 	t = __this_cpu_read(pcp->stat_threshold);
-	if (unlikely(v > t)) {
+	if (unlikely(v > t)) { 
 		s8 overstep = t >> 1;
 
 		zone_page_state_add(v + overstep, zone, item);
@@ -299,6 +300,7 @@ void __inc_zone_state(struct zone *zone, enum zone_stat_item item)
 	}
 }
 
+// 2015-09-05;
 void __inc_zone_page_state(struct page *page, enum zone_stat_item item)
 {
 	__inc_zone_state(page_zone(page), item);

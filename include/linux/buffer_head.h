@@ -140,6 +140,7 @@ static inline void set_buffer_uptodate(struct buffer_head *bh) { set_bit(BH_Upto
 static inline void clear_buffer_uptodate(struct buffer_head *bh) { clear_bit(BH_Uptodate, &(bh)->b_state); }
 static inline int buffer_uptodate(const struct buffer_head *bh) { return test_bit(BH_Uptodate, &(bh)->b_state); }
 
+// 2015-09-05;
 static inline void set_buffer_dirty(struct buffer_head *bh) { set_bit(BH_Dirty, &(bh)->b_state); }
 static inline void clear_buffer_dirty(struct buffer_head *bh) { clear_bit(BH_Dirty, &(bh)->b_state); }
 static inline int buffer_dirty(const struct buffer_head *bh) { return test_bit(BH_Dirty, &(bh)->b_state); }
@@ -206,6 +207,7 @@ static inline int buffer_defer_completion(const struct buffer_head *bh) { return
 #define bh_offset(bh)		((unsigned long)(bh)->b_data & ~PAGE_MASK)
 
 // 2015-08-15
+// 2015-09-05;
 /* If we *know* page->private refers to buffer_heads */
 #define page_buffers(page)					\
 	({							\
@@ -213,6 +215,9 @@ static inline int buffer_defer_completion(const struct buffer_head *bh) { return
 		((struct buffer_head *)page_private(page));	\
 	})
 #define page_has_buffers(page)	PagePrivate(page)
+//// PAGEFLAG(Private, private)
+//static inline int PagePrivate(const struct page *page)          \
+//            { return test_bit(PG_private, &page->flags); }
 
 void buffer_check_dirty_writeback(struct page *page,
 				     bool *dirty, bool *writeback);

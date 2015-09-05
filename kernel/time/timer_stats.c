@@ -96,6 +96,7 @@ static DEFINE_MUTEX(show_mutex);
 /*
  * Collection status, active/inactive:
  */
+// 2015-09-05;
 int __read_mostly timer_stats_active;
 
 /*

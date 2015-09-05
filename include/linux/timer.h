@@ -9,6 +9,7 @@
 
 struct tvec_base;
 
+// 2015-09-05;
 struct timer_list {
 	/*
 	 * All fields that change during normal runtime grouped to the
@@ -166,6 +167,7 @@ static inline void init_timer_on_stack_key(struct timer_list *timer,
  *
  * return value: 1 if the timer is pending, 0 if not.
  */
+// 2015-09-05;
 static inline int timer_pending(const struct timer_list * timer)
 {
 	return timer->entry.next != NULL;
@@ -197,7 +199,7 @@ extern unsigned long get_next_timer_interrupt(unsigned long now);
 /*
  * Timer-statistics info:
  */
-#ifdef CONFIG_TIMER_STATS
+#ifdef CONFIG_TIMER_STATS // not define
 
 extern int timer_stats_active;
 
@@ -228,6 +230,7 @@ static inline void init_timer_stats(void)
 {
 }
 
+// 2015-09-05;
 static inline void timer_stats_timer_set_start_info(struct timer_list *timer)
 {
 }

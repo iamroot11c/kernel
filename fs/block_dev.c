@@ -450,6 +450,7 @@ static struct file_system_type bd_type = {
 	.kill_sb	= kill_anon_super,
 };
 
+// 2015-05-09;
 static struct super_block *blockdev_superblock __read_mostly;
 
 void __init bdev_cache_init(void)
@@ -592,6 +593,7 @@ static struct block_device *bd_acquire(struct inode *inode)
 	return bdev;
 }
 
+// 2015-09-05;
 int sb_is_blkdev_sb(struct super_block *sb)
 {
 	return sb == blockdev_superblock;

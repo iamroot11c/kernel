@@ -79,6 +79,7 @@ unsigned long get_wchan(struct task_struct *p);
 #define cpu_relax()			smp_mb()
 #else
 // 2015-08-29
+// 2015-09-05;
 #define cpu_relax()			barrier()
 #endif
 

@@ -1443,6 +1443,8 @@ void delayed_work_timer_fn(unsigned long __data)
 }
 EXPORT_SYMBOL(delayed_work_timer_fn);
 
+// 2015-09-05;
+// __queue_delayed_work(cpu, wq, dwork, delay);
 static void __queue_delayed_work(int cpu, struct workqueue_struct *wq,
 				struct delayed_work *dwork, unsigned long delay)
 {
@@ -1465,7 +1467,7 @@ static void __queue_delayed_work(int cpu, struct workqueue_struct *wq,
 		return;
 	}
 
-	timer_stats_timer_set_start_info(&dwork->timer);
+	timer_stats_timer_set_start_info(&dwork->timer); // No OP.
 
 	dwork->wq = wq;
 	dwork->cpu = cpu;
@@ -1488,6 +1490,8 @@ static void __queue_delayed_work(int cpu, struct workqueue_struct *wq,
  * @delay is zero and @dwork is idle, it will be scheduled for immediate
  * execution.
  */
+// 2015-09-05;
+// queue_delayed_work_on(WORK_CPU_UNBOUND, bdi_wq, &bdi->wb.dwork, timeout)
 bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
 			   struct delayed_work *dwork, unsigned long delay)
 {

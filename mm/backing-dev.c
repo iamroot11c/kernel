@@ -292,6 +292,7 @@ int bdi_has_dirty_io(struct backing_dev_info *bdi)
  * We have to be careful not to postpone flush work if it is scheduled for
  * earlier. Thus we use queue_delayed_work().
  */
+// 2015-09-05;
 void bdi_wakeup_thread_delayed(struct backing_dev_info *bdi)
 {
 	unsigned long timeout;

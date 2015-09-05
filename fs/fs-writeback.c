@@ -65,6 +65,7 @@ int writeback_in_progress(struct backing_dev_info *bdi)
 }
 EXPORT_SYMBOL(writeback_in_progress);
 
+// 2015-09-05;
 static inline struct backing_dev_info *inode_to_bdi(struct inode *inode)
 {
 	struct super_block *sb = inode->i_sb;
@@ -72,6 +73,10 @@ static inline struct backing_dev_info *inode_to_bdi(struct inode *inode)
 	if (sb_is_blkdev_sb(sb))
 		return inode->i_mapping->backing_dev_info;
 
+	// 2015-09-05;
+	// blockdev_superblock 변수가 아직 초기화되지 않음
+	// blockdev_superblock 변수는 dcache_init() 함수에서 초기화하며
+	// 이 함수는 vfs_caches_init() 함수에서 호출됨
 	return sb->s_bdi;
 }
 
@@ -1125,6 +1130,8 @@ static noinline void block_dump___mark_inode_dirty(struct inode *inode)
  * page->mapping->host, so the page-dirtying time is recorded in the internal
  * blockdev inode.
  */
+// 2015-09-05;
+// __mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
 void __mark_inode_dirty(struct inode *inode, int flags)
 {
 	struct super_block *sb = inode->i_sb;
@@ -1134,6 +1141,8 @@ void __mark_inode_dirty(struct inode *inode, int flags)
 	 * Don't do this for I_DIRTY_PAGES - that doesn't actually
 	 * dirty the inode itself
 	 */
+	// 2015-09-05;
+	// flags가 I_DIRTY_PAGES로 if 문을 확인하지 않음
 	if (flags & (I_DIRTY_SYNC | I_DIRTY_DATASYNC)) {
 		trace_writeback_dirty_inode_start(inode, flags);
 
@@ -1174,7 +1183,7 @@ void __mark_inode_dirty(struct inode *inode, int flags)
 		 * Only add valid (hashed) inodes to the superblock's
 		 * dirty list.  Add blockdev inodes as well.
 		 */
-		if (!S_ISBLK(inode->i_mode)) {
+		if (!S_ISBLK(inode->i_mode)/*(((inode->i_mode) & S_IFMT) == S_IFBLK)*/) {
 			if (inode_unhashed(inode))
 				goto out_unlock_inode;
 		}
@@ -1202,7 +1211,7 @@ void __mark_inode_dirty(struct inode *inode, int flags)
 				 * write-back happens later.
 				 */
 				if (!wb_has_dirty_io(&bdi->wb))
-					wakeup_bdi = true;
+					wakeup_bdi = true; // 리스트가 모두 비워져 있음
 			}
 
 			inode->dirtied_when = jiffies;
@@ -1213,7 +1222,7 @@ void __mark_inode_dirty(struct inode *inode, int flags)
 				bdi_wakeup_thread_delayed(bdi);
 			return;
 		}
-	}
+	} // if
 out_unlock_inode:
 	spin_unlock(&inode->i_lock);
 

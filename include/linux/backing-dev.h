@@ -64,6 +64,7 @@ struct bdi_writeback {
 };
 
 // 2015-07-04;
+// 2015-09-05;
 struct backing_dev_info {
 	struct list_head bdi_list;
 	unsigned long ra_pages;	/* max readahead in PAGE_CACHE_SIZE units */
@@ -134,6 +135,8 @@ extern struct list_head bdi_list;
 
 extern struct workqueue_struct *bdi_wq;
 
+// 2015-09-05;
+// 리스트가 비워지지 않음을 확인
 static inline int wb_has_dirty_io(struct bdi_writeback *wb)
 {
 	return !list_empty(&wb->b_dirty) ||
@@ -148,6 +151,7 @@ static inline void __add_bdi_stat(struct backing_dev_info *bdi,
 	__percpu_counter_add(&bdi->bdi_stat[item], amount, BDI_STAT_BATCH/*16*/);
 }
 
+// 2015-09-05;
 static inline void __inc_bdi_stat(struct backing_dev_info *bdi,
 		enum bdi_stat_item item)
 {
@@ -253,7 +257,7 @@ int bdi_set_max_ratio(struct backing_dev_info *bdi, unsigned int max_ratio);
  * BDI_CAP_STRICTLIMIT:    Keep number of dirty pages below bdi threshold.
  */
 #define BDI_CAP_NO_ACCT_DIRTY	0x00000001
-#define BDI_CAP_NO_WRITEBACK	0x00000002
+#define BDI_CAP_NO_WRITEBACK	0x00000002 // 2015-05-09;
 #define BDI_CAP_MAP_COPY	0x00000004
 #define BDI_CAP_MAP_DIRECT	0x00000008
 #define BDI_CAP_READ_MAP	0x00000010
@@ -323,6 +327,7 @@ static inline bool bdi_cap_stable_pages_required(struct backing_dev_info *bdi)
 	return bdi->capabilities & BDI_CAP_STABLE_WRITES;
 }
 
+// 2015-09-05;
 static inline bool bdi_cap_writeback_dirty(struct backing_dev_info *bdi)
 {
 	return !(bdi->capabilities & BDI_CAP_NO_WRITEBACK);
@@ -330,6 +335,8 @@ static inline bool bdi_cap_writeback_dirty(struct backing_dev_info *bdi)
 
 // 2015-08-15
 // 0이면 true 리턴
+//
+// 2015-09-05;
 static inline bool bdi_cap_account_dirty(struct backing_dev_info *bdi)
 {
 	return !(bdi->capabilities & BDI_CAP_NO_ACCT_DIRTY);
@@ -353,6 +360,7 @@ static inline bool mapping_cap_writeback_dirty(struct address_space *mapping)
 }
 
 // 2015-08-15
+// 2015-09-05;
 static inline bool mapping_cap_account_dirty(struct address_space *mapping)
 {
 	return bdi_cap_account_dirty(mapping->backing_dev_info);
