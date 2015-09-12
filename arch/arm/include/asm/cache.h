@@ -27,6 +27,8 @@
 #define ARCH_SLAB_MINALIGN 8
 #endif
 
+// 2015-09-12
+// .data 섹션 영역이기 때문에 읽고 쓰기가 가능
 #define __read_mostly __attribute__((__section__(".data..read_mostly")))
 
 #endif

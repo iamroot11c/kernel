@@ -175,6 +175,7 @@ static inline unsigned int cpumask_first(const struct cpumask *srcp)
 // cpumask_next(n, cpu_possible_mask); // n is -1, 1, 2, 3, ... , n.
 // 2015-08-15
 // 2015-08-29
+// 2015-09-12
 static inline unsigned int cpumask_next(int n, const struct cpumask *srcp)
 {
 	/* -1 is a legal arg here. */
@@ -212,6 +213,7 @@ int cpumask_any_but(const struct cpumask *mask, unsigned int cpu);
 // 2015-02-28; 멀티 CPU
 // for_each_cpu((cpu), cpu_possible_mask)
 // 먼저 배열에서 다음 값을 구하고, 총 CPU 개수보다 작을때까지 순회 
+// 2015-09-12; 
 #define for_each_cpu(cpu, mask)				\
 	for ((cpu) = -1;				\
 		(cpu) = cpumask_next((cpu), (mask)),	\
@@ -776,6 +778,7 @@ void init_cpu_online(const struct cpumask *src);
  */
 //to_cpumask(cpu_possible_bits);
 // 2015-08-15, to_cpumask(cpu_online_bits)
+// 2015-09-12, to_cpumask(sd->span);
 #define to_cpumask(bitmap)						\
 	((struct cpumask *)(1 ? (bitmap)				\
 			    : (void *)sizeof(__check_is_bitmap(bitmap))))

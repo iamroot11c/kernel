@@ -422,6 +422,7 @@ static inline int rcu_read_lock_sched_held(void)
 # define rcu_lock_acquire(a)		do { } while (0)
 # define rcu_lock_release(a)		do { } while (0)
 
+// 2015-09-12
 static inline int rcu_read_lock_held(void)
 {
 	return 1;
@@ -488,7 +489,7 @@ static inline void rcu_preempt_sleep_check(void)
 	} while (0)
 
 #else /* #ifdef CONFIG_PROVE_RCU */
-
+// 2015-09-12
 #define rcu_lockdep_assert(c, s) do { } while (0)
 #define rcu_sleep_check() do { } while (0)
 
@@ -516,6 +517,8 @@ static inline void rcu_preempt_sleep_check(void)
 		rcu_dereference_sparse(p, space); \
 		((typeof(*p) __force __kernel *)(_________p1)); \
 	})
+// 2015-09-12
+// 1) p 포인터를 지역 변수에 복사 2) p 포인터 검사 3) 복사한 지역변수 리턴
 #define __rcu_dereference_check(p, c, space) \
 	({ \
 		typeof(*p) *_________p1 = (typeof(*p)*__force )ACCESS_ONCE(p); \
@@ -611,6 +614,9 @@ static inline void rcu_preempt_sleep_check(void)
  * which pointers are protected by RCU and checks that the pointer is
  * annotated as __rcu.
  */
+// 2015-09-12
+// 식사 전
+// rcu_dereference_check((p), lockdep_is_held(&sched_domains_mutex)
 #define rcu_dereference_check(p, c) \
 	__rcu_dereference_check((p), rcu_read_lock_held() || (c), __rcu)
 

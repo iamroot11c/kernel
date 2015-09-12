@@ -1476,6 +1476,7 @@ static void __queue_delayed_work(int cpu, struct workqueue_struct *wq,
 	if (unlikely(cpu != WORK_CPU_UNBOUND))
 		add_timer_on(timer, cpu);
 	else
+		// 2015-09-05
 		add_timer(timer);
 }
 
@@ -1503,6 +1504,7 @@ bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
 	local_irq_save(flags);
 
 	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))) {
+		// 2015-09-05
 		__queue_delayed_work(cpu, wq, dwork, delay);
 		ret = true;
 	}

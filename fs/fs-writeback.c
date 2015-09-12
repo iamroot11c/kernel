@@ -1219,6 +1219,7 @@ void __mark_inode_dirty(struct inode *inode, int flags)
 			spin_unlock(&bdi->wb.list_lock);
 
 			if (wakeup_bdi)
+				// 2015-09-05
 				bdi_wakeup_thread_delayed(bdi);
 			return;
 		}

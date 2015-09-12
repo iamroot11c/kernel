@@ -669,6 +669,7 @@ static void __set_page_dirty(struct page *page,
 				page_index(page), PAGECACHE_TAG_DIRTY);
 	}
 	spin_unlock_irqrestore(&mapping->tree_lock, flags);
+	// 2015-09-05
 	__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
 }
 

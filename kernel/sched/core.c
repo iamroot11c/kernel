@@ -108,7 +108,8 @@ void start_bandwidth_timer(struct hrtimer *period_timer, ktime_t period)
 					 HRTIMER_MODE_ABS_PINNED, 0);
 	}
 }
-
+// 2015-09-12
+// mutex 변수 선언 및 초기화
 DEFINE_MUTEX(sched_domains_mutex);
 // 2015-06-20
 // runqueues의 선언
@@ -557,6 +558,7 @@ void resched_cpu(int cpu)
  * selecting an idle cpu will add more delays to the timers than intended
  * (as that cpu's timer base may not be uptodate wrt jiffies etc).
  */
+// 2015-09-12
 int get_nohz_timer_target(void)
 {
 	int cpu = smp_processor_id();
@@ -564,9 +566,16 @@ int get_nohz_timer_target(void)
 	struct sched_domain *sd;
 
 	rcu_read_lock();
+	
+	// #define for_each_domain(cpu, __sd) \
+	//	for (__sd = rcu_dereference_check_sched_domain(cpu_rq(cpu)->sd); \
+	//		 __sd; __sd = __sd->parent)
+	//
+	// -> for (sched_domain __sd = cpu_rq(cpu)->sd; __sd != NULL; __sd = __sd->parent){}		 
 	for_each_domain(cpu, sd) {
 		for_each_cpu(i, sched_domain_span(sd)) {
 			if (!idle_cpu(i)) {
+				// 처음 idle 상태가 아닌 cpu를 찾는다.
 				cpu = i;
 				goto unlock;
 			}
@@ -3244,6 +3253,7 @@ EXPORT_SYMBOL(task_nice);
  *
  * Return: 1 if the CPU is currently idle. 0 otherwise.
  */
+// 2015-09-12
 int idle_cpu(int cpu)
 {
 	struct rq *rq = cpu_rq(cpu);

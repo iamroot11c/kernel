@@ -60,7 +60,7 @@ EXPORT_SYMBOL(jiffies_64);
  * per-CPU timer vector definitions:
  */
 #define TVN_BITS (CONFIG_BASE_SMALL ? 4 : 6) // 6
-#define TVR_BITS (CONFIG_BASE_SMALL ? 6 : 8)
+#define TVR_BITS (CONFIG_BASE_SMALL ? 6 : 8) // 8
 #define TVN_SIZE (1 << TVN_BITS) // 1 << 6
 #define TVR_SIZE (1 << TVR_BITS)
 #define TVN_MASK (TVN_SIZE - 1)
@@ -76,6 +76,7 @@ struct tvec_root {
 };
 
 // 2015-09-05;
+// 2015-09-12;
 struct tvec_base {
 	spinlock_t lock;
 	struct timer_list *running_timer;
@@ -94,6 +95,7 @@ EXPORT_SYMBOL(boot_tvec_bases);
 static DEFINE_PER_CPU(struct tvec_base *, tvec_bases) = &boot_tvec_bases;
 
 /* Functions below help us manage 'deferrable' flag */
+// 2015-09-12, deferable 타입을 base pointer로부터 얻음 
 static inline unsigned int tbase_get_deferrable(struct tvec_base *base)
 {
 	return ((unsigned int)(unsigned long)base & TIMER_DEFERRABLE);
@@ -110,6 +112,7 @@ static inline struct tvec_base *tbase_get_base(struct tvec_base *base)
 	return ((struct tvec_base *)((unsigned long)base & ~TIMER_FLAG_MASK));
 }
 
+// 2015-09-12
 static inline void
 timer_set_base(struct timer_list *timer, struct tvec_base *new_base)
 {
@@ -339,6 +342,7 @@ void set_timer_slack(struct timer_list *timer, int slack_hz)
 }
 EXPORT_SYMBOL_GPL(set_timer_slack);
 
+// 2015-09-12
 static void
 __internal_add_timer(struct tvec_base *base, struct timer_list *timer)
 {
@@ -347,15 +351,23 @@ __internal_add_timer(struct tvec_base *base, struct timer_list *timer)
 	struct list_head *vec;
 
 	if (idx < TVR_SIZE) {
+		// expires에서 하위 8비트를 얻음
+		// TVR_MASK == 8
 		int i = expires & TVR_MASK;
 		vec = base->tv1.vec + i;
 	} else if (idx < 1 << (TVR_BITS + TVN_BITS)) {
+		// 8 < idx < (2^14)인 경우
+		// (expire >> 8)값 6비트 마스크
 		int i = (expires >> TVR_BITS) & TVN_MASK;
 		vec = base->tv2.vec + i;
 	} else if (idx < 1 << (TVR_BITS + 2 * TVN_BITS)) {
+		// 2^14 < idx < (2^20)
+		// (expire >> 14) 값 6비트 마스크
 		int i = (expires >> (TVR_BITS + TVN_BITS)) & TVN_MASK;
 		vec = base->tv3.vec + i;
 	} else if (idx < 1 << (TVR_BITS + 3 * TVN_BITS)) {
+		// 2^20 < idx < 2^24
+		// (expire >> 20) 값 6비트 마스크
 		int i = (expires >> (TVR_BITS + 2 * TVN_BITS)) & TVN_MASK;
 		vec = base->tv4.vec + i;
 	} else if ((signed long) idx < 0) {
@@ -380,17 +392,23 @@ __internal_add_timer(struct tvec_base *base, struct timer_list *timer)
 	/*
 	 * Timers are FIFO:
 	 */
+	// 구해진 vec list의 마지막에 timer->entry 리스트 추가
 	list_add_tail(&timer->entry, vec);
 }
 
+// 2015-09-12
+//  internal_add_timer(base, timer);
 static void internal_add_timer(struct tvec_base *base, struct timer_list *timer)
 {
+	// 2015-09-12
 	__internal_add_timer(base, timer);
 	/*
 	 * Update base->active_timers and base->next_timer
 	 */
 	if (!tbase_get_deferrable(timer->base)) {
+		// 타이머 연기 불가 시 처리
 		if (time_before(timer->expires, base->next_timer))
+			// next_timer > expires
 			base->next_timer = timer->expires;
 		base->active_timers++;
 	}
@@ -591,7 +609,9 @@ EXPORT_SYMBOL_GPL(destroy_timer_on_stack);
 
 #else
 static inline void debug_timer_init(struct timer_list *timer) { }
+// 2015-09-12
 static inline void debug_timer_activate(struct timer_list *timer) { }
+// 2015-09-12
 static inline void debug_timer_deactivate(struct timer_list *timer) { }
 static inline void debug_timer_assert_init(struct timer_list *timer) { }
 #endif
@@ -601,17 +621,18 @@ static inline void debug_init(struct timer_list *timer)
 	debug_timer_init(timer);
 	trace_timer_init(timer);
 }
-
+// 2015-09-12
 static inline void
 debug_activate(struct timer_list *timer, unsigned long expires)
 {
-	debug_timer_activate(timer);
+	debug_timer_activate(timer); // NOP
 	trace_timer_start(timer, expires);
 }
 
+// 2015-09-12
 static inline void debug_deactivate(struct timer_list *timer)
 {
-	debug_timer_deactivate(timer);
+	debug_timer_deactivate(timer); // NOP
 	trace_timer_cancel(timer);
 }
 
@@ -655,15 +676,17 @@ void init_timer_key(struct timer_list *timer, unsigned int flags,
 }
 EXPORT_SYMBOL(init_timer_key);
 
+// 2015-09-12
 static inline void detach_timer(struct timer_list *timer, bool clear_pending)
 {
 	struct list_head *entry = &timer->entry;
-
+	// NOP
 	debug_deactivate(timer);
-
+	// entry 삭제
 	__list_del(entry->prev, entry->next);
 	if (clear_pending)
 		entry->next = NULL;
+	// detach한 entry의 prev에 유효하지 않은 포인터 추가
 	entry->prev = LIST_POISON2;
 }
 
@@ -674,16 +697,19 @@ detach_expired_timer(struct timer_list *timer, struct tvec_base *base)
 	if (!tbase_get_deferrable(timer->base))
 		base->active_timers--;
 }
-
+// 2015-09-12
+//  detach_if_pending(timer, base, false);
 static int detach_if_pending(struct timer_list *timer, struct tvec_base *base,
 			     bool clear_pending)
 {
 	if (!timer_pending(timer))
 		return 0;
-
+	// 2015-09-12
 	detach_timer(timer, clear_pending);
+	// 2015-09-12; 연기 가능 여부 확인(deferable == 연기할 수 있는)
 	if (!tbase_get_deferrable(timer->base)) {
 		base->active_timers--;
+		// 만기 시간이 다 된 경우 갱신
 		if (timer->expires == base->next_timer)
 			base->next_timer = base->timer_jiffies;
 	}
@@ -738,8 +764,10 @@ __mod_timer(struct timer_list *timer, unsigned long expires,
 
 	base = lock_timer_base(timer, &flags);
 	// 2015-09-05 여기까지;
-
+	// 2105-09-12 시작
+	// timer가 pending 상태 -> false / 아닌 경우 detach 후 true
 	ret = detach_if_pending(timer, base, false);
+	// 분석 시 pending_only가 false로 들어왔기 때문에 예외로 빠지지 않는다.
 	if (!ret && pending_only)
 		goto out_unlock;
 
@@ -747,9 +775,11 @@ __mod_timer(struct timer_list *timer, unsigned long expires,
 
 	cpu = smp_processor_id();
 
-#if defined(CONFIG_NO_HZ_COMMON) && defined(CONFIG_SMP)
+#if defined(CONFIG_NO_HZ_COMMON) && defined(CONFIG_SMP) // set
 	if (!pinned && get_sysctl_timer_migration() && idle_cpu(cpu))
+		// 2015-09-12 분석
 		cpu = get_nohz_timer_target();
+		// 2015-09-12 완
 #endif
 	new_base = per_cpu(tvec_bases, cpu);
 
@@ -763,16 +793,20 @@ __mod_timer(struct timer_list *timer, unsigned long expires,
 		 */
 		if (likely(base->running_timer != timer)) {
 			/* See the comment in lock_timer_base() */
+			// timer의 base를 유효하지 않은 값으로 초기화
 			timer_set_base(timer, NULL);
 			spin_unlock(&base->lock);
 			base = new_base;
 			spin_lock(&base->lock);
+			// timer의 base를 초기화
 			timer_set_base(timer, base);
 		}
 	}
 
 	timer->expires = expires;
+	// 2015-09-12 시작
 	internal_add_timer(base, timer);
+	// 2015-09-12 끝
 
 out_unlock:
 	spin_unlock_irqrestore(&base->lock, flags);

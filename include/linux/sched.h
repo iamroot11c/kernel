@@ -796,6 +796,7 @@ extern int sched_domain_level_max;
 
 struct sched_group;
 
+// 2015-09-12
 struct sched_domain {
 	/* These fields must be setup */
 	struct sched_domain *parent;	/* top domain must be null terminated */
@@ -824,7 +825,7 @@ struct sched_domain {
 
 	u64 last_update;
 
-#ifdef CONFIG_SCHEDSTATS
+#ifdef CONFIG_SCHEDSTATS // not set
 	/* load_balance() stats */
 	unsigned int lb_count[CPU_MAX_IDLE_TYPES];
 	unsigned int lb_failed[CPU_MAX_IDLE_TYPES];
@@ -871,9 +872,11 @@ struct sched_domain {
 	 * by attaching extra space to the end of the structure,
 	 * depending on how many CPUs the kernel has booted up with)
 	 */
+    // 주의. 실제 메모리에 잡히지 않는 영역
+    // 크기 0인 배열은 구조체 크기를 넘은 주소에 값 설정이 가능하도록 한 트릭
 	unsigned long span[0];
 };
-
+// 2015-09-12
 static inline struct cpumask *sched_domain_span(struct sched_domain *sd)
 {
 	return to_cpumask(sd->span);

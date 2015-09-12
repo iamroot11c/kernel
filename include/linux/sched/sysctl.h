@@ -62,9 +62,13 @@ int sched_proc_update_handler(struct ctl_table *table, int write,
 		void __user *buffer, size_t *length,
 		loff_t *ppos);
 #endif
+// 2015-09-12
 #ifdef CONFIG_SCHED_DEBUG
 static inline unsigned int get_sysctl_timer_migration(void)
 {
+    // sysctl_timer_migration == 1로 설정됨
+    // debug 설정인 경우 .data..read_mostly 섹션에
+    // 아닌 경우 const 타입으로 정의됨
 	return sysctl_timer_migration;
 }
 #else

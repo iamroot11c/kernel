@@ -402,6 +402,7 @@ extern struct root_domain def_root_domain;
 // 2015-06-20
 // 2015-07-25;
 // 오름차순으로 락을 획득
+// 2015-09-12
 struct rq {
 	/* runqueue lock: */
 	raw_spinlock_t lock;
@@ -558,7 +559,12 @@ static inline u64 rq_clock_task(struct rq *rq)
 }
 
 #ifdef CONFIG_SMP
-
+// 2015-09-12
+// rcu_dereference_check_sched_domain(cpu_rq(cpu)->sd);
+// CONFIG_DEBUG_LOCK_ALLOC 미설정으로
+// lockdep_is_held(&sched_domains_mutex) 함수에서 참조하는 mutex내 dep값은 존재하지 않는다.
+// 일단 다른 종류의 함수가 호출되고 있다는 전제하에 코드 분석을 진행한다.
+// (아직 호출되는 함수는 찾지 못함)
 #define rcu_dereference_check_sched_domain(p) \
 	rcu_dereference_check((p), \
 			      lockdep_is_held(&sched_domains_mutex))
