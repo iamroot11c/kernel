@@ -327,9 +327,10 @@ unsigned long vmalloc_to_pfn(const void *addr);
  * On nommu, vmalloc/vfree wrap through kmalloc/kfree directly, so there
  * is no special casing required.
  */
+// 2015-09-19;
 static inline int is_vmalloc_addr(const void *x)
 {
-#ifdef CONFIG_MMU
+#ifdef CONFIG_MMU // defined
 	unsigned long addr = (unsigned long)x;
 
 	return addr >= VMALLOC_START && addr < VMALLOC_END;
@@ -789,7 +790,8 @@ static inline void set_page_section(struct page *page, unsigned long section)
 // page->flags의 상위 4비트를 얻어온다.
 static inline unsigned long page_to_section(const struct page *page)
 {
-	return (page->flags >> SECTIONS_PGSHIFT/*28*/) & SECTIONS_MASK/*0b1111*/;
+	return (page->flags/*unsigned long*/
+                        >> SECTIONS_PGSHIFT/*28*/) & SECTIONS_MASK/*0b1111*/;
 }
 #endif
 
@@ -828,6 +830,12 @@ static inline void set_page_links(struct page *page, enum zone_type zone,
 // 2015-01-24
 // high 메모리가 아니므로 메모리에 직접 매핑되어
 // 가상 주소를 바로 구할 수 있음
+//
+// 2015-09-19;
+// sparse memory 사용으로 page_to_pfn page() 함수는 
+// page 구조체의 flags 멤버 변수의 상위 4비트(28~31)를 인덱스로 하여
+// mem_section배열에서 (베이스) 주소를 구한 후 
+// 이 값을 page에서 빼야 PFN을 구할 수 있다
 static __always_inline void *lowmem_page_address(const struct page *page)
 {
 	return __va(PFN_PHYS(page_to_pfn(page)));
@@ -1186,11 +1194,14 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
 /*
  * per-process(per-mm_struct) statistics.
  */
+// 2015-09-19;
+// get_mm_counter(mm, MM_FILEPAGES);
+// get_mm_counter(mm, MM_ANONPAGES); 
 static inline unsigned long get_mm_counter(struct mm_struct *mm, int member)
 {
 	long val = atomic_long_read(&mm->rss_stat.count[member]);
 
-#ifdef SPLIT_RSS_COUNTING
+#ifdef SPLIT_RSS_COUNTING // not define
 	/*
 	 * counter is updated in asynchronous manner and may go to minus.
 	 * But it's never be expected number for users.
@@ -1211,11 +1222,13 @@ static inline void inc_mm_counter(struct mm_struct *mm, int member)
 	atomic_long_inc(&mm->rss_stat.count[member]);
 }
 
+// 2015-09-15;
 static inline void dec_mm_counter(struct mm_struct *mm, int member)
 {
 	atomic_long_dec(&mm->rss_stat.count[member]);
 }
 
+// 2015-09-15;
 static inline unsigned long get_mm_rss(struct mm_struct *mm)
 {
 	return get_mm_counter(mm, MM_FILEPAGES) +
@@ -1232,10 +1245,13 @@ static inline unsigned long get_mm_hiwater_vm(struct mm_struct *mm)
 	return max(mm->hiwater_vm, mm->total_vm);
 }
 
+// 2015-09-19 시작;
 static inline void update_hiwater_rss(struct mm_struct *mm)
 {
 	unsigned long _rss = get_mm_rss(mm);
 
+    // MM_FILEPAGES MM_ANONPAGES 각 각의 값의 합이 
+    // hiwater_rss 보다 크면 값을 갱신
 	if ((mm)->hiwater_rss < _rss)
 		(mm)->hiwater_rss = _rss;
 }

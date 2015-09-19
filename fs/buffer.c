@@ -698,7 +698,8 @@ static void __set_page_dirty(struct page *page,
  * FIXME: may need to call ->reservepage here as well.  That's rather up to the
  * address_space though.
  */
-// 2015-09-05;
+// 2015-09-05 시작;
+// 2015-09-12 끝;
 int __set_page_dirty_buffers(struct page *page)
 {
 	int newly_dirty;

@@ -168,6 +168,9 @@ struct vm_area_struct;
 // 예를 들어 __GFP_MOVABLE일 때는 MIGRATE_MOVABLE
 //           __GFP_RECLAIMABLE일 때는 MIGRATE_RECLAIMABLE
 // 으로 바꾸어 리턴 
+//
+// 2015-09-19
+// 0 = allocflags_to_migratetype(GFP_ATOMIC | __GFP_HIGHMEM);
 static inline int allocflags_to_migratetype(gfp_t gfp_flags)
 {
 	WARN_ON((gfp_flags & GFP_MOVABLE_MASK) == GFP_MOVABLE_MASK);
@@ -178,8 +181,8 @@ static inline int allocflags_to_migratetype(gfp_t gfp_flags)
 	/* Group based on mobility */
     // 1 비트 좌측으로 쉬프트를 하는것은  
     // 리턴값을 'MIGRATE_MOVABLE'로 만들기 위함
-	return (((gfp_flags & __GFP_MOVABLE) != 0) << 1) |
-		((gfp_flags & __GFP_RECLAIMABLE) != 0);
+	return (((gfp_flags & __GFP_MOVABLE/*0x08*/) != 0) << 1) |
+		((gfp_flags & __GFP_RECLAIMABLE/*0x80000u*/) != 0);
 }
 
 #ifdef CONFIG_HIGHMEM
@@ -332,6 +335,9 @@ static inline int gfp_zonelist(gfp_t flags)
 //
 // UMA 구조에서는 flasg의 값과 상관없이 gfp_zonelist() 함수는
 // 항상 0을 리턴하여 node_zonelists 배열의 0번 인덱스가 리턴된다.
+//
+// 2015-09-19;
+// node_zonelist(0, GFP_ATOMIC | __GFP_HIGHMEM);
 static inline struct zonelist *node_zonelist(int nid, gfp_t flags)
 {
 	return NODE_DATA(nid)->node_zonelists + gfp_zonelist(flags)/*0*/;
@@ -352,6 +358,10 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
 
 // 2015-05-23;
 // __alloc_pages(gfp_mask, order, &contig_page_data->node_zonelists[0]);
+//
+// 2015-09-19;
+// __alloc_pages(gfp_mask, order, &contig_page_data->node_zonelists[0]);
+// gfp_mask = GFP_ATOMIC | __GFP_HIGHMEM
 static inline struct page *
 __alloc_pages(gfp_t gfp_mask, unsigned int order,
 		struct zonelist *zonelist)
@@ -360,6 +370,10 @@ __alloc_pages(gfp_t gfp_mask, unsigned int order,
 	return __alloc_pages_nodemask(gfp_mask, order, zonelist, NULL);
 }
 
+// 2015-09-19;
+// alloc_pages_node(numa_node_id(), gfp_mask, order);
+// nid = 0 
+// gfp_mask = GFP_ATOMIC | __GFP_HIGHMEM
 static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
 						unsigned int order)
 {
@@ -396,11 +410,14 @@ extern struct page *alloc_pages_vma(gfp_t gfp_mask, int order,
 			struct vm_area_struct *vma, unsigned long addr,
 			int node);
 #else
+// 2015-09-19;
 #define alloc_pages(gfp_mask, order) \
 		alloc_pages_node(numa_node_id(), gfp_mask, order)
 #define alloc_pages_vma(gfp_mask, order, vma, addr, node)	\
 	alloc_pages(gfp_mask, order)
 #endif
+// 2015-09-19;
+// order가 0으로 버디 할당자에서 페이지 하나를 얻음
 #define alloc_page(gfp_mask) alloc_pages(gfp_mask, 0)
 #define alloc_page_vma(gfp_mask, vma, addr)			\
 	alloc_pages_vma(gfp_mask, 0, vma, addr, numa_node_id())

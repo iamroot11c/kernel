@@ -131,7 +131,8 @@ typedef		__s64		int64_t;
  *
  * blkcnt_t is the type of the inode's block count.
  */
-#ifdef CONFIG_LBDAF
+#ifdef CONFIG_LBDAF // defined
+// 2015-09-19;
 typedef u64 sector_t;
 typedef u64 blkcnt_t;
 #else

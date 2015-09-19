@@ -37,6 +37,7 @@ void kunmap(struct page *page)
 EXPORT_SYMBOL(kunmap);
 // 2015-06-06
 // 2015-01-24, 시작
+// 2015-09-19;
 void *kmap_atomic(struct page *page)
 {
 	unsigned int idx;
@@ -49,7 +50,7 @@ void *kmap_atomic(struct page *page)
 	if (!PageHighMem(page))
 		return page_address(page);
 
-#ifdef CONFIG_DEBUG_HIGHMEM
+#ifdef CONFIG_DEBUG_HIGHMEM // not define
 	/*
 	 * There is no cache coherency issue when non VIVT, so force the
 	 * dedicated kmap usage for better debugging purposes in that case.
@@ -76,7 +77,7 @@ void *kmap_atomic(struct page *page)
 	// memory layout에 fixmap영역이 있다.
 	// 그곳의 메모리를 할당받는다.
 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN/* 0 */ + idx);
-#ifdef CONFIG_DEBUG_HIGHMEM
+#ifdef CONFIG_DEBUG_HIGHMEM // not define
 	/*
 	 * With debugging enabled, kunmap_atomic forces that entry to 0.
 	 * Make sure it was indeed properly unmapped.
@@ -108,7 +109,7 @@ void __kunmap_atomic(void *kvaddr)
 
 		if (cache_is_vivt())
 			__cpuc_flush_dcache_area((void *)vaddr, PAGE_SIZE);
-#ifdef CONFIG_DEBUG_HIGHMEM
+#ifdef CONFIG_DEBUG_HIGHMEM // not define
 		BUG_ON(vaddr != __fix_to_virt(FIX_KMAP_BEGIN + idx));
 		set_top_pte(vaddr, __pte(0));
 #else

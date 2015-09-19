@@ -1223,7 +1223,7 @@ out:
 // address = vma_address(page, vma);
 // // 2015-08-15, 여기까지
 // ret = try_to_unmap_one(page, vma, address, flags);
-//
+// flags = TTU_MIGRATION|TTU_IGNORE_MLOCK|TTU_IGNORE_ACCESS;
 int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 		     unsigned long address, enum ttu_flags flags)
 {
@@ -1273,9 +1273,12 @@ int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 		set_page_dirty(page);
 	
 	// 2015-09-12 여기까지
+	
+	// 2015-09-19;
 	/* Update high watermark before we lower rss */
 	update_hiwater_rss(mm);
 
+	// PageHWPoison() 함수가 항상 FALSE를 리턴
 	if (PageHWPoison(page) && !(flags & TTU_IGNORE_HWPOISON)) {
 		if (!PageHuge(page)) {
 			if (PageAnon(page))
@@ -1294,6 +1297,7 @@ int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 			 * Store the swap location in the pte.
 			 * See handle_pte_fault() ...
 			 */
+			// 2015-09-19 시작;
 			if (swap_duplicate(entry) < 0) {
 				set_pte_at(mm, address, pte, pteval);
 				ret = SWAP_FAIL;

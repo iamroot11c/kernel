@@ -27,10 +27,10 @@
  */
 #if defined(CONFIG_FLATMEM) // not set
 
-// 2015-07-18
 #define __pfn_to_page(pfn)	(mem_map + ((pfn) - ARCH_PFN_OFFSET))
 #define __page_to_pfn(page)	((unsigned long)((page) - mem_map) + \
-				 ARCH_PFN_OFFSET)
+				 ARCH_PFN_OFFSET) 
+                                  
 #elif defined(CONFIG_DISCONTIGMEM)  // not set
 
 #define __pfn_to_page(pfn)			\
@@ -58,6 +58,7 @@
  * section[i].section_mem_map == mem_map's address - start_pfn;
  */
 // 2015-08-22
+// 2015-09-19;
 #define __page_to_pfn(pg)					\
 ({	const struct page *__pg = (pg);				\
 	int __sec = page_to_section(__pg);			\
@@ -75,6 +76,7 @@
 
 // 2015-08-22
 #define page_to_pfn __page_to_pfn
+// 2015-09-19;
 #define pfn_to_page __pfn_to_page
 
 #endif /* __ASSEMBLY__ */

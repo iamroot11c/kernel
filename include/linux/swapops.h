@@ -19,7 +19,8 @@
 // 2015-07-04;
 #define SWP_TYPE_SHIFT(e)	((sizeof(e.val) * 8) - \
 			(MAX_SWAPFILES_SHIFT/*5*/ + RADIX_TREE_EXCEPTIONAL_SHIFT/*2*/)) // 25
-#define SWP_OFFSET_MASK(e)	((1UL << SWP_TYPE_SHIFT(e)) - 1)
+// 2015-09-19;
+#define SWP_OFFSET_MASK(e)	((1UL << SWP_TYPE_SHIFT(e)/*25*/) - 1)
 
 /*
  * Store a type+offset into a swp_entry_t in an arch-independent format
@@ -47,8 +48,10 @@ static inline unsigned swp_type(swp_entry_t entry)
  * Extract the `offset' field from a swp_entry_t.  The swp_entry_t is in
  * arch-independent format
  */
+// 2015-09-19;
 static inline pgoff_t swp_offset(swp_entry_t entry)
 {
+    // entry.val & (1UL<<25);
 	return entry.val & SWP_OFFSET_MASK(entry);
 }
 
@@ -189,10 +192,13 @@ static inline int is_hwpoison_entry(swp_entry_t swp)
 }
 #endif
 
+// CONFIG_MEMORY_FAILURE not defined
+// CONFIG_MIGRATION defined
 #if defined(CONFIG_MEMORY_FAILURE) || defined(CONFIG_MIGRATION)
+// 2015-09-19;
 static inline int non_swap_entry(swp_entry_t entry)
 {
-	return swp_type(entry) >= MAX_SWAPFILES;
+	return swp_type(entry) >= MAX_SWAPFILES/*30*/;
 }
 #else
 static inline int non_swap_entry(swp_entry_t entry)

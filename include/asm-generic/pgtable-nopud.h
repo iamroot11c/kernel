@@ -22,6 +22,7 @@ typedef struct { pgd_t pgd; } pud_t;
  * setup: the pud is never bad, and a pud always exists (as it's folded
  * into the pgd entry)
  */
+// 2015-09-19;
 static inline int pgd_none(pgd_t pgd)		{ return 0; }
 static inline int pgd_bad(pgd_t pgd)		{ return 0; }
 // 2015-08-22, compile 통해 확인

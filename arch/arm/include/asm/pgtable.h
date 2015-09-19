@@ -43,6 +43,7 @@
  */
 #define VMALLOC_OFFSET		(8*1024*1024) // 0x0080_0000, 8MB
 // sanity_check_meminfo() 함수에서 high_memory에 값을 저장
+// 2015-09-19;
 #define VMALLOC_START		(((unsigned long)high_memory + VMALLOC_OFFSET) & ~(VMALLOC_OFFSET-1))
 #define VMALLOC_END		0xff000000UL
 
@@ -191,6 +192,7 @@ extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
 #define pgd_offset(mm, addr)	((mm)->pgd + pgd_index(addr))
 
 /* to find an entry in a kernel page-table-directory */
+// 2015-09-19;
 #define pgd_offset_k(addr)	pgd_offset(&init_mm, addr)
 
 // return (pmd.pmd == 0)
@@ -216,6 +218,7 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 // argument가 pointer가 아니라, *(pmd)이다.
 #define __pte_map(pmd)		pmd_page_vaddr(*(pmd))
 // 2015-08-22
+// 2015-09-19;
 #define __pte_unmap(pte)	do { } while (0)
 #else
 #define __pte_map(pmd)		(pte_t *)kmap_atomic(pmd_page(*(pmd)))
@@ -238,6 +241,7 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 // 물리 주소와, PTE mask값을 or하면, pte가 된다.
 #define pfn_pte(pfn,prot)	__pte(__pfn_to_phys(pfn) | pgprot_val(prot))
 
+// 2015-09-19;
 #define pte_page(pte)		pfn_to_page(pte_pfn(pte))
 // 2015-01-31
 #define mk_pte(page,prot)	pfn_pte(page_to_pfn(page), prot)

@@ -1217,8 +1217,9 @@ struct mem_section {
 //                         1 = ((16 + 512 - 1) / 512)
 #define SECTION_ROOT_MASK	(SECTIONS_PER_ROOT - 1)     // 1
 
-#ifdef CONFIG_SPARSEMEM_EXTREME
-extern struct mem_section *mem_section[NR_SECTION_ROOTS];
+#ifdef CONFIG_SPARSEMEM_EXTREME // defined
+extern struct mem_section *mem_section[NR_SECTION_ROOTS]; // 메모리를 16개 섹션(그룹)으로 나누며, 
+                                                          // 이를 관리하기 위한 배열
 #else
 extern struct mem_section mem_section[NR_SECTION_ROOTS][SECTIONS_PER_ROOT];
 #endif
@@ -1226,6 +1227,7 @@ extern struct mem_section mem_section[NR_SECTION_ROOTS][SECTIONS_PER_ROOT];
 // 2014-12-27;
 // 2015-07-18
 // 2015-08-22
+// 2015-09-19;
 static inline struct mem_section *__nr_to_section(unsigned long nr)
 {
     // 이상한 점. memsection은 config 설정 상 원소 1개를 가지는 포인터의 배열이지만
@@ -1252,6 +1254,7 @@ extern unsigned long usemap_size(void);
 
 // 2015-01-17
 // 2015-08-22
+// 2015-09-19;
 static inline struct page *__section_mem_map_addr(struct mem_section *section)
 {
 	unsigned long map = section->section_mem_map;

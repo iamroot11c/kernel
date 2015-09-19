@@ -265,7 +265,7 @@ PAGEFLAG(Readahead, reclaim)		/* Reminder to do async read-ahead */
 PAGEFLAG_FALSE(HighMem)
 #endif
 
-#ifdef CONFIG_SWAP
+#ifdef CONFIG_SWAP // defined
 PAGEFLAG(SwapCache, swapcache)
 #else
 PAGEFLAG_FALSE(SwapCache)
@@ -289,11 +289,12 @@ PAGEFLAG(Uncached, uncached)
 PAGEFLAG_FALSE(Uncached)
 #endif
 
-#ifdef CONFIG_MEMORY_FAILURE
+#ifdef CONFIG_MEMORY_FAILURE // not define
 PAGEFLAG(HWPoison, hwpoison)
 TESTSCFLAG(HWPoison, hwpoison)
 #define __PG_HWPOISON (1UL << PG_hwpoison)
 #else
+// 2015-09-19;
 PAGEFLAG_FALSE(HWPoison)
 #define __PG_HWPOISON 0
 #endif

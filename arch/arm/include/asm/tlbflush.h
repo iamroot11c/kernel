@@ -594,6 +594,7 @@ static inline void __local_flush_tlb_kernel_page(unsigned long kaddr)
 }
 
 // 2015-01-31
+// 2015-09-19;
 static inline void local_flush_tlb_kernel_page(unsigned long kaddr)
 {
 	const unsigned int __tlb_flag = __cpu_tlb_flags;

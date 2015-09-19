@@ -111,7 +111,7 @@ static inline int kmap_atomic_idx(void)
 // __kmap_atomic_idx에서 하나 뺀다.
 static inline void kmap_atomic_idx_pop(void)
 {
-#ifdef CONFIG_DEBUG_HIGHMEM
+#ifdef CONFIG_DEBUG_HIGHMEM // not define
 	int idx = __this_cpu_dec_return(__kmap_atomic_idx);
 
 	BUG_ON(idx < 0);
@@ -128,6 +128,8 @@ static inline void kmap_atomic_idx_pop(void)
  */
 //2015-01-31
 //2015-02-07, 끝
+//
+// 2015-09-19;
 #define kunmap_atomic(addr)                                     \
 do {                                                            \
 	BUILD_BUG_ON(__same_type((addr), struct page *));       \

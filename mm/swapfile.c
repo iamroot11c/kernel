@@ -46,6 +46,7 @@ static void free_swap_count_continuations(struct swap_info_struct *);
 static sector_t map_swap_entry(swp_entry_t, struct block_device**);
 
 DEFINE_SPINLOCK(swap_lock);
+// 2015-09-19;
 static unsigned int nr_swapfiles;
 atomic_long_t nr_swap_pages;
 /* protected with swap_lock. reading in vm_swap_full() doesn't need lock */
@@ -60,7 +61,8 @@ static const char Unused_offset[] = "Unused swap offset entry ";
 
 struct swap_list_t swap_list = {-1, -1};
 
-struct swap_info_struct *swap_info[MAX_SWAPFILES];
+// 2015-09-19;
+struct swap_info_struct *swap_info[MAX_SWAPFILES/*30*/];
 
 static DEFINE_MUTEX(swapon_mutex);
 
@@ -68,9 +70,11 @@ static DECLARE_WAIT_QUEUE_HEAD(proc_poll_wait);
 /* Activity counter to indicate that a swapon or swapoff has occurred */
 static atomic_t proc_poll_event = ATOMIC_INIT(0);
 
+// 2015-09-19;
 static inline unsigned char swap_count(unsigned char ent)
 {
 	return ent & ~SWAP_HAS_CACHE;	/* may include SWAP_HAS_CONT flag */
+	                                // 6번째 비트를 뺀 나머지를 읽음
 }
 
 /* returns 1 if swap entry is freed */
@@ -2602,6 +2606,8 @@ void si_swapinfo(struct sysinfo *val)
  * - swap-cache reference is requested but the entry is not used. -> ENOENT
  * - swap-mapped reference requested but needs continued swap count. -> ENOMEM
  */
+// 2015-09-15;
+// __swap_duplicate(entry, 1);
 static int __swap_duplicate(swp_entry_t entry, unsigned char usage)
 {
 	struct swap_info_struct *p;
@@ -2610,11 +2616,11 @@ static int __swap_duplicate(swp_entry_t entry, unsigned char usage)
 	unsigned char has_cache;
 	int err = -EINVAL;
 
-	if (non_swap_entry(entry))
-		goto out;
+	if (non_swap_entry(entry)) // MAX_SWAPFILES과 같거나 크면
+		goto out;          // out으로 분기
 
 	type = swp_type(entry);
-	if (type >= nr_swapfiles)
+	if (type >= nr_swapfiles) // 개수를 나타낼수도 있을것 같다.
 		goto bad_file;
 	p = swap_info[type];
 	offset = swp_offset(entry);
@@ -2634,8 +2640,8 @@ static int __swap_duplicate(swp_entry_t entry, unsigned char usage)
 		goto unlock_out;
 	}
 
-	has_cache = count & SWAP_HAS_CACHE;
-	count &= ~SWAP_HAS_CACHE;
+	has_cache = count & SWAP_HAS_CACHE; // 6번째 비트를 읽음
+	count &= ~SWAP_HAS_CACHE; // 6번째 비트를 클리어
 	err = 0;
 
 	if (usage == SWAP_HAS_CACHE) {
@@ -2650,7 +2656,7 @@ static int __swap_duplicate(swp_entry_t entry, unsigned char usage)
 
 	} else if (count || has_cache) {
 
-		if ((count & ~COUNT_CONTINUED) < SWAP_MAP_MAX)
+		if ((count & ~COUNT_CONTINUED) < SWAP_MAP_MAX/*0x3e(62)*/)
 			count += usage;
 		else if ((count & ~COUNT_CONTINUED) > SWAP_MAP_MAX)
 			err = -EINVAL;
@@ -2689,6 +2695,7 @@ void swap_shmem_alloc(swp_entry_t entry)
  * if __swap_duplicate() fails for another reason (-EINVAL or -ENOENT), which
  * might occur if a page table entry has got corrupted.
  */
+// 2015-09-19;
 int swap_duplicate(swp_entry_t entry)
 {
 	int err = 0;
@@ -2751,6 +2758,8 @@ EXPORT_SYMBOL_GPL(__page_file_index);
  * page table locks; if it fails, add_swap_count_continuation(, GFP_KERNEL)
  * can be called after dropping locks.
  */
+// 2015-09-19 시작;
+// add_swap_count_continuation(entry, GFP_ATOMIC);
 int add_swap_count_continuation(swp_entry_t entry, gfp_t gfp_mask)
 {
 	struct swap_info_struct *si;
@@ -2764,7 +2773,9 @@ int add_swap_count_continuation(swp_entry_t entry, gfp_t gfp_mask)
 	 * When debugging, it's easier to use __GFP_ZERO here; but it's better
 	 * for latency not to zero a page while GFP_ATOMIC and holding locks.
 	 */
+	// 버디 할당자를 통해 page를 할당받음
 	page = alloc_page(gfp_mask | __GFP_HIGHMEM);
+	// 2015-09-19 여기까지; 
 
 	si = swap_info_get(entry);
 	if (!si) {
@@ -2852,6 +2863,8 @@ outer:
  * borrow from the continuation and report whether it still holds more.
  * Called while __swap_duplicate() or swap_entry_free() holds swap_lock.
  */
+// 2015-09-19;
+// swap_count_continued(p, offset, count);
 static bool swap_count_continued(struct swap_info_struct *si,
 				 pgoff_t offset, unsigned char count)
 {
@@ -2860,6 +2873,8 @@ static bool swap_count_continued(struct swap_info_struct *si,
 	unsigned char *map;
 
 	head = vmalloc_to_page(si->swap_map + offset);
+	// 2015-09-19 식사 전;
+
 	if (page_private(head) != SWP_CONTINUED) {
 		BUG_ON(count & COUNT_CONTINUED);
 		return false;		/* need to add count continuation */
@@ -2872,7 +2887,7 @@ static bool swap_count_continued(struct swap_info_struct *si,
 	if (count == SWAP_MAP_MAX)	/* initial increment from swap_map */
 		goto init_map;		/* jump over SWAP_CONT_MAX checks */
 
-	if (count == (SWAP_MAP_MAX | COUNT_CONTINUED)) { /* incrementing */
+	if (count == (SWAP_MAP_MAX/*0x3E*/ | COUNT_CONTINUED/*0x80*/)) { /* incrementing */
 		/*
 		 * Think of how you add 1 to 999
 		 */
@@ -2921,7 +2936,8 @@ init_map:		*map = 0;		/* we didn't zero the page */
 		while (page != head) {
 			map = kmap_atomic(page) + offset;
 			*map = SWAP_CONT_MAX | count;
-			count = COUNT_CONTINUED;
+			count = COUNT_CONTINUED; // 첫 번째 page는 COUNT_CONTINUED가 
+			                         // 설정이 안될 수 있다.
 			kunmap_atomic(map);
 			page = list_entry(page->lru.prev, struct page, lru);
 		}

@@ -112,6 +112,7 @@ union swap_header {
   * the entry is hidden in the "index" field of the
   * swapper address space.
   */
+// 2015-09-19;
 typedef struct {
 	unsigned long val;
 } swp_entry_t;
@@ -139,6 +140,7 @@ struct zone;
  *
  * We always assume that blocks are of size PAGE_SIZE.
  */
+// 2015-09-19;
 struct swap_extent {
 	struct list_head list;
 	pgoff_t start_page;
@@ -197,6 +199,7 @@ enum {
  * counter otherwise. The flags field determines if a cluster is free. This is
  * protected by swap_info_struct.lock.
  */
+// 2015-09-19;
 struct swap_cluster_info {
 	unsigned int data:24;
 	unsigned int flags:8;
@@ -217,6 +220,7 @@ struct percpu_cluster {
 /*
  * The in-memory structure used to track swap areas.
  */
+// 2015-09-19;
 struct swap_info_struct {
 	unsigned long	flags;		/* SWP_USED etc: see above */
 	signed short	prio;		/* swap priority of this type */
@@ -239,7 +243,7 @@ struct swap_info_struct {
 	struct block_device *bdev;	/* swap device or bdev of swap file */
 	struct file *swap_file;		/* seldom referenced */
 	unsigned int old_block_size;	/* seldom referenced */
-#ifdef CONFIG_FRONTSWAP
+#ifdef CONFIG_FRONTSWAP // not define
 	unsigned long *frontswap_map;	/* frontswap in-use, one bit per page */
 	atomic_t frontswap_pages;	/* frontswap pages in-use counter */
 #endif

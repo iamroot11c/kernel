@@ -204,6 +204,7 @@ static int vmap_page_range(unsigned long start, unsigned long end,
 	return ret;
 }
 
+// 2015-09-19;
 int is_vmalloc_or_module_addr(const void *x)
 {
 	/*
@@ -211,6 +212,8 @@ int is_vmalloc_or_module_addr(const void *x)
 	 * and fall back on vmalloc() if that fails. Others
 	 * just put it in the vmalloc space.
 	 */
+// CONFIG_MODULES defined
+// MODULES_VADDR = 0xBF00_0000 
 #if defined(CONFIG_MODULES) && defined(MODULES_VADDR)
 	unsigned long addr = (unsigned long)x;
 	if (addr >= MODULES_VADDR && addr < MODULES_END)
@@ -222,11 +225,14 @@ int is_vmalloc_or_module_addr(const void *x)
 /*
  * Walk a vmap address to the struct page it maps.
  */
+// 2015-09-19;
+// page 구조체를 구함
 struct page *vmalloc_to_page(const void *vmalloc_addr)
 {
 	unsigned long addr = (unsigned long) vmalloc_addr;
 	struct page *page = NULL;
-	pgd_t *pgd = pgd_offset_k(addr);
+	pgd_t *pgd = pgd_offset_k(addr); // init_mm 전역변수에서 주소를 구함
+	                                 // init_mm은 커널이 관리
 
 	/*
 	 * XXX we might need to change this if we add VIRTUAL_BUG_ON for
@@ -234,9 +240,9 @@ struct page *vmalloc_to_page(const void *vmalloc_addr)
 	 */
 	VIRTUAL_BUG_ON(!is_vmalloc_or_module_addr(vmalloc_addr));
 
-	if (!pgd_none(*pgd)) {
+	if (!pgd_none(*pgd)/*항상 0을 리턴*/) {
 		pud_t *pud = pud_offset(pgd, addr);
-		if (!pud_none(*pud)) {
+		if (!pud_none(*pud)/*항상 0을 리턴*/) {
 			pmd_t *pmd = pmd_offset(pud, addr);
 			if (!pmd_none(*pmd)) {
 				pte_t *ptep, pte;
@@ -245,7 +251,7 @@ struct page *vmalloc_to_page(const void *vmalloc_addr)
 				pte = *ptep;
 				if (pte_present(pte))
 					page = pte_page(pte);
-				pte_unmap(ptep);
+				pte_unmap(ptep); // no OP.
 			}
 		}
 	}

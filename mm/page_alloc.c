@@ -2186,7 +2186,7 @@ zonelist_scan:
 		// 2015-05-23 여기까지;
 		
 		// 2015-05-30 시작
-		// ALLOC_WMARK_LOW 셋
+		// ALLOC_WMARK_LOW 비트 조사
 		if ((alloc_flags & ALLOC_WMARK_LOW) &&
 		    (gfp_mask & __GFP_WRITE) && !zone_dirty_ok(zone))
 			goto this_zone_full;
@@ -2226,6 +2226,7 @@ zonelist_scan:
 				!zlc_zone_worth_trying(zonelist, z, allowednodes))
 				continue;
 
+			// CONFIG_NUMA 미 활성화로 항상 0을 리턴
 			ret = zone_reclaim(zone, gfp_mask, order);
 			switch (ret) {
 			case ZONE_RECLAIM_NOSCAN:
@@ -2973,6 +2974,10 @@ got_pg:
 //
 // 2015-05-23; 시작
 // __alloc_pages_nodemask(gfp_mask, order, &contig_page_data->node_zonelists[0], NULL);
+//
+// 2015-09-19;
+// __alloc_pages_nodemask(gfp_mask, order, &contig_page_data->node_zonelists[0], NULL);
+// gfp_mask = GFP_ATOMIC | __GFP_HIGHMEM
 struct page *
 __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
 			struct zonelist *zonelist, nodemask_t *nodemask)
@@ -2981,6 +2986,7 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
 	struct zone *preferred_zone;
 	struct page *page = NULL;
 	// MIGRATE_TYPES을 찾기 위해 allocflags_to_migratetype() 함수 호출
+	// 2015-09-19 GFP_ATOMIC | __GFP_HIGHMEM : migratetype(MIGRATE_UNMOVABLE)
 	int migratetype = allocflags_to_migratetype(gfp_mask);
 	unsigned int cpuset_mems_cookie;
 	int alloc_flags = ALLOC_WMARK_LOW|ALLOC_CPUSET|ALLOC_FAIR;

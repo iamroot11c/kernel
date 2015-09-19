@@ -2273,7 +2273,8 @@ EXPORT_SYMBOL(redirty_page_for_writepage);
  * If the mapping doesn't provide a set_page_dirty a_op, then
  * just fall through and assume that it wants buffer_heads.
  */
-// 2015-09-05;
+// 2015-09-05 시작;
+// 2015-09-12 마침;
 int set_page_dirty(struct page *page)
 {
 	struct address_space *mapping = page_mapping(page);

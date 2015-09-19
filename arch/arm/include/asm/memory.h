@@ -52,7 +52,9 @@
  */
 #ifndef CONFIG_THUMB2_KERNEL
 // 2015-05-16
+// 2015-09-19;
 #define MODULES_VADDR		(PAGE_OFFSET - SZ_16M)
+//                          0xBF00_0000 = 0xC000_0000 - 0x0100_0000                        
 #else
 /* smaller range for Thumb-2 symbols relocation (2^24)*/
 #define MODULES_VADDR		(PAGE_OFFSET - SZ_8M)
@@ -67,7 +69,9 @@
  */
 #ifdef CONFIG_HIGHMEM
 // 2015-05-16
-#define MODULES_END		(PAGE_OFFSET - PMD_SIZE)
+// 2015-09-19;
+#define MODULES_END		(PAGE_OFFSET - PMD_SIZE) // 14MB
+//                      0xBFE0_0000 = 0xC0 0xC000_0000 - 0x0020_0000
 #else
 #define MODULES_END		(PAGE_OFFSET)
 #endif

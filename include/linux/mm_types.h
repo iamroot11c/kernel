@@ -310,6 +310,7 @@ struct core_state {
 	struct completion startup;
 };
 
+// 2015-09-19;
 enum {
 	MM_FILEPAGES,
 	MM_ANONPAGES,
@@ -326,8 +327,9 @@ struct task_rss_stat {
 };
 #endif /* USE_SPLIT_PTLOCKS */
 
+// 2015-09-19;
 struct mm_rss_stat {
-	atomic_long_t count[NR_MM_COUNTERS];
+	atomic_long_t count[NR_MM_COUNTERS/*3*/];
 };
 
 struct kioctx_table;

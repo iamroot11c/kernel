@@ -17,9 +17,11 @@
 #define FIXADDR_TOP		0xfffe0000UL
 #define FIXADDR_SIZE		(FIXADDR_TOP - FIXADDR_START)   /* 896K */
 
+// 2015-09-19;
 #define FIX_KMAP_BEGIN		0
 #define FIX_KMAP_END		(FIXADDR_SIZE >> PAGE_SHIFT)
 
+// 2015-09-19;
 #define __fix_to_virt(x)	(FIXADDR_START + ((x) << PAGE_SHIFT))
 #define __virt_to_fix(x)	(((x) - FIXADDR_START) >> PAGE_SHIFT)
 
