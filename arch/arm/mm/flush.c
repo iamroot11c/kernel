@@ -176,6 +176,7 @@ void copy_to_user_page(struct vm_area_struct *vma, struct page *page,
 // 2015-01-25, 시작
 // __flush_dcache_page(NULL, empty_zero_page);
 // 2015-02-07, 끝
+// 2015-10-03
 void __flush_dcache_page(struct address_space *mapping, struct page *page)
 {
 	/*
@@ -214,6 +215,7 @@ void __flush_dcache_page(struct address_space *mapping, struct page *page)
 	 * we only need to do one flush - which would be at the relevant
 	 * userspace colour, which is congruent with page->index.
 	 */
+	// 2015-10-03, mapping == null임으로 실행되지 않을 것으로 예상한다.
 	if (mapping && cache_is_vipt_aliasing())
 		flush_pfn_alias(page_to_pfn(page),
 				page->index << PAGE_CACHE_SHIFT);
@@ -251,6 +253,7 @@ static void __flush_dcache_aliases(struct address_space *mapping, struct page *p
 }
 
 #if __LINUX_ARM_ARCH__ >= 6
+// 2015-10-03
 void __sync_icache_dcache(pte_t pteval)
 {
 	unsigned long pfn;
@@ -265,7 +268,8 @@ void __sync_icache_dcache(pte_t pteval)
 		return;
 
 	page = pfn_to_page(pfn);
-	if (cache_is_vipt_aliasing())
+	// page->mapping을 가져온다.
+	if (cache_is_vipt_aliasing()) // 0
 		mapping = page_mapping(page);
 	else
 		mapping = NULL;

@@ -62,6 +62,7 @@ static const char Unused_offset[] = "Unused swap offset entry ";
 struct swap_list_t swap_list = {-1, -1};
 
 // 2015-09-19;
+// 2015-10-03
 struct swap_info_struct *swap_info[MAX_SWAPFILES/*30*/];
 
 static DEFINE_MUTEX(swapon_mutex);
@@ -733,6 +734,8 @@ swp_entry_t get_swap_page_of_type(int type)
 	return (swp_entry_t) {0};
 }
 
+// 2015-10-03
+// swap_info[type]으로부터 해당 값을 리턴.
 static struct swap_info_struct *swap_info_get(swp_entry_t entry)
 {
 	struct swap_info_struct *p;
@@ -2777,6 +2780,7 @@ int add_swap_count_continuation(swp_entry_t entry, gfp_t gfp_mask)
 	page = alloc_page(gfp_mask | __GFP_HIGHMEM);
 	// 2015-09-19 여기까지; 
 
+	// 2015-10-03
 	si = swap_info_get(entry);
 	if (!si) {
 		/*
@@ -2788,9 +2792,10 @@ int add_swap_count_continuation(swp_entry_t entry, gfp_t gfp_mask)
 	}
 
 	offset = swp_offset(entry);
-	count = si->swap_map[offset] & ~SWAP_HAS_CACHE;
+	// 7번째 비트 클리어
+	count = si->swap_map[offset] & ~SWAP_HAS_CACHE/*0x40*/;
 
-	if ((count & ~COUNT_CONTINUED) != SWAP_MAP_MAX) {
+	if ((count & ~COUNT_CONTINUED/*0x80*/) != SWAP_MAP_MAX/*0x3E*/) {
 		/*
 		 * The higher the swap count, the more likely it is that tasks
 		 * will race to add swap count continuation: we need to avoid
@@ -2810,7 +2815,7 @@ int add_swap_count_continuation(swp_entry_t entry, gfp_t gfp_mask)
 	 * will not corrupt the GFP_ATOMIC caller's atomic pagetable kmaps.
 	 */
 	head = vmalloc_to_page(si->swap_map + offset);
-	offset &= ~PAGE_MASK;
+	offset &= ~PAGE_MASK;	// page가 된다. 12번째 아래의 값을 clear.
 
 	/*
 	 * Page allocation does not initialize the page's lru field,
@@ -2819,10 +2824,16 @@ int add_swap_count_continuation(swp_entry_t entry, gfp_t gfp_mask)
 	if (!page_private(head)) {
 		BUG_ON(count & COUNT_CONTINUED);
 		INIT_LIST_HEAD(&head->lru);
-		set_page_private(head, SWP_CONTINUED);
-		si->flags |= SWP_CONTINUED;
+		set_page_private(head, SWP_CONTINUED/*32*/);
+		si->flags |= SWP_CONTINUED/*32*/;
 	}
 
+	/*
+		#define list_for_each_entry(pos, head, member)              \
+		    for (pos = list_entry((head)->next, typeof(*pos), member);  \
+		         &pos->member != (head);    \
+		         pos = list_entry(pos->member.next, typeof(*pos), member))
+	*/
 	list_for_each_entry(list_page, &head->lru, lru) {
 		unsigned char *map;
 
@@ -2845,6 +2856,7 @@ int add_swap_count_continuation(swp_entry_t entry, gfp_t gfp_mask)
 			goto out;
 	}
 
+	// head->lru에 alloc_page()를 통해서 할당 받은 page를 추가시켜준다.
 	list_add_tail(&page->lru, &head->lru);
 	page = NULL;			/* now it's attached, don't free it */
 out:

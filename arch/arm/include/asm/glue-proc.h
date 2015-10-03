@@ -256,6 +256,7 @@
 #define cpu_dcache_clean_area		__glue(CPU_NAME,_dcache_clean_area)
 #define cpu_do_switch_mm		__glue(CPU_NAME,_switch_mm)
 // 2015-08-22, cpu_set_pte_ext(ptep, __pte(0), 0)
+// 2015-10-03
 #define cpu_set_pte_ext			__glue(CPU_NAME,_set_pte_ext)   // cpu_v7_set_pte_ext
 #define cpu_suspend_size		__glue(CPU_NAME,_suspend_size)
 #define cpu_do_suspend			__glue(CPU_NAME,_do_suspend)

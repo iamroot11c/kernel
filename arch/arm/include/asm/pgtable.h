@@ -232,11 +232,14 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 #define pte_offset_kernel(pmd,addr)	(pmd_page_vaddr(*(pmd)) + pte_index(addr))
 
 // 2015-08-22
+// 2015-10-03
+// __pte_map(pmd)는 가상주소 + pte_index(addr)
 #define pte_offset_map(pmd,addr)	(__pte_map(pmd) + pte_index(addr))
 // 2015-08-22
 #define pte_unmap(pte)			__pte_unmap(pte)
 // 2015-08-22
 // 아래 연산을통해 추론해 보면, pte는 물리주소임을 알 수 있다.
+// 2015-10-03
 #define pte_pfn(pte)		((pte_val(pte) & PHYS_MASK/* 0xFFFF_FFFF*/) >> PAGE_SHIFT/*12*/)
 // 물리 주소와, PTE mask값을 or하면, pte가 된다.
 #define pfn_pte(pfn,prot)	__pte(__pfn_to_phys(pfn) | pgprot_val(prot))
@@ -252,30 +255,36 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 
 #define pte_none(pte)		(!pte_val(pte))
 // 2015-08-22
+// 2015-10-03
 #define pte_present(pte)	(pte_val(pte) & L_PTE_PRESENT/*1*/)
 #define pte_write(pte)		(!(pte_val(pte) & L_PTE_RDONLY))
 // 2015-09-05
 // pte_dirty(pteval)
 #define pte_dirty(pte)		(pte_val(pte) & L_PTE_DIRTY) // pteval & (pteval_t)1 << 6
 #define pte_young(pte)		(pte_val(pte) & L_PTE_YOUNG)
-#define pte_exec(pte)		(!(pte_val(pte) & L_PTE_XN))
+// 2015-10-03
+#define pte_exec(pte)		(!(pte_val(pte) & L_PTE_XN/*1<<9*/))
 #define pte_special(pte)	(0)
 
-#define pte_present_user(pte)  (pte_present(pte) && (pte_val(pte) & L_PTE_USER))
+// 2015-10-03
+#define pte_present_user(pte)  (pte_present(pte) && (pte_val(pte) & L_PTE_USER/*1 << 8*/))
 
 #if __LINUX_ARM_ARCH__ < 6
 static inline void __sync_icache_dcache(pte_t pteval)
 {
 }
 #else
+// 2015-10-03
 extern void __sync_icache_dcache(pte_t pteval);
 #endif
 
+// 2015-10-03
 static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
 			      pte_t *ptep, pte_t pteval)
 {
 	unsigned long ext = 0;
 
+    // addr이 user영역이라면?
 	if (addr < TASK_SIZE && pte_present_user(pteval)) {
 		__sync_icache_dcache(pteval);
 		ext |= PTE_EXT_NG;

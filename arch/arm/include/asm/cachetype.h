@@ -14,7 +14,8 @@ extern unsigned int cacheid;
 // 2015-08-22
 #define cache_is_vivt()			cacheid_is(CACHEID_VIVT/*0*/)
 #define cache_is_vipt()			cacheid_is(CACHEID_VIPT)
-#define cache_is_vipt_nonaliasing()	cacheid_is(CACHEID_VIPT_NONALIASING)
+// 2015-10-03
+#define cache_is_vipt_nonaliasing()	cacheid_is(CACHEID_VIPT_NONALIASING/*2*/)
 // 2015-08-22
 #define cache_is_vipt_aliasing()	cacheid_is(CACHEID_VIPT_ALIASING/*4*/)
 // 2015-08-22
@@ -61,8 +62,11 @@ extern unsigned int cacheid;
 // cacheid_is(CACHEID_VIVT/*0*/), 0리턴
 // cacheid_is(CACHEID_VIPT_ALIASING/*4*/, 0리턴)
 // cacheid_is(CACHEID_ASID_TAGGED/*8*/)
+// 2015-10-03
+// cacheid_is(CACHEID_VIPT_NONALIASING/*2*/, 0리턴) 
 static inline unsigned int __attribute__((pure)) cacheid_is(unsigned int mask)
 {
+    // cacheid : 0x8444C004
 	return (__CACHEID_ALWAYS/*0*/ & mask) |
 	       (~__CACHEID_NEVER/*0xFFFF_FFFE*/ & __CACHEID_ARCH_MIN/* 0b111010 */ & mask & cacheid);
 }

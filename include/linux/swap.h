@@ -221,6 +221,7 @@ struct percpu_cluster {
  * The in-memory structure used to track swap areas.
  */
 // 2015-09-19;
+// 2015-10-01
 struct swap_info_struct {
 	unsigned long	flags;		/* SWP_USED etc: see above */
 	signed short	prio;		/* swap priority of this type */

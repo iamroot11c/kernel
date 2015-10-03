@@ -227,6 +227,8 @@ int is_vmalloc_or_module_addr(const void *x)
  */
 // 2015-09-19;
 // page 구조체를 구함
+// 2015-10-03
+// vmalloc_addr을 통해서 page pointer를 구한다
 struct page *vmalloc_to_page(const void *vmalloc_addr)
 {
 	unsigned long addr = (unsigned long) vmalloc_addr;

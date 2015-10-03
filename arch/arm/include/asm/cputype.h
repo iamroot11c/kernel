@@ -85,6 +85,9 @@ extern unsigned int processor_id;
 #ifdef CONFIG_CPU_CP15	//더 알아 봐야됨.  arm inline asm 참고
 			//20140712
 // 2015-02-14; Main ID Register를 읽음
+// 2015-10-03
+// reg(1) cachetype인 경우 : 0x8444C004 
+//
 #define read_cpuid(reg)							\
 	({								\
 		unsigned int __val;					\

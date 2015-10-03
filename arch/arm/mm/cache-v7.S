@@ -395,6 +395,7 @@ ENDPROC(v7_coherent_user_range)
  *	- addr	- kernel address
  *	- size	- region size
  */
+// 2015-10-03
 ENTRY(v7_flush_kern_dcache_area)
 	dcache_line_size r2, r3  /* r2 = 64, r3 = 4 */
 	add	r1, r0, r1 /* r1 += r0*/

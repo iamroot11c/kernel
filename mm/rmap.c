@@ -1299,7 +1299,9 @@ int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 			 */
 			// 2015-09-19 시작;
 			if (swap_duplicate(entry) < 0) {
+				// 2015-10-03 
 				set_pte_at(mm, address, pte, pteval);
+				// 2015-10-03 여기까지
 				ret = SWAP_FAIL;
 				goto out_unmap;
 			}

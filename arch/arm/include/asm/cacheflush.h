@@ -23,6 +23,7 @@
  * This flag is used to indicate that the page pointed to by a pte is clean
  * and does not require cleaning before returning it to the user.
  */
+// 2015-10-03
 #define PG_dcache_clean PG_arch_1
 
 /*
@@ -211,6 +212,7 @@ extern void copy_to_user_page(struct vm_area_struct *, struct page *,
 #define __flush_icache_preferred	__cpuc_flush_icache_all
 #elif __LINUX_ARM_ARCH__ >= 7 && defined(CONFIG_SMP)
 // 2015-08-22
+// 2015-10-03
 #define __flush_icache_preferred	__flush_icache_all_v7_smp
 #elif __LINUX_ARM_ARCH__ == 6 && defined(CONFIG_ARM_ERRATA_411920)
 #define __flush_icache_preferred	__cpuc_flush_icache_all

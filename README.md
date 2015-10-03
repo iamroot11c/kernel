@@ -1,6 +1,15 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [70주차]() `2015.10.03`
+ - [kmem_cache_init() 진행중]()
+ - mm/rmap.c:try_to_unmap_one() 진행중
+ - mm/swapfile.c:swap_duplicate() 분석 완료
+ - mm/swapfile.c:add_swap_count_continuation() 분석 완료 
+ - include/linux/gfp.h:alloc_page() 함수를 통해 page 할당 리뷰
+ - mm/rmap.c:set_pte_at() 완료
+ - pge, pte, memsection, page를 통해 물리주소 구하는 방식 분석
+
 + [69주차](https://goo.gl/YcS9pK) `2015.09.19`
  - [kmem_cache_init() 진행중]()
  - mm/rmap.c:try_to_unmap_one() 진행중
