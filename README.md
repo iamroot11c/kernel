@@ -1,7 +1,7 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
-+ [70주차]() `2015.10.03`
++ [70주차](http://bit.ly/1Oe25Dk) `2015.10.03`
  - [kmem_cache_init() 진행중]()
  - mm/rmap.c:try_to_unmap_one() 진행중
  - mm/swapfile.c:swap_duplicate() 분석 완료
