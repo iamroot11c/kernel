@@ -27,6 +27,7 @@
  * we force a syntax error here if it isn't.
  */
 // 2015-07-11
+// 2015-10-10 선점을 비 활성화;
 #define get_cpu_var(var) (*({				\
 	preempt_disable();				\
 	&__get_cpu_var(var); }))
@@ -36,6 +37,7 @@
  * a direct dereference of percpu variable (var).
  */
 // 2015-07-11
+// 2015-10-10 선점을 활성화;
 #define put_cpu_var(var) do {				\
 	(void)&(var);					\
 	preempt_enable();				\
@@ -198,6 +200,8 @@ extern void __bad_size_call_parameter(void);
 })
 
 // __this_cpu_add_return_
+// 2015-10-10;
+//__pcpu_size_call_return2(__this_cpu_add_return_, pcp, -1)
 #define __pcpu_size_call_return2(stem, variable, ...)			\
 ({									\
 	typeof(variable) pscr2_ret__;					\
@@ -661,6 +665,8 @@ do {									\
 # define __this_cpu_xor(pcp, val)	__pcpu_size_call(__this_cpu_xor_, (pcp), (val))
 #endif
 
+// 2015-10-10;
+// __this_cpu_generic_add_return(pcp, -1)
 #define __this_cpu_generic_add_return(pcp, val)				\
 ({									\
 	__this_cpu_add(pcp, val);					\
@@ -688,6 +694,7 @@ do {									\
 // 2015-08-15
 #define __this_cpu_inc_return(pcp)	__this_cpu_add_return(pcp, 1)
 // 2015-07-11
+// 2015-10-10;
 #define __this_cpu_dec_return(pcp)	__this_cpu_add_return(pcp, -1)
 
 #define __this_cpu_generic_xchg(pcp, nval)				\

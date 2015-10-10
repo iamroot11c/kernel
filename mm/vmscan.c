@@ -599,6 +599,7 @@ int remove_mapping(struct address_space *mapping, struct page *page)
  * lru_lock must not be held, interrupts must be enabled.
  */
 // 2015-07-11
+// 2015-10-10;
 void putback_lru_page(struct page *page)
 {
 	bool is_unevictable;
@@ -1301,6 +1302,7 @@ static unsigned long isolate_lru_pages(unsigned long nr_to_scan,
  * (2) the lru_lock must not be held.
  * (3) interrupts must be enabled.
  */
+// 2015-10-10;
 int isolate_lru_page(struct page *page)
 {
 	int ret = -EBUSY;
@@ -1312,6 +1314,7 @@ int isolate_lru_page(struct page *page)
 		struct lruvec *lruvec;
 
 		spin_lock_irq(&zone->lru_lock);
+		// lruvec = &zone->lruvec;
 		lruvec = mem_cgroup_page_lruvec(page, zone);
 		if (PageLRU(page)) {
 			int lru = page_lru(page);
@@ -3664,6 +3667,7 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
  *
  */
 // 2015-07-11
+// 2015-10-10;
 int page_evictable(struct page *page)
 {
 	return !mapping_unevictable(page_mapping(page)) && !PageMlocked(page);

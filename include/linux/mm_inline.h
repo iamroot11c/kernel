@@ -20,6 +20,7 @@
 // 2015-04-11
 // 2015-06-20
 // 2015-07-04;
+// 2015-10-10;
 static inline int page_is_file_cache(struct page *page)
 {
 	return !PageSwapBacked(page);
@@ -29,7 +30,8 @@ static inline int page_is_file_cache(struct page *page)
 // add_page_to_lru_list(page, lruvec, lru);
 // 2015-07-11
 // add_page_to_lru_list(page, lruvec, LRU_UNEVICTABLE);
-//
+// 2015-10-10
+// add_page_to_lru_list(page, lruvec, LRU_UNEVICTABLE);
 static __always_inline void add_page_to_lru_list(struct page *page,
 				struct lruvec *lruvec, enum lru_list lru)
 {
@@ -51,6 +53,8 @@ static __always_inline void add_page_to_lru_list(struct page *page,
 // 2015-07-04;
 // del_page_from_lru_list(page, lruvec, page_lru(page));
 // 2015-07-11
+// 2015-10-10;
+// del_page_from_lru_list(page, lruvec, lru)
 static __always_inline void del_page_from_lru_list(struct page *page,
 				struct lruvec *lruvec, enum lru_list lru)
 {
@@ -75,10 +79,11 @@ static __always_inline void del_page_from_lru_list(struct page *page,
 // 2015-04-18;
 // 2015-06-27;
 // swapback 인 경우 INACTIVE_ANON, 아닌 경우 INACTIVE_FILE반환
+// 2015-10-10;
 static inline enum lru_list page_lru_base_type(struct page *page)
 {
 	if (page_is_file_cache(page))
-		return LRU_INACTIVE_FILE; 
+		return LRU_INACTIVE_FILE; // SwapBacked 비 활성화 
 	return LRU_INACTIVE_ANON;
 }
 
@@ -116,6 +121,7 @@ static __always_inline enum lru_list page_off_lru(struct page *page)
  * Returns the LRU list a page should be on, as an index
  * into the array of LRU lists.
  */
+// 2015-10-10;
 static __always_inline enum lru_list page_lru(struct page *page)
 {
 	enum lru_list lru;

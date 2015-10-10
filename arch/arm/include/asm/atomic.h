@@ -58,6 +58,9 @@ static inline void atomic_add(int i, atomic_t *v)
 	: "cc");
 }
 
+// atomic_t 구조체의 counter 와 i 를 더한 후 결과를 리턴
+// 2015-10-10;
+// atomic_add_return(-1, &page->_mapcount)
 static inline int atomic_add_return(int i, atomic_t *v)
 {
 	unsigned long tmp;
@@ -65,6 +68,10 @@ static inline int atomic_add_return(int i, atomic_t *v)
 
 	smp_mb();
 
+    // result = *(&v->counter);
+    // result += -1;
+    // *(&v->counter) = result; 
+    // tmp = 저장결과(성공 0, 실패 1)
 	__asm__ __volatile__("@ atomic_add_return\n"
 "1:	ldrex	%0, [%3]\n"
 "	add	%0, %0, %4\n"
@@ -262,6 +269,9 @@ static inline int __atomic_add_unless(atomic_t *v, int a, int u)
 #define atomic_dec_return(v)    (atomic_sub_return(1, v))
 #define atomic_sub_and_test(i, v) (atomic_sub_return(i, v) == 0)
 
+// atomic_add_return() 함수의 결과가 0 보다 작으면 TRUE, 크거나 같으면 FALSE
+// 2015-10-10;
+// atomic_add_negative(-1, &page->_mapcount)
 #define atomic_add_negative(i,v) (atomic_add_return(i, v) < 0)
 
 #define smp_mb__before_atomic_dec()	smp_mb()

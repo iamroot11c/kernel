@@ -398,7 +398,8 @@ static inline void ptep_modify_prot_commit(struct mm_struct *mm,
 #define arch_start_context_switch(prev)	do {} while (0)
 #endif
 
-#ifndef CONFIG_HAVE_ARCH_SOFT_DIRTY
+#ifndef CONFIG_HAVE_ARCH_SOFT_DIRTY // not define
+// 2015-10-10;
 static inline int pte_soft_dirty(pte_t pte)
 {
 	return 0;

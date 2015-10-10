@@ -54,6 +54,7 @@ EXPORT_SYMBOL(can_do_mlock);
 /*
  *  LRU accounting for clear_page_mlock()
  */
+// 2015-10-10;
 void clear_page_mlock(struct page *page)
 {
 	if (!TestClearPageMlocked(page))
@@ -77,6 +78,7 @@ void clear_page_mlock(struct page *page)
  * Mark page as mlocked if not already.
  * If page on LRU, isolate and putback to move to unevictable list.
  */
+// 2015-10-10;
 void mlock_vma_page(struct page *page)
 {
 	/* Serialize with page migration */

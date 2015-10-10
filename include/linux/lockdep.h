@@ -377,6 +377,7 @@ static inline void lockdep_on(void)
 
 // 2015-08-08;
 // 2015-08-15
+// 2015-10-10;
 # define lock_acquire(l, s, t, r, c, n, i)	do { } while (0)
 // 2015-08-08;
 // 2015-08-15
@@ -512,7 +513,9 @@ static inline void print_irqtrace_events(struct task_struct *curr)
 #define rwsem_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
 #define rwsem_acquire_nest(l, s, t, n, i)	lock_acquire_exclusive(l, s, t, n, i)
 // 2015-08-15
-#define rwsem_acquire_read(l, s, t, i)		lock_acquire_shared(l, s, t, NULL, i)
+// 2015-10-10;
+// rwsem_acquire_read(&sem->dep_map, 0, 1, _RET_IP_)
+#define rwsem_acquire_read(l, s, t, i)		lock_acquire_shared(l, s, t, NULL, i) // no OP.
 // 2015-08-15
 // rwsem_release(&sem->dep_map, 1, _RET_IP_);
 # define rwsem_release(l, n, i)			lock_release(l, n, i)

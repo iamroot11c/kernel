@@ -521,6 +521,7 @@ out:
 	return anon_vma;
 }
 
+// 2015-10-10;
 void page_unlock_anon_vma_read(struct anon_vma *anon_vma)
 {
 	anon_vma_unlock_read(anon_vma);
@@ -530,6 +531,7 @@ void page_unlock_anon_vma_read(struct anon_vma *anon_vma)
  * At what user virtual address is page expected in @vma?
  */
 // 2015-08-15
+// 2015-10-10;
 static inline unsigned long
 __vma_address(struct page *page, struct vm_area_struct *vma)
 {
@@ -542,6 +544,7 @@ __vma_address(struct page *page, struct vm_area_struct *vma)
 }
 
 // 2015-08-15
+// 2015-10-10;
 inline unsigned long
 vma_address(struct page *page, struct vm_area_struct *vma)
 {
@@ -1160,6 +1163,7 @@ void page_add_file_rmap(struct page *page)
  *
  * The caller needs to hold the pte lock.
  */
+// 2015-10-10;
 void page_remove_rmap(struct page *page)
 {
 	bool anon = PageAnon(page);
@@ -1172,31 +1176,32 @@ void page_remove_rmap(struct page *page)
 	 * we hold the lock against page_stat move: so avoid it on anon.
 	 */
 	if (!anon)
-		mem_cgroup_begin_update_page_stat(page, &locked, &flags);
+		mem_cgroup_begin_update_page_stat(page, &locked, &flags); // no OP.
 
 	/* page still mapped by someone else? */
 	if (!atomic_add_negative(-1, &page->_mapcount))
-		goto out;
+		goto out; // 연산 결과가 0보다 크거나 같다
 
 	/*
 	 * Hugepages are not counted in NR_ANON_PAGES nor NR_FILE_MAPPED
 	 * and not charged by memcg for now.
 	 */
-	if (unlikely(PageHuge(page)))
+	if (unlikely(PageHuge(page))) // not define
 		goto out;
 	if (anon) {
-		mem_cgroup_uncharge_page(page);
-		if (PageTransHuge(page))
+		mem_cgroup_uncharge_page(page); // no OP.
+		if (PageTransHuge(page)) // 항상 FALSE를 리턴
 			__dec_zone_page_state(page,
 					      NR_ANON_TRANSPARENT_HUGEPAGES);
 		__mod_zone_page_state(page_zone(page), NR_ANON_PAGES,
-				-hpage_nr_pages(page));
+				-hpage_nr_pages(page)/*1*/);
 	} else {
 		__dec_zone_page_state(page, NR_FILE_MAPPED);
-		mem_cgroup_dec_page_stat(page, MEM_CGROUP_STAT_FILE_MAPPED);
-		mem_cgroup_end_update_page_stat(page, &locked, &flags);
+		mem_cgroup_dec_page_stat(page, MEM_CGROUP_STAT_FILE_MAPPED); // no OP.
+		mem_cgroup_end_update_page_stat(page, &locked, &flags); // no OP.
 	}
 	if (unlikely(PageMlocked(page)))
+		// 2010-10-10;
 		clear_page_mlock(page);
 	/*
 	 * It would be tidy to reset the PageAnon mapping here,
@@ -1210,7 +1215,7 @@ void page_remove_rmap(struct page *page)
 	return;
 out:
 	if (!anon)
-		mem_cgroup_end_update_page_stat(page, &locked, &flags);
+		mem_cgroup_end_update_page_stat(page, &locked, &flags); // no OP.
 }
 
 /*
@@ -1305,6 +1310,7 @@ int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 				ret = SWAP_FAIL;
 				goto out_unmap;
 			}
+			// 2015-10-10 시작;
 			if (list_empty(&mm->mmlist)) {
 				spin_lock(&mmlist_lock);
 				if (list_empty(&mm->mmlist))
@@ -1313,7 +1319,7 @@ int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 			}
 			dec_mm_counter(mm, MM_ANONPAGES);
 			inc_mm_counter(mm, MM_SWAPENTS);
-		} else if (IS_ENABLED(CONFIG_MIGRATION)) {
+		} else if (IS_ENABLED(CONFIG_MIGRATION/*defined*/)) {
 			/*
 			 * Store the pfn of the page in a special migration
 			 * pte. do_swap_page() will wait until the migration
@@ -1323,11 +1329,12 @@ int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 			entry = make_migration_entry(page, pte_write(pteval));
 		}
 		swp_pte = swp_entry_to_pte(entry);
-		if (pte_soft_dirty(pteval))
+		if (pte_soft_dirty(pteval)) // no OP. 항상 0을 리턴
 			swp_pte = pte_swp_mksoft_dirty(swp_pte);
 		set_pte_at(mm, address, pte, swp_pte);
+		// 파일일 때 오류 출력
 		BUG_ON(pte_file(*pte));
-	} else if (IS_ENABLED(CONFIG_MIGRATION) &&
+	} else if (IS_ENABLED(CONFIG_MIGRATION/*defined*/) &&
 		   (TTU_ACTION(flags) == TTU_MIGRATION)) {
 		/* Establish migration entry for a file page */
 		swp_entry_t entry;
@@ -1336,13 +1343,15 @@ int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 	} else
 		dec_mm_counter(mm, MM_FILEPAGES);
 
-	page_remove_rmap(page);
-	page_cache_release(page);
+	// 2015-10-10;
+	page_remove_rmap(page); // 참조값을 하나 감소
+	// 2015-10-10;
+	page_cache_release(page); // 목록에서 뺌
 
 out_unmap:
 	pte_unmap_unlock(pte, ptl);
 	if (ret != SWAP_FAIL)
-		mmu_notifier_invalidate_page(mm, address);
+		mmu_notifier_invalidate_page(mm, address); // no OP.
 out:
 	return ret;
 
@@ -1566,6 +1575,7 @@ static int try_to_unmap_anon(struct page *page, enum ttu_flags flags)
 		address = vma_address(page, vma);
 		// 2015-08-15, 여기까지
 		ret = try_to_unmap_one(page, vma, address, flags);
+		// 2015-10-10 완료;
 		if (ret != SWAP_AGAIN || !page_mapped(page))
 			break;
 	}
@@ -1589,6 +1599,7 @@ static int try_to_unmap_anon(struct page *page, enum ttu_flags flags)
  * vm_flags for that VMA.  That should be OK, because that vma shouldn't be
  * 'LOCKED.
  */
+// 2015-10-10;
 static int try_to_unmap_file(struct page *page, enum ttu_flags flags)
 {
 	struct address_space *mapping = page->mapping;
@@ -1600,10 +1611,16 @@ static int try_to_unmap_file(struct page *page, enum ttu_flags flags)
 	unsigned long max_nl_size = 0;
 	unsigned int mapcount;
 
-	if (PageHuge(page))
+	// CONFIG_HUGETLB_PAGE 비 활성화로 항상 0을 리턴
+	if (PageHuge(page)) 
 		pgoff = page->index << compound_order(page);
 
 	mutex_lock(&mapping->i_mmap_mutex);
+	// #define vma_interval_tree_foreach(vma, root, start, last)       \
+	//     for (vma = vma_interval_tree_iter_first(root, start, last); \
+	//          vma; vma = vma_interval_tree_iter_next(vma, start, last))
+	// for (vma = vma_interval_tree_iter_first(&mapping->i_mmap, pgoff, pgoff); vma;
+	//                    vma = vma_interval_tree_iter_next(vma, pgoff, pgoff))
 	vma_interval_tree_foreach(vma, &mapping->i_mmap, pgoff, pgoff) {
 		unsigned long address = vma_address(page, vma);
 		ret = try_to_unmap_one(page, vma, address, flags);
@@ -1613,6 +1630,7 @@ static int try_to_unmap_file(struct page *page, enum ttu_flags flags)
 
 	if (list_empty(&mapping->i_mmap_nonlinear))
 		goto out;
+	// 2015-10-10 여기까지;
 
 	/*
 	 * We don't bother to try to find the munlocked page in nonlinears.
@@ -1712,7 +1730,9 @@ int try_to_unmap(struct page *page, enum ttu_flags flags)
 		ret = try_to_unmap_ksm(page, flags);
 	else if (PageAnon(page))
 		ret = try_to_unmap_anon(page, flags);
+		// 2015-10-10 완료;
 	else
+		// 2015-10-10 시작;
 		ret = try_to_unmap_file(page, flags);
 	if (ret != SWAP_MLOCK && !page_mapped(page))
 		ret = SWAP_SUCCESS;

@@ -232,6 +232,7 @@ out_put_single:
 
 // 2015-07-11
 // 2015-08-15
+// 2015-10-10;
 void put_page(struct page *page)
 {
 	if (unlikely(PageCompound(page)))
@@ -634,6 +635,7 @@ EXPORT_SYMBOL(mark_page_accessed);
  */
 // 2015-07-11
 // lru_add_pvec에 page를 추가하는 기능
+// 2015-10-10;
 void __lru_cache_add(struct page *page)
 {
 	struct pagevec *pvec = &get_cpu_var(lru_add_pvec);
@@ -652,6 +654,7 @@ EXPORT_SYMBOL(__lru_cache_add);
  * @page: the page to be added to the LRU.
  */
 // 2015-07-11
+// 2015-10-10;
 void lru_cache_add(struct page *page)
 {
 	VM_BUG_ON(PageActive(page) && PageUnevictable(page));
@@ -679,7 +682,7 @@ void add_page_to_unevictable_list(struct page *page)
 
 	spin_lock_irq(&zone->lru_lock);
 	// zone->lruvec을 리턴
-	lruvec = mem_cgroup_page_lruvec(page, zone);
+	lruvec = mem_cgroup_page_lruvec(page, zone); 
 	ClearPageActive(page);
 	SetPageUnevictable(page);
 	SetPageLRU(page);

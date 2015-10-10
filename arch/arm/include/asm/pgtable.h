@@ -257,6 +257,8 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 // 2015-08-22
 // 2015-10-03
 #define pte_present(pte)	(pte_val(pte) & L_PTE_PRESENT/*1*/)
+// 2015-10-10 쓰기 가능 확인;
+// pte_write(pteval);
 #define pte_write(pte)		(!(pte_val(pte) & L_PTE_RDONLY))
 // 2015-09-05
 // pte_dirty(pteval)
@@ -267,6 +269,7 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 #define pte_special(pte)	(0)
 
 // 2015-10-03
+// 2015-10-10;
 #define pte_present_user(pte)  (pte_present(pte) && (pte_val(pte) & L_PTE_USER/*1 << 8*/))
 
 #if __LINUX_ARM_ARCH__ < 6
@@ -279,6 +282,8 @@ extern void __sync_icache_dcache(pte_t pteval);
 #endif
 
 // 2015-10-03
+// 2015-10-10;
+// set_pte_at(mm, address, pte, swp_pte);
 static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
 			      pte_t *ptep, pte_t pteval)
 {
@@ -327,13 +332,16 @@ static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
 #define __SWP_TYPE_SHIFT	3
 #define __SWP_TYPE_BITS		5
 #define __SWP_TYPE_MASK		((1 << __SWP_TYPE_BITS) - 1)
-#define __SWP_OFFSET_SHIFT	(__SWP_TYPE_BITS + __SWP_TYPE_SHIFT)
+#define __SWP_OFFSET_SHIFT	(__SWP_TYPE_BITS/*5*/ + __SWP_TYPE_SHIFT/*3*/) // 8
 
 #define __swp_type(x)		(((x).val >> __SWP_TYPE_SHIFT) & __SWP_TYPE_MASK)
 #define __swp_offset(x)		((x).val >> __SWP_OFFSET_SHIFT)
-#define __swp_entry(type,offset) ((swp_entry_t) { ((type) << __SWP_TYPE_SHIFT) | ((offset) << __SWP_OFFSET_SHIFT) })
+// 2015-10-10;
+// __swp_entry(swp_type(entry), swp_offset(entry));
+#define __swp_entry(type,offset) ((swp_entry_t) { ((type) << __SWP_TYPE_SHIFT/*3*/) | ((offset) << __SWP_OFFSET_SHIFT/*8*/) })
 
 #define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val(pte) })
+// 2015-10-10;
 #define __swp_entry_to_pte(swp)	((pte_t) { (swp).val })
 
 /*
@@ -351,6 +359,7 @@ static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
  *   1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
  *   <----------------------- offset ------------------------> 1 0 0
  */
+// 2015-10-10;
 #define pte_file(pte)		(pte_val(pte) & L_PTE_FILE)
 #define pte_to_pgoff(x)		(pte_val(x) >> 3)
 #define pgoff_to_pte(x)		__pte(((x) << 3) | L_PTE_FILE)

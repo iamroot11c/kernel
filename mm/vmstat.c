@@ -229,6 +229,8 @@ void set_pgdat_percpu_threshold(pg_data_t *pgdat,
 //                        atomic_long_read(&zone->vm_stat[NR_ALLOC_BATCH]))
 // 2015-07-04;
 // __mod_zone_page_state(lruvec_zone(lruvec), NR_LRU_BASE + lru, -nr_pages);
+// 2015-10-10;
+// __mod_zone_page_state(page_zone(page), NR_ANON_PAGES, -hpage_nr_pages(page)/*1*/)
 void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
 				int delta)
 {
@@ -309,6 +311,8 @@ EXPORT_SYMBOL(__inc_zone_page_state);
 
 // 2015-07-11
 // 2015-08-15
+// 2015-10-10;
+// __dec_zone_state(page_zone(page), NR_FILE_MAPPED)
 void __dec_zone_state(struct zone *zone, enum zone_stat_item item)
 {
 	struct per_cpu_pageset __percpu *pcp = zone->pageset;
@@ -330,6 +334,8 @@ void __dec_zone_state(struct zone *zone, enum zone_stat_item item)
 
 // 2015-07-11
 // 2015-08-15
+// 2015-10-10;
+// __dec_zone_page_state(page, NR_FILE_MAPPED)
 void __dec_zone_page_state(struct page *page, enum zone_stat_item item)
 {
 	__dec_zone_state(page_zone(page), item);
@@ -424,6 +430,8 @@ EXPORT_SYMBOL(dec_zone_page_state);
 // 2015-07-04;
 // mod_zone_page_state(zone, NR_ISOLATED_ANON, count[0]);
 // mod_zone_page_state(zone, NR_ISOLATED_FILE, count[1]);
+//
+// 2015-10-10;
 void mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
 					int delta)
 {

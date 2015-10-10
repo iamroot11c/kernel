@@ -76,6 +76,7 @@ ENDPROC(cpu_v7_switch_mm)
 // 2015-08-22
 // 2015-10-03
 // cpu_set_pte_ext(ptep,pte,ext)
+// 2015-10-10; cpu_v7_set_pte_ext(pte, swp_pte, ext)
 ENTRY(cpu_v7_set_pte_ext)
 #ifdef CONFIG_MMU
 	str	r1, [r0]			@ linux version

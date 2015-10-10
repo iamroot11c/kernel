@@ -34,12 +34,15 @@ EXPORT_SYMBOL(down_read);
  * trylock for reading -- returns 1 if successful, 0 if contention
  */
 // 2015-08-15
+// 2015-10-10;
+// down_read_trylock(&vma->vm_mm->mmap_sem)
 int down_read_trylock(struct rw_semaphore *sem)
 {
 	int ret = __down_read_trylock(sem);
 
-	if (ret == 1)
-		rwsem_acquire_read(&sem->dep_map, 0, 1, _RET_IP_);
+	if (ret == 1) 
+		// 락을 획득함
+		rwsem_acquire_read(&sem->dep_map, 0, 1, _RET_IP_); // no OP.
 	return ret;
 }
 
@@ -84,6 +87,7 @@ EXPORT_SYMBOL(down_write_trylock);
  */
 // 2015-08-15
 // 세마포어 반납
+// 2015-10-10;
 void up_read(struct rw_semaphore *sem)
 {
 	rwsem_release(&sem->dep_map, 1, _RET_IP_);	// NO OP

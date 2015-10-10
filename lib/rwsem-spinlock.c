@@ -128,6 +128,7 @@ __rwsem_do_wake(struct rw_semaphore *sem, int wakewrite)
  * wake a single writer
  */
 // 2015-08-15
+// 2015-10-10;
 static inline struct rw_semaphore *
 __rwsem_wake_one_writer(struct rw_semaphore *sem)
 {
@@ -189,6 +190,7 @@ void __sched __down_read(struct rw_semaphore *sem)
  * trylock for reading -- returns 1 if successful, 0 if contention
  */
 // 2015-08-15
+// 2015-10-10;
 int __down_read_trylock(struct rw_semaphore *sem)
 {
 	unsigned long flags;
@@ -284,6 +286,7 @@ int __down_write_trylock(struct rw_semaphore *sem)
  * release a read lock on the semaphore
  */
 // 2015-08-15
+// 2015-10-10;
 void __up_read(struct rw_semaphore *sem)
 {
 	unsigned long flags;

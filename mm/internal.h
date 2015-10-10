@@ -164,7 +164,7 @@ static inline unsigned long page_order(struct page *page)
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 		struct vm_area_struct *prev, struct rb_node *rb_parent);
 
-#ifdef CONFIG_MMU
+#ifdef CONFIG_MMU // defined
 extern long __mlock_vma_pages_range(struct vm_area_struct *vma,
 		unsigned long start, unsigned long end, int *nonblocking);
 extern void munlock_vma_pages_range(struct vm_area_struct *vma,

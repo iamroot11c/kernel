@@ -122,6 +122,7 @@
 #define L_PTE_FILE		(_AT(pteval_t, 1) << 2)	/* only when !PRESENT */
 // 2015-09-05;
 #define L_PTE_DIRTY		(_AT(pteval_t, 1) << 6)
+// 2015-10-10;
 #define L_PTE_RDONLY		(_AT(pteval_t, 1) << 7)
 // 2015-10-03
 #define L_PTE_USER		(_AT(pteval_t, 1) << 8)
@@ -204,6 +205,7 @@ static inline pmd_t *pmd_offset(pud_t *pud, unsigned long addr)
 // set_pte_ext(ptep, pte, 0);
 // 2015-08-22, set_pte_ext(ptep, __pte(0), 0)
 // 2015-10-03
+// 2015-10-10; set_pte_ext(pte, swp_pte, ext)
 #define set_pte_ext(ptep,pte,ext) cpu_set_pte_ext(ptep,pte,ext)
 
 #endif /* __ASSEMBLY__ */

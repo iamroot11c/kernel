@@ -9,7 +9,7 @@
 struct mmu_notifier;
 struct mmu_notifier_ops;
 
-#ifdef CONFIG_MMU_NOTIFIER
+#ifdef CONFIG_MMU_NOTIFIER // not define
 
 /*
  * The mmu notifier_mm structure is allocated and installed in
@@ -311,6 +311,7 @@ static inline void mmu_notifier_change_pte(struct mm_struct *mm,
 {
 }
 
+// 2015-10-10;
 static inline void mmu_notifier_invalidate_page(struct mm_struct *mm,
 					  unsigned long address)
 {

@@ -447,6 +447,7 @@ extern bool __get_page_tail(struct page *page);
 
 // 2015-07-11
 // page->_count 값을 1 증가
+// 2015-10-10;
 static inline void get_page(struct page *page)
 {
 	if (unlikely(PageTail(page)))
@@ -946,6 +947,7 @@ static inline pgoff_t page_file_index(struct page *page)
 // 2015-04-11
 // 2015-07-04;
 // 2015-08-08;
+// 2015-10-10;
 static inline int page_mapped(struct page *page)
 {
     // 위의 주석으로 추측컨데, pagetable에 매핑되어있는 경우 0보다 큰 값이 저장되는 듯 하다.
@@ -1217,12 +1219,17 @@ static inline void add_mm_counter(struct mm_struct *mm, int member, long value)
 	atomic_long_add(value, &mm->rss_stat.count[member]);
 }
 
+// 2015-10-10;
+// inc_mm_counter(mm, MM_SWAPENTS);
 static inline void inc_mm_counter(struct mm_struct *mm, int member)
 {
 	atomic_long_inc(&mm->rss_stat.count[member]);
 }
 
 // 2015-09-15;
+// 2015-10-10;
+// dec_mm_counter(mm, MM_ANONPAGES);
+// dec_mm_counter(mm, MM_FILEPAGES);
 static inline void dec_mm_counter(struct mm_struct *mm, int member)
 {
 	atomic_long_dec(&mm->rss_stat.count[member]);
@@ -1379,9 +1386,10 @@ static inline void pgtable_page_dtor(struct page *page)
 })
 
 // 2015-08-22
+// 2015-10-10;
 #define pte_unmap_unlock(pte, ptl)	do {		\
 	spin_unlock(ptl);				\
-	pte_unmap(pte);					\
+	pte_unmap(pte); /*no OP.*/					\ 
 } while (0)
 
 #define pte_alloc_map(mm, vma, pmd, address)				\

@@ -102,6 +102,7 @@ unsigned long hugetlb_change_protection(struct vm_area_struct *vma,
 
 // 2015-07-11
 // 2015-08-15
+// 2015-10-10;
 static inline int PageHuge(struct page *page)
 {
 	return 0;

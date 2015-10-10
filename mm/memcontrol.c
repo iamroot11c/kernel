@@ -1353,6 +1353,8 @@ out:
 // 2015-04-11
 // 2015-06-20
 // 현재 우리 arch에서는 zone->lruvec을 리턴
+//
+// 2015-10-10 CONFIG_MEMCG 미 설정으로 이 함수는 호출 안됨;
 struct lruvec *mem_cgroup_page_lruvec(struct page *page, struct zone *zone)
 {
 	struct mem_cgroup_per_zone *mz;

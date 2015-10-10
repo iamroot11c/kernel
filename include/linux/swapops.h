@@ -26,11 +26,14 @@
 /*
  * Store a type+offset into a swp_entry_t in an arch-independent format
  */
+// 2015-10-10;
+// swp_entry(write ? SWP_MIGRATION_WRITE : SWP_MIGRATION_READ,
+//                                                  page_to_pfn(page));
 static inline swp_entry_t swp_entry(unsigned long type, pgoff_t offset)
 {
 	swp_entry_t ret;
 
-	ret.val = (type << SWP_TYPE_SHIFT(ret)) |
+	ret.val = (type << SWP_TYPE_SHIFT(ret)/*25*/) |
 			(offset & SWP_OFFSET_MASK(ret));
 	return ret;
 }
@@ -85,12 +88,18 @@ static inline swp_entry_t pte_to_swp_entry(pte_t pte)
  * Convert the arch-independent representation of a swp_entry_t into the
  * arch-dependent pte representation.
  */
+// 2015-10-10;
+// swp_entry_to_pte(entry);
 static inline pte_t swp_entry_to_pte(swp_entry_t entry)
 {
 	swp_entry_t arch_entry;
 
+    // ((swp_type(entry)) << __SWP_TYPE_SHIFT/*3*/) |
+    //              ((swp_offset(entry)) << __SWP_OFFSET_SHIFT/*8*/)
 	arch_entry = __swp_entry(swp_type(entry), swp_offset(entry));
+    // 파일이면 오류 출력
 	BUG_ON(pte_file(__swp_entry_to_pte(arch_entry)));
+    // swp_entry_t 구조체의 val 값을 리턴
 	return __swp_entry_to_pte(arch_entry);
 }
 
@@ -110,7 +119,9 @@ static inline void *swp_to_radix_entry(swp_entry_t entry)
 	return (void *)(value | RADIX_TREE_EXCEPTIONAL_ENTRY);
 }
 
-#ifdef CONFIG_MIGRATION
+#ifdef CONFIG_MIGRATION // defined
+// 2015-10-10;
+// make_migration_entry(page, pte_write(pteval));
 static inline swp_entry_t make_migration_entry(struct page *page, int write)
 {
 	BUG_ON(!PageLocked(page));

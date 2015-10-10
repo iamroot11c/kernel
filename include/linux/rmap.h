@@ -74,6 +74,7 @@ struct anon_vma_chain {
 };
 
 // 2015-08-15
+// 2015-10-10;
 enum ttu_flags {
 	TTU_UNMAP = 0,			/* unmap mode */
 	TTU_MIGRATION = 1,		/* migration mode */
@@ -142,6 +143,7 @@ static inline void anon_vma_lock_read(struct anon_vma *anon_vma)
 }
 
 // 2015-08-15
+// 2015-10-10;
 static inline void anon_vma_unlock_read(struct anon_vma *anon_vma)
 {
 	up_read(&anon_vma->root->rwsem);
@@ -195,7 +197,8 @@ int page_referenced(struct page *, int is_locked,
 int page_referenced_one(struct page *, struct vm_area_struct *,
 	unsigned long address, unsigned int *mapcount, unsigned long *vm_flags);
 
-#define TTU_ACTION(x) ((x) & TTU_ACTION_MASK)
+// 2015-10-10;
+#define TTU_ACTION(x) ((x) & TTU_ACTION_MASK/*0xFF*/)
 
 // 2015-08-22, by CONFIG_MMU
 int try_to_unmap(struct page *, enum ttu_flags flags);

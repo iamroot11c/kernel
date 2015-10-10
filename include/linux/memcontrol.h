@@ -53,7 +53,7 @@ struct mem_cgroup_reclaim_cookie {
 	unsigned int generation;
 };
 
-#ifdef CONFIG_MEMCG
+#ifdef CONFIG_MEMCG // not define
 /*
  * All "charge" functions with gfp_mask should use GFP_KERNEL or
  * (gfp_mask & GFP_RECLAIM_MASK). In current implementatin, memcg doesn't
@@ -175,7 +175,7 @@ extern atomic_t memcg_moving;
 static inline void mem_cgroup_begin_update_page_stat(struct page *page,
 					bool *locked, unsigned long *flags)
 {
-	if (mem_cgroup_disabled())
+	if (mem_cgroup_disabled()) 
 		return;
 	rcu_read_lock();
 	*locked = false;
@@ -270,6 +270,7 @@ static inline void mem_cgroup_uncharge_end(void)
 {
 }
 
+// 2015-10-10;
 static inline void mem_cgroup_uncharge_page(struct page *page)
 {
 }
@@ -286,6 +287,7 @@ static inline struct lruvec *mem_cgroup_zone_lruvec(struct zone *zone,
 
 // 2015-04-18;
 // 2015-07-04;
+// 2015-10-10;
 static inline struct lruvec *mem_cgroup_page_lruvec(struct page *page,
 						    struct zone *zone)
 {
@@ -346,6 +348,7 @@ static inline void mem_cgroup_iter_break(struct mem_cgroup *root,
 }
 
 // 2015-04-11
+// 2015-10-10;
 static inline bool mem_cgroup_disabled(void)
 {
 	return true;
@@ -375,11 +378,13 @@ mem_cgroup_print_oom_info(struct mem_cgroup *memcg, struct task_struct *p)
 {
 }
 
+// 2015-10-10;
 static inline void mem_cgroup_begin_update_page_stat(struct page *page,
 					bool *locked, unsigned long *flags)
 {
 }
 
+// 2015-10-10;
 static inline void mem_cgroup_end_update_page_stat(struct page *page,
 					bool *locked, unsigned long *flags)
 {
@@ -408,6 +413,7 @@ static inline void mem_cgroup_inc_page_stat(struct page *page,
 {
 }
 
+// 2015-10-10;
 static inline void mem_cgroup_dec_page_stat(struct page *page,
 					    enum mem_cgroup_stat_index idx)
 {

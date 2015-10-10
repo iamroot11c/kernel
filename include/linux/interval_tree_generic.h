@@ -290,7 +290,7 @@ __anon_vma_interval_tree_subtree_search(struct anon_vma_chain *node, unsigned lo
         return NULL;    // No match                     
     }                                     
 }                                         
-                                          
+
 static inline struct anon_vma_chain *                              
 __anon_vma_interval_tree_iter_first(struct rb_root *root, unsigned long start, unsigned long last)      
 {                                         
