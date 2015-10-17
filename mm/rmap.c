@@ -587,6 +587,8 @@ unsigned long page_address_in_vma(struct page *page, struct vm_area_struct *vma)
 // 2015-08-22
 // mm_find_pmd(mm, address);
 // 분석해 보니, pgd를 pmt_t로 type casting하더라.
+// 2015-10-17
+// 결국 2단계 구조에서는 pgdp이다.
 pmd_t *mm_find_pmd(struct mm_struct *mm, unsigned long address)
 {
 	pgd_t *pgd;
@@ -1196,6 +1198,7 @@ void page_remove_rmap(struct page *page)
 		__mod_zone_page_state(page_zone(page), NR_ANON_PAGES,
 				-hpage_nr_pages(page)/*1*/);
 	} else {
+		// 2015-10-17, 여기가 주된 기능
 		__dec_zone_page_state(page, NR_FILE_MAPPED);
 		mem_cgroup_dec_page_stat(page, MEM_CGROUP_STAT_FILE_MAPPED); // no OP.
 		mem_cgroup_end_update_page_stat(page, &locked, &flags); // no OP.
@@ -1401,9 +1404,12 @@ out_mlock:
  * rather than unmapping them.  If we encounter the "check_page" that vmscan is
  * trying to unmap, return SWAP_MLOCK, else default SWAP_AGAIN.
  */
-#define CLUSTER_SIZE	min(32*PAGE_SIZE, PMD_SIZE)
-#define CLUSTER_MASK	(~(CLUSTER_SIZE - 1))
+#define CLUSTER_SIZE	min(32*PAGE_SIZE/*4096*/, PMD_SIZE/*2MB*/)	// 4KB, 4096
+#define CLUSTER_MASK	(~(CLUSTER_SIZE - 1))	// 0xFFFF_F000
 
+// 2015-10-17
+// if (try_to_unmap_cluster(cursor, &mapcount,
+//                                            vma, page) == SWAP_MLOCK)
 static int try_to_unmap_cluster(unsigned long cursor, unsigned int *mapcount,
 		struct vm_area_struct *vma, struct page *check_page)
 {
@@ -1420,45 +1426,61 @@ static int try_to_unmap_cluster(unsigned long cursor, unsigned int *mapcount,
 	int ret = SWAP_AGAIN;
 	int locked_vma = 0;
 
+	// 범위 설정:
+	//    address ~ (address + CLUSTER_SIZE) 
+	// address는 가상 메모리
 	address = (vma->vm_start + cursor) & CLUSTER_MASK;
 	end = address + CLUSTER_SIZE;
+	
+	// 값보정
 	if (address < vma->vm_start)
 		address = vma->vm_start;
 	if (end > vma->vm_end)
 		end = vma->vm_end;
 
+	// pgep와 동일
 	pmd = mm_find_pmd(mm, address);
 	if (!pmd)
 		return ret;
 
 	mmun_start = address;
 	mmun_end   = end;
-	mmu_notifier_invalidate_range_start(mm, mmun_start, mmun_end);
+	// 2015-10-17
+	mmu_notifier_invalidate_range_start(mm, mmun_start, mmun_end);	// NOP
 
 	/*
 	 * If we can acquire the mmap_sem for read, and vma is VM_LOCKED,
 	 * keep the sem while scanning the cluster for mlocking pages.
 	 */
+	// 세마포어 획득
 	if (down_read_trylock(&vma->vm_mm->mmap_sem)) {
+		// VM area를  LOCK 시킬 수도 있나보다?
 		locked_vma = (vma->vm_flags & VM_LOCKED);
+		// 세마포어 반납
 		if (!locked_vma)
 			up_read(&vma->vm_mm->mmap_sem); /* don't need it */
 	}
 
+	// ptep 반납, spinlock 설정
 	pte = pte_offset_map_lock(mm, pmd, address, &ptl);
 
 	/* Update high watermark before we lower rss */
 	update_hiwater_rss(mm);
 
+	// 2015-10-17
 	for (; address < end; pte++, address += PAGE_SIZE) {
 		if (!pte_present(*pte))
 			continue;
+		// 2015-10-17
+		// pte를 이용해서, pfn을 구한다.
+		// 나머지 인자는, 예외 처리 목적으로 전달함.
 		page = vm_normal_page(vma, address, *pte);
 		BUG_ON(!page || PageAnon(page));
 
 		if (locked_vma) {
 			if (page == check_page) {
 				/* we know we have check_page locked */
+				// 2015-10-17
 				mlock_vma_page(page);
 				ret = SWAP_MLOCK;
 			} else if (trylock_page(page)) {
@@ -1473,6 +1495,7 @@ static int try_to_unmap_cluster(unsigned long cursor, unsigned int *mapcount,
 			continue;	/* don't unmap */
 		}
 
+		// young였다면 continue
 		if (ptep_clear_flush_young_notify(vma, address, pte))
 			continue;
 
@@ -1483,7 +1506,7 @@ static int try_to_unmap_cluster(unsigned long cursor, unsigned int *mapcount,
 		/* If nonlinear, store the file page offset in the pte. */
 		if (page->index != linear_page_index(vma, address)) {
 			pte_t ptfile = pgoff_to_pte(page->index);
-			if (pte_soft_dirty(pteval))
+			if (pte_soft_dirty(pteval))	// false
 				pte_file_mksoft_dirty(ptfile);
 			set_pte_at(mm, address, pte, ptfile);
 		}
@@ -1496,9 +1519,9 @@ static int try_to_unmap_cluster(unsigned long cursor, unsigned int *mapcount,
 		page_cache_release(page);
 		dec_mm_counter(mm, MM_FILEPAGES);
 		(*mapcount)--;
-	}
+	} // for
 	pte_unmap_unlock(pte - 1, ptl);
-	mmu_notifier_invalidate_range_end(mm, mmun_start, mmun_end);
+	mmu_notifier_invalidate_range_end(mm, mmun_start, mmun_end);	// NOP
 	if (locked_vma)
 		up_read(&vma->vm_mm->mmap_sem);
 	return ret;
@@ -1632,6 +1655,7 @@ static int try_to_unmap_file(struct page *page, enum ttu_flags flags)
 		goto out;
 	// 2015-10-10 여기까지;
 
+	// 2015-10-17 시작
 	/*
 	 * We don't bother to try to find the munlocked page in nonlinears.
 	 * It's costly. Instead, later, page reclaim logic may call
@@ -1640,12 +1664,16 @@ static int try_to_unmap_file(struct page *page, enum ttu_flags flags)
 	if (TTU_ACTION(flags) == TTU_MUNLOCK)
 		goto out;
 
+	// nonlinear 리스트로부터, 하나씩 조회하면서
+	// max_nl_cursor, max_nl_size을 설정함 
 	list_for_each_entry(vma, &mapping->i_mmap_nonlinear,
 							shared.nonlinear) {
 		cursor = (unsigned long) vma->vm_private_data;
+		// max_nl_cursor의 값을 설정
 		if (cursor > max_nl_cursor)
 			max_nl_cursor = cursor;
-		cursor = vma->vm_end - vma->vm_start;
+		cursor = vma->vm_end - vma->vm_start;	// vm area의 크기
+		// max_nl_size 설정
 		if (cursor > max_nl_size)
 			max_nl_size = cursor;
 	}
@@ -1667,16 +1695,20 @@ static int try_to_unmap_file(struct page *page, enum ttu_flags flags)
 		goto out;
 	cond_resched();
 
-	max_nl_size = (max_nl_size + CLUSTER_SIZE - 1) & CLUSTER_MASK;
+	// 4096보다 작은 값에 대해서 올림 후, 정렬한 값
+	max_nl_size = (max_nl_size + CLUSTER_SIZE - 1)/*4096 - 1*/ & CLUSTER_MASKK/*0xFFFF_F000*/;
 	if (max_nl_cursor == 0)
-		max_nl_cursor = CLUSTER_SIZE;
+		max_nl_cursor = CLUSTER_SIZE/*4KB*/;
 
+	// CLUSTER_SIZE단위로 이동하며,
+	// vm area 크기만큼을 순회
 	do {
 		list_for_each_entry(vma, &mapping->i_mmap_nonlinear,
 							shared.nonlinear) {
 			cursor = (unsigned long) vma->vm_private_data;
 			while ( cursor < max_nl_cursor &&
 				cursor < vma->vm_end - vma->vm_start) {
+				// 2015-10-17
 				if (try_to_unmap_cluster(cursor, &mapcount,
 						vma, page) == SWAP_MLOCK)
 					ret = SWAP_MLOCK;
@@ -1684,9 +1716,9 @@ static int try_to_unmap_file(struct page *page, enum ttu_flags flags)
 				vma->vm_private_data = (void *) cursor;
 				if ((int)mapcount <= 0)
 					goto out;
-			}
+			} // while
 			vma->vm_private_data = (void *) max_nl_cursor;
-		}
+		} // for_each
 		cond_resched();
 		max_nl_cursor += CLUSTER_SIZE;
 	} while (max_nl_cursor <= max_nl_size);
@@ -1696,6 +1728,7 @@ static int try_to_unmap_file(struct page *page, enum ttu_flags flags)
 	 * in locked vmas).  Reset cursor on all unreserved nonlinear
 	 * vmas, now forgetting on which ones it had fallen behind.
 	 */
+	// vm_private_data에 NULL로 할당
 	list_for_each_entry(vma, &mapping->i_mmap_nonlinear, shared.nonlinear)
 		vma->vm_private_data = NULL;
 out:
@@ -1734,6 +1767,7 @@ int try_to_unmap(struct page *page, enum ttu_flags flags)
 	else
 		// 2015-10-10 시작;
 		ret = try_to_unmap_file(page, flags);
+		// 2015-10-17
 	if (ret != SWAP_MLOCK && !page_mapped(page))
 		ret = SWAP_SUCCESS;
 	return ret;

@@ -161,7 +161,7 @@ extern bool initcall_debug;
 
 #endif
   
-#ifndef MODULE
+#ifndef MODULE  // MODULE == 0
 
 #ifndef __ASSEMBLY__
 
@@ -174,7 +174,7 @@ extern bool initcall_debug;
  * The `id' arg to __define_initcall() is needed so that multiple initcalls
  * can point at the same handler without causing duplicate-symbol build errors.
  */
-
+// 2015-10-17
 #define __define_initcall(fn, id) \
 	static initcall_t __initcall_##fn##id __used \
 	__attribute__((__section__(".initcall" #id ".init"))) = fn
@@ -195,6 +195,7 @@ extern bool initcall_debug;
  */
 #define pure_initcall(fn)		__define_initcall(fn, 0)
 
+// 2015-10-17
 #define core_initcall(fn)		__define_initcall(fn, 1)
 #define core_initcall_sync(fn)		__define_initcall(fn, 1s)
 #define postcore_initcall(fn)		__define_initcall(fn, 2)
@@ -298,9 +299,7 @@ void __init parse_early_options(char *cmdline);
  * There can only be one per module.
  */
 #define module_exit(x)	__exitcall(x);
-
 #else /* MODULE */
-
 /* Don't use these in loadable modules, but some people do... */
 #define early_initcall(fn)		module_init(fn)
 #define core_initcall(fn)		module_init(fn)

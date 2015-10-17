@@ -1230,6 +1230,7 @@ static inline void inc_mm_counter(struct mm_struct *mm, int member)
 // 2015-10-10;
 // dec_mm_counter(mm, MM_ANONPAGES);
 // dec_mm_counter(mm, MM_FILEPAGES);
+// 2015-10-17
 static inline void dec_mm_counter(struct mm_struct *mm, int member)
 {
 	atomic_long_dec(&mm->rss_stat.count[member]);
@@ -1361,6 +1362,7 @@ static inline pmd_t *pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long a
 #define pte_lock_init(page)	do {} while (0)
 #define pte_lock_deinit(page)	do {} while (0)
 // 2015-08-22
+// 2015-10-17
 #define pte_lockptr(mm, pmd)	({(void)(pmd); &(mm)->page_table_lock;})
 #endif /* USE_SPLIT_PTLOCKS */
 
@@ -1376,6 +1378,7 @@ static inline void pgtable_page_dtor(struct page *page)
 	dec_zone_page_state(page, NR_PAGETABLE);
 }
 
+// 2015-10-17
 #define pte_offset_map_lock(mm, pmd, address, ptlp)	\
 ({							\
 	spinlock_t *__ptl = pte_lockptr(mm, pmd);	\

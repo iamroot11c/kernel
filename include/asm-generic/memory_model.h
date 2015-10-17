@@ -68,6 +68,7 @@
 // 2015-06-20
 // 2015-07-18
 // 2015-10-03
+// 2015-10-17
 #define __pfn_to_page(pfn)				\
 ({	unsigned long __pfn = (pfn);			\
 	struct mem_section *__sec = __pfn_to_section(__pfn);	\
@@ -79,6 +80,7 @@
 #define page_to_pfn __page_to_pfn
 // 2015-09-19;
 // 2015-10-03
+// 2015-10-17
 #define pfn_to_page __pfn_to_page
 
 #endif /* __ASSEMBLY__ */

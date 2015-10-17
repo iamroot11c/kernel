@@ -117,6 +117,7 @@ static int __init disable_randmaps(char *s)
 }
 __setup("norandmaps", disable_randmaps);
 
+// 2015-10-17
 unsigned long zero_pfn __read_mostly;
 unsigned long highest_memmap_pfn __read_mostly;
 
@@ -128,6 +129,13 @@ static int __init init_zero_pfn(void)
 	zero_pfn = page_to_pfn(ZERO_PAGE(0));
 	return 0;
 }
+// __define_initcall(fn, 1)
+// #define __define_initcall(fn, id) \
+//      static initcall_t __initcall_##fn##id __used \
+//      __attribute__((__section__(".initcall" #id ".init"))) = fn
+//
+//	static initcall_t __initcall_init_zero_pfn1 __used
+//	__attribute__((__section__(".initcall" "1" ".init"))) = init_zero_pfn
 core_initcall(init_zero_pfn);
 
 
@@ -742,8 +750,11 @@ static inline bool is_cow_mapping(vm_flags_t flags)
 #ifdef __HAVE_ARCH_PTE_SPECIAL
 # define HAVE_PTE_SPECIAL 1
 #else
+// 2015-10-17, 0로 가정
 # define HAVE_PTE_SPECIAL 0
 #endif
+
+// 2015-10-17
 struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 				pte_t pte)
 {
@@ -761,6 +772,7 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 
 	/* !HAVE_PTE_SPECIAL case follows: */
 
+	// 나중에...
 	if (unlikely(vma->vm_flags & (VM_PFNMAP|VM_MIXEDMAP))) {
 		if (vma->vm_flags & VM_MIXEDMAP) {
 			if (!pfn_valid(pfn))
@@ -779,6 +791,7 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 	if (is_zero_pfn(pfn))
 		return NULL;
 check_pfn:
+	// 나중에
 	if (unlikely(pfn > highest_memmap_pfn)) {
 		print_bad_pte(vma, addr, pte, NULL);
 		return NULL;

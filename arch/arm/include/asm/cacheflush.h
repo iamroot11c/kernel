@@ -221,6 +221,7 @@ extern void copy_to_user_page(struct vm_area_struct *, struct page *,
 #endif
 
 // 2015-08-22
+// 2015-10-17
 static inline void __flush_icache_all(void)
 {
     // i-cache flush

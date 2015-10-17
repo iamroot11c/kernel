@@ -432,6 +432,7 @@ EXPORT_SYMBOL(dec_zone_page_state);
 // mod_zone_page_state(zone, NR_ISOLATED_FILE, count[1]);
 //
 // 2015-10-10;
+// 2015-10-17
 void mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
 					int delta)
 {

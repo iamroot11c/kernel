@@ -620,11 +620,14 @@ EXPORT_SYMBOL_GPL(add_page_wait_queue);
  * The mb is necessary to enforce ordering between the clear_bit and the read
  * of the waitqueue (to avoid SMP races with a parallel wait_on_page_locked()).
  */
+// 2015-10-17
+// page flags, PG_locked에 대해서 갱신
 void unlock_page(struct page *page)
 {
 	VM_BUG_ON(!PageLocked(page));
 	clear_bit_unlock(PG_locked, &page->flags);
-	smp_mb__after_clear_bit();
+	smp_mb__after_clear_bit();	// smp_mb()
+	// wait queue 이용
 	wake_up_page(page, PG_locked);
 }
 EXPORT_SYMBOL(unlock_page);

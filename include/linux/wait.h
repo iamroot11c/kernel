@@ -63,6 +63,7 @@ struct task_struct;
 
 // 2015-07-25;
 // __WAIT_BIT_KEY_INITIALIZER(&page->flags, PG_locked)
+// 2015-10-17
 #define __WAIT_BIT_KEY_INITIALIZER(word, bit)				\
 	{ .flags = word, .bit_nr = bit, }
 

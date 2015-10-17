@@ -79,6 +79,8 @@ void clear_page_mlock(struct page *page)
  * If page on LRU, isolate and putback to move to unevictable list.
  */
 // 2015-10-10;
+// 2015-19-17
+// page state를 갱신하는 것이 주된 역할로 보인다.
 void mlock_vma_page(struct page *page)
 {
 	/* Serialize with page migration */
@@ -86,7 +88,7 @@ void mlock_vma_page(struct page *page)
 
 	if (!TestSetPageMlocked(page)) {
 		mod_zone_page_state(page_zone(page), NR_MLOCK,
-				    hpage_nr_pages(page));
+				    hpage_nr_pages(page)/*1*/);
 		count_vm_event(UNEVICTABLE_PGMLOCKED);
 		if (!isolate_lru_page(page))
 			putback_lru_page(page);

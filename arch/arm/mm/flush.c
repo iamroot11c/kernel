@@ -94,6 +94,7 @@ void flush_cache_range(struct vm_area_struct *vma, unsigned long start, unsigned
 }
 
 // 2015-08-22
+// 2015-10-17
 void flush_cache_page(struct vm_area_struct *vma, unsigned long user_addr, unsigned long pfn)
 {
 	if (cache_is_vivt()) {	// false

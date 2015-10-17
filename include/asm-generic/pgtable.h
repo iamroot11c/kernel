@@ -30,6 +30,8 @@ extern int pmdp_set_access_flags(struct vm_area_struct *vma,
 #endif
 
 #ifndef __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
+// 2015-10-17
+// pte가 young이였다면, ptep에 pte_mkold(pte)로 셋팅
 static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
 					    unsigned long address,
 					    pte_t *ptep)
@@ -508,7 +510,7 @@ extern void untrack_pfn(struct vm_area_struct *vma, unsigned long pfn,
 			unsigned long size);
 #endif
 
-#ifdef __HAVE_COLOR_ZERO_PAGE
+#ifdef __HAVE_COLOR_ZERO_PAGE   // not set
 static inline int is_zero_pfn(unsigned long pfn)
 {
 	extern unsigned long zero_pfn;
@@ -519,6 +521,7 @@ static inline int is_zero_pfn(unsigned long pfn)
 #define my_zero_pfn(addr)	page_to_pfn(ZERO_PAGE(addr))
 
 #else
+// 2015-10-17
 static inline int is_zero_pfn(unsigned long pfn)
 {
 	extern unsigned long zero_pfn;

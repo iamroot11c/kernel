@@ -1485,6 +1485,7 @@ static void ttwu_queue(struct task_struct *p, int cpu)
  */
 // 2015-08-08 glance;
 // try_to_wake_up(p, TASK_NORMAL, 0);
+// 2015-10-17 glance;
 static int
 try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 {
@@ -1591,6 +1592,7 @@ out:
  * changing the task state if and only if any tasks are woken up.
  */
 // 2015-08-08 glance;
+// 2015-10-17
 int wake_up_process(struct task_struct *p)
 {
 	WARN_ON(task_is_stopped_or_traced(p));

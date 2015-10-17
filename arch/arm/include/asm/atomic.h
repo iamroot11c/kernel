@@ -259,6 +259,7 @@ static inline int __atomic_add_unless(atomic_t *v, int a, int u)
 }
 
 #define atomic_inc(v)		atomic_add(1, v)
+// 2015-10-17
 #define atomic_dec(v)		atomic_sub(1, v)
 
 #define atomic_inc_and_test(v)	(atomic_add_return(1, v) == 0)

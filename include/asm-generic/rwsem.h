@@ -37,6 +37,7 @@ static inline void __down_read(struct rw_semaphore *sem)
 		rwsem_down_read_failed(sem);
 }
 
+// 2015-10-17
 static inline int __down_read_trylock(struct rw_semaphore *sem)
 {
 	long tmp;

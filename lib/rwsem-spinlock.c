@@ -129,6 +129,7 @@ __rwsem_do_wake(struct rw_semaphore *sem, int wakewrite)
  */
 // 2015-08-15
 // 2015-10-10;
+// 2015-10-17
 static inline struct rw_semaphore *
 __rwsem_wake_one_writer(struct rw_semaphore *sem)
 {
@@ -191,6 +192,7 @@ void __sched __down_read(struct rw_semaphore *sem)
  */
 // 2015-08-15
 // 2015-10-10;
+// 2015-10-17
 int __down_read_trylock(struct rw_semaphore *sem)
 {
 	unsigned long flags;
@@ -199,6 +201,8 @@ int __down_read_trylock(struct rw_semaphore *sem)
 
 	raw_spin_lock_irqsave(&sem->wait_lock, flags);
 
+	// wait_list가 비어있고, 활성상태라면
+	// NOTE: activity == 0이 아니라는 조건에 주목
 	if (sem->activity >= 0 && list_empty(&sem->wait_list)) {
 		/* granted */
 		sem->activity++;
@@ -287,12 +291,14 @@ int __down_write_trylock(struct rw_semaphore *sem)
  */
 // 2015-08-15
 // 2015-10-10;
+// 2015-10-17
 void __up_read(struct rw_semaphore *sem)
 {
 	unsigned long flags;
 
 	raw_spin_lock_irqsave(&sem->wait_lock, flags);
 
+	// activity는 반드시 --한다
 	if (--sem->activity == 0 && !list_empty(&sem->wait_list))
 		sem = __rwsem_wake_one_writer(sem);
 

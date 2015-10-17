@@ -27,6 +27,7 @@
 #include <linux/irqflags.h>
 
 #define smp_mb__before_clear_bit()	smp_mb()
+// 2015-10-17
 #define smp_mb__after_clear_bit()	smp_mb()
 
 /*

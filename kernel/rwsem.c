@@ -36,6 +36,9 @@ EXPORT_SYMBOL(down_read);
 // 2015-08-15
 // 2015-10-10;
 // down_read_trylock(&vma->vm_mm->mmap_sem)
+// 2015-10-17
+// return:
+//    1: granted
 int down_read_trylock(struct rw_semaphore *sem)
 {
 	int ret = __down_read_trylock(sem);
@@ -88,6 +91,7 @@ EXPORT_SYMBOL(down_write_trylock);
 // 2015-08-15
 // 세마포어 반납
 // 2015-10-10;
+// 2015-10-17
 void up_read(struct rw_semaphore *sem)
 {
 	rwsem_release(&sem->dep_map, 1, _RET_IP_);	// NO OP

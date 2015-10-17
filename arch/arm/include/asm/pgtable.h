@@ -171,6 +171,7 @@ extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
  * ZERO_PAGE is a global shared page that is always zero: used
  * for zero-mapped memory areas etc..
  */
+// 2015-10-17
 extern struct page *empty_zero_page;
 #define ZERO_PAGE(vaddr)	(empty_zero_page)
 
@@ -263,6 +264,7 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 // 2015-09-05
 // pte_dirty(pteval)
 #define pte_dirty(pte)		(pte_val(pte) & L_PTE_DIRTY) // pteval & (pteval_t)1 << 6
+// 2015-10-17
 #define pte_young(pte)		(pte_val(pte) & L_PTE_YOUNG)
 // 2015-10-03
 #define pte_exec(pte)		(!(pte_val(pte) & L_PTE_XN/*1<<9*/))
@@ -362,6 +364,8 @@ static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
 // 2015-10-10;
 #define pte_file(pte)		(pte_val(pte) & L_PTE_FILE)
 #define pte_to_pgoff(x)		(pte_val(x) >> 3)
+// 2015-10-17
+// 위의 그림을 참고할 것
 #define pgoff_to_pte(x)		__pte(((x) << 3) | L_PTE_FILE)
 
 #define PTE_FILE_MAX_BITS	29

@@ -39,6 +39,7 @@ static inline void __count_vm_event(enum vm_event_item item)
 // 2015-10-10;
 // count_vm_event(UNEVICTABLE_PGCLEARED)
 // count_vm_event(UNEVICTABLE_PGSTRANDED)
+// count_vm_event(UNEVICTABLE_PGMLOCKED);
 static inline void count_vm_event(enum vm_event_item item)
 {
 	this_cpu_inc(vm_event_states.event[item]);
