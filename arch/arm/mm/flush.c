@@ -178,6 +178,7 @@ void copy_to_user_page(struct vm_area_struct *vma, struct page *page,
 // __flush_dcache_page(NULL, empty_zero_page);
 // 2015-02-07, 끝
 // 2015-10-03
+// 2015-10-24;
 void __flush_dcache_page(struct address_space *mapping, struct page *page)
 {
 	/*
@@ -302,6 +303,7 @@ void __sync_icache_dcache(pte_t pteval)
  * Note that we disable the lazy flush for SMP configurations where
  * the cache maintenance operations are not automatically broadcasted.
  */
+// 2015-10-24;
 void flush_dcache_page(struct page *page)
 {
 	struct address_space *mapping;
@@ -310,12 +312,12 @@ void flush_dcache_page(struct page *page)
 	 * The zero page is never written to, so never has any dirty
 	 * cache lines, and therefore never needs to be flushed.
 	 */
-	if (page == ZERO_PAGE(0))
+	if (page == ZERO_PAGE(0)) // page == (empty_zero_page)
 		return;
 
 	mapping = page_mapping(page);
 
-	if (!cache_ops_need_broadcast() &&
+	if (!cache_ops_need_broadcast()/*0*/ &&
 	    mapping && !page_mapped(page))
 		clear_bit(PG_dcache_clean, &page->flags);
 	else {

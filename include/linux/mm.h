@@ -254,6 +254,7 @@ struct inode;
 
 // 2015-08-15
 #define page_private(page)		((page)->private)
+// 2015-10-24;
 #define set_page_private(page, v)	((page)->private = (v))
 
 /* It's valid only if the page is free path or free_list */
@@ -427,6 +428,7 @@ static inline int page_mapcount(struct page *page)
 // 2015-07-25;
 // page_count(page);
 // 2015-08-15
+// 2015-10-24;
 static inline int page_count(struct page *page)
 {
 	return atomic_read(&compound_head(page)->_count);
@@ -448,6 +450,7 @@ extern bool __get_page_tail(struct page *page);
 // 2015-07-11
 // page->_count 값을 1 증가
 // 2015-10-10;
+// 2015-10-24;
 static inline void get_page(struct page *page)
 {
 	if (unlikely(PageTail(page)))
@@ -893,6 +896,8 @@ void page_address_init(void);
 extern struct address_space *page_mapping(struct page *page);
 
 /* Neutral page->mapping pointer to address_space or anon_vma or other */
+// 2015-10-24;
+// 하위 2비트를 클리어 한 후 포인트 변수로 캐스팅 해서 리턴
 static inline void *page_rmapping(struct page *page)
 {
 	return (void *)((unsigned long)page->mapping & ~PAGE_MAPPING_FLAGS);
@@ -1363,6 +1368,7 @@ static inline pmd_t *pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long a
 #define pte_lock_deinit(page)	do {} while (0)
 // 2015-08-22
 // 2015-10-17
+// 2015-10-24
 #define pte_lockptr(mm, pmd)	({(void)(pmd); &(mm)->page_table_lock;})
 #endif /* USE_SPLIT_PTLOCKS */
 

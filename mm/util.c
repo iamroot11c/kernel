@@ -387,6 +387,7 @@ EXPORT_SYMBOL(vm_mmap);
 // 2015-07-11
 // 2015-09-05;
 // 2015-10-03
+// 2015-10-24;
 struct address_space *page_mapping(struct page *page)
 {
 	struct address_space *mapping = page->mapping;

@@ -215,15 +215,18 @@ extern void clear_page_mlock(struct page *page);
  * mlock_migrate_page - called only from migrate_page_copy() to
  * migrate the Mlocked page flag; update statistics.
  */
+// 2015-10-24;
 static inline void mlock_migrate_page(struct page *newpage, struct page *page)
 {
 	if (TestClearPageMlocked(page)) {
 		unsigned long flags;
-		int nr_pages = hpage_nr_pages(page);
+		int nr_pages = hpage_nr_pages(page); // 1
 
 		local_irq_save(flags);
+        // 구 page는 감소
 		__mod_zone_page_state(page_zone(page), NR_MLOCK, -nr_pages);
 		SetPageMlocked(newpage);
+        // 신 page는 증가
 		__mod_zone_page_state(page_zone(newpage), NR_MLOCK, nr_pages);
 		local_irq_restore(flags);
 	}

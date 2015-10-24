@@ -427,6 +427,7 @@ static inline pte_t pte_swp_mksoft_dirty(pte_t pte)
 	return pte;
 }
 
+// 2015-10-24;
 static inline int pte_swp_soft_dirty(pte_t pte)
 {
 	return 0;
@@ -539,6 +540,7 @@ static inline unsigned long my_zero_pfn(unsigned long addr)
 
 #ifndef CONFIG_TRANSPARENT_HUGEPAGE
 // 2015-08-22
+// 2015-10-24;
 static inline int pmd_trans_huge(pmd_t pmd)
 {
 	return 0;

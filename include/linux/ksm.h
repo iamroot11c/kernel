@@ -127,6 +127,7 @@ static inline int rmap_walk_ksm(struct page *page, int (*rmap_one)(struct page*,
 	return 0;
 }
 
+// 2015-10-24;
 static inline void ksm_migrate_page(struct page *newpage, struct page *oldpage)
 {
 }

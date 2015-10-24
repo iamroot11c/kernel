@@ -57,6 +57,8 @@
  * Data preload for architectures that support it
  */
 #if __LINUX_ARM_ARCH__ >= 5
+// 2015-10-24;
+// PLD(-1)
 #define PLD(code...)	code
 #else
 #define PLD(code...)

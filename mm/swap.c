@@ -452,6 +452,7 @@ static void pagevec_move_tail_fn(struct page *page, struct lruvec *lruvec,
  * Otherwise this may cause nasty races.
  */
 // 2015-06-20
+// 2015-10-24
 static void pagevec_move_tail(struct pagevec *pvec)
 {
 	int pgmoved = 0;
@@ -466,6 +467,7 @@ static void pagevec_move_tail(struct pagevec *pvec)
  * reclaim.  If it still appears to be reclaimable, move it to the tail of the
  * inactive list.
  */
+// 2015-10-24;
 void rotate_reclaimable_page(struct page *page)
 {
 	if (!PageLocked(page) && !PageDirty(page) && !PageActive(page) &&
@@ -477,6 +479,7 @@ void rotate_reclaimable_page(struct page *page)
 		local_irq_save(flags);
 		pvec = &__get_cpu_var(lru_rotate_pvecs);
 		if (!pagevec_add(pvec, page))
+			// pagevec에 공간이 없을 때
 			pagevec_move_tail(pvec);
 		local_irq_restore(flags);
 	}

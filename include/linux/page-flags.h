@@ -562,6 +562,7 @@ static inline void ClearPageSlabPfmemalloc(struct page *page)
  * should be invoked upon it.
  */
 // 2015-08-15
+// 2015-10-24;
 static inline int page_has_private(struct page *page)
 {
 	return !!(page->flags & PAGE_FLAGS_PRIVATE/*0x0006_0000*/);

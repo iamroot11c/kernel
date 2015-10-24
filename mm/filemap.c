@@ -553,6 +553,8 @@ static wait_queue_head_t *page_waitqueue(struct page *page)
 	return &zone->wait_table[hash_ptr(page, zone->wait_table_bits)];
 }
 
+// 2015-10-24;
+// wake_up_page(page, PG_writeback);
 static inline void wake_up_page(struct page *page, int bit)
 {
 	__wake_up_bit(page_waitqueue(page), &page->flags, bit);
@@ -636,6 +638,7 @@ EXPORT_SYMBOL(unlock_page);
  * end_page_writeback - end writeback against a page
  * @page: the page
  */
+// 2015-10-24;
 void end_page_writeback(struct page *page)
 {
 	if (TestClearPageReclaim(page))
@@ -2612,6 +2615,8 @@ EXPORT_SYMBOL(generic_file_aio_write);
  * this page (__GFP_IO), and whether the call may block (__GFP_WAIT & __GFP_FS).
  *
  */
+// 2015-10-24
+// try_to_release_page(page, GFP_KERNEL)
 int try_to_release_page(struct page *page, gfp_t gfp_mask)
 {
 	struct address_space * const mapping = page->mapping;

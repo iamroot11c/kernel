@@ -39,6 +39,8 @@ EXPORT_SYMBOL(kunmap);
 // 2015-01-24, 시작
 // 2015-09-19;
 // page *에 대한 가상 주소를 구해준다
+// 
+// 2015-10-24;
 void *kmap_atomic(struct page *page)
 {
 	unsigned int idx;

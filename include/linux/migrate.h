@@ -33,7 +33,7 @@ enum migrate_reason {
 	MR_CMA
 };
 
-#ifdef CONFIG_MIGRATION
+#ifdef CONFIG_MIGRATION // defined
 
 extern void putback_lru_pages(struct list_head *l);
 extern void putback_movable_pages(struct list_head *l);

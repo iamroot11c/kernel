@@ -231,6 +231,8 @@ void set_pgdat_percpu_threshold(pg_data_t *pgdat,
 // __mod_zone_page_state(lruvec_zone(lruvec), NR_LRU_BASE + lru, -nr_pages);
 // 2015-10-10;
 // __mod_zone_page_state(page_zone(page), NR_ANON_PAGES, -hpage_nr_pages(page)/*1*/)
+// 2015-10-24;
+// __mod_zone_page_state(page_zone(page), NR_MLOCK, -nr_pages);
 void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
 				int delta)
 {

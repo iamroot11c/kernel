@@ -1018,6 +1018,8 @@ void page_move_anon_rmap(struct page *page,
  * @address:	User virtual address of the mapping	
  * @exclusive:	the page is exclusively owned by the current process
  */
+// 2015-10-24;
+// __page_set_anon_rmap(page, vma, address, 0)
 static void __page_set_anon_rmap(struct page *page,
 	struct vm_area_struct *vma, unsigned long address, int exclusive)
 {
@@ -1050,7 +1052,7 @@ static void __page_set_anon_rmap(struct page *page,
 static void __page_check_anon_rmap(struct page *page,
 	struct vm_area_struct *vma, unsigned long address)
 {
-#ifdef CONFIG_DEBUG_VM
+#ifdef CONFIG_DEBUG_VM // not define
 	/*
 	 * The page's anon-rmap details (mapping and index) are guaranteed to
 	 * be set up correctly at this point.
@@ -1079,6 +1081,7 @@ static void __page_check_anon_rmap(struct page *page,
  * and to ensure that PageAnon is not being upgraded racily to PageKsm
  * (but PageKsm is never downgraded to PageAnon).
  */
+// 2015-10-24;
 void page_add_anon_rmap(struct page *page,
 	struct vm_area_struct *vma, unsigned long address)
 {
@@ -1090,6 +1093,8 @@ void page_add_anon_rmap(struct page *page,
  * into pages that are exclusively owned by the current process.
  * Everybody else should continue to use page_add_anon_rmap above.
  */
+// 2015-10-24
+// do_page_add_anon_rmap(page, vma, address, 0);
 void do_page_add_anon_rmap(struct page *page,
 	struct vm_area_struct *vma, unsigned long address, int exclusive)
 {
@@ -1696,7 +1701,7 @@ static int try_to_unmap_file(struct page *page, enum ttu_flags flags)
 	cond_resched();
 
 	// 4096보다 작은 값에 대해서 올림 후, 정렬한 값
-	max_nl_size = (max_nl_size + CLUSTER_SIZE - 1)/*4096 - 1*/ & CLUSTER_MASKK/*0xFFFF_F000*/;
+	max_nl_size = (max_nl_size + CLUSTER_SIZE - 1)/*4096 - 1*/ & CLUSTER_MASK/*0xFFFF_F000*/;
 	if (max_nl_cursor == 0)
 		max_nl_cursor = CLUSTER_SIZE/*4KB*/;
 
@@ -1816,11 +1821,13 @@ void __put_anon_vma(struct anon_vma *anon_vma)
  * rmap_walk() and its helpers rmap_walk_anon() and rmap_walk_file():
  * Called by migrate.c to remove migration ptes, but might be used more later.
  */
+// 2015-10-24 시작;
+// rmap_walk_anon(new, remove_migration_pte, old)
 static int rmap_walk_anon(struct page *page, int (*rmap_one)(struct page *,
 		struct vm_area_struct *, unsigned long, void *), void *arg)
 {
 	struct anon_vma *anon_vma;
-	pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
+	pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT)/*0*/; 
 	struct anon_vma_chain *avc;
 	int ret = SWAP_AGAIN;
 
@@ -1837,6 +1844,7 @@ static int rmap_walk_anon(struct page *page, int (*rmap_one)(struct page *,
 	anon_vma_interval_tree_foreach(avc, &anon_vma->rb_root, pgoff, pgoff) {
 		struct vm_area_struct *vma = avc->vma;
 		unsigned long address = vma_address(page, vma);
+		// 2015-10-24 시작;
 		ret = rmap_one(page, vma, address, arg);
 		if (ret != SWAP_AGAIN)
 			break;
@@ -1871,6 +1879,8 @@ static int rmap_walk_file(struct page *page, int (*rmap_one)(struct page *,
 	return ret;
 }
 
+// 2015-10-24;
+// rmap_walk(new, remove_migration_pte, old);
 int rmap_walk(struct page *page, int (*rmap_one)(struct page *,
 		struct vm_area_struct *, unsigned long, void *), void *arg)
 {
@@ -1879,6 +1889,7 @@ int rmap_walk(struct page *page, int (*rmap_one)(struct page *,
 	if (unlikely(PageKsm(page)))
 		return rmap_walk_ksm(page, rmap_one, arg);
 	else if (PageAnon(page))
+		// 2015-10-24 시작;
 		return rmap_walk_anon(page, rmap_one, arg);
 	else
 		return rmap_walk_file(page, rmap_one, arg);

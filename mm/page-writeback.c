@@ -2152,6 +2152,8 @@ int __set_page_dirty_no_writeback(struct page *page)
  */
 // 2015-09-05;
 // account_page_dirtied(page, mapping);
+// 2015-10-24;
+// account_page_dirtied(page, mapping);
 void account_page_dirtied(struct page *page, struct address_space *mapping)
 {
 	// 확인하지 않고 지나감
@@ -2201,6 +2203,7 @@ EXPORT_SYMBOL(account_page_writeback);
  * We take care to handle the case where the page was truncated from the
  * mapping by re-checking page_mapping() inside tree_lock.
  */
+// 2015-10-24;
 int __set_page_dirty_nobuffers(struct page *page)
 {
 	if (!TestSetPageDirty(page)) {
@@ -2348,12 +2351,17 @@ EXPORT_SYMBOL(set_page_dirty_lock);
  * This incoherency between the page's dirty flag and radix-tree tag is
  * unfortunate, but it only exists while the page is locked.
  */
+// 2015-10-24;
 int clear_page_dirty_for_io(struct page *page)
 {
 	struct address_space *mapping = page_mapping(page);
 
 	BUG_ON(!PageLocked(page));
 
+	// 2015-10-24;
+	// 이 함수는 mapping이 NULL 일 때 migrate_page() 함수가 호출 되고
+	// 그 함수에서 migrate_page_copy() 함수에서 이 함수를 호출하고 
+	// 있어 mapping이 NULL일 것 이다.
 	if (mapping && mapping_cap_account_dirty(mapping)) {
 		/*
 		 * Yes, Virginia, this is indeed insane.

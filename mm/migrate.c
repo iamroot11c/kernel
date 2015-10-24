@@ -135,6 +135,8 @@ void putback_movable_pages(struct list_head *l)
 /*
  * Restore a potential migration pte to a working pte entry
  */
+// 2015-10-24;
+// remove_migration_pte(page, vma, address, arg)
 static int remove_migration_pte(struct page *new, struct vm_area_struct *vma,
 				 unsigned long addr, void *old)
 {
@@ -153,7 +155,7 @@ static int remove_migration_pte(struct page *new, struct vm_area_struct *vma,
 		pmd = mm_find_pmd(mm, addr);
 		if (!pmd)
 			goto out;
-		if (pmd_trans_huge(*pmd))
+		if (pmd_trans_huge(*pmd)) // 0을 리턴
 			goto out;
 
 		ptep = pte_offset_map(pmd, addr);
@@ -178,12 +180,13 @@ static int remove_migration_pte(struct page *new, struct vm_area_struct *vma,
 		goto unlock;
 
 	get_page(new);
-	pte = pte_mkold(mk_pte(new, vma->vm_page_prot));
+	pte = pte_mkold(mk_pte(new, vma->vm_page_prot)); // pte_mkold() 함수에서는 
+	                                                 // L_PTE_YOUNG 비트를 클리어
 	if (pte_swp_soft_dirty(*ptep))
 		pte = pte_mksoft_dirty(pte);
 	if (is_write_migration_entry(entry))
-		pte = pte_mkwrite(pte);
-#ifdef CONFIG_HUGETLB_PAGE
+		pte = pte_mkwrite(pte); // L_PTE_RDONLY 비트를 클리어
+#ifdef CONFIG_HUGETLB_PAGE // not define
 	if (PageHuge(new)) {
 		pte = pte_mkhuge(pte);
 		pte = arch_make_huge_pte(pte, vma, new, 0);
@@ -199,6 +202,7 @@ static int remove_migration_pte(struct page *new, struct vm_area_struct *vma,
 			page_dup_rmap(new);
 	} else if (PageAnon(new))
 		page_add_anon_rmap(new, vma, addr);
+	        // 2015-10-24 여기까지;
 	else
 		page_add_file_rmap(new);
 
@@ -214,6 +218,7 @@ out:
  * Get rid of all migration entries and replace them by
  * references to the indicated page.
  */
+// 2015-10-24 시작;
 static void remove_migration_ptes(struct page *old, struct page *new)
 {
 	rmap_walk(new, remove_migration_pte, old);
@@ -331,6 +336,10 @@ static inline bool buffer_migrate_lock_buffers(struct buffer_head *head,
  * 2 for pages with a mapping
  * 3 for pages with a mapping and PagePrivate/PagePrivate2 set.
  */
+// 2015-10-24;
+// migrate_page_move_mapping(mapping, newpage, page, NULL, mode, 0);
+// mapping == NULL;
+// mode == cc->sync ? MIGRATE_SYNC_LIGHT : MIGRATE_ASYNC;
 int migrate_page_move_mapping(struct address_space *mapping,
 		struct page *newpage, struct page *page,
 		struct buffer_head *head, enum migrate_mode mode,
@@ -339,6 +348,9 @@ int migrate_page_move_mapping(struct address_space *mapping,
 	int expected_count = 1 + extra_count;
 	void **pslot;
 
+	// 2015-10-24;
+	// mapping이 NULL로 전달되어 함수를 더 이상 진행하지 않고
+	// 아래의 조건에 따라 함수를 종료함
 	if (!mapping) {
 		/* Anonymous page without mapping */
 		if (page_count(page) != expected_count)
@@ -462,6 +474,8 @@ int migrate_huge_page_move_mapping(struct address_space *mapping,
 /*
  * Copy the page to its new location
  */
+// 2015-10-24;
+// migrate_page_copy(newpage, page);
 void migrate_page_copy(struct page *newpage, struct page *page)
 {
 	if (PageHuge(page) || PageTransHuge(page))
@@ -501,7 +515,7 @@ void migrate_page_copy(struct page *newpage, struct page *page)
  	}
 
 	mlock_migrate_page(newpage, page);
-	ksm_migrate_page(newpage, page);
+	ksm_migrate_page(newpage, page); // no OP.
 	/*
 	 * Please do not reorder this without considering how mm/ksm.c's
 	 * get_ksm_page() depends upon ksm_migrate_page() and PageSwapCache().
@@ -536,6 +550,10 @@ EXPORT_SYMBOL(fail_migrate_page);
  *
  * Pages are locked upon entry and exit.
  */
+// 2015-10-24;
+// migrate_page(mapping, newpage, page, mode);
+// mapping == NULL
+// mode == cc->sync ? MIGRATE_SYNC_LIGHT : MIGRATE_ASYNC;
 int migrate_page(struct address_space *mapping,
 		struct page *newpage, struct page *page,
 		enum migrate_mode mode)
@@ -544,6 +562,9 @@ int migrate_page(struct address_space *mapping,
 
 	BUG_ON(PageWriteback(page));	/* Writeback must be complete */
 
+	// 2015-10-24;
+	// mapping이 NULL로 전달되어 migrate_page_move_mapping() 함수 전체를
+	// 분석하지 않음
 	rc = migrate_page_move_mapping(mapping, newpage, page, NULL, mode, 0);
 
 	if (rc != MIGRATEPAGE_SUCCESS)
@@ -658,12 +679,18 @@ static int writeout(struct address_space *mapping, struct page *page)
 /*
  * Default handling if a filesystem does not provide a migration function.
  */
+// 2015-10-24;
+// fallback_migrate_page(mapping, newpage, page, mode);
+// mapping != NULL
+// mode == cc->sync ? MIGRATE_SYNC_LIGHT : MIGRATE_ASYNC;
 static int fallback_migrate_page(struct address_space *mapping,
 	struct page *newpage, struct page *page, enum migrate_mode mode)
 {
 	if (PageDirty(page)) {
 		/* Only writeback pages in full synchronous migration */
-		if (mode != MIGRATE_SYNC)
+		// 2015-10-24 MIGRATE_SYNC_LIGHT 또는 MIGRATE_ASYNC 이므로
+		// -EBUSY를 리턴
+		if (mode != MIGRATE_SYNC) 
 			return -EBUSY;
 		return writeout(mapping, page);
 	}
@@ -690,6 +717,9 @@ static int fallback_migrate_page(struct address_space *mapping,
  *   < 0 - error code
  *  MIGRATEPAGE_SUCCESS - success
  */
+// 2015-10-24;
+// move_to_new_page(newpage, page, remap_swapcache, mode);
+// mode == cc->sync ? MIGRATE_SYNC_LIGHT : MIGRATE_ASYNC;
 static int move_to_new_page(struct page *newpage, struct page *page,
 				int remap_swapcache, enum migrate_mode mode)
 {
@@ -723,12 +753,14 @@ static int move_to_new_page(struct page *newpage, struct page *page,
 		rc = mapping->a_ops->migratepage(mapping,
 						newpage, page, mode);
 	else
+		// 2015-10-24;
 		rc = fallback_migrate_page(mapping, newpage, page, mode);
 
 	if (rc != MIGRATEPAGE_SUCCESS) {
 		newpage->mapping = NULL;
 	} else {
 		if (remap_swapcache)
+			// 2015-10-24 시작;
 			remove_migration_ptes(page, newpage);
 		page->mapping = NULL;
 	}
@@ -873,9 +905,12 @@ static int __unmap_and_move(struct page *page, struct page *newpage,
 	// 2015-08-15, 식사전
 	/* Establish migration ptes or remove ptes */
 	try_to_unmap(page, TTU_MIGRATION|TTU_IGNORE_MLOCK|TTU_IGNORE_ACCESS);
+	// 2015-10-17 여기까지;
 
+	// 2015-10-24 시작;
 skip_unmap:
 	if (!page_mapped(page))
+	        // 2015-10-24 시작;
 		rc = move_to_new_page(newpage, page, remap_swapcache, mode);
 
 	if (rc && remap_swapcache)

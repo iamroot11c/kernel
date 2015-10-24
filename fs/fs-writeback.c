@@ -1132,6 +1132,9 @@ static noinline void block_dump___mark_inode_dirty(struct inode *inode)
  */
 // 2015-09-05;
 // __mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+//
+// 2015-10-24;
+// __mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
 void __mark_inode_dirty(struct inode *inode, int flags)
 {
 	struct super_block *sb = inode->i_sb;

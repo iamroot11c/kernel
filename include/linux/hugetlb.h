@@ -150,6 +150,7 @@ static inline int dequeue_hwpoisoned_huge_page(struct page *page)
 #define isolate_huge_page(p, l) false
 #define putback_active_hugepage(p)	do {} while (0)
 #define is_hugepage_active(x)	false
+// 2015-10-24;
 static inline void copy_huge_page(struct page *dst, struct page *src)
 {
 }

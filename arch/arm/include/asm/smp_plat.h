@@ -48,6 +48,9 @@ static inline int tlb_ops_need_broadcast(void)
 #endif
 
 #if !defined(CONFIG_SMP) || __LINUX_ARM_ARCH__ >= 7
+// 2015-10-24;
+// CONFIG_SMP defined, Exynox 5420은 ARMv7으로
+// broadcast가 필요하지 않다
 #define cache_ops_need_broadcast()	0
 #else
 static inline int cache_ops_need_broadcast(void)

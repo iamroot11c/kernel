@@ -250,6 +250,9 @@ static inline void copy_user_highpage(struct page *to, struct page *from,
 
 #endif
 
+// 2015-10-24;
+// copy_highpage(newpage, page);
+// page를 from에서 to로 복사
 static inline void copy_highpage(struct page *to, struct page *from)
 {
 	char *vfrom, *vto;
@@ -257,6 +260,7 @@ static inline void copy_highpage(struct page *to, struct page *from)
 	vfrom = kmap_atomic(from);
 	vto = kmap_atomic(to);
 	copy_page(vto, vfrom);
+    // 2015-10-24 식사전.
 	kunmap_atomic(vto);
 	kunmap_atomic(vfrom);
 }

@@ -3207,6 +3207,8 @@ static inline int buffer_busy(struct buffer_head *bh)
 // 2015-08-15
 // static임으로 buffer.c에서만 사용가능
 // buffer가 busy하면 return 0
+//
+// 2015-10-24;
 static int
 drop_buffers(struct page *page, struct buffer_head **buffers_to_free)
 {
@@ -3237,6 +3239,7 @@ failed:
 }
 
 // 2015-08-15
+// 2015-10-24;
 int try_to_free_buffers(struct page *page)
 {
 	struct address_space * const mapping = page->mapping;
@@ -3378,6 +3381,7 @@ struct buffer_head *alloc_buffer_head(gfp_t gfp_flags)
 EXPORT_SYMBOL(alloc_buffer_head);
 
 // 2015-08-15
+// 2015-10-24;
 void free_buffer_head(struct buffer_head *bh)
 {
 	BUG_ON(!list_empty(&bh->b_assoc_buffers));

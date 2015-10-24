@@ -102,6 +102,7 @@ static inline void put_anon_vma(struct anon_vma *anon_vma)
 		__put_anon_vma(anon_vma);   // 2015-08-08
 }
 
+// 2015-10-24;
 static inline struct anon_vma *page_anon_vma(struct page *page)
 {
 	if (((unsigned long)page->mapping & PAGE_MAPPING_FLAGS) !=

@@ -100,6 +100,7 @@ static inline void mapping_set_gfp_mask(struct address_space *m, gfp_t mask)
 #define PAGE_CACHE_ALIGN(addr)	(((addr)+PAGE_CACHE_SIZE-1)&PAGE_CACHE_MASK)
 
 // 2015-07-11
+// 2015-10-24;
 #define page_cache_get(page)		get_page(page)
 // 2015-08-15
 // compound page가 아니라면, single page에 cache에 추가하는 기능
@@ -317,6 +318,7 @@ extern pgoff_t linear_hugepage_index(struct vm_area_struct *vma,
 				     unsigned long address);
 
 // 2015-10-17
+// 2015-10-24
 static inline pgoff_t linear_page_index(struct vm_area_struct *vma,
 					unsigned long address)
 {

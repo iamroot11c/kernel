@@ -59,6 +59,7 @@
  */
 // 2015-08-22
 // 2015-09-19;
+// 2015-10-24;
 #define __page_to_pfn(pg)					\
 ({	const struct page *__pg = (pg);				\
 	int __sec = page_to_section(__pg);			\
@@ -77,6 +78,7 @@
 #endif /* CONFIG_FLATMEM/DISCONTIGMEM/SPARSEMEM */
 
 // 2015-08-22
+// 2015-10-24;
 #define page_to_pfn __page_to_pfn
 // 2015-09-19;
 // 2015-10-03

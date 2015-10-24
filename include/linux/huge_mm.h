@@ -167,6 +167,7 @@ extern int do_huge_pmd_numa_page(struct mm_struct *mm, struct vm_area_struct *vm
 
 // 2015-04-11
 // 2015-10-10;
+// 2015-10-24;
 #define hpage_nr_pages(x) 1
 
 #define transparent_hugepage_enabled(__vma) 0

@@ -70,6 +70,9 @@ void do_invalidatepage(struct page *page, unsigned int offset,
 // cancel_dirty_page(page, PAGE_CACHE_SIZE/*4096*/);
 // 1. page의 zone에 vm_stat값을 dec, 
 // 2. backing_dev_info의 stat값을 dec
+//
+// 2015-10-24;
+// cancel_dirty_page(page, PAGE_CACHE_SIZE/*4096*/);
 void cancel_dirty_page(struct page *page, unsigned int account_size)
 {
 	if (TestClearPageDirty(page)) {

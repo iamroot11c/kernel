@@ -562,6 +562,9 @@ EXPORT_SYMBOL(radix_tree_lookup);
 // 2015-09-05;
 // radix_tree_tag_set(&mapping->page_tree,
 //                    page_index(page), PAGECACHE_TAG_DIRTY);
+// 2015-10-24;
+// radix_tree_tag_set(&mapping->page_tree,
+//                    page_index(page), PAGECACHE_TAG_DIRTY);
 void *radix_tree_tag_set(struct radix_tree_root *root,
 			unsigned long index, unsigned int tag)
 {

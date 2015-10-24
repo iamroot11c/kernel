@@ -243,11 +243,14 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 // 2015-10-03
 #define pte_pfn(pte)		((pte_val(pte) & PHYS_MASK/* 0xFFFF_FFFF*/) >> PAGE_SHIFT/*12*/)
 // 물리 주소와, PTE mask값을 or하면, pte가 된다.
+// 2015-10-24;
 #define pfn_pte(pfn,prot)	__pte(__pfn_to_phys(pfn) | pgprot_val(prot))
 
 // 2015-09-19;
 #define pte_page(pte)		pfn_to_page(pte_pfn(pte))
 // 2015-01-31
+// 2015-10-24;
+// mk_pte(new, vma->vm_page_prot)
 #define mk_pte(page,prot)	pfn_pte(page_to_pfn(page), prot)
 
 // 2015-08-22
@@ -303,12 +306,12 @@ static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
 #define PTE_BIT_FUNC(fn,op) \
 static inline pte_t pte_##fn(pte_t pte) { pte_val(pte) op; return pte; }
 
-PTE_BIT_FUNC(wrprotect, |= L_PTE_RDONLY);
-PTE_BIT_FUNC(mkwrite,   &= ~L_PTE_RDONLY);
-PTE_BIT_FUNC(mkclean,   &= ~L_PTE_DIRTY);
-PTE_BIT_FUNC(mkdirty,   |= L_PTE_DIRTY);
-PTE_BIT_FUNC(mkold,     &= ~L_PTE_YOUNG);
-PTE_BIT_FUNC(mkyoung,   |= L_PTE_YOUNG);
+PTE_BIT_FUNC(wrprotect, |= L_PTE_RDONLY);  // pte_wrprotect();
+PTE_BIT_FUNC(mkwrite,   &= ~L_PTE_RDONLY); // pte_mkwrite();
+PTE_BIT_FUNC(mkclean,   &= ~L_PTE_DIRTY);  // pte_mkclean();
+PTE_BIT_FUNC(mkdirty,   |= L_PTE_DIRTY);   // pte_mkdirty();
+PTE_BIT_FUNC(mkold,     &= ~L_PTE_YOUNG);  // pte_mkold();
+PTE_BIT_FUNC(mkyoung,   |= L_PTE_YOUNG);   // pte_mkyoung();
 
 static inline pte_t pte_mkspecial(pte_t pte) { return pte; }
 
@@ -333,15 +336,18 @@ static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
  */
 #define __SWP_TYPE_SHIFT	3
 #define __SWP_TYPE_BITS		5
-#define __SWP_TYPE_MASK		((1 << __SWP_TYPE_BITS) - 1)
+#define __SWP_TYPE_MASK		((1 << __SWP_TYPE_BITS) - 1) // 0x1F
 #define __SWP_OFFSET_SHIFT	(__SWP_TYPE_BITS/*5*/ + __SWP_TYPE_SHIFT/*3*/) // 8
 
-#define __swp_type(x)		(((x).val >> __SWP_TYPE_SHIFT) & __SWP_TYPE_MASK)
-#define __swp_offset(x)		((x).val >> __SWP_OFFSET_SHIFT)
+// 2015-10-24;
+#define __swp_type(x)		(((x).val >> __SWP_TYPE_SHIFT/*3*/) & __SWP_TYPE_MASK)
+// 2015-10-24;
+#define __swp_offset(x)		((x).val >> __SWP_OFFSET_SHIFT/*8*/)
 // 2015-10-10;
 // __swp_entry(swp_type(entry), swp_offset(entry));
 #define __swp_entry(type,offset) ((swp_entry_t) { ((type) << __SWP_TYPE_SHIFT/*3*/) | ((offset) << __SWP_OFFSET_SHIFT/*8*/) })
 
+// 2015-10-24;
 #define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val(pte) })
 // 2015-10-10;
 #define __swp_entry_to_pte(swp)	((pte_t) { (swp).val })
