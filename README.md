@@ -1,6 +1,14 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [75주차](https://goo.gl/0JCKNY) `2015.11.07`
+ - [kmem_cache_init() 진행중]()
+ - mm/rmap.c:__unmap_and_move() 진행중
+ - mm/rmap.c:try_to_unmap() 분석 완료
+ - mm/migrate.c:move_to_new_page() 분석중
+ - mm/rmap.c:rmap_walk_anon() 분석중
+ - mm/migrate.c:remove_migration_pte() 분석중
+
 + [73주차](http://bit.ly/1XpOmLF) `2015.10.24`
  - [kmem_cache_init() 진행중]()
  - mm/rmap.c:__unmap_and_move() 진행중
