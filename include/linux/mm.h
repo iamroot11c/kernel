@@ -1396,6 +1396,7 @@ static inline void pgtable_page_dtor(struct page *page)
 
 // 2015-08-22
 // 2015-10-10;
+// 2015-11-07
 #define pte_unmap_unlock(pte, ptl)	do {		\
 	spin_unlock(ptl);				\
 	pte_unmap(pte); /*no OP.*/					\ 

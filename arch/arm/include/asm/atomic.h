@@ -61,6 +61,7 @@ static inline void atomic_add(int i, atomic_t *v)
 // atomic_t 구조체의 counter 와 i 를 더한 후 결과를 리턴
 // 2015-10-10;
 // atomic_add_return(-1, &page->_mapcount)
+// 2015-11-07
 static inline int atomic_add_return(int i, atomic_t *v)
 {
 	unsigned long tmp;
@@ -69,7 +70,7 @@ static inline int atomic_add_return(int i, atomic_t *v)
 	smp_mb();
 
     // result = *(&v->counter);
-    // result += -1;
+    // result += i;
     // *(&v->counter) = result; 
     // tmp = 저장결과(성공 0, 실패 1)
 	__asm__ __volatile__("@ atomic_add_return\n"

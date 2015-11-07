@@ -9,6 +9,9 @@
 #if __LINUX_ARM_ARCH__ >= 7 ||		\
 	(__LINUX_ARM_ARCH__ == 6 && defined(CONFIG_CPU_32v6K))
 #define sev()	__asm__ __volatile__ ("sev" : : : "memory")
+// 2015-11-07
+// irq, fiq, 이벤트 레지스터 세팅 등의 이벤트가 일어날 때까지 대기
+// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0204ik/Cjafcggi.html
 #define wfe()	__asm__ __volatile__ ("wfe" : : : "memory")
 #define wfi()	__asm__ __volatile__ ("wfi" : : : "memory")
 #endif

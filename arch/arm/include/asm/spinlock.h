@@ -11,6 +11,18 @@
  * sev and wfe are ARMv6K extensions.  Uniprocessor ARMv6 may not have the K
  * extensions, so when running on UP, we have to patch these instructions away.
  */
+// 2015-11-07
+// ALT_SMP("sev", "nop")
+/* ex)
+ * 9998:   sev  
+ * .pushsection ".alt.smp.init", "a"  
+ * .long   9998b            
+ * nop
+ * .popsection
+ * */
+// http://www.iamroot.org/xe/Kernel_10_ARM/180812
+// http://stackoverflow.com/questions/17083941/what-does-alt-smp-and-alt-up-does
+// alt.smp.init 섹션에 원하는 명령어 패치를 하는 것으로 보인다.
 #define ALT_SMP(smp, up)					\
 	"9998:	" smp "\n"					\
 	"	.pushsection \".alt.smp.init\", \"a\"\n"	\
@@ -38,13 +50,16 @@
 	"nop.w"					\
 )
 #else
+// 2015-11-07
+// 모든 프로세서에 시그널을 보내는 명령
+// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.faqs/ka15473.html 
 #define SEV		ALT_SMP("sev", "nop")
 #define WFE(cond)	ALT_SMP("wfe" cond, "nop")
 #endif
 
+// 2015-11-07
 static inline void dsb_sev(void)
 {
-
 	dsb(ishst);
 	__asm__(SEV);
 }
@@ -62,12 +77,20 @@ static inline void dsb_sev(void)
 
 #define arch_spin_lock_flags(lock, flags) arch_spin_lock(lock)
 
+// 2015-11-07
 static inline void arch_spin_lock(arch_spinlock_t *lock)
 {
 	unsigned long tmp;
 	u32 newval;
 	arch_spinlock_t lockval;
 
+    /*
+    1: ldrex    lockval, [&lock->slock]
+    add         newval, lockval, 1 << TICKET_SHIFT
+    strex       tmp, newval, [&lock->slock]
+    teq         tmp, #0
+    bne         1b
+    */
 	__asm__ __volatile__(
 "1:	ldrex	%0, [%3]\n"
 "	add	%1, %0, %4\n"
@@ -84,12 +107,44 @@ static inline void arch_spin_lock(arch_spinlock_t *lock)
 	}
 
 	smp_mb();
+    // 2015-11-07 여기까지
 }
-
+// 2015-11-07
+// lock의 owner와 next가 같은 경우 참. lock의 16번 비트에 1을 설정하여 락 플래그를 갱신
+// lock의 owner와 next가 다른 경우 거짓. 그냥 빠져나온다.
 static inline int arch_spin_trylock(arch_spinlock_t *lock)
 {
 	unsigned long contended, res;
 	u32 slock;
+    
+    /*
+    ldrex   slock, [&lock->slock]
+    mov     res, #0
+    subs    contended, slock, slock, ror #16
+    addeq   slock, slock, (1 << TICKET_SHIFT)
+    strexeq res, slock, [&lock->slock]
+
+    == 
+    while(true)
+    {
+        slock = *(&lock->slock);
+        res = 0;
+        // slock이 하위 16비트와 상위 16비트가 같은 경우만
+        // (arch_spinlock_t타입을 보면 slock 변수가 16비트 단위로
+        // owner, next값이 설정되어 있기 때문에
+        // owner == next 값이 같은 경우만..) 
+        // contended가 0이다.
+        contended = (slock - (slock ror 16));
+        if (!contended)
+        {
+            // 16번째 비트를 설정해서 락에 대한 상태를 변경
+             slock += (1 << 16);
+            *(&lock->slock) = slock;
+            if (!res)
+                break;
+        }
+    }
+    */
 
 	do {
 		__asm__ __volatile__(
@@ -110,7 +165,7 @@ static inline int arch_spin_trylock(arch_spinlock_t *lock)
 		return 0;
 	}
 }
-
+// 2015-11-07
 static inline void arch_spin_unlock(arch_spinlock_t *lock)
 {
 	smp_mb();

@@ -11,6 +11,7 @@
 #include <linux/list.h>
 
 // CONFIG_DEBUG_PREEMPT defined
+// 2015-11-07
 #if defined(CONFIG_DEBUG_PREEMPT) || defined(CONFIG_PREEMPT_TRACER)
   extern void add_preempt_count(int val);
   extern void sub_preempt_count(int val);
@@ -28,7 +29,7 @@
 #ifdef CONFIG_PREEMPT   // set
 
 asmlinkage void preempt_schedule(void);
-
+// 2015-11-07
 #define preempt_check_resched() \
 do { \
 	if (unlikely(test_thread_flag(TIF_NEED_RESCHED))) \
@@ -58,7 +59,7 @@ do { \
 #endif /* CONFIG_PREEMPT */
 
 
-#ifdef CONFIG_PREEMPT_COUNT
+#ifdef CONFIG_PREEMPT_COUNT // set
 
 #define preempt_disable() \
 do { \
@@ -66,14 +67,18 @@ do { \
 	barrier(); \
 } while (0)
 
+// 2015-11-07
 #define sched_preempt_enable_no_resched() \
 do { \
 	barrier(); \
 	dec_preempt_count(); \
 } while (0)
 
+// 2015-11-07
 #define preempt_enable_no_resched()	sched_preempt_enable_no_resched()
 
+// 2015-11-07
+// preempt count 감소, 만약 필요하다면 리스케줄
 #define preempt_enable() \
 do { \
 	preempt_enable_no_resched(); \

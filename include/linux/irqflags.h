@@ -56,6 +56,7 @@
 /*
  * Wrap the arch provided IRQ routines to provide appropriate checks.
  */
+ // 2015-11-07
 #define raw_local_irq_disable()		arch_local_irq_disable()
 #define raw_local_irq_enable()		arch_local_irq_enable()
 #define raw_local_irq_save(flags)			\
@@ -88,6 +89,7 @@
 #ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT    // set
 #define local_irq_enable() \
 	do { trace_hardirqs_on(); raw_local_irq_enable(); } while (0)
+ // 2015-11-07
 #define local_irq_disable() \
 	do { raw_local_irq_disable(); trace_hardirqs_off(); } while (0)
 #define local_irq_save(flags)				\
@@ -96,14 +98,18 @@
 		trace_hardirqs_off();			\
 	} while (0)
 
-
+// 2015-11-07
+// 이 함수에서 flags에 해당되는 값은 cpsr 등의 상태 값일 것이다.
 #define local_irq_restore(flags)			\
 	do {						\
+        /*IRQ I Mask bit가 flag에 세팅된 경우*/\
 		if (raw_irqs_disabled_flags(flags)) {	\
+            /*cpsr_c에 flags값을 저장*/\
 			raw_local_irq_restore(flags);	\
 			trace_hardirqs_off();		\
 		} else {				\
 			trace_hardirqs_on();		\
+            /*cpsr_c에 flags값을 저장*/\
 			raw_local_irq_restore(flags);	\
 		}					\
 	} while (0)

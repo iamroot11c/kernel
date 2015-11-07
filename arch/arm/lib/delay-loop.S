@@ -41,6 +41,7 @@ ENTRY(__loop_const_udelay)			@ 0 <= r0 <= 0x7fffff06
  * loops = r0 * HZ * loops_per_jiffy / 1000000
  */
 
+// arm __delay 함수 구현부
 @ Delay routine
 ENTRY(__loop_delay)
 		subs	r0, r0, #1

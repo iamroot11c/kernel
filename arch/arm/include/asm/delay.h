@@ -27,6 +27,7 @@ extern struct arm_delay_ops {
 	unsigned long ticks_per_jiffy;
 } arm_delay_ops;
 
+// 2015-11-07
 #define __delay(n)		arm_delay_ops.delay(n)
 
 /*

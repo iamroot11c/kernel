@@ -137,6 +137,7 @@ do {								\
 #define raw_spin_unlock_wait(lock)	arch_spin_unlock_wait(&(lock)->raw_lock)
 
 #ifdef CONFIG_DEBUG_SPINLOCK
+// 2015-11-07
  extern void do_raw_spin_lock(raw_spinlock_t *lock) __acquires(lock);
 #define do_raw_spin_lock_flags(lock, flags) do_raw_spin_lock(lock)
  extern int do_raw_spin_trylock(raw_spinlock_t *lock);
@@ -159,7 +160,7 @@ static inline int do_raw_spin_trylock(raw_spinlock_t *lock)
 {
 	return arch_spin_trylock(&(lock)->raw_lock);
 }
-
+// 2015-11-07
 static inline void do_raw_spin_unlock(raw_spinlock_t *lock) __releases(lock)
 {
 	arch_spin_unlock(&lock->raw_lock);

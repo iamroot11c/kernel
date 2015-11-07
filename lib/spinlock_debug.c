@@ -77,6 +77,7 @@ static void spin_bug(raw_spinlock_t *lock, const char *msg)
 
 #define SPIN_BUG_ON(cond, lock, msg) if (unlikely(cond)) spin_bug(lock, msg)
 
+// 2015-11-07
 static inline void
 debug_spin_lock_before(raw_spinlock_t *lock)
 {
@@ -91,7 +92,7 @@ static inline void debug_spin_lock_after(raw_spinlock_t *lock)
 	lock->owner_cpu = raw_smp_processor_id();
 	lock->owner = current;
 }
-
+// 2015-11-07
 static inline void debug_spin_unlock(raw_spinlock_t *lock)
 {
 	SPIN_BUG_ON(lock->magic != SPINLOCK_MAGIC, lock, "bad magic");
@@ -103,9 +104,12 @@ static inline void debug_spin_unlock(raw_spinlock_t *lock)
 	lock->owner_cpu = -1;
 }
 
+// 2015-11-07
 static void __spin_lock_debug(raw_spinlock_t *lock)
 {
 	u64 i;
+	// loops_per_jiffy 초기값 : 4096(1 << 12), HZ : 100
+	// 최소 40만번 루프 시도
 	u64 loops = loops_per_jiffy * HZ;
 
 	for (i = 0; i < loops; i++) {
@@ -127,14 +131,17 @@ static void __spin_lock_debug(raw_spinlock_t *lock)
 	 * not successful, the end-result is the same - there is no forward
 	 * progress.
 	 */
+	// 2015-11-07
 	arch_spin_lock(&lock->raw_lock);
+	// 2015-11-07 여기까지
 }
-
+// 2015-11-07
 void do_raw_spin_lock(raw_spinlock_t *lock)
 {
 	debug_spin_lock_before(lock);
 	if (unlikely(!arch_spin_trylock(&lock->raw_lock)))
 		__spin_lock_debug(lock);
+	// 2015-11-07 여기까지
 	debug_spin_lock_after(lock);
 }
 
@@ -152,7 +159,7 @@ int do_raw_spin_trylock(raw_spinlock_t *lock)
 #endif
 	return ret;
 }
-
+// 2015-11-07
 void do_raw_spin_unlock(raw_spinlock_t *lock)
 {
 	debug_spin_unlock(lock);

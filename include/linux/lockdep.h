@@ -378,9 +378,11 @@ static inline void lockdep_on(void)
 // 2015-08-08;
 // 2015-08-15
 // 2015-10-10;
+// 2015-11-07
 # define lock_acquire(l, s, t, r, c, n, i)	do { } while (0)
 // 2015-08-08;
 // 2015-08-15
+// 2015-11-07
 # define lock_release(l, n, i)			do { } while (0)
 # define lock_set_class(l, n, k, s, i)		do { } while (0)
 # define lock_set_subclass(l, s, i)		do { } while (0)
@@ -443,6 +445,7 @@ do {								\
 #define lock_acquired(lockdep_map, ip) do {} while (0)
 
 // 2015-08-08;
+// 2015-11-07
 #define LOCK_CONTENDED(_lock, try, lock) \
 	lock(_lock)
 
@@ -491,6 +494,7 @@ static inline void print_irqtrace_events(struct task_struct *curr)
  #define lock_acquire_shared_recursive(l, s, t, n, i)	lock_acquire(l, s, t, 2, 2, n, i)
 #else
  // 2015-08-08;
+ // 2015-11-07
  #define lock_acquire_exclusive(l, s, t, n, i)		lock_acquire(l, s, t, 0, 1, n, i)
 // 2015-08-15
  #define lock_acquire_shared(l, s, t, n, i)		lock_acquire(l, s, t, 1, 1, n, i)
@@ -499,6 +503,7 @@ static inline void print_irqtrace_events(struct task_struct *curr)
 
 #define spin_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
 #define spin_acquire_nest(l, s, t, n, i)	lock_acquire_exclusive(l, s, t, n, i)
+// 2015-11-07
 #define spin_release(l, n, i)			lock_release(l, n, i)
 
 #define rwlock_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)

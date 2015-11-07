@@ -7,6 +7,7 @@
 
 #define TICKET_SHIFT	16
 
+// 2015-11-07
 typedef struct {
 	union {
 		u32 slock;

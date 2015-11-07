@@ -83,6 +83,7 @@ static inline struct anon_vma *anon_vma_alloc(void)
 }
 
 // 2015-08-08;
+// 2015-11-07
 static inline void anon_vma_free(struct anon_vma *anon_vma)
 {
 	VM_BUG_ON(atomic_read(&anon_vma->refcount));
@@ -104,7 +105,8 @@ static inline void anon_vma_free(struct anon_vma *anon_vma)
 	 * LOCK should suffice since the actual taking of the lock must
 	 * happen _before_ what follows.
 	 */
-	//  rw_semaphore 구조체의 activity 멤버변수가 0인지 조사
+	//  rw_semaphore가 사용 중인지를 확인.
+	//  세마포어의 wait_lock이 걸려있는 경우(접근 불가 경우..)도 true
 	if (rwsem_is_locked(&anon_vma->root->rwsem)) {
 		anon_vma_lock_write(anon_vma);
 		anon_vma_unlock_write(anon_vma);
@@ -1806,11 +1808,13 @@ int try_to_munlock(struct page *page)
 }
 
 // 2015-08-08;
+// 2015-11-07
 void __put_anon_vma(struct anon_vma *anon_vma)
 {
 	struct anon_vma *root = anon_vma->root;
 
 	if (root != anon_vma && atomic_dec_and_test(&root->refcount))
+		// 2015-11-07
 		anon_vma_free(root);
 
 	anon_vma_free(anon_vma);
@@ -1849,6 +1853,8 @@ static int rmap_walk_anon(struct page *page, int (*rmap_one)(struct page *,
 		if (ret != SWAP_AGAIN)
 			break;
 	}
+	// 2015-11-07
+	// anon_vma의 rw 세마포어 반납
 	anon_vma_unlock_read(anon_vma);
 	return ret;
 }

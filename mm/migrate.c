@@ -167,7 +167,7 @@ static int remove_migration_pte(struct page *new, struct vm_area_struct *vma,
 
 		ptl = pte_lockptr(mm, pmd);
 	}
-
+	// ptl locking
  	spin_lock(ptl);
 	pte = *ptep;
 	if (!is_swap_pte(pte))
@@ -204,11 +204,15 @@ static int remove_migration_pte(struct page *new, struct vm_area_struct *vma,
 		page_add_anon_rmap(new, vma, addr);
 	        // 2015-10-24 여기까지;
 	else
+		// 2015-11-07. 분석 시 pageAnon 타입으로 들어왔기 때문에 분석하지 않는다.
 		page_add_file_rmap(new);
 
 	/* No need to invalidate - it was non-present before */
+	//  NO OP(arm 버전이 높다.)
 	update_mmu_cache(vma, addr, ptep);
 unlock:
+	// 2015-11-07
+	// 현 분석버전에서는 단순히 ptl unlocking
 	pte_unmap_unlock(ptep, ptl);
 out:
 	return SWAP_AGAIN;
@@ -914,10 +918,12 @@ skip_unmap:
 		rc = move_to_new_page(newpage, page, remap_swapcache, mode);
 
 	if (rc && remap_swapcache)
+		// 2015-11-07
 		remove_migration_ptes(page, page);
 
 	/* Drop an anon_vma reference if we took one */
 	if (anon_vma)
+		// 2015-11-07
 		put_anon_vma(anon_vma);
 
 uncharge:

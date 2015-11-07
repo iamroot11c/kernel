@@ -2257,6 +2257,7 @@ void __kprobes add_preempt_count(int val)
 }
 EXPORT_SYMBOL(add_preempt_count);
 
+// 2015-11-07
 void __kprobes sub_preempt_count(int val)
 {
 #ifdef CONFIG_DEBUG_PREEMPT
@@ -2538,6 +2539,7 @@ void __sched schedule_preempt_disabled(void)
  */
 // 2015-01-31, 시작
 // 2015-02-07, 끝
+// 2015-11-07
 asmlinkage void __sched notrace preempt_schedule(void)
 {
 	/*

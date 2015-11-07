@@ -237,6 +237,7 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 // __pte_map(pmd)는 가상주소 + pte_index(addr)
 #define pte_offset_map(pmd,addr)	(__pte_map(pmd) + pte_index(addr))
 // 2015-08-22
+// 2015-11-07
 #define pte_unmap(pte)			__pte_unmap(pte)
 // 2015-08-22
 // 아래 연산을통해 추론해 보면, pte는 물리주소임을 알 수 있다.

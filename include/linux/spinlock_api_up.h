@@ -75,7 +75,7 @@
 #define _raw_spin_unlock_irq(lock)		__UNLOCK_IRQ(lock)
 #define _raw_read_unlock_irq(lock)		__UNLOCK_IRQ(lock)
 #define _raw_write_unlock_irq(lock)		__UNLOCK_IRQ(lock)
-#define _raw_spin_unlock_irqrestore(lock, flags) \
+#define _raw_spin_unlock_irqrestore1(lock, flags) \
 					__UNLOCK_IRQRESTORE(lock, flags)
 #define _raw_read_unlock_irqrestore(lock, flags) \
 					__UNLOCK_IRQRESTORE(lock, flags)

@@ -28,6 +28,8 @@
 /*
  * Default to the loop-based delay implementation.
  */
+// 2015-11-07
+// delay 함수 구현 살펴봄
 struct arm_delay_ops arm_delay_ops = {
 	.delay		= __loop_delay,
 	.const_udelay	= __loop_const_udelay,

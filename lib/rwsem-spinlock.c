@@ -23,6 +23,7 @@ struct rwsem_waiter {
 };
 
 // 2015-08-08;
+// 2015-11-07
 int rwsem_is_locked(struct rw_semaphore *sem)
 {
 	int ret = 1;

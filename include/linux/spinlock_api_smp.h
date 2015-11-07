@@ -120,7 +120,7 @@ static inline unsigned long __raw_spin_lock_irqsave(raw_spinlock_t *lock)
 #endif
 	return flags;
 }
-
+// 2015-11-07
 static inline void __raw_spin_lock_irq(raw_spinlock_t *lock)
 {
 	local_irq_disable();
@@ -152,11 +152,11 @@ static inline void __raw_spin_unlock(raw_spinlock_t *lock)
 	do_raw_spin_unlock(lock);
 	preempt_enable();
 }
-
+// 2015-11-07
 static inline void __raw_spin_unlock_irqrestore(raw_spinlock_t *lock,
 					    unsigned long flags)
 {
-	spin_release(&lock->dep_map, 1, _RET_IP_);
+	spin_release(&lock->dep_map, 1, _RET_IP_); // NO OP
 	do_raw_spin_unlock(lock);
 	local_irq_restore(flags);
 	preempt_enable();

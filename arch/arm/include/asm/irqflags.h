@@ -13,6 +13,7 @@
 #define IRQMASK_REG_NAME_W "primask"
 #define IRQMASK_I_BIT	1
 #else
+// http://egloos.zum.com/recipes/v/5033184
 #define IRQMASK_REG_NAME_R "cpsr"
 #define IRQMASK_REG_NAME_W "cpsr_c"
 #define IRQMASK_I_BIT	PSR_I_BIT
@@ -91,6 +92,7 @@ static inline void arch_local_irq_enable(void)
 /*
  * Disable IRQs
  */
+// cpsr에서 IRQ bit를 1로 변경(== disable 설정 처리)
 static inline void arch_local_irq_disable(void)
 {
 	unsigned long temp;
@@ -151,6 +153,7 @@ static inline unsigned long arch_local_save_flags(void)
 /*
  * restore saved IRQ & FIQ state
  */
+// 2015-11-07
 static inline void arch_local_irq_restore(unsigned long flags)
 {
     // flags에 저장한 PSR(Program Status Register)의 값을 
@@ -164,6 +167,7 @@ static inline void arch_local_irq_restore(unsigned long flags)
 
 // 낚이지 말자.
 // 현재 CPSR에서 7번째, IRQ MASK BIT 값을 읽어오는 기능.
+// 2015-11-07
 static inline int arch_irqs_disabled_flags(unsigned long flags)
 {
 	return flags & IRQMASK_I_BIT;

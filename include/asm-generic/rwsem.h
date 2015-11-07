@@ -23,10 +23,10 @@
 #endif
 
 #define RWSEM_UNLOCKED_VALUE		0x00000000L
-#define RWSEM_ACTIVE_BIAS		0x00000001L
-#define RWSEM_WAITING_BIAS		(-RWSEM_ACTIVE_MASK-1)
+#define RWSEM_ACTIVE_BIAS		0x00000001L 
+#define RWSEM_WAITING_BIAS		(-RWSEM_ACTIVE_MASK-1) /*0*/
 #define RWSEM_ACTIVE_READ_BIAS		RWSEM_ACTIVE_BIAS
-#define RWSEM_ACTIVE_WRITE_BIAS		(RWSEM_WAITING_BIAS + RWSEM_ACTIVE_BIAS)
+#define RWSEM_ACTIVE_WRITE_BIAS		(RWSEM_WAITING_BIAS + RWSEM_ACTIVE_BIAS) /*1*/
 
 /*
  * lock for reading
@@ -54,6 +54,7 @@ static inline int __down_read_trylock(struct rw_semaphore *sem)
 /*
  * lock for writing
  */
+// 2015-11-07
 static inline void __down_write_nested(struct rw_semaphore *sem, int subclass)
 {
 	long tmp;
