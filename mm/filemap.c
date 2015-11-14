@@ -624,6 +624,8 @@ EXPORT_SYMBOL_GPL(add_page_wait_queue);
  */
 // 2015-10-17
 // page flags, PG_locked에 대해서 갱신
+//
+// 2015-11-14;
 void unlock_page(struct page *page)
 {
 	VM_BUG_ON(!PageLocked(page));

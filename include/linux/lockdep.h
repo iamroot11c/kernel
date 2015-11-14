@@ -386,7 +386,9 @@ static inline void lockdep_on(void)
 # define lock_release(l, n, i)			do { } while (0)
 # define lock_set_class(l, n, k, s, i)		do { } while (0)
 # define lock_set_subclass(l, s, i)		do { } while (0)
+// 2015-11-14;
 # define lockdep_set_current_reclaim_state(g)	do { } while (0)
+// 2015-11-14;
 # define lockdep_clear_current_reclaim_state()	do { } while (0)
 # define lockdep_trace_alloc(g)			do { } while (0) // 2015-05-23;
 # define lockdep_init()				do { } while (0)

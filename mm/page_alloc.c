@@ -1352,10 +1352,21 @@ void drain_zone_pages(struct zone *zone, struct per_cpu_pages *pcp)
  * is not online.
  */
 // 2015-04-25
+//
+// 2015-11-14;
+// drain_pages(get_cpu());
 static void drain_pages(unsigned int cpu)
 {
 	unsigned long flags;
 	struct zone *zone;
+
+	// #define for_each_populated_zone(zone)               \
+	//     for (zone = (first_online_pgdat())->node_zones; \
+	//          zone;                  \
+	//          zone = next_zone(zone))            \
+	//         if (!populated_zone(zone))      \
+	//             ; /* do nothing */      \
+	//         else
 
 	for_each_populated_zone(zone) {
 		struct per_cpu_pageset *pset;
@@ -1366,6 +1377,7 @@ static void drain_pages(unsigned int cpu)
 
 		pcp = &pset->pcp;
 		if (pcp->count) {
+			// 0보다 클경우(또는 0이 아닌경우)
 			free_pcppages_bulk(zone, pcp->count, pcp);
 			pcp->count = 0;
 		}
@@ -2093,6 +2105,7 @@ static inline void init_zone_allows_reclaim(int nid)
 //                              zonelist, high_zoneidx, ALLOC_NO_WATERMARKS,
 //                              preferred_zone, migratetype);
 //
+// 2015-11-14;
 static struct page *
 get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
 		struct zonelist *zonelist, int high_zoneidx, int alloc_flags,
@@ -2464,6 +2477,7 @@ out:
 //                                          &deferred_compaction,
 //                                          &did_some_progress);
 //
+// 2015-11-14 완료;
 static struct page *
 __alloc_pages_direct_compact(gfp_t gfp_mask, unsigned int order,
 	struct zonelist *zonelist, enum zone_type high_zoneidx,
@@ -2481,11 +2495,15 @@ __alloc_pages_direct_compact(gfp_t gfp_mask, unsigned int order,
 		return NULL;
 	}
 
+	// 임시로 PF_MEMALLOC 플래그를 셋
 	current->flags |= PF_MEMALLOC;
 	// 2015-06-20 시작;
 	*did_some_progress = try_to_compact_pages(zonelist, order, gfp_mask,
 						nodemask, sync_migration,
 						contended_compaction);
+	// 2015-11-14 완료;
+	
+	// 임시로 셋한 플래그를 클리어
 	current->flags &= ~PF_MEMALLOC;
 
 	if (*did_some_progress != COMPACT_SKIPPED) {
@@ -2524,7 +2542,7 @@ __alloc_pages_direct_compact(gfp_t gfp_mask, unsigned int order,
 			defer_compaction(preferred_zone, order);
 
 		cond_resched();
-	}
+	} // if
 
 	return NULL;
 }
@@ -2542,6 +2560,7 @@ __alloc_pages_direct_compact(gfp_t gfp_mask, unsigned int order,
 #endif /* CONFIG_COMPACTION */
 
 /* Perform direct synchronous page reclaim */
+// 2015-11-14;
 static int
 __perform_reclaim(gfp_t gfp_mask, unsigned int order, struct zonelist *zonelist,
 		  nodemask_t *nodemask)
@@ -2552,17 +2571,18 @@ __perform_reclaim(gfp_t gfp_mask, unsigned int order, struct zonelist *zonelist,
 	cond_resched();
 
 	/* We now go into synchronous reclaim */
-	cpuset_memory_pressure_bump();
+	cpuset_memory_pressure_bump(); // No OP.
 	current->flags |= PF_MEMALLOC;
-	lockdep_set_current_reclaim_state(gfp_mask);
+	lockdep_set_current_reclaim_state(gfp_mask); // No OP.
 	reclaim_state.reclaimed_slab = 0;
-	current->reclaim_state = &reclaim_state;
+	current->reclaim_state = &reclaim_state; // 지역변수를 임시로 저장
 
+	// 2015-11-14;
 	progress = try_to_free_pages(zonelist, order, gfp_mask, nodemask);
 
 	current->reclaim_state = NULL;
-	lockdep_clear_current_reclaim_state();
-	current->flags &= ~PF_MEMALLOC;
+	lockdep_clear_current_reclaim_state(); // No OP.
+	current->flags &= ~PF_MEMALLOC; // 임시로 셋한 플래그를 클리어
 
 	cond_resched();
 
@@ -2570,6 +2590,12 @@ __perform_reclaim(gfp_t gfp_mask, unsigned int order, struct zonelist *zonelist,
 }
 
 /* The really slow allocator path where we enter direct reclaim */
+// 2015-11-14;
+// page = __alloc_pages_direct_reclaim(gfp_mask, order,
+//                                zonelist, high_zoneidx,
+//                                nodemask,
+//                                alloc_flags, preferred_zone,
+//                                migratetype, &did_some_progress);
 static inline struct page *
 __alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
 	struct zonelist *zonelist, enum zone_type high_zoneidx,
@@ -2579,6 +2605,7 @@ __alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
 	struct page *page = NULL;
 	bool drained = false;
 
+	// 2015-11-14 시작
 	*did_some_progress = __perform_reclaim(gfp_mask, order, zonelist,
 					       nodemask);
 	if (unlikely(!(*did_some_progress)))
@@ -2868,6 +2895,8 @@ rebalance:
 					&contended_compaction,
 					&deferred_compaction,
 					&did_some_progress);
+	// 2015-11-14 완료;
+
 	if (page)
 		goto got_pg;
 	sync_migration = true;
@@ -2883,6 +2912,7 @@ rebalance:
 		goto nopage;
 
 	/* Try direct reclaim and then allocating */
+	// 2015-11-14 시작;
 	page = __alloc_pages_direct_reclaim(gfp_mask, order,
 					zonelist, high_zoneidx,
 					nodemask,
@@ -3127,6 +3157,9 @@ EXPORT_SYMBOL(get_zeroed_page);
 
 // 2015-05-09;
 // __free_pages(page, order);
+//
+// 2015-11-14;
+// __free_pages((page), 0)
 void __free_pages(struct page *page, unsigned int order)
 {
 	// 2015-05-16, __free_reserved_page() 수행 중,

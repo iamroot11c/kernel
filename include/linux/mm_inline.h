@@ -21,6 +21,9 @@
 // 2015-06-20
 // 2015-07-04;
 // 2015-10-10;
+// http://www.programering.com/q/MTN5EDNwATg.html
+//  PG_swapbacked said a page is to exchange / exchange files as reserve space, 
+//  analogous to the page cache page, it is stored in the medium of the file as a reserve space. 
 static inline int page_is_file_cache(struct page *page)
 {
 	return !PageSwapBacked(page);

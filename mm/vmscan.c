@@ -55,6 +55,7 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/vmscan.h>
 
+// 2015-11-14;
 struct scan_control {
 	/* Incremented by the number of inactive pages that were scanned */
 	unsigned long nr_scanned;
@@ -600,6 +601,7 @@ int remove_mapping(struct address_space *mapping, struct page *page)
  */
 // 2015-07-11
 // 2015-10-10;
+// 2015-11-14;
 void putback_lru_page(struct page *page)
 {
 	bool is_unevictable;
@@ -2487,6 +2489,8 @@ out:
 	return 0;
 }
 
+// 2015-11-14;
+// pfmemalloc_watermark_ok(pgdat)
 static bool pfmemalloc_watermark_ok(pg_data_t *pgdat)
 {
 	struct zone *zone;
@@ -2495,13 +2499,13 @@ static bool pfmemalloc_watermark_ok(pg_data_t *pgdat)
 	int i;
 	bool wmark_ok;
 
-	for (i = 0; i <= ZONE_NORMAL; i++) {
+	for (i = 0; i <= ZONE_NORMAL/*0*/; i++) {
 		zone = &pgdat->node_zones[i];
 		pfmemalloc_reserve += min_wmark_pages(zone);
 		free_pages += zone_page_state(zone, NR_FREE_PAGES);
 	}
 
-	wmark_ok = free_pages > pfmemalloc_reserve / 2;
+	wmark_ok = free_pages > (pfmemalloc_reserve / 2);
 
 	/* kswapd must be awake if processes are being throttled */
 	if (!wmark_ok && waitqueue_active(&pgdat->kswapd_wait)) {
@@ -2522,6 +2526,8 @@ static bool pfmemalloc_watermark_ok(pg_data_t *pgdat)
  * Returns true if a fatal signal was delivered during throttling. If this
  * happens, the page allocator should not consider triggering the OOM killer.
  */
+// 2015-11-14;
+// throttle_direct_reclaim(gfp_mask, zonelist, nodemask)
 static bool throttle_direct_reclaim(gfp_t gfp_mask, struct zonelist *zonelist,
 					nodemask_t *nodemask)
 {
@@ -2582,6 +2588,8 @@ out:
 	return false;
 }
 
+// 2015-11-14;
+// try_to_free_pages(zonelist, order, gfp_mask, nodemask);
 unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
 				gfp_t gfp_mask, nodemask_t *nodemask)
 {
@@ -2611,11 +2619,12 @@ unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
 
 	trace_mm_vmscan_direct_reclaim_begin(order,
 				sc.may_writepage,
-				gfp_mask);
+				gfp_mask); // 분석 안함
+	// 2015-11-14 여기까지;
 
 	nr_reclaimed = do_try_to_free_pages(zonelist, &sc, &shrink);
 
-	trace_mm_vmscan_direct_reclaim_end(nr_reclaimed);
+	trace_mm_vmscan_direct_reclaim_end(nr_reclaimed); // 분석 안함
 
 	return nr_reclaimed;
 }

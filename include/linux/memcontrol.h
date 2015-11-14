@@ -329,6 +329,7 @@ mem_cgroup_prepare_migration(struct page *page, struct page *newpage,
 {
 }
 
+// 2015-11-14;
 static inline void mem_cgroup_end_migration(struct mem_cgroup *memcg,
 		struct page *oldpage, struct page *newpage, bool migration_ok)
 {

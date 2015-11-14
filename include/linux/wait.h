@@ -105,6 +105,8 @@ static inline void init_waitqueue_func_entry(wait_queue_t *q,
 
 // 2015-06-06
 // wait queue에 남아 있는 작업이 있는지 여부를 반환
+//
+// 2015-11-14;
 static inline int waitqueue_active(wait_queue_head_t *q)
 {
 	return !list_empty(&q->task_list);
@@ -172,6 +174,7 @@ wait_queue_head_t *bit_waitqueue(void *, int);
 #define wake_up_locked(x)		__wake_up_locked((x), TASK_NORMAL, 1)
 #define wake_up_all_locked(x)		__wake_up_locked((x), TASK_NORMAL, 0)
 
+// 2015-11-14;
 #define wake_up_interruptible(x)	__wake_up(x, TASK_INTERRUPTIBLE, 1, NULL)
 #define wake_up_interruptible_nr(x, nr)	__wake_up(x, TASK_INTERRUPTIBLE, nr, NULL)
 #define wake_up_interruptible_all(x)	__wake_up(x, TASK_INTERRUPTIBLE, 0, NULL)
@@ -304,6 +307,7 @@ do {									\
 	__ret;								\
 })
 
+// 2015-11-14;
 #define __wait_event_interruptible_timeout(wq, condition, ret)		\
 do {									\
 	DEFINE_WAIT(__wait);						\
@@ -344,6 +348,10 @@ do {									\
  * a signal, or the remaining jiffies (at least 1) if the @condition
  * evaluated to %true before the @timeout elapsed.
  */
+// 2015-11-14;
+// wait_event_interruptible_timeout(pgdat->pfmemalloc_wait,
+//         pfmemalloc_watermark_ok(pgdat), HZ); 
+//
 #define wait_event_interruptible_timeout(wq, condition, timeout)	\
 ({									\
 	long __ret = timeout;						\
@@ -617,17 +625,19 @@ do {									\
 
 
 
+// 2015-11-14;
+// kill 시그널을 받을 때까지 계속 스케줄링함 
 #define __wait_event_killable(wq, condition, ret)			\
 do {									\
 	DEFINE_WAIT(__wait);						\
 									\
 	for (;;) {							\
 		prepare_to_wait(&wq, &__wait, TASK_KILLABLE);		\
-		if (condition)						\
+		if (condition) /* 함수로 치환됨 */						\
 			break;						\
 		if (!fatal_signal_pending(current)) {			\
 			schedule();					\
-			continue;					\
+			continue; /* 시그널을 받을 때까지 계속 */					\
 		}							\
 		ret = -ERESTARTSYS;					\
 		break;							\
@@ -650,10 +660,13 @@ do {									\
  * The function will return -ERESTARTSYS if it was interrupted by a
  * signal and 0 if @condition evaluated to true.
  */
+// 2015-11-14;
+// wait_event_killable(zone->zone_pgdat->pfmemalloc_wait,
+//         pfmemalloc_watermark_ok(pgdat));
 #define wait_event_killable(wq, condition)				\
 ({									\
 	int __ret = 0;							\
-	if (!(condition))						\
+	if (!(condition)) /* pfmemalloc_watermark_ok(pgdat) 함수로 치환 */						\
 		__wait_event_killable(wq, condition, __ret);		\
 	__ret;								\
 })

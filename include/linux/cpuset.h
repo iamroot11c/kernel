@@ -182,6 +182,7 @@ static inline int cpuset_mems_allowed_intersects(const struct task_struct *tsk1,
 	return 1;
 }
 
+// 2015-11-14;
 static inline void cpuset_memory_pressure_bump(void) {}
 
 static inline void cpuset_task_status_allowed(struct seq_file *m,

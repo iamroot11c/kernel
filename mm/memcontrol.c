@@ -240,6 +240,7 @@ static void mem_cgroup_oom_notify(struct mem_cgroup *memcg);
  * no reclaim occurs from a cgroup at it's low water mark, this is
  * a feature that will be implemented much later in the future.
  */
+// 2015-11-14
 struct mem_cgroup {
 	struct cgroup_subsys_state css;
 	/*

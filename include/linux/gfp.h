@@ -283,6 +283,8 @@ static inline int allocflags_to_migratetype(gfp_t gfp_flags)
 // 2015-04-10 보충
 // GFP mask에서 하위 4비트는 zone을 나타내는 영역이며
 // gfp_zone() 함수는 인자로 전달된 flags에서 zone을 찾음
+//
+// 2015-11-14;
 static inline enum zone_type gfp_zone(gfp_t flags)
 {
 	enum zone_type z;
@@ -446,6 +448,7 @@ extern void free_hot_cold_page_list(struct list_head *list, int cold);
 extern void __free_memcg_kmem_pages(struct page *page, unsigned int order);
 extern void free_memcg_kmem_pages(unsigned long addr, unsigned int order);
 
+// 2015-11-14;
 #define __free_page(page) __free_pages((page), 0)
 #define free_page(addr) free_pages((addr), 0)
 

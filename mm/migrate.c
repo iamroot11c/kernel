@@ -101,6 +101,9 @@ void putback_lru_pages(struct list_head *l)
  */
 // 2015-07-11
 // putback_movable_pages(&cc->migratepages);
+//
+// 2015-11-14;
+// putback_movable_pages(&cc->migratepages);
 void putback_movable_pages(struct list_head *l)
 {
 	struct page *page;
@@ -927,12 +930,17 @@ skip_unmap:
 		put_anon_vma(anon_vma);
 
 uncharge:
+	// 2015-11-14 시작;
+	// No OP.
 	mem_cgroup_end_migration(mem, page, newpage,
 				 (rc == MIGRATEPAGE_SUCCESS ||
 				  rc == MIGRATEPAGE_BALLOON_SUCCESS));
+	// 2015-11-14;
 	unlock_page(page);
 out:
 	return rc;
+
+	// 2015-11-14 분석완료;
 }
 
 /*
@@ -966,6 +974,7 @@ static int unmap_and_move(new_page_t get_new_page, unsigned long private,
 			goto out;
 
 	rc = __unmap_and_move(page, newpage, force, mode);
+	// 2015-11-14 분석완료;
 
 	if (unlikely(rc == MIGRATEPAGE_BALLOON_SUCCESS)) {
 		/*
@@ -973,8 +982,10 @@ static int unmap_and_move(new_page_t get_new_page, unsigned long private,
 		 * Now, it's the time to wrap-up counters,
 		 * handle the page back to Buddy and return.
 		 */
+		// 2015-11-14;
 		dec_zone_page_state(page, NR_ISOLATED_ANON +
 				    page_is_file_cache(page));
+		// 2015-11-14;
 		balloon_page_free(page);
 		return MIGRATEPAGE_SUCCESS;
 	}
@@ -1003,6 +1014,7 @@ out:
 			*result = page_to_nid(newpage);
 	}
 	return rc;
+	// 2015-11-14 분석완료;
 }
 
 /*
@@ -1108,6 +1120,7 @@ out:
 // migrate_pages(&cc->migratepages, compaction_alloc,(unsigned long)cc,
 //		cc->sync ? MIGRATE_SYNC_LIGHT : MIGRATE_ASYNC,
 // 		MR_COMPACTION);
+// 2015-11-14 분석완료;
 int migrate_pages(struct list_head *from, new_page_t get_new_page,
 		unsigned long private, enum migrate_mode mode, int reason)
 {
@@ -1121,8 +1134,10 @@ int migrate_pages(struct list_head *from, new_page_t get_new_page,
 	int rc;
 
 	if (!swapwrite)
+		// 임시로 플래그를 설정
 		current->flags |= PF_SWAPWRITE;
 
+	// 최대 10번까지 시도
 	for(pass = 0; pass < 10 && retry; pass++) {
 		retry = 0;
 		//#define list_for_each_entry_safe(pos, n, head, member)          \
@@ -1149,12 +1164,13 @@ int migrate_pages(struct list_head *from, new_page_t get_new_page,
 			else
 				rc = unmap_and_move(get_new_page, private,
 						page, pass > 2, mode);
+				// 2015-11-14 분석완료;
 
 			switch(rc) {
 			case -ENOMEM:
 				goto out;
 			case -EAGAIN:
-				retry++;
+				retry++; // 재 시도
 				break;
 			case MIGRATEPAGE_SUCCESS:
 				nr_succeeded++;
@@ -1164,20 +1180,22 @@ int migrate_pages(struct list_head *from, new_page_t get_new_page,
 				nr_failed++;
 				break;
 			}
-		}
-	}
+		} // list_for_each_entry_safe
+	} // for
 	rc = nr_failed + retry;
 out:
 	if (nr_succeeded)
 		count_vm_events(PGMIGRATE_SUCCESS, nr_succeeded);
 	if (nr_failed)
 		count_vm_events(PGMIGRATE_FAIL, nr_failed);
-	trace_mm_migrate_pages(nr_succeeded, nr_failed, mode, reason);
+	trace_mm_migrate_pages(nr_succeeded, nr_failed, mode, reason); // 분석하지 않음
 
 	if (!swapwrite)
+		// 임시로 설정한 플래그를 해제
 		current->flags &= ~PF_SWAPWRITE;
 
 	return rc;
+	// 2015-11-14 분석완료;
 }
 
 #ifdef CONFIG_NUMA

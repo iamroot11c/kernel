@@ -8,6 +8,7 @@
 #include <linux/sched.h>
 
 // 2014-11-29 시작;
+// 2015-11-14;
 notrace unsigned int debug_smp_processor_id(void)
 {
 	unsigned long preempt_count = preempt_count();

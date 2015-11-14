@@ -9,6 +9,7 @@ struct siginfo;
 #ifndef __KERNEL__  // set
 /* Here we must cater to libcs that poke about in kernel headers.  */
 
+// 2015-11-14;
 #define NSIG		32
 typedef unsigned long sigset_t;
 #endif /* __KERNEL__ */

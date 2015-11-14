@@ -40,6 +40,9 @@ static inline void __count_vm_event(enum vm_event_item item)
 // count_vm_event(UNEVICTABLE_PGCLEARED)
 // count_vm_event(UNEVICTABLE_PGSTRANDED)
 // count_vm_event(UNEVICTABLE_PGMLOCKED);
+//
+// 2015-11-14;
+// count_vm_event(PGSCAN_DIRECT_THROTTLE);
 static inline void count_vm_event(enum vm_event_item item)
 {
 	this_cpu_inc(vm_event_states.event[item]);
@@ -59,6 +62,10 @@ static inline void __count_vm_events(enum vm_event_item item, long delta)
 //
 // 2015-7-25;
 // COMPACTFREE_SCANNED, nr_scanned
+//
+// 2015-11-14;
+// count_vm_events(PGMIGRATE_SUCCESS, nr_succeeded);
+// count_vm_events(PGMIGRATE_FAIL, nr_failed);
 static inline void count_vm_events(enum vm_event_item item, long delta)
 {
 	this_cpu_add(vm_event_states.event[item], delta);

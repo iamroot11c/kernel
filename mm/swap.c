@@ -236,6 +236,8 @@ out_put_single:
 // 2015-10-17
 // 기본적으로 하는일이 없다.
 // 그러나, 참조카운터가 0이라면, 0페이지 버디 리스트에 연결
+//
+// 2015-11-14;
 void put_page(struct page *page)
 {
 	if (unlikely(PageCompound(page)))

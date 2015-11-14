@@ -55,6 +55,7 @@ static inline void sigdelset(sigset_t *set, int _sig)
 }
 
 // 2015-06-27 set->sig 비트필드 검사
+// 2015-11-14;
 static inline int sigismember(sigset_t *set, int _sig)
 {
 	unsigned long sig = _sig - 1;

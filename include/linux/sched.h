@@ -1681,6 +1681,7 @@ extern void thread_group_cputime_adjusted(struct task_struct *p, cputime_t *ut, 
 
 /* __GFP_IO isn't allowed if PF_MEMALLOC_NOIO is set in current->flags */
 // 2015-06-06
+// 2015-11-14;
 static inline gfp_t memalloc_noio_flags(gfp_t flags)
 {
 	if (unlikely(current->flags & PF_MEMALLOC_NOIO))
@@ -2415,6 +2416,7 @@ static inline int __fatal_signal_pending(struct task_struct *p)
 
 // 2015-06-27
 // 2015-07-04;
+// 2015-11-14;
 static inline int fatal_signal_pending(struct task_struct *p)
 {
 	return signal_pending(p) && __fatal_signal_pending(p);
@@ -2450,6 +2452,7 @@ extern int _cond_resched(void);
 // 2015-07-04;
 // 2015-07-18; glance
 // 2015-10-17, glance
+// 2015-11-14, glance
 #define cond_resched() ({			\
 	__might_sleep(__FILE__, __LINE__, 0);	\
 	_cond_resched();			\

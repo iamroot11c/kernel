@@ -47,6 +47,9 @@ static inline void count_compact_events(enum vm_event_item item, long delta)
 
 // 2015-06-27
 // freelist내의 모든 리스트 삭제, 페이지 할당 해제, 해제 횟수 반환
+//
+// 2015-11-14;
+// release_freepages(&cc->freepages);
 static unsigned long release_freepages(struct list_head *freelist)
 {
 	struct page *page, *next;
@@ -891,6 +894,7 @@ static struct page *compaction_alloc(struct page *migratepage,
  * running as migrate_pages() has no knowledge of compact_control. When
  * migration is complete, we count the number of pages on the lists by hand.
  */
+// 2015-11-14;
 static void update_nr_listpages(struct compact_control *cc)
 {
 	int nr_migratepages = 0;
@@ -902,6 +906,7 @@ static void update_nr_listpages(struct compact_control *cc)
 	list_for_each_entry(page, &cc->freepages, lru)
 		nr_freepages++;
 
+	// 목록의 개수를 세어 저장
 	cc->nr_migratepages = nr_migratepages;
 	cc->nr_freepages = nr_freepages;
 }
@@ -1067,6 +1072,7 @@ unsigned long compaction_suitable(struct zone *zone, int order)
 
 // 2015-06-20
 // 2015-06-27
+// 2015-11-14 완료;
 static int compact_zone(struct zone *zone, struct compact_control *cc)
 {
 	int ret;
@@ -1092,7 +1098,7 @@ static int compact_zone(struct zone *zone, struct compact_control *cc)
 	cc->migrate_pfn = zone->compact_cached_migrate_pfn;
 	cc->free_pfn = zone->compact_cached_free_pfn;
 	if (cc->free_pfn < start_pfn || cc->free_pfn > end_pfn) {
-		cc->free_pfn = end_pfn & ~(pageblock_nr_pages-1);
+		cc->free_pfn = end_pfn & ~(pageblock_nr_pages-1)/*0xFFFFFC00 = !(1024-1)*/;
 		zone->compact_cached_free_pfn = cc->free_pfn;
 	}
 	if (cc->migrate_pfn < start_pfn || cc->migrate_pfn > end_pfn) {
@@ -1142,11 +1148,13 @@ static int compact_zone(struct zone *zone, struct compact_control *cc)
 				(unsigned long)cc,
 				cc->sync ? MIGRATE_SYNC_LIGHT : MIGRATE_ASYNC,
 				MR_COMPACTION);
+		// 2015-11-14 분석완료;
+		
 		update_nr_listpages(cc);
 		nr_remaining = cc->nr_migratepages;
 
 		trace_mm_compaction_migratepages(nr_migrate - nr_remaining,
-						nr_remaining);
+						nr_remaining); // 분석하지 않음
 
 		/* Release isolated pages not migrated */
 		if (err) {
@@ -1171,7 +1179,7 @@ out:
 // 2015-06-20
 // status = compact_zone_order(zone, order, gfp_mask, sync,
 //                             contended);
-//
+// 2015-11-14 완료;
 static unsigned long compact_zone_order(struct zone *zone,
 				 int order, gfp_t gfp_mask,
 				 bool sync, bool *contended)
@@ -1190,7 +1198,9 @@ static unsigned long compact_zone_order(struct zone *zone,
 
 	// 2015-06-20
 	ret = compact_zone(zone, &cc);
+	// 2015-11-14 완료;
 
+	// 목록이 없으면 오류
 	VM_BUG_ON(!list_empty(&cc.freepages));
 	VM_BUG_ON(!list_empty(&cc.migratepages));
 
@@ -1217,7 +1227,7 @@ int sysctl_extfrag_threshold = 500;
 //         *did_some_progress = try_to_compact_pages(zonelist, order, gfp_mask,
 //                                                 nodemask, sync_migration,
 //                                                 contended_compaction);
-//
+// 2015-11-14 완료;
 unsigned long try_to_compact_pages(struct zonelist *zonelist,
 			int order, gfp_t gfp_mask, nodemask_t *nodemask,
 			bool sync, bool *contended)
@@ -1248,9 +1258,13 @@ unsigned long try_to_compact_pages(struct zonelist *zonelist,
 		// 2015-06-20 여기까지
 		status = compact_zone_order(zone, order, gfp_mask, sync,
 						contended);
+		// 2015-11-14 완료;
+
 		rc = max(status, rc);
 
 		/* If a normal allocation would succeed, stop compacting */
+		// 2015-11-14;
+		// 사용가능한 페이지가 많은지 확인
 		if (zone_watermark_ok(zone, order, low_wmark_pages(zone), 0,
 				      alloc_flags))
 			break;

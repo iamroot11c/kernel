@@ -716,6 +716,7 @@ static inline int zone_to_nid(struct zone *zone)
 #ifdef NODE_NOT_IN_PAGE_FLAGS // not defined
 extern int page_to_nid(const struct page *page);
 #else
+// 2015-11-14;
 static inline int page_to_nid(const struct page *page)
 {
 	return (page->flags >> NODES_PGSHIFT) & NODES_MASK;

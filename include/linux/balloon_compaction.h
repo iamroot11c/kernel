@@ -79,6 +79,7 @@ static inline void balloon_devinfo_free(struct balloon_dev_info *b_dev_info)
  * page at the end of a sucessful page migration, or at the balloon driver's
  * page release procedure.
  */
+// 2015-11-14;
 static inline void balloon_page_free(struct page *page)
 {
 	/*

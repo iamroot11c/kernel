@@ -11,7 +11,7 @@
 /* The full zone was compacted */
 #define COMPACT_COMPLETE	3
 
-#ifdef CONFIG_COMPACTION
+#ifdef CONFIG_COMPACTION // defined
 extern int sysctl_compact_memory;
 extern int sysctl_compaction_handler(struct ctl_table *table, int write,
 			void __user *buffer, size_t *length, loff_t *ppos);
@@ -35,6 +35,8 @@ extern unsigned long compaction_suitable(struct zone *zone, int order);
  * allocation success. 1 << compact_defer_limit compactions are skipped up
  * to a limit of 1 << COMPACT_MAX_DEFER_SHIFT
  */
+// 2015-11-14;
+// defer_compaction(preferred_zone, order);
 static inline void defer_compaction(struct zone *zone, int order)
 {
 	zone->compact_considered = 0;
@@ -43,7 +45,7 @@ static inline void defer_compaction(struct zone *zone, int order)
 	if (order < zone->compact_order_failed)
 		zone->compact_order_failed = order;
 
-	if (zone->compact_defer_shift > COMPACT_MAX_DEFER_SHIFT)
+	if (zone->compact_defer_shift > COMPACT_MAX_DEFER_SHIFT/*6*/)
 		zone->compact_defer_shift = COMPACT_MAX_DEFER_SHIFT;
 }
 
