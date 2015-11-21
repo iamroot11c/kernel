@@ -136,18 +136,20 @@ unsigned long vm_total_pages;	/* The total number of pages which the VM controls
 static LIST_HEAD(shrinker_list);
 static DECLARE_RWSEM(shrinker_rwsem);
 
-#ifdef CONFIG_MEMCG
+#ifdef CONFIG_MEMCG	// not set
 static bool global_reclaim(struct scan_control *sc)
 {
 	return !sc->target_mem_cgroup;
 }
 #else
+// 2015-11-21
 static bool global_reclaim(struct scan_control *sc)
 {
 	return true;
 }
 #endif
 
+// 2015-11-21
 static unsigned long zone_reclaimable_pages(struct zone *zone)
 {
 	int nr;
@@ -162,8 +164,11 @@ static unsigned long zone_reclaimable_pages(struct zone *zone)
 	return nr;
 }
 
+// 2015-11-21
 bool zone_reclaimable(struct zone *zone)
 {
+	// 6은 왜 곱할까???
+	// 경험에 근거한 값으로 현재는 이해함.
 	return zone->pages_scanned < zone_reclaimable_pages(zone) * 6;
 }
 
@@ -2182,27 +2187,35 @@ static inline bool should_continue_reclaim(struct zone *zone,
 	}
 }
 
+// 2015-11-21
 static void shrink_zone(struct zone *zone, struct scan_control *sc)
 {
 	unsigned long nr_reclaimed, nr_scanned;
 
 	do {
-		struct mem_cgroup *root = sc->target_mem_cgroup;
+		struct mem_cgroup *root = sc->target_mem_cgroup;	// NULL로 셋팅되어 있음.
 		struct mem_cgroup_reclaim_cookie reclaim = {
 			.zone = zone,
 			.priority = sc->priority,
+			// generation 셋팅하지 않았다.
 		};
 		struct mem_cgroup *memcg;
 
+		// 2015-11-21
+		// nr_reclaimed = 0;
+		// nr_scanned = 0;
 		nr_reclaimed = sc->nr_reclaimed;
 		nr_scanned = sc->nr_scanned;
 
-		memcg = mem_cgroup_iter(root, NULL, &reclaim);
+		// memcg = NULL
+		memcg = mem_cgroup_iter(root, NULL, &reclaim);	// NOP
 		do {
 			struct lruvec *lruvec;
 
+			// &zone->lruvec
 			lruvec = mem_cgroup_zone_lruvec(zone, memcg);
 
+			// 2015-11-21, 여기까지
 			shrink_lruvec(lruvec, sc);
 
 			/*
@@ -2232,13 +2245,15 @@ static void shrink_zone(struct zone *zone, struct scan_control *sc)
 }
 
 /* Returns true if compaction should go ahead for a high-order request */
+// 2015-11-21
 static inline bool compaction_ready(struct zone *zone, struct scan_control *sc)
 {
 	unsigned long balance_gap, watermark;
 	bool watermark_ok;
 
 	/* Do not consider compaction for orders reclaim is meant to satisfy */
-	if (sc->order <= PAGE_ALLOC_COSTLY_ORDER)
+	// 차수가 낮으면 의미없는 것으로 간주
+	if (sc->order <= PAGE_ALLOC_COSTLY_ORDER/*3*/)
 		return false;
 
 	/*
@@ -2248,8 +2263,8 @@ static inline bool compaction_ready(struct zone *zone, struct scan_control *sc)
 	 * a reasonable chance of completing and allocating the page
 	 */
 	balance_gap = min(low_wmark_pages(zone),
-		(zone->managed_pages + KSWAPD_ZONE_BALANCE_GAP_RATIO-1) /
-			KSWAPD_ZONE_BALANCE_GAP_RATIO);
+		(zone->managed_pages + KSWAPD_ZONE_BALANCE_GAP_RATIO/*100*/-1) /
+			KSWAPD_ZONE_BALANCE_GAP_RATIO/*100*/);
 	watermark = high_wmark_pages(zone) + balance_gap + (2UL << sc->order);
 	watermark_ok = zone_watermark_ok_safe(zone, 0, watermark, 0, 0);
 
@@ -2261,6 +2276,7 @@ static inline bool compaction_ready(struct zone *zone, struct scan_control *sc)
 		return watermark_ok;
 
 	/* If compaction is not ready to start, keep reclaiming */
+	// COMPACT_SKIPPED인 경우, return false;
 	if (!compaction_suitable(zone, sc->order))
 		return false;
 
@@ -2288,6 +2304,8 @@ static inline bool compaction_ready(struct zone *zone, struct scan_control *sc)
  * the caller that it should consider retrying the allocation instead of
  * further reclaim.
  */
+// 2015-11-21
+// aborted_reclaim을 조사한다.
 static bool shrink_zones(struct zonelist *zonelist, struct scan_control *sc)
 {
 	struct zoneref *z;
@@ -2301,9 +2319,17 @@ static bool shrink_zones(struct zonelist *zonelist, struct scan_control *sc)
 	 * allowed level, force direct reclaim to scan the highmem zone as
 	 * highmem pages could be pinning lowmem pages storing buffer_heads
 	 */
-	if (buffer_heads_over_limit)
+	if (buffer_heads_over_limit)	// 0을 가정
 		sc->gfp_mask |= __GFP_HIGHMEM;
 
+	// 2015-05-23;
+	// #define for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, nodemask) \
+	//     for (z = first_zones_zonelist(zlist, highidx, nodemask, &zone); \
+	//         zone;                           \
+	//         z = next_zones_zonelist(++z, highidx, nodemask, &zone)) \
+
+	// 1. aborted_reclaim 설정
+	// 2. nr_reclaimed, nr_scanned를 구한다. 우리는 0으로 초기화 된다.
 	for_each_zone_zonelist_nodemask(zone, z, zonelist,
 					gfp_zone(sc->gfp_mask), sc->nodemask) {
 		if (!populated_zone(zone))
@@ -2312,13 +2338,14 @@ static bool shrink_zones(struct zonelist *zonelist, struct scan_control *sc)
 		 * Take care memory controller reclaiming has small influence
 		 * to global LRU.
 		 */
-		if (global_reclaim(sc)) {
-			if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))
+		if (global_reclaim(sc)) {	// 항상 true
+			if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))	// return 1;
 				continue;
+			// scaned_page가 적어야 한다
 			if (sc->priority != DEF_PRIORITY &&
 			    !zone_reclaimable(zone))
 				continue;	/* Let kswapd poll it */
-			if (IS_ENABLED(CONFIG_COMPACTION)) {
+			if (IS_ENABLED(CONFIG_COMPACTION)) {	// true
 				/*
 				 * If we already have plenty of memory free for
 				 * compaction in this zone, don't free any more.
@@ -2328,6 +2355,8 @@ static bool shrink_zones(struct zonelist *zonelist, struct scan_control *sc)
 				 * noticeable problem, like transparent huge
 				 * page allocations.
 				 */
+				// 2015-11-21
+				// return 값 설정
 				if (compaction_ready(zone, sc)) {
 					aborted_reclaim = true;
 					continue;
@@ -2340,11 +2369,13 @@ static bool shrink_zones(struct zonelist *zonelist, struct scan_control *sc)
 			 * and balancing, not for a memcg's limit.
 			 */
 			nr_soft_scanned = 0;
+			// 2015-11-21
+			// 0 리턴
 			nr_soft_reclaimed = mem_cgroup_soft_limit_reclaim(zone,
 						sc->order, sc->gfp_mask,
-						&nr_soft_scanned);
-			sc->nr_reclaimed += nr_soft_reclaimed;
-			sc->nr_scanned += nr_soft_scanned;
+						&nr_soft_scanned);	// NOP
+			sc->nr_reclaimed += nr_soft_reclaimed;	// 0
+			sc->nr_scanned += nr_soft_scanned;	// 0
 			/* need some check for avoid more shrink_zone() */
 		}
 
@@ -2390,6 +2421,8 @@ static bool all_unreclaimable(struct zonelist *zonelist,
  * returns:	0, if no pages reclaimed
  * 		else, the number of pages reclaimed
  */
+// 2015-11-21
+// do_try_to_free_pages(zonelist, &sc, &shrink);
 static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
 					struct scan_control *sc,
 					struct shrink_control *shrink)
@@ -2401,15 +2434,18 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
 	unsigned long writeback_threshold;
 	bool aborted_reclaim;
 
-	delayacct_freepages_start();
+	delayacct_freepages_start();	// NOP
 
-	if (global_reclaim(sc))
+	if (global_reclaim(sc))		// 항상 true
 		count_vm_event(ALLOCSTALL);
 
+	// sc->nr_reclaimed의 개수를 구하는 알고리즘이 아래의 loop에 있다.
 	do {
+		// NOP
 		vmpressure_prio(sc->gfp_mask, sc->target_mem_cgroup,
 				sc->priority);
 		sc->nr_scanned = 0;
+		// 2015-11-21
 		aborted_reclaim = shrink_zones(zonelist, sc);
 
 		/*
@@ -2462,11 +2498,13 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
 						WB_REASON_TRY_TO_FREE_PAGES);
 			sc->may_writepage = 1;
 		}
+	// 2015-11-21, priority 초기값 DEF_PRIORITY = 12 
 	} while (--sc->priority >= 0 && !aborted_reclaim);
 
 out:
-	delayacct_freepages_end();
+	delayacct_freepages_end();	// NOP
 
+	// 기대하는 동작
 	if (sc->nr_reclaimed)
 		return sc->nr_reclaimed;
 
@@ -2601,7 +2639,7 @@ unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
 		.may_unmap = 1,
 		.may_swap = 1,
 		.order = order,
-		.priority = DEF_PRIORITY,
+		.priority = DEF_PRIORITY/*12*/,
 		.target_mem_cgroup = NULL,
 		.nodemask = nodemask,
 	};
@@ -2622,6 +2660,7 @@ unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
 				gfp_mask); // 분석 안함
 	// 2015-11-14 여기까지;
 
+	// 2015-11-21, 시작
 	nr_reclaimed = do_try_to_free_pages(zonelist, &sc, &shrink);
 
 	trace_mm_vmscan_direct_reclaim_end(nr_reclaimed); // 분석 안함

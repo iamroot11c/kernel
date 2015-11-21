@@ -691,6 +691,7 @@ struct zonelist_cache;
  * here to avoid dereferences into large structures and lookups of tables
  */
 // 2015-05-23;
+// 2015-11-21
 struct zoneref {
 	struct zone *zone;	/* Pointer to actual zone */
 	int zone_idx;		/* zone_idx(zoneref->zone) */
@@ -895,6 +896,7 @@ unsigned long __init node_memmap_size_bytes(int, unsigned long, unsigned long);
 // |---- free_area_init_node()
 // |----- free_area_init_core()
 //
+// 2015-11-21
 static inline int populated_zone(struct zone *zone)
 {
 	return (!!zone->present_pages);

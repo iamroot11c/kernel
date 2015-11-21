@@ -48,6 +48,7 @@ static sector_t map_swap_entry(swp_entry_t, struct block_device**);
 DEFINE_SPINLOCK(swap_lock);
 // 2015-09-19;
 static unsigned int nr_swapfiles;
+// 2015-11-21
 atomic_long_t nr_swap_pages;
 /* protected with swap_lock. reading in vm_swap_full() doesn't need lock */
 long total_swap_pages;

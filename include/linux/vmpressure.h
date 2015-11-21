@@ -24,7 +24,7 @@ struct vmpressure {
 
 struct mem_cgroup;
 
-#ifdef CONFIG_MEMCG
+#ifdef CONFIG_MEMCG // not set
 extern void vmpressure(gfp_t gfp, struct mem_cgroup *memcg,
 		       unsigned long scanned, unsigned long reclaimed);
 extern void vmpressure_prio(gfp_t gfp, struct mem_cgroup *memcg, int prio);
@@ -44,6 +44,7 @@ extern void vmpressure_unregister_event(struct cgroup_subsys_state *css,
 #else
 static inline void vmpressure(gfp_t gfp, struct mem_cgroup *memcg,
 			      unsigned long scanned, unsigned long reclaimed) {}
+// 2015-11-21
 static inline void vmpressure_prio(gfp_t gfp, struct mem_cgroup *memcg,
 				   int prio) {}
 #endif /* CONFIG_MEMCG */

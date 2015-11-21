@@ -3331,6 +3331,10 @@ static struct kmem_cache *bh_cachep __read_mostly;
 static unsigned long max_buffer_heads;
 
 // 2015-08-15
+// 2015-11-21
+// 주어진 코드로만 봤을 때는 true, false값으로 존재한다.
+// cpu마다 값을 조사해서 값을 초과했는지 확인
+// buffer_heads_over_limit = (tot > max_buffer_heads);
 int buffer_heads_over_limit;
 
 // 2015-08-15

@@ -47,10 +47,8 @@ static inline int cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
 	return cpuset_node_allowed_softwall(zone_to_nid(z), gfp_mask);
 }
 
-// 2015-06-06
 static inline int cpuset_zone_allowed_hardwall(struct zone *z, gfp_t gfp_mask)
 {
-    // return 1;
 	return cpuset_node_allowed_hardwall(zone_to_nid(z), gfp_mask);
 }
 
@@ -171,6 +169,7 @@ static inline int cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
 	return 1;
 }
 
+// 2015-11-21
 static inline int cpuset_zone_allowed_hardwall(struct zone *z, gfp_t gfp_mask)
 {
 	return 1;

@@ -43,6 +43,8 @@ static inline void __count_vm_event(enum vm_event_item item)
 //
 // 2015-11-14;
 // count_vm_event(PGSCAN_DIRECT_THROTTLE);
+// 2015-11-21
+//  count_vm_event(ALLOCSTALL);
 static inline void count_vm_event(enum vm_event_item item)
 {
 	this_cpu_inc(vm_event_states.event[item]);

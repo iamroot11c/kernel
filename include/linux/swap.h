@@ -122,6 +122,7 @@ typedef struct {
  * memory reclaim
  */
 // 2015-11-14;
+// 2015-11-21
 struct reclaim_state {
 	unsigned long reclaimed_slab;
 };
@@ -414,6 +415,7 @@ extern struct page *swapin_readahead(swp_entry_t, gfp_t,
 			struct vm_area_struct *vma, unsigned long addr);
 
 /* linux/mm/swapfile.c */
+// 2015-11-21
 extern atomic_long_t nr_swap_pages;
 extern long total_swap_pages;
 
@@ -423,6 +425,7 @@ static inline bool vm_swap_full(void)
 	return atomic_long_read(&nr_swap_pages) * 2 < total_swap_pages;
 }
 
+// 2015-11-21
 static inline long get_nr_swap_pages(void)
 {
 	return atomic_long_read(&nr_swap_pages);

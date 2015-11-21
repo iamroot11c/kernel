@@ -144,8 +144,10 @@ static inline __u64 delayacct_blkio_ticks(struct task_struct *tsk)
 { return 0; }
 static inline int delayacct_is_task_waiting_on_io(struct task_struct *p)
 { return 0; }
+// 2015-11-21
 static inline void delayacct_freepages_start(void)
 {}
+// 2015-11-21
 static inline void delayacct_freepages_end(void)
 {}
 
