@@ -129,6 +129,7 @@ EXPORT_SYMBOL(div64_u64_rem);
  *
  * 'http://www.hackersdelight.org/HDcode/newCode/divDouble.c.txt'
  */
+// 2015-11-28
 #ifndef div64_u64
 u64 div64_u64(u64 dividend, u64 divisor)
 {

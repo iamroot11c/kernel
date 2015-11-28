@@ -18,6 +18,7 @@
 
 #define LIST_HEAD_INIT(name) { &(name), &(name) }
 
+// 2015-11-28
 #define LIST_HEAD(name) \
 	struct list_head name = LIST_HEAD_INIT(name)
 

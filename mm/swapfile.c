@@ -51,6 +51,8 @@ static unsigned int nr_swapfiles;
 // 2015-11-21
 atomic_long_t nr_swap_pages;
 /* protected with swap_lock. reading in vm_swap_full() doesn't need lock */
+// 2015-11-28
+// 총 스왑되는 페이지의 개수로 추정
 long total_swap_pages;
 static int least_priority;
 static atomic_t highest_priority_index = ATOMIC_INIT(-1);

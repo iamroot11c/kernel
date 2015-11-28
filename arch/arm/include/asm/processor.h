@@ -95,6 +95,7 @@ unsigned long get_wchan(struct task_struct *p);
 #if __LINUX_ARM_ARCH__ >= 5
 
 #define ARCH_HAS_PREFETCH
+// 2015-11-28
 static inline void prefetch(const void *ptr)
 {
     // 아키텍처에 로드 작업 예고, 실제 데이터를 로드하지 않음
@@ -105,7 +106,7 @@ static inline void prefetch(const void *ptr)
 		: "p" (ptr)
 		: "cc");
 }
-
+// 2015-11-28
 #define ARCH_HAS_PREFETCHW
 // 2015-05-09;
 #define prefetchw(ptr)	prefetch(ptr)

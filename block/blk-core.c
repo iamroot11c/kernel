@@ -2878,6 +2878,9 @@ EXPORT_SYMBOL(kblockd_schedule_delayed_work);
  *   plug. By flushing the pending I/O when the process goes to sleep, we avoid
  *   this kind of deadlock.
  */
+// 2015-11-28
+// plug 구조체 초기화, 현재 태스크의 플러그 미설정 시 초기화된 값으로 세팅
+// plug에 대한 정의는 http://egloos.zum.com/nimhaplz/v/5598614 참조
 void blk_start_plug(struct blk_plug *plug)
 {
 	struct task_struct *tsk = current;

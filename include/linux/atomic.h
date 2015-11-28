@@ -28,7 +28,7 @@ static inline int atomic_add_unless(atomic_t *v, int a, int u)
  * Atomically increments @v by 1, so long as @v is non-zero.
  * Returns non-zero if @v was non-zero, and zero otherwise.
  */
-// v가 가리키는(*v) 값이 0이 아니라면 증가
+// (*v + 1) != 0를 반환.(즉 1을 더한 값이 0과 같지 않은 경우 참)
 #ifndef atomic_inc_not_zero
 #define atomic_inc_not_zero(v)		atomic_add_unless((v), 1, 0)
 #endif

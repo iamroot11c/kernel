@@ -96,7 +96,7 @@ struct scan_control {
 	 */
 	nodemask_t	*nodemask;
 };
-
+// 2015-11-28
 #define lru_to_page(_head) (list_entry((_head)->prev, struct page, lru))
 
 #ifdef ARCH_HAS_PREFETCH
@@ -171,7 +171,7 @@ bool zone_reclaimable(struct zone *zone)
 	// 경험에 근거한 값으로 현재는 이해함.
 	return zone->pages_scanned < zone_reclaimable_pages(zone) * 6;
 }
-
+// 2015-11-28
 static unsigned long get_lru_size(struct lruvec *lruvec, enum lru_list lru)
 {
 	if (!mem_cgroup_disabled())
@@ -1154,9 +1154,12 @@ unsigned long reclaim_clean_pages_from_list(struct zone *zone,
  * returns 0 on success, -ve errno on failure.
  */
 // 2015-07-04
+// 2015-11-28
 // __isolate_lru_page(page, mode);
 // ISOLATE_ASYNC_MIGRATE
 // ISOLATE_UNEVICTABLE
+// 에러 조건 체크 (조건인 경우 EINVAL or EBUSY 반환)
+// 에러가 아닌 경우 페이지의 레퍼런스 카운트 증가 및 LRU 플래그 제거
 int __isolate_lru_page(struct page *page, isolate_mode_t mode)
 {
 	int ret = -EINVAL;
@@ -1242,6 +1245,8 @@ int __isolate_lru_page(struct page *page, isolate_mode_t mode)
  *
  * returns how many pages were moved onto *@dst.
  */
+// 2015-11-28
+// isolate_lru_pages(nr_to_scan, lruvec, &l_hold, &nr_scanned, sc, isolate_mode, lru);
 static unsigned long isolate_lru_pages(unsigned long nr_to_scan,
 		struct lruvec *lruvec, struct list_head *dst,
 		unsigned long *nr_scanned, struct scan_control *sc,
@@ -1256,28 +1261,44 @@ static unsigned long isolate_lru_pages(unsigned long nr_to_scan,
 		int nr_pages;
 
 		page = lru_to_page(src);
+		/* #define prefetchw_prev_lru_page(_page, _base, _field)                   \
+		          do {                                                            \
+			                   if ((_page)->lru.prev != _base) {                       \
+				                            struct page *prev;                              \
+				                                                                            \
+				                            prev = lru_to_page(&(_page->lru));              \
+				                            prefetchw(&prev->_field);                       \
+				                    }                                                       \
+			  } while (0)
+		*/
+		// page->lru.prev에서 참조하고 있는 페이지에 대해
+		// 해당 페이지의 flags플래그를 읽을 것임을 알려준다.
+		// 참고로.. lru_to_page() 함수에 의해 page의 탐색 순서는 역순이다.
 		prefetchw_prev_lru_page(page, src, flags);
 
 		VM_BUG_ON(!PageLRU(page));
 
 		switch (__isolate_lru_page(page, mode)) {
 		case 0:
-			nr_pages = hpage_nr_pages(page);
-			mem_cgroup_update_lru_size(lruvec, lru, -nr_pages);
-			list_move(&page->lru, dst);
+			nr_pages = hpage_nr_pages(page); // 1 리턴
+			mem_cgroup_update_lru_size(lruvec, lru, -nr_pages); // NOP
+			list_move(&page->lru, dst); // dst에 page->lru를 연결
 			nr_taken += nr_pages;
 			break;
 
 		case -EBUSY:
 			/* else it is being freed elsewhere */
-			list_move(&page->lru, src);
+			// lru_to_page() 함수는 이전의 링크드 리스트에 대해 얻어오도록
+			// 설계가 되어 있기 때문에..  src에 page->lru를 연결하는 동작은(src->next로 넣는 동작과 같다.)
+			// 결과적으로 제일 낮은 우선순위로 재검색을 하라는 의미이다.
+			list_move(&page->lru, src); // src에 page->lru를 연결
 			continue;
 
 		default:
 			BUG();
 		}
 	}
-
+	// nr_scanned는 스캔 시도 횟수
 	*nr_scanned = scan;
 	trace_mm_vmscan_lru_isolate(sc->order, nr_to_scan, scan,
 				    nr_taken, mode, is_file_lru(lru));
@@ -1631,7 +1652,7 @@ static void move_active_pages_to_lru(struct lruvec *lruvec,
 	if (!is_active_lru(lru))
 		__count_vm_events(PGDEACTIVATE, pgmoved);
 }
-
+// 2015-11-28
 static void shrink_active_list(unsigned long nr_to_scan,
 			       struct lruvec *lruvec,
 			       struct scan_control *sc,
@@ -1650,6 +1671,7 @@ static void shrink_active_list(unsigned long nr_to_scan,
 	int file = is_file_lru(lru);
 	struct zone *zone = lruvec_zone(lruvec);
 
+	// 2015-11-28
 	lru_add_drain();
 
 	if (!sc->may_unmap)
@@ -1658,9 +1680,11 @@ static void shrink_active_list(unsigned long nr_to_scan,
 		isolate_mode |= ISOLATE_CLEAN;
 
 	spin_lock_irq(&zone->lru_lock);
-
+	
+	// 2015-11-28
 	nr_taken = isolate_lru_pages(nr_to_scan, lruvec, &l_hold,
 				     &nr_scanned, sc, isolate_mode, lru);
+	// 2015-11-28 여기까지
 	if (global_reclaim(sc))
 		zone->pages_scanned += nr_scanned;
 
@@ -1732,6 +1756,7 @@ static void shrink_active_list(unsigned long nr_to_scan,
 }
 
 #ifdef CONFIG_SWAP
+// 2015-11-28
 static int inactive_anon_is_low_global(struct zone *zone)
 {
 	unsigned long active, inactive;
@@ -1739,6 +1764,9 @@ static int inactive_anon_is_low_global(struct zone *zone)
 	active = zone_page_state(zone, NR_ACTIVE_ANON);
 	inactive = zone_page_state(zone, NR_INACTIVE_ANON);
 
+	// inactive_ratio보다 (active / inactive)가 큰 경우
+	// inactive_ratio : 1 == active : inactive 단 (inactive_ratio >= 1) 
+	// 즉 active 비율이 inactive보다 커야 참이 리턴.
 	if (inactive * zone->inactive_ratio < active)
 		return 1;
 
@@ -1752,6 +1780,7 @@ static int inactive_anon_is_low_global(struct zone *zone)
  * Returns true if the zone does not have enough inactive anon pages,
  * meaning some active anon pages need to be deactivated.
  */
+// 2015-11-28
 static int inactive_anon_is_low(struct lruvec *lruvec)
 {
 	/*
@@ -1787,6 +1816,8 @@ static inline int inactive_anon_is_low(struct lruvec *lruvec)
  * This uses a different ratio than the anonymous pages, because
  * the page cache uses a use-once replacement algorithm.
  */
+// 2015-11-28
+// lruvec 내 file page의 deactivate 여부 확인
 static int inactive_file_is_low(struct lruvec *lruvec)
 {
 	unsigned long inactive;
@@ -1797,7 +1828,9 @@ static int inactive_file_is_low(struct lruvec *lruvec)
 
 	return active > inactive;
 }
-
+// 2015-11-28
+// file   active : inactive 비율이 1:1 이상일 때 참을 리턴
+// anon   active : inactive 비율이 n:1 이상일 때 참을 리턴(n >= 1)
 static int inactive_list_is_low(struct lruvec *lruvec, enum lru_list lru)
 {
 	if (is_file_lru(lru))
@@ -1806,6 +1839,7 @@ static int inactive_list_is_low(struct lruvec *lruvec, enum lru_list lru)
 		return inactive_anon_is_low(lruvec);
 }
 
+// 2015-11-28
 static unsigned long shrink_list(enum lru_list lru, unsigned long nr_to_scan,
 				 struct lruvec *lruvec, struct scan_control *sc)
 {
@@ -1817,7 +1851,8 @@ static unsigned long shrink_list(enum lru_list lru, unsigned long nr_to_scan,
 
 	return shrink_inactive_list(nr_to_scan, lruvec, sc, lru);
 }
-
+// 2015-11-28
+// 자세한 사항은 http://zetawiki.com/wiki/%EB%A6%AC%EB%88%85%EC%8A%A4_swappiness 참고
 static int vmscan_swappiness(struct scan_control *sc)
 {
 	if (global_reclaim(sc))
@@ -1826,10 +1861,10 @@ static int vmscan_swappiness(struct scan_control *sc)
 }
 
 enum scan_balance {
-	SCAN_EQUAL,
-	SCAN_FRACT,
-	SCAN_ANON,
-	SCAN_FILE,
+	SCAN_EQUAL, // anon, file 둘 다 동등하게 스캔
+	SCAN_FRACT, // 부분 스캔
+	SCAN_ANON, // anon 위주 스캔
+	SCAN_FILE, // file 위주 스캔
 };
 
 /*
@@ -1841,12 +1876,17 @@ enum scan_balance {
  * nr[0] = anon inactive pages to scan; nr[1] = anon active pages to scan
  * nr[2] = file inactive pages to scan; nr[3] = file active pages to scan
  */
+// lruvec가 참조하고 있는 존에 대해 anon, file 페이지 개수를 얻어온 후
+// 개수에 따라 lru 타입 별로 스캔을 할지를 nr에 세팅한다.
+// 2015-11-28
+// get_scan_count(lruvec, sc, nr);
 static void get_scan_count(struct lruvec *lruvec, struct scan_control *sc,
 			   unsigned long *nr)
 {
 	struct zone_reclaim_stat *reclaim_stat = &lruvec->reclaim_stat;
 	u64 fraction[2];
 	u64 denominator = 0;	/* gcc */
+	// 2015-11-28
 	struct zone *zone = lruvec_zone(lruvec);
 	unsigned long anon_prio, file_prio;
 	enum scan_balance scan_balance;
@@ -1932,6 +1972,8 @@ static void get_scan_count(struct lruvec *lruvec, struct scan_control *sc,
 	 * With swappiness at 100, anonymous and file have the same priority.
 	 * This scanning priority is essentially the inverse of IO cost.
 	 */
+	// swap이 자주 일어난다 -> anon에 우선권
+	//  swap이 적게 일어난다. -> file에 우선권
 	anon_prio = vmscan_swappiness(sc);
 	file_prio = 200 - anon_prio;
 
@@ -1962,17 +2004,21 @@ static void get_scan_count(struct lruvec *lruvec, struct scan_control *sc,
 	 * proportional to the fraction of recently scanned pages on
 	 * each list that were recently referenced and in active use.
 	 */
+	// ap == swappiness * (scanned / rotate)
 	ap = anon_prio * (reclaim_stat->recent_scanned[0] + 1);
 	ap /= reclaim_stat->recent_rotated[0] + 1;
-
-	fp = file_prio * (reclaim_stat->recent_scanned[1] + 1);
+	// fp = (200 - swappiness) * (scanned / rotate)
+	fp = file_prio * (reclaim_stat-1>recent_scanned[1] + 1);
 	fp /= reclaim_stat->recent_rotated[1] + 1;
 	spin_unlock_irq(&zone->lru_lock);
 
+	// fraction == 분자
 	fraction[0] = ap;
 	fraction[1] = fp;
+	// denominator ==  분모
 	denominator = ap + fp + 1;
 out:
+	// == for (lru = 0; lru <= LRU_ACTIVE_FILE; lru++)
 	for_each_evictable_lru(lru) {
 		int file = is_file_lru(lru);
 		unsigned long size;
@@ -2012,6 +2058,7 @@ out:
 /*
  * This is a basic per-zone page freer.  Used by both kswapd and direct reclaim.
  */
+// 2015-11-28
 static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
 {
 	unsigned long nr[NR_LRU_LISTS];
@@ -2022,9 +2069,11 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
 	unsigned long nr_to_reclaim = sc->nr_to_reclaim;
 	struct blk_plug plug;
 	bool scan_adjusted = false;
-
+	
+	// 2015-11-28
 	get_scan_count(lruvec, sc, nr);
 
+	// 2015-11-28 식사 전
 	/* Record the original scan target for proportional adjustments later */
 	memcpy(targets, nr, sizeof(nr));
 
@@ -2034,11 +2083,12 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
 		unsigned long nr_anon, nr_file, percentage;
 		unsigned long nr_scanned;
 
+		// for (lru = 0; lru <= LRU_ACTIVE_FILE; lru++)
 		for_each_evictable_lru(lru) {
 			if (nr[lru]) {
 				nr_to_scan = min(nr[lru], SWAP_CLUSTER_MAX);
 				nr[lru] -= nr_to_scan;
-
+				// 2015-11-28
 				nr_reclaimed += shrink_list(lru, nr_to_scan,
 							    lruvec, sc);
 			}
@@ -2216,6 +2266,7 @@ static void shrink_zone(struct zone *zone, struct scan_control *sc)
 			lruvec = mem_cgroup_zone_lruvec(zone, memcg);
 
 			// 2015-11-21, 여기까지
+			// 2015-11-28 시작
 			shrink_lruvec(lruvec, sc);
 
 			/*
@@ -2378,7 +2429,7 @@ static bool shrink_zones(struct zonelist *zonelist, struct scan_control *sc)
 			sc->nr_scanned += nr_soft_scanned;	// 0
 			/* need some check for avoid more shrink_zone() */
 		}
-
+		// 2015-11-21
 		shrink_zone(zone, sc);
 	}
 

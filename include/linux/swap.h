@@ -417,6 +417,8 @@ extern struct page *swapin_readahead(swp_entry_t, gfp_t,
 /* linux/mm/swapfile.c */
 // 2015-11-21
 extern atomic_long_t nr_swap_pages;
+// 2015-11-28
+// 총 스왑된 페이지의 개수로 추정
 extern long total_swap_pages;
 
 /* Swap 50% full? Release swapcache more aggressively.. */

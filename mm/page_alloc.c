@@ -6270,6 +6270,8 @@ void setup_per_zone_wmarks(void)
  *    1TB     101        10GB
  *   10TB     320        32GB
  */
+// 2015-11-28
+// sqrt(존이 관리하고 있는 페이지의 기가 바이트 수)
 static void __meminit calculate_zone_inactive_ratio(struct zone *zone)
 {
 	unsigned int gb, ratio;
