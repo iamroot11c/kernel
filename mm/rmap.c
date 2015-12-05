@@ -459,6 +459,7 @@ out:
  * reference like with page_get_anon_vma() and then block on the mutex.
  */
 // 2015-08-15
+// 2015-12-05
 struct anon_vma *page_lock_anon_vma_read(struct page *page)
 {
 	struct anon_vma *anon_vma = NULL;
@@ -547,6 +548,7 @@ __vma_address(struct page *page, struct vm_area_struct *vma)
 
 // 2015-08-15
 // 2015-10-10;
+// 2015-12-05;
 inline unsigned long
 vma_address(struct page *page, struct vm_area_struct *vma)
 {
@@ -626,6 +628,9 @@ out:
 //
 // __cond_lock(*ptlp, ptep = __page_check_address(page, mm, address,
 //                               ptlp, sync/*0*/));
+//
+// 2015-12-05
+// __page_check_address(page, mm, address, &ptl, 0)
 pte_t *__page_check_address(struct page *page, struct mm_struct *mm,
 			  unsigned long address, spinlock_t **ptlp, int sync)
 {
@@ -705,6 +710,8 @@ int page_mapped_in_vma(struct page *page, struct vm_area_struct *vma)
  * Subfunctions of page_referenced: page_referenced_one called
  * repeatedly from either page_referenced_anon or page_referenced_file.
  */
+// 2015-12-05;
+// page_referenced_one(page, vma, address, &mapcount, vm_flags)
 int page_referenced_one(struct page *page, struct vm_area_struct *vma,
 			unsigned long address, unsigned int *mapcount,
 			unsigned long *vm_flags)
@@ -779,6 +786,8 @@ out:
 	return referenced;
 }
 
+// 2015-12-05;
+// page_referenced_anon(page, memcg, vm_flags)
 static int page_referenced_anon(struct page *page,
 				struct mem_cgroup *memcg,
 				unsigned long *vm_flags)
@@ -794,7 +803,11 @@ static int page_referenced_anon(struct page *page,
 		return referenced;
 
 	mapcount = page_mapcount(page);
-	pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
+	pgoff = page->index << (PAGE_CACHE_SHIFT/*12*/ - PAGE_SHIFT/*12*/);
+	// #define anon_vma_interval_tree_foreach(avc, root, start, last)       \
+	//     for (avc = anon_vma_interval_tree_iter_first(root, start, last); \
+	//          avc; avc = anon_vma_interval_tree_iter_next(avc, start, last))
+	// 
 	anon_vma_interval_tree_foreach(avc, &anon_vma->rb_root, pgoff, pgoff) {
 		struct vm_area_struct *vma = avc->vma;
 		unsigned long address = vma_address(page, vma);
@@ -803,6 +816,7 @@ static int page_referenced_anon(struct page *page,
 		 * counting on behalf of references from different
 		 * cgroups
 		 */
+		// CONFIG_MEMCG 미 설정으로 항상 true를 리턴
 		if (memcg && !mm_match_cgroup(vma->vm_mm, memcg))
 			continue;
 		referenced += page_referenced_one(page, vma, address,
@@ -828,6 +842,8 @@ static int page_referenced_anon(struct page *page,
  *
  * This function is only called from page_referenced for object-based pages.
  */
+// 2015-12-05;
+// page_referenced_file(page, memcg, vm_flags)
 static int page_referenced_file(struct page *page,
 				struct mem_cgroup *memcg,
 				unsigned long *vm_flags)
@@ -861,6 +877,10 @@ static int page_referenced_file(struct page *page,
 	 */
 	mapcount = page_mapcount(page);
 
+	// #define vma_interval_tree_foreach(vma, root, start, last)       \
+	//     for (vma = vma_interval_tree_iter_first(root, start, last); \
+	//          vma; vma = vma_interval_tree_iter_next(vma, start, last))
+	//
 	vma_interval_tree_foreach(vma, &mapping->i_mmap, pgoff, pgoff) {
 		unsigned long address = vma_address(page, vma);
 		/*
@@ -868,6 +888,7 @@ static int page_referenced_file(struct page *page,
 		 * counting on behalf of references from different
 		 * cgroups
 		 */
+		// mm_match_cgroup() 함수는 CONFIG_MEMCG 미 설정으로 항상 true를 리턴
 		if (memcg && !mm_match_cgroup(vma->vm_mm, memcg))
 			continue;
 		referenced += page_referenced_one(page, vma, address,
@@ -890,6 +911,9 @@ static int page_referenced_file(struct page *page,
  * Quick test_and_clear_referenced for all mappings to a page,
  * returns the number of ptes which referenced the page.
  */
+// 2015-12-05;
+// page_referenced(page, 0, sc->target_mem_cgroup, &vm_flags)
+// page_referenced(page, 1, sc->target_mem_cgroup, &vm_flags)
 int page_referenced(struct page *page,
 		    int is_locked,
 		    struct mem_cgroup *memcg,
@@ -908,6 +932,7 @@ int page_referenced(struct page *page,
 			}
 		}
 		if (unlikely(PageKsm(page)))
+			// CONFIG_KSM 미 설정으로 항상 false를 리턴 
 			referenced += page_referenced_ksm(page, memcg,
 								vm_flags);
 		else if (PageAnon(page))
@@ -916,6 +941,8 @@ int page_referenced(struct page *page,
 		else if (page->mapping)
 			referenced += page_referenced_file(page, memcg,
 								vm_flags);
+		
+		// 락을 거는것을 시도해서 성공했을 때 락을 풀어주어야함 
 		if (we_locked)
 			unlock_page(page);
 	}

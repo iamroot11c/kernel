@@ -263,6 +263,7 @@ static inline void mem_cgroup_cancel_charge_swapin(struct mem_cgroup *memcg)
 {
 }
 
+// 2015-12-05;
 static inline void mem_cgroup_uncharge_start(void)
 {
 }
@@ -290,6 +291,7 @@ static inline struct lruvec *mem_cgroup_zone_lruvec(struct zone *zone,
 // 2015-04-18;
 // 2015-07-04;
 // 2015-10-10;
+// 2015-12-05;
 static inline struct lruvec *mem_cgroup_page_lruvec(struct page *page,
 						    struct zone *zone)
 {
@@ -306,6 +308,7 @@ static inline struct mem_cgroup *try_get_mem_cgroup_from_mm(struct mm_struct *mm
 	return NULL;
 }
 
+// 2015-12-05;
 static inline bool mm_match_cgroup(struct mm_struct *mm,
 		struct mem_cgroup *memcg)
 {
@@ -371,6 +374,7 @@ mem_cgroup_get_lru_size(struct lruvec *lruvec, enum lru_list lru)
 }
 
 // 2015-04-11
+// 2015-12-05;
 static inline void
 mem_cgroup_update_lru_size(struct lruvec *lruvec, enum lru_list lru,
 			      int increment)

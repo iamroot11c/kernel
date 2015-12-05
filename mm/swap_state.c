@@ -160,6 +160,7 @@ void __delete_from_swap_cache(struct page *page)
  * Allocate swap space for the page and add the page to the
  * swap cache.  Caller needs to hold the page lock. 
  */
+// 2015-12-05
 int add_to_swap(struct page *page, struct list_head *list)
 {
 	swp_entry_t entry;
@@ -168,6 +169,8 @@ int add_to_swap(struct page *page, struct list_head *list)
 	VM_BUG_ON(!PageLocked(page));
 	VM_BUG_ON(!PageUptodate(page));
 
+	// 2015-12-05 여기까지;
+	// get_swap_page() 함수는 다음주(12.12)에 자세히 분석할 예정
 	entry = get_swap_page();
 	if (!entry.val)
 		return 0;

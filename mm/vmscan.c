@@ -143,6 +143,7 @@ static bool global_reclaim(struct scan_control *sc)
 }
 #else
 // 2015-11-21
+// 2015-12-05;
 static bool global_reclaim(struct scan_control *sc)
 {
 	return true;
@@ -607,6 +608,7 @@ int remove_mapping(struct address_space *mapping, struct page *page)
 // 2015-07-11
 // 2015-10-10;
 // 2015-11-14;
+// 2015-12-05;
 void putback_lru_page(struct page *page)
 {
 	bool is_unevictable;
@@ -681,6 +683,7 @@ enum page_references {
 	PAGEREF_ACTIVATE,
 };
 
+// 2015-12-05;
 static enum page_references page_check_references(struct page *page,
 						  struct scan_control *sc)
 {
@@ -727,7 +730,7 @@ static enum page_references page_check_references(struct page *page,
 			return PAGEREF_ACTIVATE;
 
 		return PAGEREF_KEEP;
-	}
+	} // if
 
 	/* Reclaim if clean, defer dirty pages to writeback */
 	if (referenced_page && !PageSwapBacked(page))
@@ -737,6 +740,8 @@ static enum page_references page_check_references(struct page *page,
 }
 
 /* Check if a page is dirty or under writeback */
+// 2015-12-05;
+// page_check_dirty_writeback(page, &dirty, &writeback);
 static void page_check_dirty_writeback(struct page *page,
 				       bool *dirty, bool *writeback)
 {
@@ -762,12 +767,18 @@ static void page_check_dirty_writeback(struct page *page,
 
 	mapping = page_mapping(page);
 	if (mapping && mapping->a_ops->is_dirty_writeback)
+		// 함수포인터가 NULL이 아니라면 함수를 호출
 		mapping->a_ops->is_dirty_writeback(page, dirty, writeback);
 }
 
 /*
  * shrink_page_list() returns the number of reclaimed pages
  */
+// 2015-12-05;
+// shrink_page_list(&page_list, zone, sc, TTU_UNMAP,
+//                                  &nr_dirty, &nr_unqueued_dirty, &nr_congested,
+//                                  &nr_writeback, &nr_immediate,
+//                                  false);
 static unsigned long shrink_page_list(struct list_head *page_list,
 				      struct zone *zone,
 				      struct scan_control *sc,
@@ -791,7 +802,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
 
 	cond_resched();
 
-	mem_cgroup_uncharge_start();
+	mem_cgroup_uncharge_start(); // no OP.
 	while (!list_empty(page_list)) {
 		struct address_space *mapping;
 		struct page *page;
@@ -895,7 +906,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
 				goto keep_locked;
 
 			/* Case 2 above */
-			} else if (global_reclaim(sc) ||
+			} else if (global_reclaim(sc)/*true*/ ||
 			    !PageReclaim(page) || !(sc->gfp_mask & __GFP_IO)) {
 				/*
 				 * This is slightly racy - end_page_writeback()
@@ -917,7 +928,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
 			} else {
 				wait_on_page_writeback(page);
 			}
-		}
+		} // if
 
 		if (!force_reclaim)
 			references = page_check_references(page, sc);
@@ -939,6 +950,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
 		if (PageAnon(page) && !PageSwapCache(page)) {
 			if (!(sc->gfp_mask & __GFP_IO))
 				goto keep_locked;
+			// 2015-12-05 시작
 			if (!add_to_swap(page, page_list))
 				goto activate_locked;
 			may_enter_fs = 1;
@@ -1100,7 +1112,7 @@ keep_locked:
 keep:
 		list_add(&page->lru, &ret_pages);
 		VM_BUG_ON(PageLRU(page) || PageUnevictable(page));
-	}
+	} // while
 
 	free_hot_cold_page_list(&free_pages, 1);
 
@@ -1247,6 +1259,9 @@ int __isolate_lru_page(struct page *page, isolate_mode_t mode)
  */
 // 2015-11-28
 // isolate_lru_pages(nr_to_scan, lruvec, &l_hold, &nr_scanned, sc, isolate_mode, lru);
+//
+// 2015-12-05;
+// isolate_lru_pages(nr_to_scan, lruvec, &page_list, &nr_scanned, sc, isolate_mode, lru);
 static unsigned long isolate_lru_pages(unsigned long nr_to_scan,
 		struct lruvec *lruvec, struct list_head *dst,
 		unsigned long *nr_scanned, struct scan_control *sc,
@@ -1363,6 +1378,8 @@ int isolate_lru_page(struct page *page)
  * the LRU list will go small and be scanned faster than necessary, leading to
  * unnecessary swapping, thrashing and OOM.
  */
+// 2015-12-05;
+// too_many_isolated(zone, file, sc)
 static int too_many_isolated(struct zone *zone, int file,
 		struct scan_control *sc)
 {
@@ -1371,6 +1388,7 @@ static int too_many_isolated(struct zone *zone, int file,
 	if (current_is_kswapd())
 		return 0;
 
+	// CONFIG_MEMCG 미 설정으로 항상 true를 리턴
 	if (!global_reclaim(sc))
 		return 0;
 
@@ -1388,7 +1406,7 @@ static int too_many_isolated(struct zone *zone, int file,
 	 * deadlock.
 	 */
 	if ((sc->gfp_mask & GFP_IOFS) == GFP_IOFS)
-		inactive >>= 3;
+		inactive >>= 3; // 8로 나눔
 
 	return isolated > inactive;
 }
@@ -1451,6 +1469,8 @@ putback_inactive_pages(struct lruvec *lruvec, struct list_head *page_list)
  * shrink_inactive_list() is a helper for shrink_zone().  It returns the number
  * of reclaimed pages
  */
+// 2015-12-05;
+// shrink_inactive_list(nr_to_scan, lruvec, sc, lru)
 static noinline_for_stack unsigned long
 shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
 		     struct scan_control *sc, enum lru_list lru)
@@ -1489,9 +1509,12 @@ shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
 	nr_taken = isolate_lru_pages(nr_to_scan, lruvec, &page_list,
 				     &nr_scanned, sc, isolate_mode, lru);
 
+	// nr_taken 값만큼 감소
 	__mod_zone_page_state(zone, NR_LRU_BASE + lru, -nr_taken);
+	// nr_taken 값만큼 증가
 	__mod_zone_page_state(zone, NR_ISOLATED_ANON + file, nr_taken);
 
+	// CONFIG_MEMCG 미 설정으로 항상 true를 리턴
 	if (global_reclaim(sc)) {
 		zone->pages_scanned += nr_scanned;
 		if (current_is_kswapd())
@@ -1501,9 +1524,11 @@ shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
 	}
 	spin_unlock_irq(&zone->lru_lock);
 
+	// 목록이 비워져있으며 바로 리턴
 	if (nr_taken == 0)
 		return 0;
 
+	// 2015-12-05 시작;
 	nr_reclaimed = shrink_page_list(&page_list, zone, sc, TTU_UNMAP,
 				&nr_dirty, &nr_unqueued_dirty, &nr_congested,
 				&nr_writeback, &nr_immediate,
@@ -1612,7 +1637,8 @@ shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
  * The downside is that we have to touch page->_count against each page.
  * But we had to alter page->flags anyway.
  */
-
+// 2015-12-05;
+// move_active_pages_to_lru(lruvec, &l_active, &l_hold, lru);
 static void move_active_pages_to_lru(struct lruvec *lruvec,
 				     struct list_head *list,
 				     struct list_head *pages_to_free,
@@ -1624,17 +1650,19 @@ static void move_active_pages_to_lru(struct lruvec *lruvec,
 	int nr_pages;
 
 	while (!list_empty(list)) {
-		page = lru_to_page(list);
+		page = lru_to_page(list); // 목록의 마지막부터 읽음
 		lruvec = mem_cgroup_page_lruvec(page, zone);
 
 		VM_BUG_ON(PageLRU(page));
 		SetPageLRU(page);
 
-		nr_pages = hpage_nr_pages(page);
-		mem_cgroup_update_lru_size(lruvec, lru, nr_pages);
-		list_move(&page->lru, &lruvec->lists[lru]);
+		nr_pages = hpage_nr_pages(page)/*1*/;
+		mem_cgroup_update_lru_size(lruvec, lru, nr_pages); // No OP.
+		list_move(&page->lru, &lruvec->lists[lru]); // 목록에서 빼는 동작 포함
 		pgmoved += nr_pages;
 
+		// 페이지가 참조되지 않는다면 lru, active 플래그 클리어하며
+		// lruvec->lists[lru] 목록에서 제거됨
 		if (put_page_testzero(page)) {
 			__ClearPageLRU(page);
 			__ClearPageActive(page);
@@ -1648,6 +1676,7 @@ static void move_active_pages_to_lru(struct lruvec *lruvec,
 				list_add(&page->lru, pages_to_free);
 		}
 	}
+	// pgmoved 만큼 값을 증가
 	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
 	if (!is_active_lru(lru))
 		__count_vm_events(PGDEACTIVATE, pgmoved);
@@ -1685,13 +1714,19 @@ static void shrink_active_list(unsigned long nr_to_scan,
 	nr_taken = isolate_lru_pages(nr_to_scan, lruvec, &l_hold,
 				     &nr_scanned, sc, isolate_mode, lru);
 	// 2015-11-28 여기까지
+
+	// global_reclaim() 함수는 CONFIG_MEMCG 미 설정으로 항상 true;	
 	if (global_reclaim(sc))
 		zone->pages_scanned += nr_scanned;
 
 	reclaim_stat->recent_scanned[file] += nr_taken;
 
+	// 2015-12-05 시작;
+	// nr_scanned 개수만큼 증가한 값을 저장
 	__count_zone_vm_events(PGREFILL, zone, nr_scanned);
+	// lru에서 nr_taken 개수만큼 뺀 값을 감소
 	__mod_zone_page_state(zone, NR_LRU_BASE + lru, -nr_taken);
+	// file은 nr_taken 개수만큼 증가한 값을 저장
 	__mod_zone_page_state(zone, NR_ISOLATED_ANON + file, nr_taken);
 	spin_unlock_irq(&zone->lru_lock);
 
@@ -1701,6 +1736,7 @@ static void shrink_active_list(unsigned long nr_to_scan,
 		list_del(&page->lru);
 
 		if (unlikely(!page_evictable(page))) {
+			// lru 목록에서 page를 뺌
 			putback_lru_page(page);
 			continue;
 		}
@@ -1715,7 +1751,7 @@ static void shrink_active_list(unsigned long nr_to_scan,
 
 		if (page_referenced(page, 0, sc->target_mem_cgroup,
 				    &vm_flags)) {
-			nr_rotated += hpage_nr_pages(page);
+			nr_rotated += hpage_nr_pages(page)/*1*/;
 			/*
 			 * Identify referenced, file-backed active pages and
 			 * give them one more trip around the active list. So
@@ -1725,7 +1761,7 @@ static void shrink_active_list(unsigned long nr_to_scan,
 			 * IO, plus JVM can create lots of anon VM_EXEC pages,
 			 * so we ignore them here.
 			 */
-			if ((vm_flags & VM_EXEC) && page_is_file_cache(page)) {
+			if ((vm_flags & VM_EXEC/*0x00000004*/) && page_is_file_cache(page)) {
 				list_add(&page->lru, &l_active);
 				continue;
 			}
@@ -1747,8 +1783,10 @@ static void shrink_active_list(unsigned long nr_to_scan,
 	 */
 	reclaim_stat->recent_rotated[file] += nr_rotated;
 
+	// l_hold 리스트는 위 while문을 돌며 비웠으며, move_active_pages_to_lru() 함수에서 다시 사용
 	move_active_pages_to_lru(lruvec, &l_active, &l_hold, lru);
-	move_active_pages_to_lru(lruvec, &l_inactive, &l_hold, lru - LRU_ACTIVE);
+	move_active_pages_to_lru(lruvec, &l_inactive, &l_hold, lru - LRU_ACTIVE/*1*/);
+	// nr_taken 값만큼 감소
 	__mod_zone_page_state(zone, NR_ISOLATED_ANON + file, -nr_taken);
 	spin_unlock_irq(&zone->lru_lock);
 
@@ -1846,9 +1884,11 @@ static unsigned long shrink_list(enum lru_list lru, unsigned long nr_to_scan,
 	if (is_active_lru(lru)) {
 		if (inactive_list_is_low(lruvec, lru))
 			shrink_active_list(nr_to_scan, lruvec, sc, lru);
+			// 2015-12-05 끝;
 		return 0;
 	}
 
+	// 2015-12-05 시작;
 	return shrink_inactive_list(nr_to_scan, lruvec, sc, lru);
 }
 // 2015-11-28
@@ -3767,6 +3807,7 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
  */
 // 2015-07-11
 // 2015-10-10;
+// 2015-12-05;
 int page_evictable(struct page *page)
 {
 	return !mapping_unevictable(page_mapping(page)) && !PageMlocked(page);

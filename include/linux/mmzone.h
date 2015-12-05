@@ -559,6 +559,7 @@ static inline int zone_is_reclaim_dirty(const struct zone *zone)
 	return test_bit(ZONE_TAIL_LRU_DIRTY, &zone->flags);
 }
 
+// 2015-12-05;
 static inline int zone_is_reclaim_writeback(const struct zone *zone)
 {
 	return test_bit(ZONE_WRITEBACK, &zone->flags);
@@ -875,6 +876,7 @@ unsigned long __init node_memmap_size_bytes(int, unsigned long, unsigned long);
  * zone_idx() returns 0 for the ZONE_DMA zone, 1 for the ZONE_NORMAL zone, etc.
  */
 // 2015-03-28;
+// 2015-12-05;
 #define zone_idx(zone)		((zone) - (zone)->zone_pgdat->node_zones)
 
 // 2015-03-28;

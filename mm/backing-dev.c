@@ -586,6 +586,9 @@ EXPORT_SYMBOL(set_bdi_congested);
  */
 // 2015-07-04;
 // congestion_wait(BLK_RW_ASYNC, HZ/*100*//10);
+//
+// 2015-12-05;
+// congestion_wait(BLK_RW_ASYNC, HZ/10)
 long congestion_wait(int sync, long timeout)
 {
 	long ret;

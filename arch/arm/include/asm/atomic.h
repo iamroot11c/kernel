@@ -244,6 +244,8 @@ static inline void atomic_clear_mask(unsigned long mask, unsigned long *addr)
 
 #endif /* __LINUX_ARM_ARCH__ */
 
+// 2015-12-05;
+// atomic_xchg(&highest_priority_index, -1)
 #define atomic_xchg(v, new) (xchg(&((v)->counter), new))
 
 // 2015-04-18;

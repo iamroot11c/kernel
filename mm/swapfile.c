@@ -210,6 +210,7 @@ static inline void cluster_set_count_flag(struct swap_cluster_info *info,
 	info->data = c;
 }
 
+// 2015-12-05;
 static inline unsigned int cluster_next(struct swap_cluster_info *info)
 {
 	return info->data;
@@ -233,9 +234,10 @@ static inline bool cluster_is_free(struct swap_cluster_info *info)
 	return info->flags & CLUSTER_FLAG_FREE;
 }
 
+// 2015-12-05;
 static inline bool cluster_is_null(struct swap_cluster_info *info)
 {
-	return info->flags & CLUSTER_FLAG_NEXT_NULL;
+	return info->flags & CLUSTER_FLAG_NEXT_NULL/*2*/;
 }
 
 static inline void cluster_set_null(struct swap_cluster_info *info)
@@ -424,6 +426,8 @@ scan_swap_map_ssd_cluster_conflict(struct swap_info_struct *si,
  * Try to get a swap entry from current cpu's swap entry pool (a cluster). This
  * might involve allocating a new cluster for current CPU too.
  */
+// 2015-12-05 흝어봄;
+// scan_swap_map_try_ssd_cluster(si, &offset, &scan_base)
 static void scan_swap_map_try_ssd_cluster(struct swap_info_struct *si,
 	unsigned long *offset, unsigned long *scan_base)
 {
@@ -437,7 +441,7 @@ new_cluster:
 		if (!cluster_is_null(&si->free_cluster_head)) {
 			cluster->index = si->free_cluster_head;
 			cluster->next = cluster_next(&cluster->index) *
-					SWAPFILE_CLUSTER;
+					SWAPFILE_CLUSTER/*256*/;
 		} else if (!cluster_is_null(&si->discard_cluster_head)) {
 			/*
 			 * we don't have free cluster but have some clusters in
@@ -474,13 +478,15 @@ new_cluster:
 	*scan_base = tmp;
 }
 
+// 2015-12-05;
+// scan_swap_map(si, SWAP_HAS_CACHE)
 static unsigned long scan_swap_map(struct swap_info_struct *si,
 				   unsigned char usage)
 {
 	unsigned long offset;
 	unsigned long scan_base;
 	unsigned long last_in_cluster = 0;
-	int latency_ration = LATENCY_LIMIT;
+	int latency_ration = LATENCY_LIMIT; // 256
 
 	/*
 	 * We try to cluster swap pages by allocating them sequentially
@@ -498,6 +504,7 @@ static unsigned long scan_swap_map(struct swap_info_struct *si,
 
 	/* SSD algorithm */
 	if (si->cluster_info) {
+		// 2015-12-05 scan_swap_map_try_ssd_cluster() 함수를 흝어보기까지만 함
 		scan_swap_map_try_ssd_cluster(si, &offset, &scan_base);
 		goto checks;
 	}
@@ -645,6 +652,7 @@ no_page:
 	return 0;
 }
 
+// 2015-12-05
 swp_entry_t get_swap_page(void)
 {
 	struct swap_info_struct *si;
@@ -659,6 +667,8 @@ swp_entry_t get_swap_page(void)
 	atomic_long_dec(&nr_swap_pages);
 
 	for (type = swap_list.next; type >= 0 && wrapped < 2; type = next) {
+		// highest_priority_index 전역변수를 -1로 변경하면
+		// 이전값을 리턴받아 hp_index 지연변수에 저장
 		hp_index = atomic_xchg(&highest_priority_index, -1);
 		/*
 		 * highest_priority_index records current highest priority swap
@@ -701,17 +711,19 @@ swp_entry_t get_swap_page(void)
 
 		spin_unlock(&swap_lock);
 		/* This is called for allocating swap entry for cache */
+		// 2015-12-05 캐시된 page를 찾음;
 		offset = scan_swap_map(si, SWAP_HAS_CACHE);
 		spin_unlock(&si->lock);
 		if (offset)
 			return swp_entry(type, offset);
 		spin_lock(&swap_lock);
 		next = swap_list.next;
-	}
+	} // for
 
 	atomic_long_inc(&nr_swap_pages);
 noswap:
 	spin_unlock(&swap_lock);
+	// 찾지 못하면 0을 리턴
 	return (swp_entry_t) {0};
 }
 

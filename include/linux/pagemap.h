@@ -48,6 +48,7 @@ static inline void mapping_clear_unevictable(struct address_space *mapping)
 }
 
 // 2015-07-11
+// 2015-12-05;
 static inline int mapping_unevictable(struct address_space *mapping)
 {
 	if (mapping)
@@ -430,6 +431,7 @@ static inline void wait_on_page_locked(struct page *page)
  * Wait for a page to complete writeback
  */
 // 2015-08-08;
+// 2015-12-05;
 static inline void wait_on_page_writeback(struct page *page)
 {
 	if (PageWriteback(page))

@@ -1481,6 +1481,9 @@ void mark_free_pages(struct zone *zone)
 //
 // 2015-05-09;, 2015-07-11
 // free_hot_cold_page(page, 0);
+//
+// 2015-12-05;
+// free_hot_cold_page(page, 1);
 void free_hot_cold_page(struct page *page, int cold)
 {
 	struct zone *zone = page_zone(page);
@@ -1544,6 +1547,8 @@ out:
  * Free a list of 0-order pages
  */
 // 2015-04-25
+// 2015-12-05;
+// free_hot_cold_page_list(&l_hold, 1);
 void free_hot_cold_page_list(struct list_head *list, int cold)
 {
 	struct page *page, *next;

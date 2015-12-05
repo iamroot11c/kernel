@@ -474,6 +474,7 @@ static inline int PageTransTail(struct page *page)
 // 2015-07-04;
 // 2015-08-15
 // 2015-10-10;
+// 2015-12-05;
 static inline int PageTransHuge(struct page *page)
 {
 	return 0;

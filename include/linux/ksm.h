@@ -16,7 +16,7 @@
 struct stable_node;
 struct mem_cgroup;
 
-#ifdef CONFIG_KSM
+#ifdef CONFIG_KSM // not define
 int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
 		unsigned long end, int advice, unsigned long *vm_flags);
 int __ksm_enter(struct mm_struct *mm);
@@ -97,7 +97,7 @@ static inline int PageKsm(struct page *page)
 	return 0;
 }
 
-#ifdef CONFIG_MMU
+#ifdef CONFIG_MMU // defined
 static inline int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
 		unsigned long end, int advice, unsigned long *vm_flags)
 {
@@ -110,6 +110,7 @@ static inline struct page *ksm_might_need_to_copy(struct page *page,
 	return page;
 }
 
+// 2015-12-05;
 static inline int page_referenced_ksm(struct page *page,
 			struct mem_cgroup *memcg, unsigned long *vm_flags)
 {

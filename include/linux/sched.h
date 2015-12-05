@@ -2417,6 +2417,7 @@ static inline int __fatal_signal_pending(struct task_struct *p)
 // 2015-06-27
 // 2015-07-04;
 // 2015-11-14;
+// 2015-12-05;
 static inline int fatal_signal_pending(struct task_struct *p)
 {
 	return signal_pending(p) && __fatal_signal_pending(p);

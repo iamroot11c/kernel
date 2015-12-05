@@ -54,6 +54,9 @@ static inline void count_vm_event(enum vm_event_item item)
 // __count_vm_events(PGFREE, 1 << order);
 // 2015-05-30
 // 2015-10-24;
+//
+// 2015-12-05;
+// __count_vm_events(PGREFILL_NORMAL - ZONE_NORMAL + zone_idx(zone), delta)
 static inline void __count_vm_events(enum vm_event_item item, long delta)
 {
 	__this_cpu_add(vm_event_states.event[item], delta);
@@ -110,8 +113,10 @@ static inline void vm_events_fold_cpu(int cpu)
 #define count_vm_numa_events(x, y) do { (void)(y); } while (0)
 #endif /* CONFIG_NUMA_BALANCING */
 
+// 2015-12-05;
+// __count_zone_vm_events(PGREFILL, zone, nr_scanned);
 #define __count_zone_vm_events(item, zone, delta) \
-		__count_vm_events(item##_NORMAL - ZONE_NORMAL + \
+		__count_vm_events(item##_NORMAL - ZONE_NORMAL/*0*/ + \
 		zone_idx(zone), delta)
 
 /*
@@ -152,6 +157,10 @@ static inline unsigned long global_page_state(enum zone_stat_item item)
 // zone_page_state(zone, NR_ACTIVE_ANON)
 // zone_page_state(zone, NR_ISOLATED_FILE)
 // zone_page_state(zone, NR_ISOLATED_ANON)
+//
+// 2015-12-05;
+// zone_page_state(zone, NR_INACTIVE_FILE);
+// zone_page_state(zone, NR_ISOLATED_FILE);
 static inline unsigned long zone_page_state(struct zone *zone,
 					enum zone_stat_item item)
 {

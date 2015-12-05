@@ -23,6 +23,8 @@
 #define swp_is_buggy
 #endif
 
+// 2015-12-05;
+// ptr 변수에 새로운값 x를 저장하며, ptr의 이전값을 리턴
 static inline unsigned long __xchg(unsigned long x, volatile void *ptr, int size)
 {
 	extern void __bad_xchg(volatile void *, int);
@@ -40,8 +42,8 @@ static inline unsigned long __xchg(unsigned long x, volatile void *ptr, int size
 #if __LINUX_ARM_ARCH__ >= 6
 	case 1:
 		asm volatile("@	__xchg1\n"
-		"1:	ldrexb	%0, [%3]\n"
-		"	strexb	%1, %2, [%3]\n"
+		"1:	ldrexb	%0, [%3] \n"
+		"	strexb	%1, %2, [%3] \n"
 		"	teq	%1, #0\n"
 		"	bne	1b"
 			: "=&r" (ret), "=&r" (tmp)
@@ -50,16 +52,16 @@ static inline unsigned long __xchg(unsigned long x, volatile void *ptr, int size
 		break;
 	case 4:
 		asm volatile("@	__xchg4\n"
-		"1:	ldrex	%0, [%3]\n"
-		"	strex	%1, %2, [%3]\n"
-		"	teq	%1, #0\n"
-		"	bne	1b"
+		"1:	ldrex	%0, [%3]\n"      // ret = *ptr 
+		"	strex	%1, %2, [%3]\n"  // *ptr = x; 성공하면 tmp는 0, 실패면 1
+		"	teq	%1, #0\n"            // if (tmp != 0) 
+		"	bne	1b"                  //   goto 1b
 			: "=&r" (ret), "=&r" (tmp)
 			: "r" (x), "r" (ptr)
 			: "memory", "cc");
 		break;
 #elif defined(swp_is_buggy)
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
 #error SMP is not supported on this platform
 #endif
 	case 1:

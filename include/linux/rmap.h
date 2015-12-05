@@ -25,6 +25,7 @@
  * pointing to this anon_vma once its vma list is empty.
  */
 // 2015-08-08;
+// 2015-12-05;
 struct anon_vma {
 	struct anon_vma *root;		/* Root of this anon_vma tree */
 	struct rw_semaphore rwsem;	/* W: modification, R: walking the list */
@@ -62,6 +63,7 @@ struct anon_vma {
  * which link all the VMAs associated with this anon_vma.
  */
 // 2015-08-15
+// 2015-12-05;
 struct anon_vma_chain {
 	struct vm_area_struct *vma;
 	struct anon_vma *anon_vma;
@@ -86,7 +88,7 @@ enum ttu_flags {
 	TTU_IGNORE_HWPOISON = (1 << 10),/* corrupted page is recoverable */
 };
 
-#ifdef CONFIG_MMU
+#ifdef CONFIG_MMU // defined
 static inline void get_anon_vma(struct anon_vma *anon_vma)
 {
 	atomic_inc(&anon_vma->refcount);
@@ -215,6 +217,9 @@ pte_t *__page_check_address(struct page *, struct mm_struct *,
 				unsigned long, spinlock_t **, int);
 
 // 2015-08-22
+// page_check_address(page, mm, address, &ptl, 0);
+// 
+// 2015-12-05;
 // page_check_address(page, mm, address, &ptl, 0);
 static inline pte_t *page_check_address(struct page *page, struct mm_struct *mm,
 					unsigned long address,

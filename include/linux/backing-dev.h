@@ -287,9 +287,13 @@ extern struct backing_dev_info noop_backing_dev_info;
 
 int writeback_in_progress(struct backing_dev_info *bdi);
 
+// 2015-12-05
+// bdi_congested(bdi, 1 << BDI_async_congested)
 static inline int bdi_congested(struct backing_dev_info *bdi, int bdi_bits)
 {
 	if (bdi->congested_fn)
+        // 2015-12-05 함수포인터가 NULL이 아니라면 함수호출
+        // 함수포인터에 연결된 함수가 블록디바이스라 호출한다로 마무리함
 		return bdi->congested_fn(bdi->congested_data, bdi_bits);
 	return (bdi->state & bdi_bits);
 }
@@ -299,6 +303,8 @@ static inline int bdi_read_congested(struct backing_dev_info *bdi)
 	return bdi_congested(bdi, 1 << BDI_sync_congested);
 }
 
+// 2015-12-05
+// bdi_write_congested(mapping->backing_dev_info)
 static inline int bdi_write_congested(struct backing_dev_info *bdi)
 {
 	return bdi_congested(bdi, 1 << BDI_async_congested);

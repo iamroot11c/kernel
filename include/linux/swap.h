@@ -29,6 +29,7 @@ struct bio;
 				 SWAP_FLAG_DISCARD_PAGES)
 
 // 2015-06-20
+// 2015-12-05;
 static inline int current_is_kswapd(void)
 {
 	return current->flags & PF_KSWAPD;
@@ -214,6 +215,7 @@ struct swap_cluster_info {
  * its own cluster and swapout sequentially. The purpose is to optimize swapout
  * throughput.
  */
+// 2015-12-05;
 struct percpu_cluster {
 	struct swap_cluster_info index; /* Current cluster index */
 	unsigned int next; /* Likely next allocation offset */
@@ -268,6 +270,7 @@ struct swap_info_struct {
 	struct swap_cluster_info discard_cluster_tail; /* list tail of discard clusters */
 };
 
+// 2015-12-05;
 struct swap_list_t {
 	int head;	/* head of priority-ordered swapfile list */
 	int next;	/* swapfile to be used next */

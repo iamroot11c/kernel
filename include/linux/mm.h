@@ -87,6 +87,7 @@ extern unsigned int kobjsize(const void *objp);
 #define VM_READ		0x00000001	/* currently active flags */
 #define VM_WRITE	0x00000002
 // 2015-08-22
+// 2015-12-05
 #define VM_EXEC		0x00000004
 #define VM_SHARED	0x00000008
 
@@ -420,6 +421,7 @@ static inline void page_mapcount_reset(struct page *page)
 	atomic_set(&(page)->_mapcount, -1);
 }
 
+// 2015-12-05;
 static inline int page_mapcount(struct page *page)
 {
 	return atomic_read(&(page)->_mapcount) + 1;
@@ -1589,6 +1591,7 @@ struct vm_area_struct *vma_interval_tree_iter_first(struct rb_root *root,
 struct vm_area_struct *vma_interval_tree_iter_next(struct vm_area_struct *node,
 				unsigned long start, unsigned long last);
 
+// 2015-12-05;
 #define vma_interval_tree_foreach(vma, root, start, last)		\
 	for (vma = vma_interval_tree_iter_first(root, start, last);	\
 	     vma; vma = vma_interval_tree_iter_next(vma, start, last))
@@ -1611,6 +1614,7 @@ struct anon_vma_chain *anon_vma_interval_tree_iter_next(
 void anon_vma_interval_tree_verify(struct anon_vma_chain *node);
 #endif
 
+// 2015-12-05;
 #define anon_vma_interval_tree_foreach(avc, root, start, last)		 \
 	for (avc = anon_vma_interval_tree_iter_first(root, start, last); \
 	     avc; avc = anon_vma_interval_tree_iter_next(avc, start, last))
