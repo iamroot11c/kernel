@@ -401,6 +401,7 @@ int generic_swapfile_activate(struct swap_info_struct *, struct file *,
 
 /* linux/mm/swap_state.c */
 extern struct address_space swapper_spaces[];
+// 2015-12-12
 #define swap_address_space(entry) (&swapper_spaces[swp_type(entry)])
 extern unsigned long total_swapcache_pages(void);
 extern void show_swap_cache_info(void);
@@ -408,6 +409,7 @@ extern int add_to_swap(struct page *, struct list_head *list);
 extern int add_to_swap_cache(struct page *, swp_entry_t, gfp_t);
 extern int __add_to_swap_cache(struct page *page, swp_entry_t entry);
 extern void __delete_from_swap_cache(struct page *);
+// 2015-12-12
 extern void delete_from_swap_cache(struct page *);
 extern void free_page_and_swap_cache(struct page *);
 extern void free_pages_and_swap_cache(struct page **, int);
@@ -419,14 +421,20 @@ extern struct page *swapin_readahead(swp_entry_t, gfp_t,
 
 /* linux/mm/swapfile.c */
 // 2015-11-21
+// 사용 가능한 swap page의 갯수
 extern atomic_long_t nr_swap_pages;
 // 2015-11-28
 // 총 스왑된 페이지의 개수로 추정
 extern long total_swap_pages;
 
+// 2015-12-12
+// total_swap_pages보다 nr_swap_pages의 갯수가 50% 이하로 떨어졌다면 full로 판단한다.
 /* Swap 50% full? Release swapcache more aggressively.. */
 static inline bool vm_swap_full(void)
 {
+    // false : nr_swap_pages : 10, total_swap_pages : 20 
+    // false : nr_swap_pages : 20, total_swap_pages : 20 
+    // true : nr_swap_pages : 5, total_swap_pages : 20 
 	return atomic_long_read(&nr_swap_pages) * 2 < total_swap_pages;
 }
 
@@ -453,6 +461,7 @@ extern sector_t swapdev_block(int, pgoff_t);
 extern int page_swapcount(struct page *);
 extern struct swap_info_struct *page_swap_info(struct page *);
 extern int reuse_swap_page(struct page *);
+// 2015-12-12
 extern int try_to_free_swap(struct page *);
 struct backing_dev_info;
 

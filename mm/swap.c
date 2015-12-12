@@ -238,6 +238,8 @@ out_put_single:
 // 그러나, 참조카운터가 0이라면, 0페이지 버디 리스트에 연결
 //
 // 2015-11-14;
+// 2015-12-12
+// 여러번 호출 되더라도, 조건에 맞지 않으면 구체적인 수행이 없을 것이다.
 void put_page(struct page *page)
 {
 	if (unlikely(PageCompound(page)))

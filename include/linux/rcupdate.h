@@ -118,6 +118,7 @@ extern void do_trace_rcu_torture_read(const char *rcutorturename,
  * if CPU A and CPU B are the same CPU (but again only if the system has
  * more than one CPU).
  */
+// 205-12-12
 extern void call_rcu(struct rcu_head *head,
 			      void (*func)(struct rcu_head *head));
 
@@ -617,6 +618,7 @@ static inline void rcu_preempt_sleep_check(void)
 // 2015-09-12
 // 식사 전
 // rcu_dereference_check((p), lockdep_is_held(&sched_domains_mutex)
+// 2015-12-12
 #define rcu_dereference_check(p, c) \
 	__rcu_dereference_check((p), rcu_read_lock_held() || (c), __rcu)
 
@@ -641,6 +643,7 @@ static inline void rcu_preempt_sleep_check(void)
 	__rcu_dereference_check((p), rcu_read_lock_sched_held() || (c), \
 				__rcu)
 
+// 2015-12-12
 #define rcu_dereference_raw(p) rcu_dereference_check(p, 1) /*@@@ needed? @@@*/
 
 /*

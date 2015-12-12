@@ -106,6 +106,7 @@ static inline void mapping_set_gfp_mask(struct address_space *m, gfp_t mask)
 // 2015-08-15
 // compound page가 아니라면, single page에 cache에 추가하는 기능
 // buddy 할당자에서 order 0인 경우 사용
+// 2015-12-12
 #define page_cache_release(page)	put_page(page)
 void release_pages(struct page **pages, int nr, int cold);
 
@@ -153,11 +154,13 @@ void release_pages(struct page **pages, int nr, int cold);
  * will find the page or it will not. Likewise, the old find_get_page could run
  * either before the insertion or afterwards, depending on timing.
  */
+// 2015-12-12
+// ref count가 0이면 0리턴
 static inline int page_cache_get_speculative(struct page *page)
 {
 	VM_BUG_ON(in_interrupt());
 
-#ifdef CONFIG_TINY_RCU
+#ifdef CONFIG_TINY_RCU   // not set
 # ifdef CONFIG_PREEMPT_COUNT
 	VM_BUG_ON(!in_atomic());
 # endif

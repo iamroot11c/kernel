@@ -25,17 +25,20 @@
  * swapper_space is a fiction, retained to simplify the path through
  * vmscan's shrink_page_list.
  */
+// 2015-12-12
 static const struct address_space_operations swap_aops = {
 	.writepage	= swap_writepage,
 	.set_page_dirty	= swap_set_page_dirty,
 	.migratepage	= migrate_page,
 };
 
+// 2015-12-12
 static struct backing_dev_info swap_backing_dev_info = {
 	.name		= "swap",
 	.capabilities	= BDI_CAP_NO_ACCT_AND_WRITEBACK | BDI_CAP_SWAP_BACKED,
 };
 
+// 2015-12-12
 struct address_space swapper_spaces[MAX_SWAPFILES/*30*/] = {
 	[0 ... MAX_SWAPFILES - 1] = {
 		.page_tree	= RADIX_TREE_INIT(GFP_ATOMIC|__GFP_NOWARN),
@@ -44,8 +47,10 @@ struct address_space swapper_spaces[MAX_SWAPFILES/*30*/] = {
 	}
 };
 
+// 2015-12-12
 #define INC_CACHE_INFO(x)	do { swap_cache_info.x++; } while (0)
 
+// 2015-12-12
 static struct {
 	unsigned long add_total;
 	unsigned long del_total;
@@ -134,6 +139,7 @@ int add_to_swap_cache(struct page *page, swp_entry_t entry, gfp_t gfp_mask)
  * This must be called only on pages that have
  * been verified to be in the swap cache.
  */
+// 2015-12-12
 void __delete_from_swap_cache(struct page *page)
 {
 	swp_entry_t entry;
@@ -172,6 +178,8 @@ int add_to_swap(struct page *page, struct list_head *list)
 	// 2015-12-05 여기까지;
 	// get_swap_page() 함수는 다음주(12.12)에 자세히 분석할 예정
 	entry = get_swap_page();
+	// 2015-12-12 여기까지
+	
 	if (!entry.val)
 		return 0;
 
@@ -214,6 +222,7 @@ int add_to_swap(struct page *page, struct list_head *list)
  * It will never put the page into the free list,
  * the caller has a reference on the page.
  */
+// 2015-12-12
 void delete_from_swap_cache(struct page *page)
 {
 	swp_entry_t entry;
@@ -223,10 +232,12 @@ void delete_from_swap_cache(struct page *page)
 
 	address_space = swap_address_space(entry);
 	spin_lock_irq(&address_space->tree_lock);
+	// 실질적인 해제 작업
 	__delete_from_swap_cache(page);
 	spin_unlock_irq(&address_space->tree_lock);
 
 	swapcache_free(entry, page);
+	// sing page list에 추가
 	page_cache_release(page);
 }
 

@@ -730,6 +730,7 @@ int __lock_page_or_retry(struct page *page, struct mm_struct *mm,
  * Is there a pagecache struct page at the given (mapping, offset) tuple?
  * If yes, increment its refcount and return it; if no, return NULL.
  */
+// 2015-12-12
 struct page *find_get_page(struct address_space *mapping, pgoff_t offset)
 {
 	void **pagep;
@@ -738,6 +739,8 @@ struct page *find_get_page(struct address_space *mapping, pgoff_t offset)
 	rcu_read_lock();
 repeat:
 	page = NULL;
+	// 2015-12-12
+	// slot을 찾은 것이다. 그러므로, node이다.
 	pagep = radix_tree_lookup_slot(&mapping->page_tree, offset);
 	if (pagep) {
 		page = radix_tree_deref_slot(pagep);

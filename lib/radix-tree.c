@@ -37,7 +37,7 @@
 
 #ifdef __KERNEL__
 // 2015-07-04;
-#define RADIX_TREE_MAP_SHIFT	(CONFIG_BASE_SMALL/*0*/ ? 4 : 6)
+#define RADIX_TREE_MAP_SHIFT/*6*/	(CONFIG_BASE_SMALL/*0*/ ? 4 : 6)
 #else
 #define RADIX_TREE_MAP_SHIFT	3	/* For more stressful testing */
 #endif
@@ -45,8 +45,8 @@
 #define RADIX_TREE_MAP_SIZE	(1UL << RADIX_TREE_MAP_SHIFT/*6*/)
 #define RADIX_TREE_MAP_MASK	(RADIX_TREE_MAP_SIZE-1)
 
-#define RADIX_TREE_TAG_LONGS	\
-	((RADIX_TREE_MAP_SIZE + BITS_PER_LONG - 1) / BITS_PER_LONG)
+#define RADIX_TREE_TAG_LONGS/*2*/	\
+	((RADIX_TREE_MAP_SIZE/*63*/ + BITS_PER_LONG/*32*/ - 1) / BITS_PER_LONG/*32*/)
 
 // 2015-07-04;
 // 2015-09-05;
@@ -58,19 +58,20 @@ struct radix_tree_node {
 		struct rcu_head	rcu_head;	/* Used when freeing node */
 		                                // types.h:struct callback_head
 	};
-	void __rcu	*slots[RADIX_TREE_MAP_SIZE];
-	unsigned long	tags[RADIX_TREE_MAX_TAGS][RADIX_TREE_TAG_LONGS];
+	void __rcu	*slots[RADIX_TREE_MAP_SIZE/*64*/];
+	unsigned long	tags[RADIX_TREE_MAX_TAGS/*3*/][RADIX_TREE_TAG_LONGS/*2*/];
 };
 
-#define RADIX_TREE_INDEX_BITS  (8 /* CHAR_BIT */ * sizeof(unsigned long))
-#define RADIX_TREE_MAX_PATH (DIV_ROUND_UP(RADIX_TREE_INDEX_BITS, \
+#define RADIX_TREE_INDEX_BITS/*32*/  (8 /* CHAR_BIT */ * sizeof(unsigned long))
+#define RADIX_TREE_MAX_PATH/*6*/ (DIV_ROUND_UP(RADIX_TREE_INDEX_BITS/*32*/, \
 					  RADIX_TREE_MAP_SHIFT/*6*/))
 
 /*
  * The height_to_maxindex array needs to be one deeper than the maximum
  * path as height 0 holds only 1 entry.
  */
-static unsigned long height_to_maxindex[RADIX_TREE_MAX_PATH + 1] __read_mostly;
+// 2015-12-12
+static unsigned long height_to_maxindex[RADIX_TREE_MAX_PATH/*6*/ + 1] __read_mostly;
 
 /*
  * Radix tree node cache.
@@ -131,6 +132,8 @@ static inline void tag_clear(struct radix_tree_node *node, unsigned int tag,
 
 // 2015-09-05;
 // tag_get(slot, tag, offset);
+//
+// 2015-12-12
 static inline int tag_get(struct radix_tree_node *node, unsigned int tag,
 		int offset)
 {
@@ -148,6 +151,9 @@ static inline void root_tag_clear(struct radix_tree_root *root, unsigned int tag
 	root->gfp_mask &= (__force gfp_t)~(1 << (tag + __GFP_BITS_SHIFT));
 }
 
+// 2015-12-12
+// 25bit 아래는 현재 유지
+// 그 이상은 clear
 static inline void root_tag_clear_all(struct radix_tree_root *root)
 {
 	root->gfp_mask &= __GFP_BITS_MASK;
@@ -246,6 +252,7 @@ radix_tree_node_alloc(struct radix_tree_root *root)
 	return ret;
 }
 
+// 2015-12-12
 static void radix_tree_node_rcu_free(struct rcu_head *head)
 {
 	struct radix_tree_node *node =
@@ -263,9 +270,11 @@ static void radix_tree_node_rcu_free(struct rcu_head *head)
 	node->slots[0] = NULL;
 	node->count = 0;
 
+	// 2015-12-12
 	kmem_cache_free(radix_tree_node_cachep, node);
 }
 
+// 2015-12-12
 static inline void
 radix_tree_node_free(struct radix_tree_node *node)
 {
@@ -342,6 +351,7 @@ EXPORT_SYMBOL(radix_tree_maybe_preload);
  *	Return the maximum key which can be store into a
  *	radix tree with height HEIGHT.
  */
+// 2015-12-12
 static inline unsigned long radix_tree_maxindex(unsigned int height)
 {
 	return height_to_maxindex[height];
@@ -472,6 +482,10 @@ EXPORT_SYMBOL(radix_tree_insert);
  * is_slot == 1 : search for the slot.
  * is_slot == 0 : search for the node.
  */
+// 2015-12-12
+// (void **)radix_tree_lookup_element(root, index, 1);
+// 1인 경우 slot을 구하는 기능
+// 참고: http://timewizhan.tistory.com/41
 static void *radix_tree_lookup_element(struct radix_tree_root *root,
 				unsigned long index, int is_slot)
 {
@@ -487,17 +501,27 @@ static void *radix_tree_lookup_element(struct radix_tree_root *root,
 			return NULL;
 		return is_slot ? (void *)&root->rnode : node;
 	}
+
+	// 메모리는 홀수인 경우는 없을 테니, 메모리에 바로 접근할 수 있는 주소로 변경
 	node = indirect_to_ptr(node);
 
 	height = node->height;
 	if (index > radix_tree_maxindex(height))
 		return NULL;
 
-	shift = (height-1) * RADIX_TREE_MAP_SHIFT;
+	// height : 2
+	// shift = 6;
+	shift = (height-1) * RADIX_TREE_MAP_SHIFT/*6*/;
 
+	/**
+         * 참고: http://timewizhan.tistory.com/41
+	 * 페이지 인덱스가 들어오면 비트 별로 쪼개는 것이다.
+	 * 라딕스 트리가 1이라면 하위 6 비트로 slot 배열 인덱스로.
+	 * 2라면 하위 12비트에서 상위 6비트는 1단계에서 하위 6비트는 2단계에서 사용된다.
+	 */
 	do {
 		slot = (struct radix_tree_node **)
-			(node->slots + ((index>>shift) & RADIX_TREE_MAP_MASK));
+			(node->slots + ((index>>shift) & RADIX_TREE_MAP_MASK/*0x3F*/));
 		node = rcu_dereference_raw(*slot);
 		if (node == NULL)
 			return NULL;
@@ -522,6 +546,7 @@ static void *radix_tree_lookup_element(struct radix_tree_root *root,
  *	exclusive from other writers. Any dereference of the slot must be done
  *	using radix_tree_deref_slot.
  */
+// 2015-12-12
 void **radix_tree_lookup_slot(struct radix_tree_root *root, unsigned long index)
 {
 	return (void **)radix_tree_lookup_element(root, index, 1);
@@ -611,6 +636,7 @@ EXPORT_SYMBOL(radix_tree_tag_set);
  *	Returns the address of the tagged item on success, else NULL.  ie:
  *	has the same return value and semantics as radix_tree_lookup().
  */
+// 2015-12-12
 void *radix_tree_tag_clear(struct radix_tree_root *root,
 			unsigned long index, unsigned int tag)
 {
@@ -1291,6 +1317,8 @@ unsigned long radix_tree_locate_item(struct radix_tree_root *root, void *item)
  *	radix_tree_shrink    -    shrink height of a radix tree to minimal
  *	@root		radix tree root
  */
+// 2015-12-12
+// root->rnode를 해제하는 기능
 static inline void radix_tree_shrink(struct radix_tree_root *root)
 {
 	/* try to shrink tree height */
@@ -1305,6 +1333,7 @@ static inline void radix_tree_shrink(struct radix_tree_root *root)
 		 * The candidate node has more than one child, or its child
 		 * is not at the leftmost slot, we cannot shrink.
 		 */
+		// 멤버가 1이 아니면 node가 남아있으므로, 해제 해서는 안된다.
 		if (to_free->count != 1)
 			break;
 		if (!to_free->slots[0])
@@ -1317,11 +1346,13 @@ static inline void radix_tree_shrink(struct radix_tree_root *root)
 		 * (to_free->slots[0]), it will be safe to dereference the new
 		 * one (root->rnode) as far as dependent read barriers go.
 		 */
+		// 0번지에 저장된 자식을 저장
 		slot = to_free->slots[0];
 		if (root->height > 1) {
 			slot->parent = NULL;
 			slot = ptr_to_indirect(slot);
 		}
+		// 루트의 자식으로 slot으로 연결
 		root->rnode = slot;
 		root->height--;
 
@@ -1348,7 +1379,7 @@ static inline void radix_tree_shrink(struct radix_tree_root *root)
 						RADIX_TREE_INDIRECT_PTR;
 
 		radix_tree_node_free(to_free);
-	}
+	} // while
 }
 
 /**
@@ -1360,6 +1391,8 @@ static inline void radix_tree_shrink(struct radix_tree_root *root)
  *
  *	Returns the address of the deleted item, or NULL if it was not present.
  */
+// 2015-12-12
+// radix_tree_delete(&address_space->page_tree, page_private(page));
 void *radix_tree_delete(struct radix_tree_root *root, unsigned long index)
 {
 	struct radix_tree_node *node = NULL;
@@ -1379,13 +1412,19 @@ void *radix_tree_delete(struct radix_tree_root *root, unsigned long index)
 		root->rnode = NULL;
 		goto out;
 	}
+	// 메모리에 접근 가능하게
 	slot = indirect_to_ptr(slot);
-	shift = height * RADIX_TREE_MAP_SHIFT;
+	// 높이가 2로 가정
+	// shift : 12
+	shift = height * RADIX_TREE_MAP_SHIFT/*6*/;
 
+	// slot 탐색
 	do {
 		if (slot == NULL)
 			goto out;
 
+		// 12 : 6
+		// 6 : 0
 		shift -= RADIX_TREE_MAP_SHIFT;
 		offset = (index >> shift) & RADIX_TREE_MAP_MASK;
 		node = slot;
@@ -1400,12 +1439,14 @@ void *radix_tree_delete(struct radix_tree_root *root, unsigned long index)
 	 * This way of doing it would be inefficient, but seldom is any set.
 	 */
 	for (tag = 0; tag < RADIX_TREE_MAX_TAGS; tag++) {
+		// 나중에 보자.
 		if (tag_get(node, tag, offset))
 			radix_tree_tag_clear(root, index, tag);
 	}
 
 	to_free = NULL;
 	/* Now free the nodes we do not need anymore */
+	// count가 0이면 연결된 모든 노드들을 해제한다.
 	while (node) {
 		node->slots[offset] = NULL;
 		node->count--;
@@ -1413,10 +1454,13 @@ void *radix_tree_delete(struct radix_tree_root *root, unsigned long index)
 		 * Queue the node for deferred freeing after the
 		 * last reference to it disappears (set NULL, above).
 		 */
+		// call_rcu를 통해서 해제한다.
 		if (to_free)
 			radix_tree_node_free(to_free);
 
+		// count가 0이 아니면, 중간에 탈출
 		if (node->count) {
+			// 2015-12-12
 			if (node == indirect_to_ptr(root->rnode))
 				radix_tree_shrink(root);
 			goto out;

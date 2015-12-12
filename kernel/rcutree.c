@@ -2308,6 +2308,7 @@ static void rcu_leak_callback(struct rcu_head *rhp)
  */
 // 2015-08-08 glance;
 // __call_rcu(&cred->rcu, put_cred_rcu, &rcu_preempt_state, -1, 0);
+// 2015-12-12
 static void
 __call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu),
 	   struct rcu_state *rsp, int cpu, bool lazy)

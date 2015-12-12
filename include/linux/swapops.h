@@ -32,6 +32,11 @@
 //
 // 2015-10-24;
 // swp_entry(__swp_type(arch_entry), __swp_offset(arch_entry))
+//
+// 2015-12-12
+// swp_entry(si->type, offset);
+// type : 2, offset : 7
+// val = 0x0400_0000 | 0x07
 static inline swp_entry_t swp_entry(unsigned long type, pgoff_t offset)
 {
 	swp_entry_t ret;

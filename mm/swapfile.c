@@ -81,6 +81,7 @@ static inline unsigned char swap_count(unsigned char ent)
 	                                // 6번째 비트를 뺀 나머지를 읽음
 }
 
+// 2015-12-12
 /* returns 1 if swap entry is freed */
 static int
 __try_to_reclaim_swap(struct swap_info_struct *si, unsigned long offset)
@@ -334,11 +335,17 @@ static void swap_discard_work(struct work_struct *work)
  * The cluster corresponding to page_nr will be used. The cluster will be
  * removed from free cluster list and its usage counter will be increased.
  */
+// 2015-12-12
+// ssd용 함수로 보인다.
+// inc_cluster_info_page(si, si->cluster_info, offset);
 static void inc_cluster_info_page(struct swap_info_struct *p,
 	struct swap_cluster_info *cluster_info, unsigned long page_nr)
 {
+	// 4096 * 256 = 1M
+	// 한 클러스터당 1M의 메모리를 관리한다.
 	unsigned long idx = page_nr / SWAPFILE_CLUSTER;
 
+	// ssd가 아니면 리턴
 	if (!cluster_info)
 		return;
 	if (cluster_is_free(&cluster_info[idx])) {
@@ -428,6 +435,8 @@ scan_swap_map_ssd_cluster_conflict(struct swap_info_struct *si,
  */
 // 2015-12-05 흝어봄;
 // scan_swap_map_try_ssd_cluster(si, &offset, &scan_base)
+//
+// 2015-12-12
 static void scan_swap_map_try_ssd_cluster(struct swap_info_struct *si,
 	unsigned long *offset, unsigned long *scan_base)
 {
@@ -480,6 +489,8 @@ new_cluster:
 
 // 2015-12-05;
 // scan_swap_map(si, SWAP_HAS_CACHE)
+// 2015-12-12
+// @return: offset을 리턴
 static unsigned long scan_swap_map(struct swap_info_struct *si,
 				   unsigned char usage)
 {
@@ -502,13 +513,16 @@ static unsigned long scan_swap_map(struct swap_info_struct *si,
 	si->flags += SWP_SCANNING;
 	scan_base = offset = si->cluster_next;
 
+	// 2015-12-12, 일단 나중에
 	/* SSD algorithm */
 	if (si->cluster_info) {
 		// 2015-12-05 scan_swap_map_try_ssd_cluster() 함수를 흝어보기까지만 함
+		// 2015-12-12
 		scan_swap_map_try_ssd_cluster(si, &offset, &scan_base);
 		goto checks;
 	}
 
+	// unlikely는 건너 뜀
 	if (unlikely(!si->cluster_nr--)) {
 		if (si->pages - si->inuse_pages < SWAPFILE_CLUSTER) {
 			si->cluster_nr = SWAPFILE_CLUSTER - 1;
@@ -572,7 +586,7 @@ static unsigned long scan_swap_map(struct swap_info_struct *si,
 	}
 
 checks:
-	if (si->cluster_info) {
+	if (si->cluster_info) {	// SSD
 		while (scan_swap_map_ssd_cluster_conflict(si, offset))
 			scan_swap_map_try_ssd_cluster(si, &offset, &scan_base);
 	}
@@ -580,6 +594,8 @@ checks:
 		goto no_page;
 	if (!si->highest_bit)
 		goto no_page;
+
+	// si->cluster_next이 기본적으로 영향 줄것이라고 본다.
 	if (offset > si->highest_bit)
 		scan_base = offset = si->lowest_bit;
 
@@ -587,7 +603,9 @@ checks:
 	if (vm_swap_full() && si->swap_map[offset] == SWAP_HAS_CACHE) {
 		int swap_was_freed;
 		spin_unlock(&si->lock);
+		// 2015-12-12
 		swap_was_freed = __try_to_reclaim_swap(si, offset);
+		// 2015-12-12
 		spin_lock(&si->lock);
 		/* entry was freed successfully, try to use this again */
 		if (swap_was_freed)
@@ -608,12 +626,15 @@ checks:
 		si->highest_bit = 0;
 	}
 	si->swap_map[offset] = usage;
+	// 2015-12-12, ssd용
 	inc_cluster_info_page(si, si->cluster_info, offset);
 	si->cluster_next = offset + 1;
 	si->flags -= SWP_SCANNING;
 
 	return offset;
 
+
+// scan label은 checks label로 가는 것이 주 목적으롤 보인다.
 scan:
 	spin_unlock(&si->lock);
 	while (++offset <= si->highest_bit) {
@@ -653,6 +674,7 @@ no_page:
 }
 
 // 2015-12-05
+// 2015-12-12, 시작
 swp_entry_t get_swap_page(void)
 {
 	struct swap_info_struct *si;
@@ -713,6 +735,7 @@ swp_entry_t get_swap_page(void)
 		/* This is called for allocating swap entry for cache */
 		// 2015-12-05 캐시된 page를 찾음;
 		offset = scan_swap_map(si, SWAP_HAS_CACHE);
+		// 2015-12-12
 		spin_unlock(&si->lock);
 		if (offset)
 			return swp_entry(type, offset);
@@ -720,6 +743,7 @@ swp_entry_t get_swap_page(void)
 		next = swap_list.next;
 	} // for
 
+	// 위에서 offset을 찾았다면 증가되지 않는다.
 	atomic_long_inc(&nr_swap_pages);
 noswap:
 	spin_unlock(&swap_lock);
@@ -946,6 +970,7 @@ int reuse_swap_page(struct page *page)
  * If swap is getting full, or if there are no more mappings of this page,
  * then try_to_free_swap is called to free its swap space.
  */
+// 2015-12-12
 int try_to_free_swap(struct page *page)
 {
 	VM_BUG_ON(!PageLocked(page));
@@ -972,9 +997,11 @@ int try_to_free_swap(struct page *page)
 	 * Hibration suspends storage while it is writing the image
 	 * to disk so check that here.
 	 */
+	// (gfp_allowed_mask & GFP_IOFS) == GFP_IOFS
 	if (pm_suspended_storage())
 		return 0;
 
+	// 2015-12-12
 	delete_from_swap_cache(page);
 	SetPageDirty(page);
 	return 1;

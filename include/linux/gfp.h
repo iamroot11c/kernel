@@ -109,6 +109,7 @@ struct vm_area_struct;
 #define __GFP_NOTRACK_FALSE_POSITIVE (__GFP_NOTRACK)
 
 #define __GFP_BITS_SHIFT 25	/* Room for N __GFP_FOO bits */
+// 2015-12-12
 #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
 
 /* This equals 0, but use constants in case they ever change */
@@ -472,7 +473,7 @@ bool gfp_pfmemalloc_allowed(gfp_t gfp_mask);
 extern void pm_restrict_gfp_mask(void);
 extern void pm_restore_gfp_mask(void);
 
-#ifdef CONFIG_PM_SLEEP
+#ifdef CONFIG_PM_SLEEP  // set
 extern bool pm_suspended_storage(void);
 #else
 static inline bool pm_suspended_storage(void)

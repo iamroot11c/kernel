@@ -670,6 +670,8 @@ static void rcu_preempt_do_callbacks(void)
  */
 // 2015-08-08 glance;
 // call_rcu(&cred->rcu, put_cred_rcu);
+// 2015-12-12
+// call_rcu(&node->rcu_head, radix_tree_node_rcu_free);
 void call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu))
 {
 	__call_rcu(head, func, &rcu_preempt_state, -1, 0);

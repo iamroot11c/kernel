@@ -52,6 +52,7 @@
 #define RADIX_TREE_EXCEPTIONAL_ENTRY	2
 #define RADIX_TREE_EXCEPTIONAL_SHIFT	2
 
+// 2015-12-12
 static inline int radix_tree_is_indirect_ptr(void *ptr)
 {
 	return (int)((unsigned long)ptr & RADIX_TREE_INDIRECT_PTR);
@@ -151,6 +152,7 @@ do {									\
  * radix_tree_deref_retry must be used to confirm validity of the pointer if
  * only the read lock is held.
  */
+// 2015-12-12
 static inline void *radix_tree_deref_slot(void **pslot)
 {
 	return rcu_dereference(*pslot);
@@ -179,9 +181,10 @@ static inline void *radix_tree_deref_slot_protected(void **pslot,
  *
  * radix_tree_deref_retry must be used with radix_tree_deref_slot.
  */
+// 2015-12-12
 static inline int radix_tree_deref_retry(void *arg)
 {
-	return unlikely((unsigned long)arg & RADIX_TREE_INDIRECT_PTR);
+	return unlikely((unsigned long)arg & RADIX_TREE_INDIRECT_PTR/*1*/);
 }
 
 /**
@@ -200,10 +203,11 @@ static inline int radix_tree_exceptional_entry(void *arg)
  * @arg:	value returned by radix_tree_deref_slot
  * Returns:	0 if well-aligned pointer, non-0 if either kind of exception.
  */
+// 2015-12-12
 static inline int radix_tree_exception(void *arg)
 {
 	return unlikely((unsigned long)arg &
-		(RADIX_TREE_INDIRECT_PTR | RADIX_TREE_EXCEPTIONAL_ENTRY));
+		(RADIX_TREE_INDIRECT_PTR | RADIX_TREE_EXCEPTIONAL_ENTRY)/*0b11*/);
 }
 
 /**
