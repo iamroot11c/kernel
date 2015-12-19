@@ -3209,9 +3209,12 @@ static inline int buffer_busy(struct buffer_head *bh)
 // buffer가 busy하면 return 0
 //
 // 2015-10-24;
+//
+// 2015-12-19;
 static int
 drop_buffers(struct page *page, struct buffer_head **buffers_to_free)
 {
+	// 페이지의 private 멤버를 struct buffer_head* 포이터로 변환
 	struct buffer_head *head = page_buffers(page);
 	struct buffer_head *bh;
 
@@ -3221,17 +3224,19 @@ drop_buffers(struct page *page, struct buffer_head **buffers_to_free)
 			set_bit(AS_EIO, &page->mapping->flags);
 		if (buffer_busy(bh))
 			goto failed;
-		bh = bh->b_this_page;
+		bh = bh->b_this_page; // 다음
 	} while (bh != head);
 
 	do {
-		struct buffer_head *next = bh->b_this_page;
+		struct buffer_head *next = bh->b_this_page; // 다음
 
 		if (bh->b_assoc_map)
 			__remove_assoc_queue(bh);
 		bh = next;
 	} while (bh != head);
+	// buffer_head 리스트의 헤드를 저장
 	*buffers_to_free = head;
+	// 페이지의 private 멤버를 0으로 초기화
 	__clear_page_buffers(page);
 	return 1;
 failed:
@@ -3240,6 +3245,7 @@ failed:
 
 // 2015-08-15
 // 2015-10-24;
+// 2015-12-19;
 int try_to_free_buffers(struct page *page)
 {
 	struct address_space * const mapping = page->mapping;

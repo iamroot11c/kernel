@@ -293,6 +293,8 @@ EXPORT_SYMBOL(__mod_zone_page_state);
  * in a useful way here.
  */
 // 2015-09-05;
+// 2015-12-19;
+// inc_zone_page_state(zone, NR_VMSCAN_IMMEDIATE);
 void __inc_zone_state(struct zone *zone, enum zone_stat_item item)
 {
 	struct per_cpu_pageset __percpu *pcp = zone->pageset;
@@ -310,6 +312,8 @@ void __inc_zone_state(struct zone *zone, enum zone_stat_item item)
 }
 
 // 2015-09-05;
+// 2015-12-19;
+// __inc_zone_page_state(page, NR_FILE_PAGES);
 void __inc_zone_page_state(struct page *page, enum zone_stat_item item)
 {
 	__inc_zone_state(page_zone(page), item);
@@ -466,6 +470,8 @@ void inc_zone_state(struct zone *zone, enum zone_stat_item item)
 	local_irq_restore(flags);
 }
 
+// 2015-12-19;
+// inc_zone_page_state(page, NR_VMSCAN_IMMEDIATE);
 void inc_zone_page_state(struct page *page, enum zone_stat_item item)
 {
 	unsigned long flags;

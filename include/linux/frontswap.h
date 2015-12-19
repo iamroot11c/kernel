@@ -29,7 +29,7 @@ extern int __frontswap_load(struct page *page);
 extern void __frontswap_invalidate_page(unsigned, pgoff_t);
 extern void __frontswap_invalidate_area(unsigned);
 
-#ifdef CONFIG_FRONTSWAP
+#ifdef CONFIG_FRONTSWAP // not define
 #define frontswap_enabled (1)
 
 static inline bool frontswap_test(struct swap_info_struct *sis, pgoff_t offset)
@@ -50,6 +50,7 @@ static inline unsigned long *frontswap_map_get(struct swap_info_struct *p)
 #else
 /* all inline routines become no-ops and all externs are ignored */
 
+// 2015-12-19;
 #define frontswap_enabled (0)
 
 static inline bool frontswap_test(struct swap_info_struct *sis, pgoff_t offset)
@@ -86,8 +87,11 @@ static inline int frontswap_load(struct page *page)
 	return ret;
 }
 
+// 2015-12-19;
+// frontswap_invalidate_page(p->type, offset);
 static inline void frontswap_invalidate_page(unsigned type, pgoff_t offset)
 {
+    // CONFIG_FRONTSWAP 미 설정으로 frontswap_enabled는 false
 	if (frontswap_enabled)
 		__frontswap_invalidate_page(type, offset);
 }

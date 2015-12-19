@@ -13,6 +13,7 @@
  * may be that only one operation succeeds.
  */
 // 2015-01-25
+// 2015-12-17;
 static inline void __set_bit(int nr, volatile unsigned long *addr)
 {
 	unsigned long mask = BIT_MASK(nr);

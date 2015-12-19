@@ -1,6 +1,21 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [80주차]() `2015.12.19`
+ - [kmem_cache_init() 진행중]()
+ - page_alloc.c:__alloc_pages_slowpath() 진행중
+ - page_alloc.c:__alloc_pages_direct_reclaim() 진행중
+ - page_alloc.c:__perform_reclaim() 진행중
+ - vmscan.c:try_to_free_pages() 분석 중
+ - vmscan.c:shrink_zones() 진행중
+ - vmscan.c:shrink_zone() 진행중
+ - vmscan.c:shrink_lruvec() 진행중
+ - vmscan.c:shrink_list() 진행 중
+ - vmscan.c:shrink_inactive_list() 진행 중
+ - vmscan.c:shrink_page_list() 진행 중
+ - swap_state.c:add_to_swap() 진행완료
+ - swap_state.c:pageout() 진행 중
+
 + [80주차](http://bit.ly/1NhxthQ) `2015.12.12`
  - [kmem_cache_init() 진행중]()
  - page_alloc.c:__alloc_pages_slowpath() 진행중

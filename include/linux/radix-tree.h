@@ -53,6 +53,7 @@
 #define RADIX_TREE_EXCEPTIONAL_SHIFT	2
 
 // 2015-12-12
+// 2015-12-17;
 static inline int radix_tree_is_indirect_ptr(void *ptr)
 {
 	return (int)((unsigned long)ptr & RADIX_TREE_INDIRECT_PTR);
@@ -262,6 +263,7 @@ unsigned long radix_tree_range_tag_if_tagged(struct radix_tree_root *root,
 int radix_tree_tagged(struct radix_tree_root *root, unsigned int tag);
 unsigned long radix_tree_locate_item(struct radix_tree_root *root, void *item);
 
+// 2015-12-19;
 static inline void radix_tree_preload_end(void)
 {
 	preempt_enable();

@@ -72,6 +72,14 @@ struct radix_tree_node {
  */
 // 2015-12-12
 static unsigned long height_to_maxindex[RADIX_TREE_MAX_PATH/*6*/ + 1] __read_mostly;
+// radix_tree_init_maxindex() 함수에서 초기화함
+// height_to_maxindex[0] = 0x0000_0000 (1 ~ 0x1F)
+// height_to_maxindex[1] = 0x0000_003F (0x3F ~ 0x7FF) 
+// height_to_maxindex[2] = 0x0000_0FFF (0xFFF ~ 0x3_FFFF)
+// height_to_maxindex[3] = 0x0000_7FFF (0x7FFF ~ 0x7FF_
+// height_to_maxindex[4] = 0x00FF_FFFF
+// height_to_maxindex[5] = 0x01FF_FFFF
+// height_to_maxindex[6] = 0x03FF_FFFF
 
 /*
  * Radix tree node cache.
@@ -89,11 +97,13 @@ static struct kmem_cache *radix_tree_node_cachep;
  * of RADIX_TREE_MAX_PATH size to be created, with only the root node shared.
  * Hence:
  */
-#define RADIX_TREE_PRELOAD_SIZE (RADIX_TREE_MAX_PATH * 2 - 1)
+// 2015-12-17;
+#define RADIX_TREE_PRELOAD_SIZE (RADIX_TREE_MAX_PATH * 2 - 1)/*11*/
 
 /*
  * Per-cpu pool of preloaded nodes
  */
+// 2015-12-17;
 struct radix_tree_preload {
 	int nr;
 	struct radix_tree_node *nodes[RADIX_TREE_PRELOAD_SIZE];
@@ -113,11 +123,14 @@ static inline void *indirect_to_ptr(void *ptr)
 	return (void *)((unsigned long)ptr & ~RADIX_TREE_INDIRECT_PTR/*1*/);
 }
 
+// 2015-12-17;
 static inline gfp_t root_gfp_mask(struct radix_tree_root *root)
 {
+	// 25번 비트 이하의 비트들을 추려냄
 	return root->gfp_mask & __GFP_BITS_MASK;
 }
 
+// 2015-12-17;
 static inline void tag_set(struct radix_tree_node *node, unsigned int tag,
 		int offset)
 {
@@ -160,8 +173,10 @@ static inline void root_tag_clear_all(struct radix_tree_root *root)
 }
 
 // 2015-09-05;
+// 2015-12-17;
 static inline int root_tag_get(struct radix_tree_root *root, unsigned int tag)
 {
+	// 31 ~ 25번 비트는 태그
 	return (__force unsigned)root->gfp_mask & (1 << (tag + __GFP_BITS_SHIFT/*25*/));
 }
 
@@ -219,6 +234,7 @@ radix_tree_find_next_bit(const unsigned long *addr,
  * This assumes that the caller has performed appropriate preallocation, and
  * that the caller has pinned this thread of control to the current CPU.
  */
+// 2015-12-17;
 static struct radix_tree_node *
 radix_tree_node_alloc(struct radix_tree_root *root)
 {
@@ -238,13 +254,19 @@ radix_tree_node_alloc(struct radix_tree_root *root)
 		 * succeed in getting a node here (and never reach
 		 * kmem_cache_alloc)
 		 */
+		// 전역으로 관리되는 노드를 배열로 갖는 radix_tree_preload 구조체의
+		// 인스턴스를 얻음 
 		rtp = &__get_cpu_var(radix_tree_preloads);
 		if (rtp->nr) {
+			// 전역으로 관리되는 노드를 얻음
 			ret = rtp->nodes[rtp->nr - 1];
+			// 전역으로 관리되는 노드를 할당후 해당 요소를 NULL로 바꿈
 			rtp->nodes[rtp->nr - 1] = NULL;
 			rtp->nr--;
 		}
 	}
+
+	// 전역으로 관리되는 노드가 없으면 메모리에서 할당 
 	if (ret == NULL)
 		ret = kmem_cache_alloc(radix_tree_node_cachep, gfp_mask);
 
@@ -337,8 +359,12 @@ EXPORT_SYMBOL(radix_tree_preload);
  * We do it, if we decide it helps. On success, return zero with preemption
  * disabled. On error, return -ENOMEM with preemption not disabled.
  */
+// 2015-12-17
+// radix_tree_maybe_preload(__GFP_HIGH|__GFP_NOMEMALLOC|__GFP_NOWARN)
 int radix_tree_maybe_preload(gfp_t gfp_mask)
 {
+	// 2015-12-17 gfp_mask에 __GFP_WAIT 비트가 셋되어 있지 않아
+	// 바로 리턴함
 	if (gfp_mask & __GFP_WAIT)
 		return __radix_tree_preload(gfp_mask);
 	/* Preloading doesn't help anything with this gfp mask, skip it */
@@ -352,6 +378,8 @@ EXPORT_SYMBOL(radix_tree_maybe_preload);
  *	radix tree with height HEIGHT.
  */
 // 2015-12-12
+// 2015-12-17;
+// radix_tree_maxindex(root->height)
 static inline unsigned long radix_tree_maxindex(unsigned int height)
 {
 	return height_to_maxindex[height];
@@ -360,6 +388,8 @@ static inline unsigned long radix_tree_maxindex(unsigned int height)
 /*
  *	Extend a radix tree so it can store key @index.
  */
+// 2015-12-19;
+// radix_tree_extend(root, index)
 static int radix_tree_extend(struct radix_tree_root *root, unsigned long index)
 {
 	struct radix_tree_node *node;
@@ -368,7 +398,8 @@ static int radix_tree_extend(struct radix_tree_root *root, unsigned long index)
 	int tag;
 
 	/* Figure out what the height should be.  */
-	height = root->height + 1;
+	// 높이에 맞는 인덱스를 찾음
+	height = root->height + 1; 
 	while (index > radix_tree_maxindex(height))
 		height++;
 
@@ -379,6 +410,7 @@ static int radix_tree_extend(struct radix_tree_root *root, unsigned long index)
 
 	do {
 		unsigned int newheight;
+		// 2015-12-19
 		if (!(node = radix_tree_node_alloc(root)))
 			return -ENOMEM;
 
@@ -398,8 +430,10 @@ static int radix_tree_extend(struct radix_tree_root *root, unsigned long index)
 			slot = indirect_to_ptr(slot);
 			slot->parent = node;
 		}
+		// 루트의 slots을 node에 전달
 		node->slots[0] = slot;
 		node = ptr_to_indirect(node);
+		// 루트의 아래로 넣음
 		rcu_assign_pointer(root->rnode, node);
 		root->height = newheight;
 	} while (height > root->height);
@@ -415,6 +449,9 @@ out:
  *
  *	Insert an item into the radix tree at position @index.
  */
+// 2015-12-19;
+// adix_tree_insert(&address_space->page_tree,
+//                                      entry.val, page);
 int radix_tree_insert(struct radix_tree_root *root,
 			unsigned long index, void *item)
 {
@@ -429,13 +466,15 @@ int radix_tree_insert(struct radix_tree_root *root,
 	if (index > radix_tree_maxindex(root->height)) {
 		error = radix_tree_extend(root, index);
 		if (error)
+			// 확장을 실패하면 리턴
 			return error;
 	}
 
 	slot = indirect_to_ptr(root->rnode);
 
 	height = root->height;
-	shift = (height-1) * RADIX_TREE_MAP_SHIFT;
+	shift = (height-1) * RADIX_TREE_MAP_SHIFT; // 높이가 3이면
+	                                           // shift는 12
 
 	offset = 0;			/* uninitialised var warning */
 	while (height > 0) {
@@ -464,6 +503,7 @@ int radix_tree_insert(struct radix_tree_root *root,
 		return -EEXIST;
 
 	if (node) {
+		// 노드에 페이지를 추가
 		node->count++;
 		rcu_assign_pointer(node->slots[offset], item);
 		BUG_ON(tag_get(node, 0, offset));

@@ -208,6 +208,7 @@ static inline int buffer_defer_completion(const struct buffer_head *bh) { return
 
 // 2015-08-15
 // 2015-09-05;
+// 2015-12-19;
 /* If we *know* page->private refers to buffer_heads */
 #define page_buffers(page)					\
 	({							\

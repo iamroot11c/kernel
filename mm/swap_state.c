@@ -83,6 +83,8 @@ void show_swap_cache_info(void)
  * __add_to_swap_cache resembles add_to_page_cache_locked on swapper_space,
  * but sets SwapCache flag and private instead of mapping and index.
  */
+// 2015-12-19;
+// __add_to_swap_cache(page, entry)
 int __add_to_swap_cache(struct page *page, swp_entry_t entry)
 {
 	int error;
@@ -98,6 +100,7 @@ int __add_to_swap_cache(struct page *page, swp_entry_t entry)
 
 	address_space = swap_address_space(entry);
 	spin_lock_irq(&address_space->tree_lock);
+	// 2015-12-19; 정상적으로 삽입을 하면 0을 리턴
 	error = radix_tree_insert(&address_space->page_tree,
 					entry.val, page);
 	if (likely(!error)) {
@@ -122,13 +125,18 @@ int __add_to_swap_cache(struct page *page, swp_entry_t entry)
 	return error;
 }
 
-
+// 2015-12-19
+// add_to_swap_cache(page, entry,
+//                   __GFP_HIGH|__GFP_NOMEMALLOC|__GFP_NOWARN); 
 int add_to_swap_cache(struct page *page, swp_entry_t entry, gfp_t gfp_mask)
 {
 	int error;
 
+	// 2015-12-19 gfp_mask에 __GFP_WAIT 비트가 셋되어 있지 않아
+	// 리턴값이 0으로 넘어옴
 	error = radix_tree_maybe_preload(gfp_mask);
 	if (!error) {
+		// 정상적으로 추가하면 0을 리턴
 		error = __add_to_swap_cache(page, entry);
 		radix_tree_preload_end();
 	}
@@ -189,6 +197,8 @@ int add_to_swap(struct page *page, struct list_head *list)
 			return 0;
 		}
 
+	// 2015-12-19 시작;
+
 	/*
 	 * Radix-tree node allocations from PF_MEMALLOC contexts could
 	 * completely exhaust the page allocator. __GFP_NOMEMALLOC
@@ -200,6 +210,7 @@ int add_to_swap(struct page *page, struct list_head *list)
 	/*
 	 * Add it to the swap cache and mark it dirty
 	 */
+	// 2015-12-19;
 	err = add_to_swap_cache(page, entry,
 			__GFP_HIGH|__GFP_NOMEMALLOC|__GFP_NOWARN);
 
@@ -211,6 +222,7 @@ int add_to_swap(struct page *page, struct list_head *list)
 		 * add_to_swap_cache() doesn't return -EEXIST, so we can safely
 		 * clear SWAP_HAS_CACHE flag.
 		 */
+	        // 2015-12-19;
 		swapcache_free(entry, NULL);
 		return 0;
 	}

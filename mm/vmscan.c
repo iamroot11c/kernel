@@ -378,6 +378,7 @@ out:
 	return freed;
 }
 
+// 2015-12-19;
 static inline int is_page_cache_freeable(struct page *page)
 {
 	/*
@@ -385,9 +386,11 @@ static inline int is_page_cache_freeable(struct page *page)
 	 * that isolated the page, the page cache radix tree and
 	 * optional buffer heads at page->private.
 	 */
+	// isolated 페이지와 radix tree에서 참조하면 해제가능하다고 판단
 	return page_count(page) - page_has_private(page) == 2;
 }
 
+// 2015-12-19;
 static int may_write_to_queue(struct backing_dev_info *bdi,
 			      struct scan_control *sc)
 {
@@ -437,6 +440,8 @@ typedef enum {
  * pageout is called by shrink_page_list() for each dirty page.
  * Calls ->writepage().
  */
+// 2015-12-19
+// pageout(page, mapping, sc)
 static pageout_t pageout(struct page *page, struct address_space *mapping,
 			 struct scan_control *sc)
 {
@@ -457,6 +462,7 @@ static pageout_t pageout(struct page *page, struct address_space *mapping,
 	 * congestion state of the swapdevs.  Easy to fix, if needed.
 	 */
 	if (!is_page_cache_freeable(page))
+		// 해제가 불가능하다고 판단
 		return PAGE_KEEP;
 	if (!mapping) {
 		/*
@@ -476,6 +482,7 @@ static pageout_t pageout(struct page *page, struct address_space *mapping,
 		return PAGE_ACTIVATE;
 	if (!may_write_to_queue(mapping->backing_dev_info, sc))
 		return PAGE_KEEP;
+	// 2015-12-19 여기까지;
 
 	if (clear_page_dirty_for_io(page)) {
 		int res;
@@ -951,6 +958,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
 			if (!(sc->gfp_mask & __GFP_IO))
 				goto keep_locked;
 			// 2015-12-05 시작
+			// 2015-12-19 종료; 삽입이 성공하면 1, 실패하면 0
 			if (!add_to_swap(page, page_list))
 				goto activate_locked;
 			may_enter_fs = 1;
@@ -964,6 +972,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
 		 * processes. Try to unmap it here.
 		 */
 		if (page_mapped(page) && mapping) {
+			// 2015-12-19 ttu_flags = TTU_UNMAP;
 			switch (try_to_unmap(page, ttu_flags)) {
 			case SWAP_FAIL:
 				goto activate_locked;
@@ -1005,6 +1014,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
 				goto keep_locked;
 
 			/* Page is dirty, try to write it out here */
+			// 2015-12-19 시작;
 			switch (pageout(page, mapping, sc)) {
 			case PAGE_KEEP:
 				goto keep_locked;

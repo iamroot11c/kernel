@@ -63,6 +63,7 @@ static inline unsigned swp_type(swp_entry_t entry)
  */
 // 2015-09-19;
 // 2015-10-03
+// 2015-12-19;
 static inline pgoff_t swp_offset(swp_entry_t entry)
 {
     // entry.val & ((1UL<<25)-1);

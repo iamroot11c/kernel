@@ -254,8 +254,10 @@ struct mmu_gather;
 struct inode;
 
 // 2015-08-15
+// 2015-12-19; private 멤버를 struct buffer_head* 포인터로 변환
 #define page_private(page)		((page)->private)
 // 2015-10-24;
+// 2015-12-17;
 #define set_page_private(page, v)	((page)->private = (v))
 
 /* It's valid only if the page is free path or free_list */
@@ -431,6 +433,7 @@ static inline int page_mapcount(struct page *page)
 // page_count(page);
 // 2015-08-15
 // 2015-10-24;
+// 2015-12-19;
 static inline int page_count(struct page *page)
 {
 	return atomic_read(&compound_head(page)->_count);
@@ -453,6 +456,7 @@ extern bool __get_page_tail(struct page *page);
 // page->_count 값을 1 증가
 // 2015-10-10;
 // 2015-10-24;
+// 2015-12-17;
 static inline void get_page(struct page *page)
 {
 	if (unlikely(PageTail(page)))

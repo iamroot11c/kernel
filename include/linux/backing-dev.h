@@ -289,6 +289,7 @@ int writeback_in_progress(struct backing_dev_info *bdi);
 
 // 2015-12-05
 // bdi_congested(bdi, 1 << BDI_async_congested)
+// 2015-12-19;
 static inline int bdi_congested(struct backing_dev_info *bdi, int bdi_bits)
 {
 	if (bdi->congested_fn)
@@ -305,6 +306,7 @@ static inline int bdi_read_congested(struct backing_dev_info *bdi)
 
 // 2015-12-05
 // bdi_write_congested(mapping->backing_dev_info)
+// 2015-12-19;
 static inline int bdi_write_congested(struct backing_dev_info *bdi)
 {
 	return bdi_congested(bdi, 1 << BDI_async_congested);

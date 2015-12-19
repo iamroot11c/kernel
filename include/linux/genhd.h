@@ -162,6 +162,7 @@ struct disk_part_tbl {
 
 struct disk_events;
 
+// 2015-12-19;
 struct gendisk {
 	/* major, first_minor and minors are input parameters only,
 	 * don't use directly.  Use disk_devt() and disk_max_parts().
@@ -196,7 +197,7 @@ struct gendisk {
 	struct timer_rand_state *random;
 	atomic_t sync_io;		/* RAID */
 	struct disk_events *ev;
-#ifdef  CONFIG_BLK_DEV_INTEGRITY
+#ifdef  CONFIG_BLK_DEV_INTEGRITY // not define
 	struct blk_integrity *integrity;
 #endif
 	int node_id;

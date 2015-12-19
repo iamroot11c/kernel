@@ -1786,6 +1786,8 @@ out:
  */
 // 2015-08-15
 // try_to_unmap(page, TTU_MIGRATION|TTU_IGNORE_MLOCK|TTU_IGNORE_ACCESS);
+// 2015-12-19;
+// try_to_unmap(page, TTU_UNMAP)
 int try_to_unmap(struct page *page, enum ttu_flags flags)
 {
 	int ret;

@@ -187,17 +187,20 @@ static void discard_swap_cluster(struct swap_info_struct *si,
 #define SWAPFILE_CLUSTER	256
 #define LATENCY_LIMIT		256
 
+// 2015-12-19; SSD 전용
 static inline void cluster_set_flag(struct swap_cluster_info *info,
 	unsigned int flag)
 {
 	info->flags = flag;
 }
 
+// 2015-12-19; SSD 전용
 static inline unsigned int cluster_count(struct swap_cluster_info *info)
 {
 	return info->data;
 }
 
+// 2015-12-19; SSD 전용
 static inline void cluster_set_count(struct swap_cluster_info *info,
 				     unsigned int c)
 {
@@ -212,17 +215,20 @@ static inline void cluster_set_count_flag(struct swap_cluster_info *info,
 }
 
 // 2015-12-05;
+// 2015-12-19; SSD 전용
 static inline unsigned int cluster_next(struct swap_cluster_info *info)
 {
 	return info->data;
 }
 
+// 2015-12-19; SSD 전용
 static inline void cluster_set_next(struct swap_cluster_info *info,
 				    unsigned int n)
 {
 	info->data = n;
 }
 
+// 2015-12-19; SSD 전용
 static inline void cluster_set_next_flag(struct swap_cluster_info *info,
 					 unsigned int n, unsigned int f)
 {
@@ -369,15 +375,19 @@ static void inc_cluster_info_page(struct swap_info_struct *p,
  * counter becomes 0, which means no page in the cluster is in using, we can
  * optionally discard the cluster and add it to free cluster list.
  */
+// 2015-12-19;
+// dec_cluster_info_page(p, p->cluster_info, offset);
 static void dec_cluster_info_page(struct swap_info_struct *p,
 	struct swap_cluster_info *cluster_info, unsigned long page_nr)
 {
 	unsigned long idx = page_nr / SWAPFILE_CLUSTER;
 
+	// ssd가 아니면 리턴
 	if (!cluster_info)
 		return;
 
 	VM_BUG_ON(cluster_count(&cluster_info[idx]) == 0);
+	// swap_cluster_info 구조체의 data 멤버의 값을 하나 감소
 	cluster_set_count(&cluster_info[idx],
 		cluster_count(&cluster_info[idx]) - 1);
 
@@ -818,6 +828,7 @@ out:
  * swap_info_struct.lock can't protect us if there are multiple swap types
  * active, so we use atomic_cmpxchg.
  */
+// 2015-12-19;
 static void set_highest_priority_index(int type)
 {
 	int old_hp_index, new_hp_index;
@@ -832,6 +843,8 @@ static void set_highest_priority_index(int type)
 		old_hp_index, new_hp_index) != old_hp_index);
 }
 
+// 2015-12-19;
+// swap_entry_free(p, entry, SWAP_HAS_CACHE);
 static unsigned char swap_entry_free(struct swap_info_struct *p,
 				     swp_entry_t entry, unsigned char usage)
 {
@@ -844,6 +857,8 @@ static unsigned char swap_entry_free(struct swap_info_struct *p,
 	count &= ~SWAP_HAS_CACHE;
 
 	if (usage == SWAP_HAS_CACHE) {
+		// 2015-12-19; usage가 SWAP_HAS_CACHE로 전달됨
+		// 나머지 조건은 확인하지 않음
 		VM_BUG_ON(!has_cache);
 		has_cache = 0;
 	} else if (count == SWAP_MAP_SHMEM) {
@@ -865,6 +880,8 @@ static unsigned char swap_entry_free(struct swap_info_struct *p,
 	if (!count)
 		mem_cgroup_uncharge_swap(entry);
 
+	// 2015-12-19; usage가 SWAP_HAS_CACHE이어서
+	// has_cache는 0으로 변경되어, usage는 count로 설정됨
 	usage = count | has_cache;
 	p->swap_map[offset] = usage;
 
@@ -882,6 +899,7 @@ static unsigned char swap_entry_free(struct swap_info_struct *p,
 		if (p->flags & SWP_BLKDEV) {
 			struct gendisk *disk = p->bdev->bd_disk;
 			if (disk->fops->swap_slot_free_notify)
+				// 함수 포인터가 저장되었다면 함수 호출
 				disk->fops->swap_slot_free_notify(p->bdev,
 								  offset);
 		}
@@ -908,6 +926,7 @@ void swap_free(swp_entry_t entry)
 /*
  * Called after dropping swapcache to decrease refcnt to swap entries.
  */
+// 2015-12-19;
 void swapcache_free(swp_entry_t entry, struct page *page)
 {
 	struct swap_info_struct *p;
@@ -917,6 +936,7 @@ void swapcache_free(swp_entry_t entry, struct page *page)
 	if (p) {
 		count = swap_entry_free(p, entry, SWAP_HAS_CACHE);
 		if (page)
+			// no OP.
 			mem_cgroup_uncharge_swapcache(page, entry, count != 0);
 		spin_unlock(&p->lock);
 	}
