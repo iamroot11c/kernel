@@ -535,6 +535,7 @@ void page_unlock_anon_vma_read(struct anon_vma *anon_vma)
  */
 // 2015-08-15
 // 2015-10-10;
+// 2015-12-26
 static inline unsigned long
 __vma_address(struct page *page, struct vm_area_struct *vma)
 {
@@ -549,6 +550,7 @@ __vma_address(struct page *page, struct vm_area_struct *vma)
 // 2015-08-15
 // 2015-10-10;
 // 2015-12-05;
+// 2015-12-26
 inline unsigned long
 vma_address(struct page *page, struct vm_area_struct *vma)
 {
@@ -631,6 +633,9 @@ out:
 //
 // 2015-12-05
 // __page_check_address(page, mm, address, &ptl, 0)
+//
+// 2015-12-26
+// __page_check_address(page, mm, address, &ptl, 1);
 pte_t *__page_check_address(struct page *page, struct mm_struct *mm,
 			  unsigned long address, spinlock_t **ptlp, int sync)
 {
@@ -950,6 +955,7 @@ out:
 	return referenced;
 }
 
+// 2015-12-26
 static int page_mkclean_one(struct page *page, struct vm_area_struct *vma,
 			    unsigned long address)
 {
@@ -965,10 +971,12 @@ static int page_mkclean_one(struct page *page, struct vm_area_struct *vma,
 	if (pte_dirty(*pte) || pte_write(*pte)) {
 		pte_t entry;
 
+		// 2015-12-26
 		flush_cache_page(vma, address, pte_pfn(*pte));
 		entry = ptep_clear_flush(vma, address, pte);
-		entry = pte_wrprotect(entry);
-		entry = pte_mkclean(entry);
+		// 2015-12-26
+		entry = pte_wrprotect(entry);   // |= L_PTE_RDONLY
+		entry = pte_mkclean(entry);     // &= ~L_PTE_DIRTY
 		set_pte_at(mm, address, pte, entry);
 		ret = 1;
 	}
@@ -976,20 +984,22 @@ static int page_mkclean_one(struct page *page, struct vm_area_struct *vma,
 	pte_unmap_unlock(pte, ptl);
 
 	if (ret)
-		mmu_notifier_invalidate_page(mm, address);
+		mmu_notifier_invalidate_page(mm, address); // NOP
 out:
 	return ret;
 }
 
+// 2015-12-26
 static int page_mkclean_file(struct address_space *mapping, struct page *page)
 {
-	pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
+	pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT)/*0*/;
 	struct vm_area_struct *vma;
 	int ret = 0;
 
 	BUG_ON(PageAnon(page));
 
 	mutex_lock(&mapping->i_mmap_mutex);
+	// 순회
 	vma_interval_tree_foreach(vma, &mapping->i_mmap, pgoff, pgoff) {
 		if (vma->vm_flags & VM_SHARED) {
 			unsigned long address = vma_address(page, vma);
@@ -1000,6 +1010,7 @@ static int page_mkclean_file(struct address_space *mapping, struct page *page)
 	return ret;
 }
 
+// 2015-12-26
 int page_mkclean(struct page *page)
 {
 	int ret = 0;

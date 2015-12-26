@@ -95,6 +95,7 @@ void flush_cache_range(struct vm_area_struct *vma, unsigned long start, unsigned
 
 // 2015-08-22
 // 2015-10-17
+// 2015-12-26
 void flush_cache_page(struct vm_area_struct *vma, unsigned long user_addr, unsigned long pfn)
 {
 	if (cache_is_vivt()) {	// false
@@ -108,6 +109,9 @@ void flush_cache_page(struct vm_area_struct *vma, unsigned long user_addr, unsig
 	}
 
 	// fluch icache
+	//
+	// 2015-12-26, CACHEID_ASID_TAGGED/*8*/이 default cache id와 &시 0임으로
+	// 아래 실행 되지 않을 것으로 예상함.
 	if (vma->vm_flags & VM_EXEC/*4*/ && icache_is_vivt_asid_tagged())
 		__flush_icache_all();
 }

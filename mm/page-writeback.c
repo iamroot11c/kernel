@@ -2278,6 +2278,7 @@ EXPORT_SYMBOL(redirty_page_for_writepage);
  */
 // 2015-09-05 시작;
 // 2015-09-12 마침;
+// 2015-12-26
 int set_page_dirty(struct page *page)
 {
 	struct address_space *mapping = page_mapping(page);
@@ -2352,16 +2353,20 @@ EXPORT_SYMBOL(set_page_dirty_lock);
  * unfortunate, but it only exists while the page is locked.
  */
 // 2015-10-24;
+// 2015-12-26
 int clear_page_dirty_for_io(struct page *page)
 {
 	struct address_space *mapping = page_mapping(page);
 
+	// Lock이 되어 있어야 함
 	BUG_ON(!PageLocked(page));
 
 	// 2015-10-24;
 	// 이 함수는 mapping이 NULL 일 때 migrate_page() 함수가 호출 되고
 	// 그 함수에서 migrate_page_copy() 함수에서 이 함수를 호출하고 
 	// 있어 mapping이 NULL일 것 이다.
+	//
+	// 2015-12-26
 	if (mapping && mapping_cap_account_dirty(mapping)) {
 		/*
 		 * Yes, Virginia, this is indeed insane.
@@ -2407,7 +2412,8 @@ int clear_page_dirty_for_io(struct page *page)
 			return 1;
 		}
 		return 0;
-	}
+	} // if
+	// PG_dirty를 clear하고, old value를 리턴, 그러므로, 리턴은 0 or 1
 	return TestClearPageDirty(page);
 }
 EXPORT_SYMBOL(clear_page_dirty_for_io);

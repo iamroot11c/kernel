@@ -111,6 +111,7 @@ int pmdp_clear_flush_young(struct vm_area_struct *vma,
 #ifndef __HAVE_ARCH_PTEP_CLEAR_FLUSH
 // 2015-08-22
 // 2015-10-17
+// 2015-12-26
 pte_t ptep_clear_flush(struct vm_area_struct *vma, unsigned long address,
 		       pte_t *ptep)
 {

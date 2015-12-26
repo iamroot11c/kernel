@@ -221,6 +221,9 @@ pte_t *__page_check_address(struct page *, struct mm_struct *,
 // 
 // 2015-12-05;
 // page_check_address(page, mm, address, &ptl, 0);
+//
+// 2015-12-26
+// page_check_address(page, mm, address, &ptl, 1);
 static inline pte_t *page_check_address(struct page *page, struct mm_struct *mm,
 					unsigned long address,
 					spinlock_t **ptlp, int sync)
@@ -243,6 +246,7 @@ unsigned long page_address_in_vma(struct page *, struct vm_area_struct *);
  *
  * returns the number of cleaned PTEs.
  */
+// 2015-12-26
 int page_mkclean(struct page *);
 
 /*

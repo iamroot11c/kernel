@@ -312,6 +312,7 @@ static inline void mmu_notifier_change_pte(struct mm_struct *mm,
 }
 
 // 2015-10-10;
+// 2015-12-26
 static inline void mmu_notifier_invalidate_page(struct mm_struct *mm,
 					  unsigned long address)
 {

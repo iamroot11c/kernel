@@ -19,6 +19,7 @@ extern unsigned int cacheid;
 // 2015-08-22
 #define cache_is_vipt_aliasing()	cacheid_is(CACHEID_VIPT_ALIASING/*4*/)
 // 2015-08-22
+// 2015-12-26
 #define icache_is_vivt_asid_tagged()	cacheid_is(CACHEID_ASID_TAGGED/*8*/)
 #define icache_is_vipt_aliasing()	cacheid_is(CACHEID_VIPT_I_ALIASING)
 #define icache_is_pipt()		cacheid_is(CACHEID_PIPT)
@@ -61,7 +62,7 @@ extern unsigned int cacheid;
 // 2015-08-22
 // cacheid_is(CACHEID_VIVT/*0*/), 0리턴
 // cacheid_is(CACHEID_VIPT_ALIASING/*4*/, 0리턴)
-// cacheid_is(CACHEID_ASID_TAGGED/*8*/)
+// cacheid_is(CACHEID_ASID_TAGGED/*8*/), 0리턴
 // 2015-10-03
 // cacheid_is(CACHEID_VIPT_NONALIASING/*2*/, 0리턴) 
 static inline unsigned int __attribute__((pure)) cacheid_is(unsigned int mask)

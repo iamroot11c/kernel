@@ -415,6 +415,7 @@ static int may_write_to_queue(struct backing_dev_info *bdi,
  * We're allowed to run sleeping lock_page() here because we know the caller has
  * __GFP_FS.
  */
+// 2015-12-26
 static void handle_write_error(struct address_space *mapping,
 				struct page *page, int error)
 {
@@ -484,6 +485,7 @@ static pageout_t pageout(struct page *page, struct address_space *mapping,
 		return PAGE_KEEP;
 	// 2015-12-19 여기까지;
 
+	// 2015-12-26 시작
 	if (clear_page_dirty_for_io(page)) {
 		int res;
 		struct writeback_control wbc = {
@@ -495,6 +497,7 @@ static pageout_t pageout(struct page *page, struct address_space *mapping,
 		};
 
 		SetPageReclaim(page);
+		// 무엇으로 설정되었는지 모르겠음?
 		res = mapping->a_ops->writepage(page, &wbc);
 		if (res < 0)
 			handle_write_error(mapping, page, res);
@@ -519,6 +522,7 @@ static pageout_t pageout(struct page *page, struct address_space *mapping,
  * Same as remove_mapping, but if the page is removed from the mapping, it
  * gets returned with a refcount of 0.
  */
+// 2015-12-26
 static int __remove_mapping(struct address_space *mapping, struct page *page)
 {
 	BUG_ON(!PageLocked(page));
@@ -1016,6 +1020,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
 			/* Page is dirty, try to write it out here */
 			// 2015-12-19 시작;
 			switch (pageout(page, mapping, sc)) {
+			// 2015-12-26 end
 			case PAGE_KEEP:
 				goto keep_locked;
 			case PAGE_ACTIVATE:
@@ -1038,7 +1043,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
 			case PAGE_CLEAN:
 				; /* try to free the page below */
 			}
-		}
+		} // if (PageDirty(page)) {
 
 		/*
 		 * If the page has buffers, try to free the buffer mappings
@@ -1061,6 +1066,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
 		 * process address space (page_count == 1) it can be freed.
 		 * Otherwise, leave the page on the LRU so it is swappable.
 		 */
+		// 2015-12-26
 		if (page_has_private(page)) {
 			if (!try_to_release_page(page, sc->gfp_mask))
 				goto activate_locked;
@@ -1082,6 +1088,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
 			}
 		}
 
+		// 2015-12-26 여기까지
 		if (!mapping || !__remove_mapping(mapping, page))
 			goto keep_locked;
 

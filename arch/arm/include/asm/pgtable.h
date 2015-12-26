@@ -256,6 +256,7 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 
 // 2015-08-22
 // Data cache clear by MVA to PoC, VMSA
+// 2015-12-26
 #define pte_clear(mm,addr,ptep)	set_pte_ext(ptep, __pte(0), 0)
 
 #define pte_none(pte)		(!pte_val(pte))
@@ -264,7 +265,7 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 #define pte_present(pte)	(pte_val(pte) & L_PTE_PRESENT/*1*/)
 // 2015-10-10 쓰기 가능 확인;
 // pte_write(pteval);
-#define pte_write(pte)		(!(pte_val(pte) & L_PTE_RDONLY))
+#define pte_write(pte)		(!(pte_val(pte) & L_PTE_RDONLY/* 1 << 7 */))
 // 2015-09-05
 // pte_dirty(pteval)
 #define pte_dirty(pte)		(pte_val(pte) & L_PTE_DIRTY) // pteval & (pteval_t)1 << 6
@@ -290,6 +291,7 @@ extern void __sync_icache_dcache(pte_t pteval);
 // 2015-10-03
 // 2015-10-10;
 // set_pte_at(mm, address, pte, swp_pte);
+// 2015-12-26
 static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
 			      pte_t *ptep, pte_t pteval)
 {

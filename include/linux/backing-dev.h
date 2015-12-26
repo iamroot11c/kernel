@@ -145,6 +145,7 @@ static inline int wb_has_dirty_io(struct bdi_writeback *wb)
 }
 
 // 2015-08-15
+// 2015-12-26, BDI_RECLAIMABLE, -1
 static inline void __add_bdi_stat(struct backing_dev_info *bdi,
 		enum bdi_stat_item item, s64 amount)
 {
@@ -169,6 +170,7 @@ static inline void inc_bdi_stat(struct backing_dev_info *bdi,
 }
 
 // 2015-08-15
+// 2015-12-26, BDI_RECLAIMABLE
 static inline void __dec_bdi_stat(struct backing_dev_info *bdi,
 		enum bdi_stat_item item)
 {
@@ -176,6 +178,8 @@ static inline void __dec_bdi_stat(struct backing_dev_info *bdi,
 }
 
 // 2015-08-15
+// 2015-12-26
+// dec_bdi_stat(mapping->backing_dev_info, BDI_RECLAIMABLE);
 static inline void dec_bdi_stat(struct backing_dev_info *bdi,
 		enum bdi_stat_item item)
 {
@@ -336,9 +340,10 @@ static inline bool bdi_cap_stable_pages_required(struct backing_dev_info *bdi)
 }
 
 // 2015-09-05;
+// 2015-12-26
 static inline bool bdi_cap_writeback_dirty(struct backing_dev_info *bdi)
 {
-	return !(bdi->capabilities & BDI_CAP_NO_WRITEBACK);
+	return !(bdi->capabilities & BDI_CAP_NO_WRITEBACK/* Don't writeback page */);
 }
 
 // 2015-08-15
@@ -369,6 +374,7 @@ static inline bool mapping_cap_writeback_dirty(struct address_space *mapping)
 
 // 2015-08-15
 // 2015-09-05;
+// 2015-12-26
 static inline bool mapping_cap_account_dirty(struct address_space *mapping)
 {
 	return bdi_cap_account_dirty(mapping->backing_dev_info);

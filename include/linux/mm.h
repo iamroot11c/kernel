@@ -89,6 +89,7 @@ extern unsigned int kobjsize(const void *objp);
 // 2015-08-22
 // 2015-12-05
 #define VM_EXEC		0x00000004
+// 2015-12-26
 #define VM_SHARED	0x00000008
 
 /* mprotect() hardcodes VM_MAYREAD >> 4 == VM_READ, and so for r/w/x bits. */

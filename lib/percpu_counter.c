@@ -73,6 +73,8 @@ EXPORT_SYMBOL(percpu_counter_set);
 
 // 2015-08-15
 //  __percpu_counter_add(&bdi->bdi_stat[item], amount/*-1*/, BDI_STAT_BATCH/*16*/);
+// 2015-12-26
+// __percpu_counter_add(&bdi->bdi_stat[BDI_RECLAIMABLE], amount/*-1*/, BDI_STAT_BATCH/*16*/);
 void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch)
 {
 	s64 count;

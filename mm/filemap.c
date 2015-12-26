@@ -2622,6 +2622,7 @@ EXPORT_SYMBOL(generic_file_aio_write);
  */
 // 2015-10-24
 // try_to_release_page(page, GFP_KERNEL)
+// 2015-12-26
 int try_to_release_page(struct page *page, gfp_t gfp_mask)
 {
 	struct address_space * const mapping = page->mapping;
