@@ -1433,6 +1433,7 @@ static inline void radix_tree_shrink(struct radix_tree_root *root)
  */
 // 2015-12-12
 // radix_tree_delete(&address_space->page_tree, page_private(page));
+// radix_tree_delete(&mapping->page_tree, page->index);
 void *radix_tree_delete(struct radix_tree_root *root, unsigned long index)
 {
 	struct radix_tree_node *node = NULL;

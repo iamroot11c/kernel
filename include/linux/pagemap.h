@@ -214,11 +214,17 @@ static inline int page_cache_add_speculative(struct page *page, int count)
 	return 1;
 }
 
+// 2016-01-09
+// page_freeze_refs(page, 2)
 static inline int page_freeze_refs(struct page *page, int count)
 {
+    // page->_count가 2와 같으면, page->_count을 0으로 설정
+    // 리턴값(old value)가 2와 같다면 성공
 	return likely(atomic_cmpxchg(&page->_count, count, 0) == count);
 }
 
+// 2016-01-09
+// page_unfreeze_refs(page, 2);
 static inline void page_unfreeze_refs(struct page *page, int count)
 {
 	VM_BUG_ON(page_count(page) != 0);
@@ -338,6 +344,7 @@ extern void __lock_page(struct page *page);
 extern int __lock_page_killable(struct page *page);
 extern int __lock_page_or_retry(struct page *page, struct mm_struct *mm,
 				unsigned int flags);
+// 2016-01-09
 extern void unlock_page(struct page *page);
 
 static inline void __set_page_locked(struct page *page)
@@ -345,6 +352,7 @@ static inline void __set_page_locked(struct page *page)
 	__set_bit(PG_locked, &page->flags);
 }
 
+// 2016-01-09
 static inline void __clear_page_locked(struct page *page)
 {
 	__clear_bit(PG_locked, &page->flags);

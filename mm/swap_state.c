@@ -148,6 +148,7 @@ int add_to_swap_cache(struct page *page, swp_entry_t entry, gfp_t gfp_mask)
  * been verified to be in the swap cache.
  */
 // 2015-12-12
+// 2016-01-09
 void __delete_from_swap_cache(struct page *page)
 {
 	swp_entry_t entry;
@@ -159,6 +160,7 @@ void __delete_from_swap_cache(struct page *page)
 
 	entry.val = page_private(page);
 	address_space = swap_address_space(entry);
+	// radix_tree에서 삭제
 	radix_tree_delete(&address_space->page_tree, page_private(page));
 	set_page_private(page, 0);
 	ClearPageSwapCache(page);

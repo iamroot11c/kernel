@@ -1028,6 +1028,7 @@ extern struct blk_plug_cb *blk_check_plugged(blk_plug_cb_fn unplug,
 					     void *data, int size);
 // 2015-11-28
 extern void blk_start_plug(struct blk_plug *);
+// 2016-01-09
 extern void blk_finish_plug(struct blk_plug *);
 extern void blk_flush_plug_list(struct blk_plug *, bool);
 

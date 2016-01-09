@@ -149,7 +149,7 @@ static inline int wb_has_dirty_io(struct bdi_writeback *wb)
 static inline void __add_bdi_stat(struct backing_dev_info *bdi,
 		enum bdi_stat_item item, s64 amount)
 {
-	__percpu_counter_add(&bdi->bdi_stat[item], amount, BDI_STAT_BATCH/*16*/);
+	__percpu_counter_add(&bdi->bdi_stat[item], amount/*-1*/, BDI_STAT_BATCH/*16*/);
 }
 
 // 2015-09-05;
@@ -180,6 +180,7 @@ static inline void __dec_bdi_stat(struct backing_dev_info *bdi,
 // 2015-08-15
 // 2015-12-26
 // dec_bdi_stat(mapping->backing_dev_info, BDI_RECLAIMABLE);
+// -1을 add한다.
 static inline void dec_bdi_stat(struct backing_dev_info *bdi,
 		enum bdi_stat_item item)
 {

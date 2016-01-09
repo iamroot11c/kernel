@@ -43,7 +43,7 @@ extern void __cleancache_invalidate_page(struct address_space *, struct page *);
 extern void __cleancache_invalidate_inode(struct address_space *);
 extern void __cleancache_invalidate_fs(struct super_block *);
 
-#ifdef CONFIG_CLEANCACHE
+#ifdef CONFIG_CLEANCACHE    // not set
 #define cleancache_enabled (1)
 static inline bool cleancache_fs_enabled(struct page *page)
 {
@@ -54,6 +54,7 @@ static inline bool cleancache_fs_enabled_mapping(struct address_space *mapping)
 	return mapping->host->i_sb->cleancache_poolid >= 0;
 }
 #else
+// 2016-01-09
 #define cleancache_enabled (0)
 #define cleancache_fs_enabled(_page) (0)
 #define cleancache_fs_enabled_mapping(_page) (0)
@@ -93,15 +94,19 @@ static inline int cleancache_get_page(struct page *page)
 	return ret;
 }
 
+// 2016-01-09
 static inline void cleancache_put_page(struct page *page)
 {
+    // cleancache_enabled가 0임으로 NOP
 	if (cleancache_enabled && cleancache_fs_enabled(page))
 		__cleancache_put_page(page);
 }
 
+// 2016-01-09
 static inline void cleancache_invalidate_page(struct address_space *mapping,
 					struct page *page)
 {
+    // cleancache_enabled가 0임으로 NOP
 	/* careful... page->mapping is NULL sometimes when this is called */
 	if (cleancache_enabled && cleancache_fs_enabled_mapping(mapping))
 		__cleancache_invalidate_page(mapping, page);

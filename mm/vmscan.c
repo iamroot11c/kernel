@@ -522,7 +522,7 @@ static pageout_t pageout(struct page *page, struct address_space *mapping,
  * Same as remove_mapping, but if the page is removed from the mapping, it
  * gets returned with a refcount of 0.
  */
-// 2015-12-26
+// 2016-01-09
 static int __remove_mapping(struct address_space *mapping, struct page *page)
 {
 	BUG_ON(!PageLocked(page));
@@ -557,12 +557,14 @@ static int __remove_mapping(struct address_space *mapping, struct page *page)
 	if (!page_freeze_refs(page, 2))
 		goto cannot_free;
 	/* note: atomic_cmpxchg in page_freeze_refs provides the smp_rmb */
+	// Dirty Page는 free하지 못한다.
 	if (unlikely(PageDirty(page))) {
 		page_unfreeze_refs(page, 2);
 		goto cannot_free;
 	}
 
 	if (PageSwapCache(page)) {
+		// page의 private은 swp_entry_t.val이다.
 		swp_entry_t swap = { .val = page_private(page) };
 		__delete_from_swap_cache(page);
 		spin_unlock_irq(&mapping->tree_lock);
@@ -570,11 +572,12 @@ static int __remove_mapping(struct address_space *mapping, struct page *page)
 	} else {
 		void (*freepage)(struct page *);
 
+		// 무엇으로 설정되었을까?
 		freepage = mapping->a_ops->freepage;
 
 		__delete_from_page_cache(page);
 		spin_unlock_irq(&mapping->tree_lock);
-		mem_cgroup_uncharge_cache_page(page);
+		mem_cgroup_uncharge_cache_page(page);	// NOP
 
 		if (freepage != NULL)
 			freepage(page);
@@ -1089,6 +1092,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
 		}
 
 		// 2015-12-26 여기까지
+		// 2016-01-09 시작
 		if (!mapping || !__remove_mapping(mapping, page))
 			goto keep_locked;
 
@@ -1428,6 +1432,9 @@ static int too_many_isolated(struct zone *zone, int file,
 	return isolated > inactive;
 }
 
+// 2016-01-09
+// keep할 page들을 어떻게 처리할 것인가?
+// putback_inactive_pages(lruvec, &page_list);
 static noinline_for_stack void
 putback_inactive_pages(struct lruvec *lruvec, struct list_head *page_list)
 {
@@ -1443,6 +1450,8 @@ putback_inactive_pages(struct lruvec *lruvec, struct list_head *page_list)
 		int lru;
 
 		VM_BUG_ON(PageLRU(page));
+
+		// 삭제
 		list_del(&page->lru);
 		if (unlikely(!page_evictable(page))) {
 			spin_unlock_irq(&zone->lru_lock);
@@ -1451,20 +1460,27 @@ putback_inactive_pages(struct lruvec *lruvec, struct list_head *page_list)
 			continue;
 		}
 
+		// &zone->lruvec
 		lruvec = mem_cgroup_page_lruvec(page, zone);
 
 		SetPageLRU(page);
 		lru = page_lru(page);
+		
+		// zone->lruvec에 page 추가
 		add_page_to_lru_list(page, lruvec, lru);
 
 		if (is_active_lru(lru)) {
 			int file = is_file_lru(lru);
-			int numpages = hpage_nr_pages(page);
+			int numpages = hpage_nr_pages(page);	// 1
 			reclaim_stat->recent_rotated[file] += numpages;
 		}
+
+		// ref count가 0인 것은 lruvec에서 제거
 		if (put_page_testzero(page)) {
 			__ClearPageLRU(page);
 			__ClearPageActive(page);
+
+			// lruvec에서 page 삭제
 			del_page_from_lru_list(page, lruvec, lru);
 
 			if (unlikely(PageCompound(page))) {
@@ -1472,13 +1488,15 @@ putback_inactive_pages(struct lruvec *lruvec, struct list_head *page_list)
 				(*get_compound_page_dtor(page))(page);
 				spin_lock_irq(&zone->lru_lock);
 			} else
+				// to free list에 추가
 				list_add(&page->lru, &pages_to_free);
 		}
-	}
+	} // while
 
 	/*
 	 * To save our caller's stack, now use input list for pages to free.
 	 */
+	// page_list는 일전에 모두 비워졌지만, 이제는 pages_to_free의 노드들로 채워진다.
 	list_splice(&pages_to_free, page_list);
 }
 
@@ -1488,6 +1506,16 @@ putback_inactive_pages(struct lruvec *lruvec, struct list_head *page_list)
  */
 // 2015-12-05;
 // shrink_inactive_list(nr_to_scan, lruvec, sc, lru)
+//
+// 1. shrink_page_list()에서 keep labep에 속하는 page_list구함.
+// 2. putback_inactive_pages()에서
+//   - page_list에서 삭제
+//   - zone->lruvec에 추가
+//   - ref count가 0인 것은 lruvec에서 제거,
+//   - 제거된 것들을 pages_to_free 리스트에 추가해서 리턴
+// 3. free_hot_cold_page_list()을 통해서, pages_to_free을 하나씩 zone->pageset에 추가
+//   - zone->pageset은 order 0인 page들을 관리한다.
+
 static noinline_for_stack unsigned long
 shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
 		     struct scan_control *sc, enum lru_list lru)
@@ -1546,10 +1574,12 @@ shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
 		return 0;
 
 	// 2015-12-05 시작;
+	// page_list은 keep할 page들 
 	nr_reclaimed = shrink_page_list(&page_list, zone, sc, TTU_UNMAP,
 				&nr_dirty, &nr_unqueued_dirty, &nr_congested,
 				&nr_writeback, &nr_immediate,
 				false);
+	// 2016-01-09 종료
 
 	spin_lock_irq(&zone->lru_lock);
 
@@ -1564,12 +1594,16 @@ shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
 					       nr_reclaimed);
 	}
 
+	// 2016-01-09
 	putback_inactive_pages(lruvec, &page_list);
+	// putback_inactive_pages에 의해서, page_list는 to free page들이다.
+	// 2016-01-09
 
 	__mod_zone_page_state(zone, NR_ISOLATED_ANON + file, -nr_taken);
 
 	spin_unlock_irq(&zone->lru_lock);
 
+	// order 0인 page들을 관리하는 zone->pageset에 to free page들을 추가
 	free_hot_cold_page_list(&page_list, 1);
 
 	/*
@@ -1593,7 +1627,7 @@ shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
 	 * memcg will stall in page writeback so only consider forcibly
 	 * stalling for global reclaim
 	 */
-	if (global_reclaim(sc)) {
+	if (global_reclaim(sc)) {	// 항상 true
 		/*
 		 * Tag a zone as congested if all the dirty pages scanned were
 		 * backed by a congested BDI and wait_iff_congested will stall.
@@ -1618,7 +1652,7 @@ shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
 		 * they are written so also forcibly stall.
 		 */
 		if (nr_unqueued_dirty == nr_taken || nr_immediate)
-			congestion_wait(BLK_RW_ASYNC, HZ/10);
+			congestion_wait(BLK_RW_ASYNC, HZ/10/*10*/);
 	}
 
 	/*
@@ -1699,6 +1733,9 @@ static void move_active_pages_to_lru(struct lruvec *lruvec,
 		__count_vm_events(PGDEACTIVATE, pgmoved);
 }
 // 2015-11-28
+// 2016-01-09
+// shrink_active_list(SWAP_CLUSTER_MAX, lruvec,
+//                                     sc, LRU_ACTIVE_ANON);
 static void shrink_active_list(unsigned long nr_to_scan,
 			       struct lruvec *lruvec,
 			       struct scan_control *sc,
@@ -1812,6 +1849,7 @@ static void shrink_active_list(unsigned long nr_to_scan,
 
 #ifdef CONFIG_SWAP
 // 2015-11-28
+// 2016-01-09
 static int inactive_anon_is_low_global(struct zone *zone)
 {
 	unsigned long active, inactive;
@@ -1836,6 +1874,7 @@ static int inactive_anon_is_low_global(struct zone *zone)
  * meaning some active anon pages need to be deactivated.
  */
 // 2015-11-28
+// 2016-01-09
 static int inactive_anon_is_low(struct lruvec *lruvec)
 {
 	/*
@@ -1848,6 +1887,7 @@ static int inactive_anon_is_low(struct lruvec *lruvec)
 	if (!mem_cgroup_disabled())
 		return mem_cgroup_inactive_anon_is_low(lruvec);
 
+	// 2016-01-09
 	return inactive_anon_is_low_global(lruvec_zone(lruvec));
 }
 #else
@@ -1907,6 +1947,7 @@ static unsigned long shrink_list(enum lru_list lru, unsigned long nr_to_scan,
 
 	// 2015-12-05 시작;
 	return shrink_inactive_list(nr_to_scan, lruvec, sc, lru);
+	// 2016-01-09
 }
 // 2015-11-28
 // 자세한 사항은 http://zetawiki.com/wiki/%EB%A6%AC%EB%88%85%EC%8A%A4_swappiness 참고
@@ -2116,6 +2157,8 @@ out:
  * This is a basic per-zone page freer.  Used by both kswapd and direct reclaim.
  */
 // 2015-11-28
+// 실제 shrink는 shrink_list에서 이루어지며
+// 나머지는 계산식을 통해 상황 판단하는 알고리즘이다.
 static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
 {
 	unsigned long nr[NR_LRU_LISTS];
@@ -2148,9 +2191,14 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
 				// 2015-11-28
 				nr_reclaimed += shrink_list(lru, nr_to_scan,
 							    lruvec, sc);
+				// 2016-01-09, end
+
 			}
 		}
 
+
+		// 갯수가 부족하다면, 다시 또 reclaim을 시도한다.
+		// scan_adjusted가 밑에서 true롤 셋팅됨으로 루프를 순회하면서 아래는 한번만 실행될 것임.
 		if (nr_reclaimed < nr_to_reclaim || scan_adjusted)
 			continue;
 
@@ -2203,8 +2251,9 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
 		nr[lru] = targets[lru] * (100 - percentage) / 100;
 		nr[lru] -= min(nr[lru], nr_scanned);
 
+		// true로 셋팅된다.
 		scan_adjusted = true;
-	}
+	} // while
 	blk_finish_plug(&plug);
 	sc->nr_reclaimed += nr_reclaimed;
 
@@ -2212,10 +2261,12 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
 	 * Even if we did not try to evict anon pages at all, we want to
 	 * rebalance the anon lru active/inactive ratio.
 	 */
+	// 2016-01-09
 	if (inactive_anon_is_low(lruvec))
 		shrink_active_list(SWAP_CLUSTER_MAX, lruvec,
 				   sc, LRU_ACTIVE_ANON);
 
+	// 2016-01-09
 	throttle_vm_writeout(sc->gfp_mask);
 }
 
@@ -2325,6 +2376,7 @@ static void shrink_zone(struct zone *zone, struct scan_control *sc)
 			// 2015-11-21, 여기까지
 			// 2015-11-28 시작
 			shrink_lruvec(lruvec, sc);
+			// 2016-01-09
 
 			/*
 			 * Direct reclaim and kswapd have to scan all memory
@@ -2336,18 +2388,22 @@ static void shrink_zone(struct zone *zone, struct scan_control *sc)
 			 * retry with decreasing priority if one round over the
 			 * whole hierarchy is not sufficient.
 			 */
+			// global_reclaim()이 항상 true
 			if (!global_reclaim(sc) &&
 					sc->nr_reclaimed >= sc->nr_to_reclaim) {
 				mem_cgroup_iter_break(root, memcg);
 				break;
 			}
+			// NULL
 			memcg = mem_cgroup_iter(root, memcg, &reclaim);
 		} while (memcg);
 
+		// NOP
 		vmpressure(sc->gfp_mask, sc->target_mem_cgroup,
 			   sc->nr_scanned - nr_scanned,
 			   sc->nr_reclaimed - nr_reclaimed);
 
+		// 2016-01-09, 여기까지
 	} while (should_continue_reclaim(zone, sc->nr_reclaimed - nr_reclaimed,
 					 sc->nr_scanned - nr_scanned, sc));
 }

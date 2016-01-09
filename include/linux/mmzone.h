@@ -519,6 +519,7 @@ struct zone {
 	const char		*name;
 } ____cacheline_internodealigned_in_smp;
 
+// 2016-01-09
 typedef enum {
 	ZONE_RECLAIM_LOCKED,		/* prevents concurrent reclaim */
 	ZONE_OOM_LOCKED,		/* zone is in OOM killer zonelist */
@@ -534,6 +535,7 @@ typedef enum {
 					 */
 } zone_flags_t;
 
+// 2016-01-09
 static inline void zone_set_flag(struct zone *zone, zone_flags_t flag)
 {
 	set_bit(flag, &zone->flags);

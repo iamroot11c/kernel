@@ -112,6 +112,7 @@
  * sure the page is locked and that nobody else uses it - or that usage
  * is safe.  The caller must hold the mapping's tree_lock.
  */
+// 2016-01-09
 void __delete_from_page_cache(struct page *page)
 {
 	struct address_space *mapping = page->mapping;
@@ -123,15 +124,15 @@ void __delete_from_page_cache(struct page *page)
 	 * stale data around in the cleancache once our page is gone
 	 */
 	if (PageUptodate(page) && PageMappedToDisk(page))
-		cleancache_put_page(page);
+		cleancache_put_page(page);	// NOP
 	else
-		cleancache_invalidate_page(mapping, page);
+		cleancache_invalidate_page(mapping, page);	// NOP
 
-	radix_tree_delete(&mapping->page_tree, page->index);
-	page->mapping = NULL;
+	radix_tree_delete(&mapping->page_tree, page->index);	// tree에서 삭제
+	page->mapping = NULL;					// mapping을 NULL로
 	/* Leave page->index set: truncation lookup relies upon it */
-	mapping->nrpages--;
-	__dec_zone_page_state(page, NR_FILE_PAGES);
+	mapping->nrpages--;					// nrpages - 1
+	__dec_zone_page_state(page, NR_FILE_PAGES);		// zone state -1 더하고
 	if (PageSwapBacked(page))
 		__dec_zone_page_state(page, NR_SHMEM);
 	BUG_ON(page_mapped(page));
@@ -626,6 +627,7 @@ EXPORT_SYMBOL_GPL(add_page_wait_queue);
 // page flags, PG_locked에 대해서 갱신
 //
 // 2015-11-14;
+// 2016-01-09
 void unlock_page(struct page *page)
 {
 	VM_BUG_ON(!PageLocked(page));

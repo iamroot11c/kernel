@@ -268,6 +268,7 @@ static inline void mem_cgroup_uncharge_start(void)
 {
 }
 
+// 2016-01-09
 static inline void mem_cgroup_uncharge_end(void)
 {
 }
@@ -277,6 +278,7 @@ static inline void mem_cgroup_uncharge_page(struct page *page)
 {
 }
 
+// 2016-01-09
 static inline void mem_cgroup_uncharge_cache_page(struct page *page)
 {
 }

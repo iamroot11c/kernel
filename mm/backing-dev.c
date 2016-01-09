@@ -589,6 +589,7 @@ EXPORT_SYMBOL(set_bdi_congested);
 //
 // 2015-12-05;
 // congestion_wait(BLK_RW_ASYNC, HZ/10)
+// At glance
 long congestion_wait(int sync, long timeout)
 {
 	long ret;
@@ -627,6 +628,7 @@ EXPORT_SYMBOL(congestion_wait);
  */
 // 2015-06-20
 // wait_iff_congested(preferred_zone, BLK_RW_ASYNC/*0*/, HZ/*100*//50);
+// glance
 long wait_iff_congested(struct zone *zone, int sync, long timeout)
 {
 	long ret;

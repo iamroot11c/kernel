@@ -71,6 +71,8 @@ static inline void __count_vm_events(enum vm_event_item item, long delta)
 // 2015-11-14;
 // count_vm_events(PGMIGRATE_SUCCESS, nr_succeeded);
 // count_vm_events(PGMIGRATE_FAIL, nr_failed);
+// 2016-01-09
+// count_vm_events(PGACTIVATE, pgactivate);
 static inline void count_vm_events(enum vm_event_item item, long delta)
 {
 	this_cpu_add(vm_event_states.event[item], delta);

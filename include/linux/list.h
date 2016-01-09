@@ -293,6 +293,10 @@ static inline void list_cut_position(struct list_head *list,
 		__list_cut_position(list, head, entry);
 }
 
+// 2016-01-09
+// __list_splice(list, head, head->next);
+// 삽입과 동일하게, head에 list->next가 삽입되는 형태
+// 이것을 마치고나면, 첫번째 인자 list는 홀로 남는다.
 static inline void __list_splice(const struct list_head *list,
 				 struct list_head *prev,
 				 struct list_head *next)
@@ -312,6 +316,7 @@ static inline void __list_splice(const struct list_head *list,
  * @list: the new list to add.
  * @head: the place to add it in the first list.
  */
+// 2016-01-09
 static inline void list_splice(const struct list_head *list,
 				struct list_head *head)
 {

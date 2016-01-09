@@ -75,11 +75,13 @@ EXPORT_SYMBOL(percpu_counter_set);
 //  __percpu_counter_add(&bdi->bdi_stat[item], amount/*-1*/, BDI_STAT_BATCH/*16*/);
 // 2015-12-26
 // __percpu_counter_add(&bdi->bdi_stat[BDI_RECLAIMABLE], amount/*-1*/, BDI_STAT_BATCH/*16*/);
+//
 void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch)
 {
 	s64 count;
 
 	preempt_disable();
+	// 2016-01-09, 현재값 + amount
 	count = __this_cpu_read(*fbc->counters) + amount;
 	if (count >= batch || count <= -batch) {
 		raw_spin_lock(&fbc->lock);

@@ -927,6 +927,7 @@ void swap_free(swp_entry_t entry)
  * Called after dropping swapcache to decrease refcnt to swap entries.
  */
 // 2015-12-19;
+// 2016-01-09
 void swapcache_free(swp_entry_t entry, struct page *page)
 {
 	struct swap_info_struct *p;
@@ -947,6 +948,7 @@ void swapcache_free(swp_entry_t entry, struct page *page)
  * This does not give an exact answer when swap count is continued,
  * but does include the high COUNT_CONTINUED flag to allow for that.
  */
+// 2016-01-09
 int page_swapcount(struct page *page)
 {
 	int count = 0;
@@ -991,6 +993,7 @@ int reuse_swap_page(struct page *page)
  * then try_to_free_swap is called to free its swap space.
  */
 // 2015-12-12
+// 2016-01-09
 int try_to_free_swap(struct page *page)
 {
 	VM_BUG_ON(!PageLocked(page));

@@ -2974,6 +2974,7 @@ struct blk_plug_cb *blk_check_plugged(blk_plug_cb_fn unplug, void *data,
 EXPORT_SYMBOL(blk_check_plugged);
 
 // 2015-06-20, glance
+// 2016-01-09, glance
 void blk_flush_plug_list(struct blk_plug *plug, bool from_schedule)
 {
 	struct request_queue *q;
@@ -3043,6 +3044,7 @@ void blk_flush_plug_list(struct blk_plug *plug, bool from_schedule)
 	local_irq_restore(flags);
 }
 
+// 2016-01-09
 void blk_finish_plug(struct blk_plug *plug)
 {
 	blk_flush_plug_list(plug, false);

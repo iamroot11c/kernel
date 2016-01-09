@@ -1486,6 +1486,9 @@ void mark_free_pages(struct zone *zone)
 //
 // 2015-12-05;
 // free_hot_cold_page(page, 1);
+//
+// 2016-01-09
+// zone->pageset에 page 추가
 void free_hot_cold_page(struct page *page, int cold)
 {
 	struct zone *zone = page_zone(page);
@@ -1551,6 +1554,7 @@ out:
 // 2015-04-25
 // 2015-12-05;
 // free_hot_cold_page_list(&l_hold, 1);
+// free_hot_cold_page_list(&free_pages, 1);
 void free_hot_cold_page_list(struct list_head *list, int cold)
 {
 	struct page *page, *next;

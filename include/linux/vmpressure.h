@@ -42,6 +42,7 @@ extern void vmpressure_unregister_event(struct cgroup_subsys_state *css,
 					struct cftype *cft,
 					struct eventfd_ctx *eventfd);
 #else
+// 2016-01-09
 static inline void vmpressure(gfp_t gfp, struct mem_cgroup *memcg,
 			      unsigned long scanned, unsigned long reclaimed) {}
 // 2015-11-21

@@ -138,6 +138,8 @@ static inline int atomic_sub_return(int i, atomic_t *v)
 // 2015-04-18;
 // atomic_cmpxchg((v), c, c + a));
 // 값을 증가할 수 있을 때까지 반복 시도, 리턴되는 값은 증가전 값
+// 2016-01-09
+// atomic_cmpxchg(&page->_count, 2, 0)
 static inline int atomic_cmpxchg(atomic_t *ptr, int old, int new)
 {
 	unsigned long oldval, res;

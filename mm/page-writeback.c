@@ -76,6 +76,7 @@ int dirty_background_ratio = 10;
  * dirty_background_bytes starts at 0 (disabled) so that it is a function of
  * dirty_background_ratio * the amount of dirtyable memory
  */
+// 2016-01-09
 unsigned long dirty_background_bytes;
 
 /*
@@ -137,6 +138,7 @@ EXPORT_SYMBOL(laptop_mode);
 
 /* End of sysctl-exported parameters */
 
+// 2016-01-09
 unsigned long global_dirty_limit;
 
 /*
@@ -278,6 +280,7 @@ static unsigned long highmem_dirtyable_memory(unsigned long total)
  * page cache.  This is the base value for the global dirty limits.
  */
 // 2015-05-30
+// 2016-01-09
 static unsigned long global_dirtyable_memory(void)
 {
 	unsigned long x;
@@ -303,6 +306,7 @@ static unsigned long global_dirtyable_memory(void)
  * The dirty limits will be lifted by 1/4 for PF_LESS_THROTTLE (ie. nfsd) and
  * real-time tasks.
  */
+// 2016-01-09
 void global_dirty_limits(unsigned long *pbackground, unsigned long *pdirty)
 {
 	unsigned long background;
@@ -1679,6 +1683,7 @@ void balance_dirty_pages_ratelimited(struct address_space *mapping)
 }
 EXPORT_SYMBOL(balance_dirty_pages_ratelimited);
 
+// 2016-01-09
 void throttle_vm_writeout(gfp_t gfp_mask)
 {
 	unsigned long background_thresh;

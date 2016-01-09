@@ -95,6 +95,7 @@ enum pageflags {
                         // 2015-04-11;
 #endif
 	PG_swapcache,		/* Swap page: swp_entry_t in private */
+    // 2016-01-09
 	PG_mappedtodisk,	/* Has blocks allocated on-disk */
 	PG_reclaim,		/* To be reclaimed asap */
 	PG_swapbacked,		/* Page is backed by RAM/swap */
@@ -304,6 +305,7 @@ PAGEFLAG_FALSE(HWPoison)
 
 u64 stable_page_flags(struct page *page);
 
+// 2016-01-09
 static inline int PageUptodate(struct page *page)
 {
 	int ret = test_bit(PG_uptodate, &(page)->flags);

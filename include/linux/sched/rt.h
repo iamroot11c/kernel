@@ -30,6 +30,7 @@ static inline int rt_prio(int prio)
 }
 
 // 2015-06-13;
+// 대부분 0이 리턴 될 것이라 예상함.
 static inline int rt_task(struct task_struct *p)
 {
 	return rt_prio(p->prio);
