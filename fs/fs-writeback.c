@@ -924,6 +924,7 @@ get_next_work_item(struct backing_dev_info *bdi)
  * Add in the number of potentially dirty inodes, because each inode
  * write can dirty pagecache in the underlying blockdev.
  */
+// 2016-01-16;
 static unsigned long get_nr_dirty_pages(void)
 {
 	return global_page_state(NR_FILE_DIRTY) +
@@ -1068,6 +1069,9 @@ void bdi_writeback_workfn(struct work_struct *work)
  * Start writeback of `nr_pages' pages.  If `nr_pages' is zero, write back
  * the whole world.
  */
+// 2016-01-16
+// wakeup_flusher_threads(laptop_mode ? 0 : total_scanned,
+//                              WB_REASON_TRY_TO_FREE_PAGES);
 void wakeup_flusher_threads(long nr_pages, enum wb_reason reason)
 {
 	struct backing_dev_info *bdi;
@@ -1076,6 +1080,8 @@ void wakeup_flusher_threads(long nr_pages, enum wb_reason reason)
 		nr_pages = get_nr_dirty_pages();
 
 	rcu_read_lock();
+	// 2016-01-16;
+	// bdi_list 목록이 만들어지지 않아서 반복문을 수행하지 못함
 	list_for_each_entry_rcu(bdi, &bdi_list, bdi_list) {
 		if (!bdi_has_dirty_io(bdi))
 			continue;

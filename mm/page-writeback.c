@@ -132,6 +132,7 @@ int block_dump;
  * Flag that puts the machine in "laptop mode". Doubles as a timeout in jiffies:
  * a full sync is triggered after this time elapses without any disk activity.
  */
+// 2016-01-16
 int laptop_mode;
 
 EXPORT_SYMBOL(laptop_mode);

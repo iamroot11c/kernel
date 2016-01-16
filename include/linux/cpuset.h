@@ -170,6 +170,7 @@ static inline int cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
 }
 
 // 2015-11-21
+// 2016-01-16;
 static inline int cpuset_zone_allowed_hardwall(struct zone *z, gfp_t gfp_mask)
 {
 	return 1;

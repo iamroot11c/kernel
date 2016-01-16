@@ -711,9 +711,10 @@ static inline int page_zone_id(struct page *page)
 	return (page->flags >> ZONEID_PGSHIFT/*26*/) & ZONEID_MASK/*0b11*/;
 }
 
+// 2016-01-16;
 static inline int zone_to_nid(struct zone *zone)
 {
-#ifdef CONFIG_NUMA
+#ifdef CONFIG_NUMA // not define
 	return zone->node;
 #else
 	return 0;

@@ -439,6 +439,7 @@ static inline bool vm_swap_full(void)
 }
 
 // 2015-11-21
+// 2016-01-16;
 static inline long get_nr_swap_pages(void)
 {
 	return atomic_long_read(&nr_swap_pages);

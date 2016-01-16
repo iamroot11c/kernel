@@ -108,6 +108,8 @@ extern nodemask_t _unused_nodemask_arg_;
  * to fix the problem.  If other functions in the future also end up in
  * this situation they will also need to be annotated as __always_inline
  */
+// 2016-01-16
+// node_set(zone_to_nid(zone)/*0*/, shrink->nodes_to_scan)
 #define node_set(node, dst) __node_set((node), &(dst))
 static __always_inline void __node_set(int node, volatile nodemask_t *dstp)
 {
@@ -126,9 +128,12 @@ static inline void __nodes_setall(nodemask_t *dstp, int nbits)
 	bitmap_fill(dstp->bits, nbits);
 }
 
-#define nodes_clear(dst) __nodes_clear(&(dst), MAX_NUMNODES)
+// 2015-01-16;
+// nodes_clear(shrink->nodes_to_scan);
+#define nodes_clear(dst) __nodes_clear(&(dst), MAX_NUMNODES/*1*/)
 static inline void __nodes_clear(nodemask_t *dstp, int nbits)
 {
+    // nodemask_t 구조체의 bits 멤버를 클리어
 	bitmap_zero(dstp->bits, nbits);
 }
 
@@ -454,6 +459,8 @@ static inline void node_set_offline(int nid)
 #else
 
 // 2015-03-28
+// 2016-01-16;
+// node_state(shrinkctl->nid, N_ONLINE/*1*/) 
 static inline int node_state(int node, enum node_states state)
 {
 	return node == 0;
@@ -502,7 +509,8 @@ static inline int node_random(const nodemask_t *mask)
 
 #define num_online_nodes()	num_node_state(N_ONLINE)
 #define num_possible_nodes()	num_node_state(N_POSSIBLE)
-#define node_online(node)	node_state((node), N_ONLINE)
+// 2016-01-16;
+#define node_online(node)	node_state((node), N_ONLINE/*1*/)
 #define node_possible(node)	node_state((node), N_POSSIBLE)
 
 #define for_each_node(node)	   for_each_node_state(node, N_POSSIBLE)

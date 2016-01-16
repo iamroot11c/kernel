@@ -34,6 +34,7 @@ static struct class *bdi_class;
  * bdi_lock protects updates to bdi_list. bdi_list has RCU reader side
  * locking.
  */
+// 2016-01-16;
 DEFINE_SPINLOCK(bdi_lock);
 LIST_HEAD(bdi_list);
 

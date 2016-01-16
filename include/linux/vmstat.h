@@ -138,6 +138,9 @@ static inline void zone_page_state_add(long x, struct zone *zone,
 
 // 2015-05-30
 // global vm_stat이 따로 존재한다.
+// 2016-01-16;
+// global_page_state(NR_FILE_DIRTY)
+// global_page_state(NR_UNSTABLE_NFS)
 static inline unsigned long global_page_state(enum zone_stat_item item)
 {
 	long x = atomic_long_read(&vm_stat[item]);
@@ -163,6 +166,10 @@ static inline unsigned long global_page_state(enum zone_stat_item item)
 // 2015-12-05;
 // zone_page_state(zone, NR_INACTIVE_FILE);
 // zone_page_state(zone, NR_ISOLATED_FILE);
+//
+// 2016-01-16;
+// zone_page_state(zone, NR_INACTIVE_FILE);
+// zone_page_state(zone, NR_INACTIVE_ANON)
 static inline unsigned long zone_page_state(struct zone *zone,
 					enum zone_stat_item item)
 {

@@ -1524,6 +1524,7 @@ void free_hot_cold_page(struct page *page, int cold)
 		migratetype = MIGRATE_MOVABLE;
 	}
 
+	// order 0일 때 여기에 추가
 	pcp = &this_cpu_ptr(zone->pageset)->pcp;
 
 	// cache 알고리즘 적용
@@ -2117,6 +2118,11 @@ static inline void init_zone_allows_reclaim(int nid)
 //                              preferred_zone, migratetype);
 //
 // 2015-11-14;
+// 2016-01-23
+// get_page_from_freelist(gfp_mask, nodemask, order,
+//                           zonelist, high_zoneidx,
+//                           alloc_flags & ~ALLOC_NO_WATERMARKS,
+//                           preferred_zone, migratetype);
 static struct page *
 get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
 		struct zonelist *zonelist, int high_zoneidx, int alloc_flags,
@@ -2589,7 +2595,9 @@ __perform_reclaim(gfp_t gfp_mask, unsigned int order, struct zonelist *zonelist,
 	current->reclaim_state = &reclaim_state; // 지역변수를 임시로 저장
 
 	// 2015-11-14;
+	// progress는 nr_reclaimed
 	progress = try_to_free_pages(zonelist, order, gfp_mask, nodemask);
+	// 2016-01-16 분석 완료;
 
 	current->reclaim_state = NULL;
 	lockdep_clear_current_reclaim_state(); // No OP.
@@ -2617,15 +2625,19 @@ __alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
 	bool drained = false;
 
 	// 2015-11-14 시작
+	// *did_some_progress = nr_reclaimed
 	*did_some_progress = __perform_reclaim(gfp_mask, order, zonelist,
 					       nodemask);
+	// 2016-01-16 분석 완료;
+	
 	if (unlikely(!(*did_some_progress)))
 		return NULL;
 
 	/* After successful reclaim, reconsider all zones for allocation */
 	if (IS_ENABLED(CONFIG_NUMA))
 		zlc_clear_zones_full(zonelist);
-
+	
+	// 2016-01-16 여기까지;
 retry:
 	page = get_page_from_freelist(gfp_mask, nodemask, order,
 					zonelist, high_zoneidx,

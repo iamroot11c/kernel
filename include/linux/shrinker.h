@@ -22,6 +22,7 @@ struct shrink_control {
 	/* shrink from these nodes */
 	nodemask_t nodes_to_scan;
 	/* current node being shrunk (for NUMA aware shrinkers) */
+    // 2016-01-16 UMA로 0으로 될 것 같다
 	int nid;
 };
 
@@ -46,6 +47,7 @@ struct shrink_control {
  *
  * @flags determine the shrinker abilities, like numa awareness
  */
+// 2016-01-16;
 struct shrinker {
 	unsigned long (*count_objects)(struct shrinker *,
 				       struct shrink_control *sc);
@@ -64,7 +66,8 @@ struct shrinker {
 #define DEFAULT_SEEKS 2 /* A good number if you don't know better. */
 
 /* Flags */
-#define SHRINKER_NUMA_AWARE (1 << 0)
+// 2016-01-16
+#define SHRINKER_NUMA_AWARE (1 << 0) // 1
 
 extern int register_shrinker(struct shrinker *);
 extern void unregister_shrinker(struct shrinker *);

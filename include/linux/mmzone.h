@@ -904,6 +904,7 @@ unsigned long __init node_memmap_size_bytes(int, unsigned long, unsigned long);
 // |----- free_area_init_core()
 //
 // 2015-11-21
+// 2016-01-16;
 static inline int populated_zone(struct zone *zone)
 {
 	return (!!zone->present_pages);
@@ -1107,6 +1108,7 @@ static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
  * within a given nodemask
  */
 // 2015-05-23;
+// 2016-01-16;
 #define for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, nodemask) \
 	for (z = first_zones_zonelist(zlist, highidx, nodemask, &zone);	\
 		zone;							\

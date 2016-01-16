@@ -164,15 +164,21 @@ extern int bitmap_ord_to_pos(const unsigned long *bitmap, int n, int bits);
 // __builtin_constant_p() 함수는 컴파일 타임에 nbits가 상수인지 검사
 // 2015-03-21 확인. nbits가 상수이면서 BITS_PER_LONG보다 작은 경우 참
 // 2015-08-29
+// 2016-01-16
 #define small_const_nbits(nbits) \
 	(__builtin_constant_p(nbits) && (nbits) <= BITS_PER_LONG)
 
+// 2016-01-16
+// bitmap_zero(shrink->nodes_to_scan MAX_NUMNODES/*1*/)
 static inline void bitmap_zero(unsigned long *dst, int nbits)
 {
 	if (small_const_nbits(nbits))
 		*dst = 0UL;
 	else {
+        // len = DIV_ROUND_UP(1, BITS_PER_BYTE/*8*/ * sizeof(long))/*1*/;
 		int len = BITS_TO_LONGS(nbits) * sizeof(unsigned long);
+        // 메모리를 0으로 초기화
+        // 2016-01-16; 1 byte 초기화
 		memset(dst, 0, len);
 	}
 }

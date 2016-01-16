@@ -8,6 +8,7 @@
 #define NODES_SHIFT     0
 #endif
 
+// 2016-01-16;
 #define MAX_NUMNODES    (1 << NODES_SHIFT) // 1
 
 #define	NUMA_NO_NODE	(-1)

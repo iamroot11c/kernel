@@ -7,6 +7,8 @@
 #define BIT_MASK(nr)		(1UL << ((nr) % BITS_PER_LONG)) // 나머지
 #define BIT_WORD(nr)		((nr) / BITS_PER_LONG)          // 몫
 #define BITS_PER_BYTE		8
+// 2016-01-16
+// BITS_TO_LONGS(1)
 #define BITS_TO_LONGS(nr)	DIV_ROUND_UP(nr, BITS_PER_BYTE/*8*/ * sizeof(long))
 #endif
 

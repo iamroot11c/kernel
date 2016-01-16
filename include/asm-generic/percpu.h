@@ -58,6 +58,7 @@ extern unsigned long __per_cpu_offset[NR_CPUS]; // NR_CPUS = 2;
  */
 // 2015-03-28
 // 2015-08-15
+// 2016-01-16;
 #define per_cpu(var, cpu) \
 	(*SHIFT_PERCPU_PTR(&(var), per_cpu_offset(cpu)))
 

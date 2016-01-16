@@ -176,20 +176,22 @@ extern int _find_next_zero_bit_be(const void * p, int size, int offset);
 extern int _find_first_bit_be(const unsigned long *p, unsigned size);
 extern int _find_next_bit_be(const unsigned long *p, int size, int offset);
 
-#ifndef CONFIG_SMP
+#ifndef CONFIG_SMP // defined
 /*
  * The __* form of bitops are non-atomic and may be reordered.
  */
 #define ATOMIC_BITOP(name,nr,p)			\
 	(__builtin_constant_p(nr) ? ____atomic_##name(nr, p) : _##name(nr,p))
-#else
+#else 
+// 2016-01-16
 #define ATOMIC_BITOP(name,nr,p)		_##name(nr,p)
 #endif
 
 /*
  * Native endian atomic definitions.
  */
-#define set_bit(nr,p)			ATOMIC_BITOP(set_bit,nr,p)
+// 2016-01-16
+#define set_bit(nr,p)			ATOMIC_BITOP(set_bit,nr,p) // _set_bit(nr, p);
 #define clear_bit(nr,p)			ATOMIC_BITOP(clear_bit,nr,p)
 #define change_bit(nr,p)		ATOMIC_BITOP(change_bit,nr,p)
 // 2014-12-13

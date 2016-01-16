@@ -1024,6 +1024,9 @@ static int compact_finished(struct zone *zone,
 //
 // 2015-06-20
 // compaction_suitable(zone, cc->order);
+//
+// 2016-01-16
+// compaction_suitable(zone, sc->order)
 unsigned long compaction_suitable(struct zone *zone, int order)
 {
 	int fragindex;

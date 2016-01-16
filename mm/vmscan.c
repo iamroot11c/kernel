@@ -134,6 +134,7 @@ int vm_swappiness = 60;
 unsigned long vm_total_pages;	/* The total number of pages which the VM controls */
 
 static LIST_HEAD(shrinker_list);
+// 2016-01-16
 static DECLARE_RWSEM(shrinker_rwsem);
 
 #ifdef CONFIG_MEMCG	// not set
@@ -151,6 +152,7 @@ static bool global_reclaim(struct scan_control *sc)
 #endif
 
 // 2015-11-21
+// 2016-01-16;
 static unsigned long zone_reclaimable_pages(struct zone *zone)
 {
 	int nr;
@@ -166,6 +168,7 @@ static unsigned long zone_reclaimable_pages(struct zone *zone)
 }
 
 // 2015-11-21
+// 2016-01-16;
 bool zone_reclaimable(struct zone *zone)
 {
 	// 6은 왜 곱할까???
@@ -224,6 +227,12 @@ EXPORT_SYMBOL(unregister_shrinker);
 
 #define SHRINK_BATCH 128
 
+// 2016-01-16
+// shrink_slab_node(shrinkctl, shrinker,
+//                      nr_pages_scanned, lru_pages)
+//
+// shrinker 목록은 드라이버 또는 파일 시스템에서 등록을 해서
+// 아직 설정이 되지 않아 흝어보기만 함
 static unsigned long
 shrink_slab_node(struct shrink_control *shrinkctl, struct shrinker *shrinker,
 		 unsigned long nr_pages_scanned, unsigned long lru_pages)
@@ -236,7 +245,7 @@ shrink_slab_node(struct shrink_control *shrinkctl, struct shrinker *shrinker,
 	long new_nr;
 	int nid = shrinkctl->nid;
 	long batch_size = shrinker->batch ? shrinker->batch
-					  : SHRINK_BATCH;
+					  : SHRINK_BATCH/*128*/;
 
 	max_pass = shrinker->count_objects(shrinker, shrinkctl);
 	if (max_pass == 0)
@@ -337,6 +346,8 @@ shrink_slab_node(struct shrink_control *shrinkctl, struct shrinker *shrinker,
  *
  * Returns the number of slab objects which we shrunk.
  */
+// 2016-01-16;
+// shrink_slab(shrink, sc->nr_scanned, lru_pages);
 unsigned long shrink_slab(struct shrink_control *shrinkctl,
 			  unsigned long nr_pages_scanned,
 			  unsigned long lru_pages)
@@ -345,8 +356,9 @@ unsigned long shrink_slab(struct shrink_control *shrinkctl,
 	unsigned long freed = 0;
 
 	if (nr_pages_scanned == 0)
-		nr_pages_scanned = SWAP_CLUSTER_MAX;
+		nr_pages_scanned = SWAP_CLUSTER_MAX; // 32
 
+	// 세마포 락을 획득
 	if (!down_read_trylock(&shrinker_rwsem)) {
 		/*
 		 * If we would return 0, our callers would understand that we
@@ -358,20 +370,31 @@ unsigned long shrink_slab(struct shrink_control *shrinkctl,
 		goto out;
 	}
 
+	// 2016-01-16;
+	// register_shrinker() 함수에서 shrinker_list 목록에 추가하는데
+	// 드라이버 또는 파일 시스템에서 register_shrinker() 함수를 
+	// 호출하지 않아서 shrinker_list 목록이 비어져 있을것으로 판단됨
+	// 그래서 for 문이 수행되지 않음 
 	list_for_each_entry(shrinker, &shrinker_list, list) {
+		// #define for_each_node_mask(node, mask) \
+		//       (!nodes_empty(mask))             \
+		//        for ((node) = 0; (node) < 1; (node)++)
 		for_each_node_mask(shrinkctl->nid, shrinkctl->nodes_to_scan) {
+			// shrinkctl 인스턴스의 nid 멤버의 값이 0이면 true 
 			if (!node_online(shrinkctl->nid))
 				continue;
 
-			if (!(shrinker->flags & SHRINKER_NUMA_AWARE) &&
+			if (!(shrinker->flags & SHRINKER_NUMA_AWARE/*1*/) &&
 			    (shrinkctl->nid != 0))
 				break;
 
+			// 2016-01-16;
 			freed += shrink_slab_node(shrinkctl, shrinker,
 				 nr_pages_scanned, lru_pages);
 
 		}
 	}
+	// 세마포 락을 반납(락을 풀음)
 	up_read(&shrinker_rwsem);
 out:
 	cond_resched();
@@ -2271,11 +2294,12 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
 }
 
 /* Use reclaim/compaction for costly allocs or under memory pressure */
+// 2016-01-16;
 static bool in_reclaim_compaction(struct scan_control *sc)
 {
-	if (IS_ENABLED(CONFIG_COMPACTION) && sc->order &&
-			(sc->order > PAGE_ALLOC_COSTLY_ORDER ||
-			 sc->priority < DEF_PRIORITY - 2))
+	if (IS_ENABLED(CONFIG_COMPACTION/*defined*/) && sc->order &&
+			(sc->order > PAGE_ALLOC_COSTLY_ORDER/*3*/ ||
+			 sc->priority < DEF_PRIORITY/*12*/ - 2))
 		return true;
 
 	return false;
@@ -2288,6 +2312,10 @@ static bool in_reclaim_compaction(struct scan_control *sc)
  * calls try_to_compact_zone() that it will have enough free pages to succeed.
  * It will give up earlier than that if there is difficulty reclaiming pages.
  */
+// 2015-01-16;
+// should_continue_reclaim(zone, sc->nr_reclaimed - nr_reclaimed,
+//                                 sc->nr_scanned - nr_scanned, sc));
+//
 static inline bool should_continue_reclaim(struct zone *zone,
 					unsigned long nr_reclaimed,
 					unsigned long nr_scanned,
@@ -2336,6 +2364,7 @@ static inline bool should_continue_reclaim(struct zone *zone,
 		return true;
 
 	/* If compaction would go ahead or the allocation would succeed, stop */
+	// 워터마크를 확인함
 	switch (compaction_suitable(zone, sc->order)) {
 	case COMPACT_PARTIAL:
 	case COMPACT_CONTINUE:
@@ -2367,6 +2396,7 @@ static void shrink_zone(struct zone *zone, struct scan_control *sc)
 
 		// memcg = NULL
 		memcg = mem_cgroup_iter(root, NULL, &reclaim);	// NOP
+		// reclaim을 수행하는 반복문
 		do {
 			struct lruvec *lruvec;
 
@@ -2404,6 +2434,10 @@ static void shrink_zone(struct zone *zone, struct scan_control *sc)
 			   sc->nr_reclaimed - nr_reclaimed);
 
 		// 2016-01-09, 여기까지
+		
+		// 2016-01-16 시작;
+		// COMPACT_PARTIAL, COMPACT_CONTINUE 일 때는 false를 리턴
+	        // reclaim을 계속 할지 판단
 	} while (should_continue_reclaim(zone, sc->nr_reclaimed - nr_reclaimed,
 					 sc->nr_scanned - nr_scanned, sc));
 }
@@ -2544,12 +2578,15 @@ static bool shrink_zones(struct zonelist *zonelist, struct scan_control *sc)
 		}
 		// 2015-11-21
 		shrink_zone(zone, sc);
+		// 2016-01-19 완료
 	}
 
 	return aborted_reclaim;
 }
 
 /* All zones in zonelist are unreclaimable? */
+// 2016-01-16
+// all_unreclaimable(zonelist, sc)
 static bool all_unreclaimable(struct zonelist *zonelist,
 		struct scan_control *sc)
 {
@@ -2563,6 +2600,9 @@ static bool all_unreclaimable(struct zonelist *zonelist,
 		if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))
 			continue;
 		if (zone_reclaimable(zone))
+			/* 모든 zone이 reclaim 불가능한지 조사하는데
+			 * 하나라도 있으면 false를 리턴
+			 */
 			return false;
 	}
 
@@ -2587,6 +2627,10 @@ static bool all_unreclaimable(struct zonelist *zonelist,
  */
 // 2015-11-21
 // do_try_to_free_pages(zonelist, &sc, &shrink);
+//
+// 2016-01-16 분석완료;
+// shrink_zones() 함수를 호출해서 각 zone에서 페이지를 회수하고
+// 회수한 페이지를 개수를 리턴
 static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
 					struct scan_control *sc,
 					struct shrink_control *shrink)
@@ -2610,7 +2654,9 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
 				sc->priority);
 		sc->nr_scanned = 0;
 		// 2015-11-21
+		// 페이지를 회수하는 핵심 기능
 		aborted_reclaim = shrink_zones(zonelist, sc);
+		// 2016-01-19 분석완료;
 
 		/*
 		 * Don't shrink slabs when reclaiming memory from over limit
@@ -2618,26 +2664,38 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
 		 * reclaim for compaction to avoid unevenly scanning file/anon
 		 * LRU pages over slab pages.
 		 */
-		if (global_reclaim(sc)) {
+		if (global_reclaim(sc)/*항상 true*/) {
 			unsigned long lru_pages = 0;
 
 			nodes_clear(shrink->nodes_to_scan);
+			// #define for_each_zone_zonelist(zone, z, zlist, highidx) \
+			//      for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, NULL)
+			//
+			// #define for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, nodemask) \
+			//     for (z = first_zones_zonelist(zlist, highidx, nodemask, &zone); \
+			//         zone;                           \
+			//         z = next_zones_zonelist(++z, highidx, nodemask, &zone)) 
+			//
 			for_each_zone_zonelist(zone, z, zonelist,
 					gfp_zone(sc->gfp_mask)) {
-				if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))
+				if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL)/*1*/)
 					continue;
 
+				// zone 마다 reclaim 가능한 개수를 구함
 				lru_pages += zone_reclaimable_pages(zone);
-				node_set(zone_to_nid(zone),
+				// shrink_control 인스턴스의 nodes_to_scan 멤버를 셋함 
+				node_set(zone_to_nid(zone)/*0*/,
 					 shrink->nodes_to_scan);
-			}
+			} // for
 
+			// 2016-01-16 shrinker_list 비워져 있음
+			// 그래서 shrinker_list 구성되기 전이라서 특별한 동작은 없다 
 			shrink_slab(shrink, sc->nr_scanned, lru_pages);
 			if (reclaim_state) {
 				sc->nr_reclaimed += reclaim_state->reclaimed_slab;
 				reclaim_state->reclaimed_slab = 0;
 			}
-		}
+		} // if
 		total_scanned += sc->nr_scanned;
 		if (sc->nr_reclaimed >= sc->nr_to_reclaim)
 			goto out;
@@ -2658,6 +2716,8 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
 		 */
 		writeback_threshold = sc->nr_to_reclaim + sc->nr_to_reclaim / 2;
 		if (total_scanned > writeback_threshold) {
+			// 2016-01-16 bdi_list 목록이 비워져 있어 
+			// 특별한 작업을 하지 않음
 			wakeup_flusher_threads(laptop_mode ? 0 : total_scanned,
 						WB_REASON_TRY_TO_FREE_PAGES);
 			sc->may_writepage = 1;
@@ -2685,7 +2745,7 @@ out:
 		return 1;
 
 	/* top priority shrink_zones still had more to do? don't OOM, then */
-	if (global_reclaim(sc) && !all_unreclaimable(zonelist, sc))
+	if (global_reclaim(sc)/*항상 true*/ && !all_unreclaimable(zonelist, sc))
 		return 1;
 
 	return 0;
@@ -2826,6 +2886,7 @@ unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
 
 	// 2015-11-21, 시작
 	nr_reclaimed = do_try_to_free_pages(zonelist, &sc, &shrink);
+	// 2016-01-16, 분석 완료
 
 	trace_mm_vmscan_direct_reclaim_end(nr_reclaimed); // 분석 안함
 

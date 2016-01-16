@@ -12,6 +12,7 @@
 #include <linux/bug.h>
 
 // 2015-08-29
+// 2016-01-16;
 typedef struct cpumask { DECLARE_BITMAP(bits, NR_CPUS); } cpumask_t;
 // typedef struct cpumask { unsigned long bits[BITS_TO_LONGS(NR_CPUS)]; } cpumask_t;
 
@@ -213,7 +214,8 @@ int cpumask_any_but(const struct cpumask *mask, unsigned int cpu);
 // 2015-02-28; 멀티 CPU
 // for_each_cpu((cpu), cpu_possible_mask)
 // 먼저 배열에서 다음 값을 구하고, 총 CPU 개수보다 작을때까지 순회 
-// 2015-09-12; 
+// 2015-09-12;
+// 2016-01-16; 
 #define for_each_cpu(cpu, mask)				\
 	for ((cpu) = -1;				\
 		(cpu) = cpumask_next((cpu), (mask)),	\
@@ -752,6 +754,11 @@ extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
 #define cpu_none_mask to_cpumask(cpu_bit_bitmap[0])
 
 // 2015-02-28;
+// 2016-01-16
+// #define for_each_cpu(cpu, mask)             \
+//     for ((cpu) = -1;                \
+//         (cpu) = cpumask_next((cpu), (mask)),    \
+//         (cpu) < nr_cpu_ids;)
 #define for_each_possible_cpu(cpu) for_each_cpu((cpu), cpu_possible_mask)
 // 2015-08-15
 #define for_each_online_cpu(cpu)   for_each_cpu((cpu), cpu_online_mask)
