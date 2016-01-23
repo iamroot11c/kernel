@@ -10,9 +10,11 @@
 #include <linux/mmzone.h>
 
 // 2015-04-25
+// 2016-01-23;
+// 전역 변수 contig_page_data의 포인터를 리턴
 struct pglist_data *first_online_pgdat(void)
 {
-	return NODE_DATA(first_online_node);
+	return NODE_DATA(first_online_node/*0*/);
 }
 
 // 2015-04-25

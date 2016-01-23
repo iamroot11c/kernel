@@ -464,6 +464,8 @@ void arch_send_wakeup_ipi_mask(const struct cpumask *mask)
 }
 
 // 2015-08-29
+// 2016-01-23
+// smp_cross_call() 함수포인터는 언제 설정할까?
 void arch_send_call_function_single_ipi(int cpu)
 {
 	smp_cross_call(cpumask_of(cpu), IPI_CALL_FUNC_SINGLE);

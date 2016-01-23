@@ -17,6 +17,7 @@ extern void cpu_idle(void);
 // 2015-08-25
 typedef void (*smp_call_func_t)(void *info);
 // 2015-08-25
+// 2016-01-23
 struct call_single_data {
 	struct list_head list;
 	smp_call_func_t func;
@@ -186,6 +187,7 @@ static inline void __smp_call_function_single(int cpuid,
   extern unsigned int debug_smp_processor_id(void);
 # define smp_processor_id() debug_smp_processor_id()
 #else
+// 2016-01-23;
 # define smp_processor_id() raw_smp_processor_id()
 #endif
 

@@ -1404,6 +1404,8 @@ void drain_local_pages(void *arg)
  * nothing keeps CPUs from showing up after we populated the cpumask and
  * before the call to on_each_cpu_mask().
  */
+// 2016-01-23;
+// IPI: Inter-processor interrupt
 void drain_all_pages(void)
 {
 	int cpu;
@@ -1422,20 +1424,38 @@ void drain_all_pages(void)
 	 * cpu to drain that CPU pcps and on_each_cpu_mask
 	 * disables preemption as part of its processing
 	 */
+        // #define for_each_online_cpu(cpu)   for_each_cpu((cpu), cpu_online_mask)
+	// cpu_online_mask 전역변수의 bits 멤버에서 셋된 위치를 찾음 
+	// #define for_each_cpu(cpu, mask)             \
+	//     for ((cpu) = -1;                \
+	//         (cpu) = cpumask_next((cpu), (mask)),    \
+	//         (cpu) < nr_cpu_ids;)
 	for_each_online_cpu(cpu) {
 		bool has_pcps = false;
+		// #define for_each_populated_zone(zone)               \
+		//     // zoen = contig_page_data->node_zones;
+		//     for (zone = (first_online_pgdat())->node_zones; \
+		//          zone;                  \
+		//          zone = next_zone(zone))            \
+		//         if (!populated_zone(zone))      \
+		//             ; /* do nothing */      \
+		//         else
 		for_each_populated_zone(zone) {
 			pcp = per_cpu_ptr(zone->pageset, cpu);
 			if (pcp->pcp.count) {
 				has_pcps = true;
 				break;
 			}
-		}
+		} // for_each_populated_zone
 		if (has_pcps)
 			cpumask_set_cpu(cpu, &cpus_with_pcps);
 		else
 			cpumask_clear_cpu(cpu, &cpus_with_pcps);
-	}
+	} // for_each_online_cpu
+
+	// 2016-02-23 시작;
+	// drain_local_pages() 함수 제외한 분석 완료
+	// 다음주에(2016-02-30) drain_local_pages() 함수 분석 예정
 	on_each_cpu_mask(&cpus_with_pcps, drain_local_pages, NULL, 1);
 }
 
@@ -1675,6 +1695,7 @@ int split_free_page(struct page *page)
  * or two.
  */
 // 2015-05-30
+// 2016-01-23;
 static inline
 struct page *buffered_rmqueue(struct zone *preferred_zone,
 			struct zone *zone, int order, gfp_t gfp_flags,
@@ -2639,6 +2660,11 @@ __alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
 	
 	// 2016-01-16 여기까지;
 retry:
+	// 2016-01-23 시작;
+	
+	// zone을 검색해서 페이지를 찾음
+	// 페이지는 order가 0일 때는 zone 구조체의 pageset 멤버에서,
+	// 나머지는 버디 할당자를 통해 구함
 	page = get_page_from_freelist(gfp_mask, nodemask, order,
 					zonelist, high_zoneidx,
 					alloc_flags & ~ALLOC_NO_WATERMARKS,
@@ -2648,6 +2674,7 @@ retry:
 	 * If an allocation failed after direct reclaim, it could be because
 	 * pages are pinned on the per-cpu lists. Drain them and try again
 	 */
+	//2016-01-23 시작;
 	if (!page && !drained) {
 		drain_all_pages();
 		drained = true;

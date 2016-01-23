@@ -11,8 +11,9 @@
  * linkage errors occur due the compiler generating the wrong code to access
  * that section.
  */
+// 2016-01-23
 #define __PCPU_ATTRS(sec)						\
-	__percpu __attribute__((section(PER_CPU_BASE_SECTION sec)))	\
+	__percpu __attribute__((section(PER_CPU_BASE_SECTION/*.data..percpu*/ sec)))	\
 	PER_CPU_ATTRIBUTES
 
 #define __PCPU_DUMMY_ATTRS						\
@@ -87,7 +88,13 @@
 #define DECLARE_PER_CPU_SECTION(type, name, sec)			\
 	extern __PCPU_ATTRS(sec) __typeof__(type) name
 
-// 2015-03-28
+// 2015-03-28; 디버그가 활성화 되어있으나, 간단히 보기위해 여기에 주석을 첨가
+// DEFINE_PER_CPU_SECTION(struct call_function_data, cfd_data, "..shared_aligned")
+// 2016-01-23
+// __percpu __attribute__((section(".data..percpu""..shared_aligned"))) PER_CPU_ATTRIBUTES
+// __typeof__(struct call_function_data) cfd_data
+// https://gcc.gnu.org/onlinedocs/gcc/Alternate-Keywords.html#Alternate-Keywords
+// typeof는 gcc에서만 지원되며, 다른 컴파일러는 표준 함수 이름인 __typeof__를 사용해야됨
 #define DEFINE_PER_CPU_SECTION(type, name, sec)				\
 	__PCPU_ATTRS(sec) PER_CPU_DEF_ATTRIBUTES			\
 	__typeof__(type) name
@@ -132,6 +139,9 @@
 
 // 2015-06-20
 // 2015-08-29
+// static DEFINE_PER_CPU_SHARED_ALIGNED(struct call_function_data, cfd_data)
+// simple: static struct call_function_data cfd_data;
+// 이 변수는 ".data..percpu..shared_aligned" 영역에 저장됨
 #define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)			\
 	DEFINE_PER_CPU_SECTION(type, name, PER_CPU_SHARED_ALIGNED_SECTION/*"..shared_aligned"*/) \
 	____cacheline_aligned_in_smp

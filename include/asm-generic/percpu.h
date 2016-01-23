@@ -31,7 +31,8 @@ extern unsigned long __per_cpu_offset[NR_CPUS]; // NR_CPUS = 2;
 #ifndef __my_cpu_offset
 #define __my_cpu_offset per_cpu_offset(raw_smp_processor_id())
 #endif
-#ifdef CONFIG_DEBUG_PREEMPT
+#ifdef CONFIG_DEBUG_PREEMPT // defined
+// 2016-01-23
 #define my_cpu_offset per_cpu_offset(smp_processor_id())
 #else
 #define my_cpu_offset __my_cpu_offset
@@ -45,6 +46,8 @@ extern unsigned long __per_cpu_offset[NR_CPUS]; // NR_CPUS = 2;
 #ifndef SHIFT_PERCPU_PTR
 /* Weird cast keeps both GCC and sparse happy. */
 // 참고: http://egloos.zum.com/studyfoss/v/5375570
+// 2016-01-23;
+// simple: RELOC_HIDE(__p, __offset);
 #define SHIFT_PERCPU_PTR(__p, __offset)	({				\
 	__verify_pcpu_ptr((__p));					\
 	RELOC_HIDE((typeof(*(__p)) __kernel __force *)(__p), (__offset)); \
@@ -64,12 +67,15 @@ extern unsigned long __per_cpu_offset[NR_CPUS]; // NR_CPUS = 2;
 
 #ifndef __this_cpu_ptr
 // 2015-12-12
+// 2016-01-23
 #define __this_cpu_ptr(ptr) SHIFT_PERCPU_PTR(ptr, __my_cpu_offset)
 #endif
-#ifdef CONFIG_DEBUG_PREEMPT
+#ifdef CONFIG_DEBUG_PREEMPT // defined
+// 2015-12-12
+// 2016-01-23
+// simple: ((ptr) + (__per_cpu_offset[smp_processor_id()])) 
 #define this_cpu_ptr(ptr) SHIFT_PERCPU_PTR(ptr, my_cpu_offset)
 #else
-// 2015-12-12
 #define this_cpu_ptr(ptr) __this_cpu_ptr(ptr)
 #endif
 
@@ -78,6 +84,9 @@ extern unsigned long __per_cpu_offset[NR_CPUS]; // NR_CPUS = 2;
 // 2015-10-24
 // 2015-12-17
 // __get_cpu_var(lru_rotate_pvecs)
+// 2016-01-23
+// &__get_cpu_var(cfd_data)
+// (*(cfd_data + (__per_cpu_offset[smp_processor_id()])))
 #define __get_cpu_var(var) (*this_cpu_ptr(&(var)))
 // 2015-06-20
 #define __raw_get_cpu_var(var) (*__this_cpu_ptr(&(var)))
@@ -102,7 +111,8 @@ extern void setup_per_cpu_areas(void);
 #endif	/* SMP */
 
 #ifndef PER_CPU_BASE_SECTION
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
+// 2016-01-23;
 #define PER_CPU_BASE_SECTION ".data..percpu"
 #else
 #define PER_CPU_BASE_SECTION ".data"

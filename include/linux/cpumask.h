@@ -12,8 +12,8 @@
 #include <linux/bug.h>
 
 // 2015-08-29
-// 2016-01-16;
-typedef struct cpumask { DECLARE_BITMAP(bits, NR_CPUS); } cpumask_t;
+// 2016-01-23;
+typedef struct cpumask { DECLARE_BITMAP(bits, NR_CPUS/*2*/)/*1*/; } cpumask_t;
 // typedef struct cpumask { unsigned long bits[BITS_TO_LONGS(NR_CPUS)]; } cpumask_t;
 
 /**
@@ -23,6 +23,7 @@ typedef struct cpumask { DECLARE_BITMAP(bits, NR_CPUS); } cpumask_t;
  * You should only assume nr_cpu_ids bits of this mask are valid.  This is
  * a macro so it's const-correct.
  */
+// 2016-01-23;
 #define cpumask_bits(maskp) ((maskp)->bits)
 
 #if NR_CPUS == 1
@@ -107,9 +108,10 @@ extern const struct cpumask *const cpu_active_mask;
 #endif
 
 /* verify cpu argument to cpumask_* operators */
+// 2016-01-23;
 static inline unsigned int cpumask_check(unsigned int cpu)
 {
-#ifdef CONFIG_DEBUG_PER_CPU_MAPS
+#ifdef CONFIG_DEBUG_PER_CPU_MAPS // not define
 	WARN_ON_ONCE(cpu >= nr_cpumask_bits);
 #endif /* CONFIG_DEBUG_PER_CPU_MAPS */
 	return cpu;
@@ -177,6 +179,7 @@ static inline unsigned int cpumask_first(const struct cpumask *srcp)
 // 2015-08-15
 // 2015-08-29
 // 2015-09-12
+// 2016-01-23;
 static inline unsigned int cpumask_next(int n, const struct cpumask *srcp)
 {
 	/* -1 is a legal arg here. */
@@ -215,7 +218,8 @@ int cpumask_any_but(const struct cpumask *mask, unsigned int cpu);
 // for_each_cpu((cpu), cpu_possible_mask)
 // 먼저 배열에서 다음 값을 구하고, 총 CPU 개수보다 작을때까지 순회 
 // 2015-09-12;
-// 2016-01-16; 
+// 2016-01-16;
+// 2016-01-23; 
 #define for_each_cpu(cpu, mask)				\
 	for ((cpu) = -1;				\
 		(cpu) = cpumask_next((cpu), (mask)),	\
@@ -270,9 +274,11 @@ int cpumask_any_but(const struct cpumask *mask, unsigned int cpu);
  */
 // 2015-02-14
 // cpumask_set_cpu(cpu, cpu_possible_bits);
+// 2016-01-23;
+// cpumask_set_cpu(cpu, &cpus_with_pcps);
 static inline void cpumask_set_cpu(unsigned int cpu, struct cpumask *dstp)
 {
-	set_bit(cpumask_check(cpu), cpumask_bits(dstp));
+	set_bit(cpumask_check(cpu)/*cpu:0 or 1*/, cpumask_bits(dstp)/*(dstp)->bits*/);
 }
 
 /**
@@ -281,9 +287,12 @@ static inline void cpumask_set_cpu(unsigned int cpu, struct cpumask *dstp)
  * @dstp: the cpumask pointer
  */
 // 2015-08-29
+// 2016-01-23;
+// cpumask_clear_cpu(cpu, &cpus_with_pcps);
+// cpumask_clear_cpu(this_cpu, cfd->cpumask);
 static inline void cpumask_clear_cpu(int cpu, struct cpumask *dstp)
 {
-	clear_bit(cpumask_check(cpu), cpumask_bits(dstp));
+	clear_bit(cpumask_check(cpu)/*cpu:0 or 1*/, cpumask_bits(dstp)/*(dstp)->bits*/);
 }
 
 /**
@@ -356,6 +365,9 @@ static inline void cpumask_clear(struct cpumask *dstp)
 // 2015-08-29
 // 2015-08-29
 // cpumask_and(cfd->cpumask, mask, cpu_online_mask);
+// 2016-01-23
+// cpumask_and(cfd->cpumask, mask, cpu_online_mask);
+// *cfd->cpumask = (*mask & *cpu_online_mask)
 static inline int cpumask_and(struct cpumask *dstp,
 			       const struct cpumask *src1p,
 			       const struct cpumask *src2p)
@@ -484,6 +496,9 @@ static inline bool cpumask_full(const struct cpumask *srcp)
 // 2015-02-28;
 // cpumask_weight(cpu_possible_mask)
 // 2015-08-29
+// 2016-01-23
+// cpumask_weight(cfd->cpumask)
+// srcp와 nr_cpumask_bits를 and 연산후 셋된 비트수를 리턴
 static inline unsigned int cpumask_weight(const struct cpumask *srcp)
 {
 	return bitmap_weight(cpumask_bits(srcp), nr_cpumask_bits/*2*/);
@@ -522,6 +537,9 @@ static inline void cpumask_shift_left(struct cpumask *dstp,
  */
 // 2015-08-29
 // cpumask_copy(cfd->cpumask_ipi, cfd->cpumask);
+// 2016-01-23
+// cpumask_copy(cfd->cpumask_ipi, cfd->cpumask);
+// *dstp = *srcp;
 static inline void cpumask_copy(struct cpumask *dstp,
 				const struct cpumask *srcp)
 {
@@ -545,6 +563,8 @@ static inline void cpumask_copy(struct cpumask *dstp,
  */
 // 2015-08-29
 // cpumask_first_and(mask, cpu_online_mask);
+// 2016-01-23
+// cpumask_first_and(mask, cpu_online_mask)
 #define cpumask_first_and(src1p, src2p) cpumask_next_and(-1, (src1p), (src2p))
 
 /**
@@ -786,6 +806,7 @@ void init_cpu_online(const struct cpumask *src);
 //to_cpumask(cpu_possible_bits);
 // 2015-08-15, to_cpumask(cpu_online_bits)
 // 2015-09-12, to_cpumask(sd->span);
+// 2016-01-23, to_cpumask(cpu_possible_bits)
 #define to_cpumask(bitmap)						\
 	((struct cpumask *)(1 ? (bitmap)				\
 			    : (void *)sizeof(__check_is_bitmap(bitmap))))

@@ -37,6 +37,8 @@ EXPORT_SYMBOL(__next_cpu_nr);
 // 2015-08-29
 // cpumask_next_and(-1, (src1p), (src2p))
 // cpumask_next_and(cpu, mask, cpu_online_mask);
+// 2016-01-23
+// cpumask_next_and(-1, mask, cpu_online_mask);
 int cpumask_next_and(int n, const struct cpumask *src1p,
 		     const struct cpumask *src2p)
 {

@@ -680,13 +680,18 @@ static DECLARE_BITMAP(cpu_possible_bits, CONFIG_NR_CPUS/*2*/) __read_mostly;
 // static unsigned long cpu_possible_bits[BITS_TO_LONGS(CONFIG_NR_CPUS)];
 #endif
 // 2016-01-16;
+// 2016-01-23;
+// const struct cpumask *const cpu_possible_mask = (struct cpumask *)cpu_possible_bits;
 const struct cpumask *const cpu_possible_mask = to_cpumask(cpu_possible_bits);
-// struct cpumask *const cpu_possible_mask =  (struct cpumask *)cpu_possible_bits;
 EXPORT_SYMBOL(cpu_possible_mask);
 
 // 2015-08-15
+// 2016-01-23
+// static unsigned long cpu_online_bits[1];
 static DECLARE_BITMAP(cpu_online_bits, CONFIG_NR_CPUS) __read_mostly;
 // 2015-08-29
+// 2016-01-23
+// const struct cpumask *const cpu_online_mask = (struct cpumask *)cpu_online_bits;
 const struct cpumask *const cpu_online_mask = to_cpumask(cpu_online_bits);
 EXPORT_SYMBOL(cpu_online_mask);
 

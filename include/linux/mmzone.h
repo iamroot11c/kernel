@@ -752,6 +752,7 @@ extern struct page *mem_map;
  * per-zone basis.
  */
 struct bootmem_data;
+// 2016-01-23;
 typedef struct pglist_data {
 	struct zone node_zones[MAX_NR_ZONES/*3*/];
 	struct zonelist node_zonelists[MAX_ZONELISTS /*1*/];
@@ -905,6 +906,7 @@ unsigned long __init node_memmap_size_bytes(int, unsigned long, unsigned long);
 //
 // 2015-11-21
 // 2016-01-16;
+// 2016-01-23;
 static inline int populated_zone(struct zone *zone)
 {
 	return (!!zone->present_pages);
@@ -1012,6 +1014,7 @@ extern struct zone *next_zone(struct zone *zone);
 	     zone = next_zone(zone))
 
 // 2015-04-25
+// 2016-01-23;
 #define for_each_populated_zone(zone)		        \
 	for (zone = (first_online_pgdat())->node_zones; \
 	     zone;					\

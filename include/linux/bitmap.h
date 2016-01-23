@@ -305,6 +305,7 @@ static inline int bitmap_full(const unsigned long *src, int nbits)
 // bitmap_weight(cpumask_bits(srcp), nr_cpumask_bits);
 // 2015-08-29
 // bitmap_weight(cpumask_bits(srcp), nr_cpumask_bits/*2*/);
+// 2016-01-23
 static inline int bitmap_weight(const unsigned long *src, int nbits)
 {
 	if (small_const_nbits(nbits)) // nbits가 0에서 32 사이의 값 

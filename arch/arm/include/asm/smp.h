@@ -18,6 +18,7 @@
 # error "<asm/smp.h> included in non-SMP build"
 #endif
 
+// 2016-01-23;
 #define raw_smp_processor_id() (current_thread_info()->cpu)
 
 struct seq_file;

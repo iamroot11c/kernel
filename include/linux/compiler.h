@@ -186,6 +186,8 @@ void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect);
 #endif
 
 #ifndef RELOC_HIDE
+// 2016-01-23
+// simple: (typeof(ptr))((__ptr) + (off))
 # define RELOC_HIDE(ptr, off)					\
   ({ unsigned long __ptr;					\
      __ptr = (unsigned long) (ptr);				\

@@ -1956,6 +1956,7 @@ out_free_ar:
  * on the physical linear memory mapping which uses large page
  * mappings on applicable archs.
  */
+// 2016-01-23
 unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
 EXPORT_SYMBOL(__per_cpu_offset);
 

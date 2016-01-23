@@ -21,6 +21,7 @@ enum {
 };
 
 // 2015-08-29
+// 2016-01-23
 struct call_function_data {
 	struct call_single_data	__percpu *csd;
 	cpumask_var_t		cpumask;
@@ -31,7 +32,7 @@ struct call_function_data {
 // #define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)           \
 //     DEFINE_PER_CPU_SECTION(type, name, PER_CPU_SHARED_ALIGNED_SECTION/*"..shared_aligned"*/) \
 //     ____cacheline_aligned_in_smp
-
+// 2016-01-26
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct call_function_data, cfd_data);
 
 // 2015-08-29
@@ -41,6 +42,8 @@ struct call_single_queue {
 };
 
 // 2015-08-29
+// 2016-01-23
+// static struct call_single_queue call_single_queue;
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct call_single_queue, call_single_queue);
 
 static int
@@ -112,6 +115,10 @@ void __init call_function_init(void)
  * as we'll have to ensure no other cpu is observing our csd.
  */
 // 2015-08-29
+// 2016-01-23;
+// ini 인터럽트 핸들러 handle_IPI 함수에서 
+// generic_smp_call_function_single_interrupt() 함수를 호출할 때까지 대기
+// 이 함수는 내부에서 csd_unlock() 함수를 호출
 static void csd_lock_wait(struct call_single_data *csd)
 {
 	while (csd->flags & CSD_FLAG_LOCK)
@@ -119,6 +126,7 @@ static void csd_lock_wait(struct call_single_data *csd)
 }
 
 // 2015-08-29
+// 2016-01-23;
 static void csd_lock(struct call_single_data *csd)
 {
 	csd_lock_wait(csd);
@@ -150,6 +158,8 @@ static void csd_unlock(struct call_single_data *csd)
  * ->func, ->info, and ->flags set.
  */
 // 2015-08-29, glance
+// 2016-01-23
+// generic_exec_single(cpu, csd, 1)
 static
 void generic_exec_single(int cpu, struct call_single_data *csd, int wait)
 {
@@ -159,6 +169,7 @@ void generic_exec_single(int cpu, struct call_single_data *csd, int wait)
 
 	raw_spin_lock_irqsave(&dst->lock, flags);
 	ipi = list_empty(&dst->list);
+	// dst->list에 enqueue
 	list_add_tail(&csd->list, &dst->list);
 	raw_spin_unlock_irqrestore(&dst->lock, flags);
 
@@ -184,6 +195,7 @@ void generic_exec_single(int cpu, struct call_single_data *csd, int wait)
  * Invoked by arch to handle an IPI for call function single. Must be
  * called from the arch with interrupts disabled.
  */
+// 2016-01-23
 void generic_smp_call_function_single_interrupt(void)
 {
 	struct call_single_queue *q = &__get_cpu_var(call_single_queue);
@@ -221,6 +233,8 @@ static DEFINE_PER_CPU_SHARED_ALIGNED(struct call_single_data, csd_data);
  * Returns 0 on success, else a negative status code.
  */
 // 2015-08,29, glance
+// 2016-01-23
+// smp_call_function_single(cpu, drain_local_pages, null, 1);
 int smp_call_function_single(int cpu, smp_call_func_t func, void *info,
 			     int wait)
 {
@@ -248,6 +262,9 @@ int smp_call_function_single(int cpu, smp_call_func_t func, void *info,
 
 	if (cpu == this_cpu) {
 		local_irq_save(flags);
+		// 2016-01-23; smp_call_function_single() 함수에서
+		// drain_local_pages() 함수 호출하는 것을 제외한 분석 완료 
+		// 2016-01-30; drain_local_pages() 함수 분석 예정
 		func(info);
 		local_irq_restore(flags);
 	} else {
@@ -370,6 +387,8 @@ void __smp_call_function_single(int cpu, struct call_single_data *csd,
  */
 // 2015-08-29
 // smp_call_function_many(&mask, ipi_flush_tlb_a15_erratum, NULL, 1);
+// 2016-01-23; drain_local_pages() 함수 제외한 분석 완료
+// smp_call_function_many(mask, drain_local_pages, NULL, 1);
 void smp_call_function_many(const struct cpumask *mask,
 			    smp_call_func_t func, void *info, bool wait)
 {
@@ -403,16 +422,19 @@ void smp_call_function_many(const struct cpumask *mask,
 	/* Fastpath: do that cpu by itself. */
 	if (next_cpu >= nr_cpu_ids) {
 		// 2015-08-29, 나중에
+		// 2016-01-23 시작; drain_local_pages() 함수 제외한 분석 완료 
 		smp_call_function_single(cpu, func, info, wait);
 		return;
 	}
 
+	// 식사전
 	cfd = &__get_cpu_var(cfd_data);
 
 	cpumask_and(cfd->cpumask, mask, cpu_online_mask);
 	cpumask_clear_cpu(this_cpu, cfd->cpumask);
 
 	/* Some callers race with other cpus changing the passed mask */
+	// cfd->cpumask 비트열에 셋된 비트가 없으면 오류로 간주하고 리턴
 	if (unlikely(!cpumask_weight(cfd->cpumask)))
 		return;
 
@@ -422,23 +444,29 @@ void smp_call_function_many(const struct cpumask *mask,
 	 * cfd->cpumask will be zero.
 	 */
 	// 2015-08-29
+	// cfd->cpumask 를 cfd->cpumask_ipi에 복사
+	// NOTE: cfd->cpumask에서 this_cpu 번째 비트가 클리어 된 상태 
 	cpumask_copy(cfd->cpumask_ipi, cfd->cpumask);
 
 	// #define for_each_cpu(cpu, mask)             \
 	//      for ((cpu) = -1;                \
 	//          (cpu) = cpumask_next((cpu), (mask)),    \
-	//          (cpu) < nr_cpu_ids;)
+	//          (cpu) < nr_cpu_ids;
+	// 
+	// 각 cpu 마다 동일한 call_single_data를 할당
 	for_each_cpu(cpu, cfd->cpumask) {
 		struct call_single_data *csd = per_cpu_ptr(cfd->csd, cpu);
 		struct call_single_queue *dst =
 					&per_cpu(call_single_queue, cpu);
 		unsigned long flags;
 
+		// 2016-01-23; 단위 csd 설정
 		csd_lock(csd);
 		csd->func = func;
 		csd->info = info;
 
 		raw_spin_lock_irqsave(&dst->lock, flags);
+		// 2016-01-23; call_single_queue 리스트에 enqueue
 		list_add_tail(&csd->list, &dst->list);
 		raw_spin_unlock_irqrestore(&dst->lock, flags);
 	}
@@ -610,11 +638,16 @@ EXPORT_SYMBOL(on_each_cpu);
  * exception is that it may be used during early boot while
  * early_boot_irqs_disabled is set.
  */
+// 2016-01-23
+// on_each_cpu_mask(&cpus_with_pcps, drain_local_pages, NULL, 1);
 void on_each_cpu_mask(const struct cpumask *mask, smp_call_func_t func,
 			void *info, bool wait)
 {
+	// {preempt_disable(); smp_processor_id();}
+	// 먼저 선점 불능하게 하고, cpu에 프로세서 ID를 저장
 	int cpu = get_cpu();
 
+	// 2016-01-23 시작;
 	smp_call_function_many(mask, func, info, wait);
 	if (cpumask_test_cpu(cpu, mask)) {
 		unsigned long flags;

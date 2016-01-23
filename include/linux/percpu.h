@@ -149,8 +149,11 @@ extern int __init pcpu_page_first_chunk(size_t reserved_size,
  * dynamically allocated. Non-atomic access to the current CPU's
  * version should probably be combined with get_cpu()/put_cpu().
  */
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
 // 2015-04-25
+// 2016-01-23;
+// per_cpu_ptr(zone->pageset, cpu)
+// 주의: __per_cpu_offset[cpu]의  배열 원소값
 #define per_cpu_ptr(ptr, cpu)	SHIFT_PERCPU_PTR((ptr), per_cpu_offset((cpu)))
 #else
 #define per_cpu_ptr(ptr, cpu)	({ (void)(cpu); VERIFY_PERCPU_PTR((ptr)); })
