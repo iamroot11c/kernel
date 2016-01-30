@@ -12,6 +12,7 @@ static inline bool is_migrate_isolate(int migratetype)
 }
 #else
 // 2015-07-18
+// 2016-01-30
 static inline bool is_migrate_isolate_page(struct page *page)
 {
 	return false;

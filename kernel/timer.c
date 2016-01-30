@@ -1472,7 +1472,8 @@ static void process_timeout(unsigned long __data)
  *
  * In all cases the return value is guaranteed to be non-negative.
  */
-// 2015-06-20
+// 2015-06-20,
+// 2016-01-30
 // glance
 signed long __sched schedule_timeout(signed long timeout)
 {
@@ -1527,7 +1528,7 @@ EXPORT_SYMBOL(schedule_timeout);
 
 /*
  * We can use __set_current_state() here because schedule_timeout() calls
- * schedule() unconditionally.
+ * schedule() unconditionally(무조건).
  */
 signed long __sched schedule_timeout_interruptible(signed long timeout)
 {
@@ -1536,6 +1537,7 @@ signed long __sched schedule_timeout_interruptible(signed long timeout)
 }
 EXPORT_SYMBOL(schedule_timeout_interruptible);
 
+// 2016-01-30
 signed long __sched schedule_timeout_killable(signed long timeout)
 {
 	__set_current_state(TASK_KILLABLE);
@@ -1543,6 +1545,8 @@ signed long __sched schedule_timeout_killable(signed long timeout)
 }
 EXPORT_SYMBOL(schedule_timeout_killable);
 
+// 2016-01-30
+// schedule_timeout_uninterruptible(1);
 signed long __sched schedule_timeout_uninterruptible(signed long timeout)
 {
 	__set_current_state(TASK_UNINTERRUPTIBLE);

@@ -186,6 +186,11 @@ extern char ___assert_task_state[1 - 2*!!(
  * set_current_state() includes a barrier so that the write of current->state
  * is correctly serialised wrt the caller's subsequent test of whether to
  * actually sleep:
+ * 
+ * set_current_state()는 barrier를 포함한다. 그래서, current->state writing하는 것은
+ * 정확하게 직렬화되어있다. caller의 이후 test에 관해서는,
+ * 그 test는 진짜 sleep인지 아닌지
+ * wrt : 1. with reference to, 2. with regard to, ~에 관해서는
  *
  *	set_current_state(TASK_UNINTERRUPTIBLE);
  *	if (do_i_need_to_sleep())
@@ -194,11 +199,14 @@ extern char ___assert_task_state[1 - 2*!!(
  * If the caller does not need such serialisation then use __set_current_state()
  */
 // 2015-06-20
+// 2016-01-30
+// 직렬화를 고려하지 않고 쓸 때, 사용
 #define __set_current_state(state_value)			\
 	do { current->state = (state_value); } while (0)
 // 2015-06-20
 // 2015-07-04; set_current_state(TASK_UNINTERRUPTIBLE);
 // 2015-07-25; set_current_state(TASK_UNINTERRUPTIBLE);
+// 직렬화를 고려하고 사용할 때, 사용
 #define set_current_state(state_value)		\
 	set_mb(current->state, (state_value))
 
@@ -293,6 +301,9 @@ static inline void lockup_detector_init(void)
 #endif
 
 /* Attach to any functions which should be ignored in wchan output. */
+// 2016-01-30
+// wchan : wait channel, $ps -l
+// http://www.linux-tutorial.info/modules.php?name=MContent&obj=glossary&term=WCHAN
 #define __sched		__attribute__((__section__(".sched.text")))
 
 /* Linker adds these: start and end of __sched functions */
@@ -1036,6 +1047,7 @@ enum perf_event_task_context {
 struct task_struct {
 	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
 	void *stack;
+    // 2016-01-30
 	atomic_t usage;
 	unsigned int flags;	/* per process flags, defined below */
 	unsigned int ptrace;
@@ -1566,8 +1578,10 @@ static inline int pid_alive(struct task_struct *p)
  *
  * Return: 1 if the task structure is init. 0 otherwise.
  */
+// 2016-01-30
 static inline int is_global_init(struct task_struct *tsk)
 {
+    // pid means "init process"
 	return tsk->pid == 1;
 }
 
@@ -1575,6 +1589,7 @@ extern struct pid *cad_pid;
 
 extern void free_task(struct task_struct *tsk);
 // 2015-08-15
+// 2016-01-30
 #define get_task_struct(tsk) do { atomic_inc(&(tsk)->usage); } while(0)
 
 extern void __put_task_struct(struct task_struct *t);
@@ -1642,6 +1657,7 @@ extern void thread_group_cputime_adjusted(struct task_struct *p, cputime_t *ut, 
 #define PF_KSWAPD	0x00040000	/* I am kswapd */
 #define PF_MEMALLOC_NOIO 0x00080000	/* Allocating memory without IO involved */
 #define PF_LESS_THROTTLE 0x00100000	/* Throttle me less: I clean memory */
+// 2016-01-30
 #define PF_KTHREAD	0x00200000	/* I am a kernel thread */
 #define PF_RANDOMIZE	0x00400000	/* randomize virtual address space */
 #define PF_SWAPWRITE	0x00800000	/* Allowed to write to swap */
@@ -2403,6 +2419,7 @@ static inline int restart_syscall(void)
 }
 
 // 2015-06-27
+// 2016-01-30
 static inline int signal_pending(struct task_struct *p)
 {
     // task에 속한 thread_info(stack 멤버변수)를 얻어온 후 어떤 플래그가 세팅되어 있는지 검사 
@@ -2418,6 +2435,7 @@ static inline int __fatal_signal_pending(struct task_struct *p)
 // 2015-07-04;
 // 2015-11-14;
 // 2015-12-05;
+// 2016-01-30
 static inline int fatal_signal_pending(struct task_struct *p)
 {
 	return signal_pending(p) && __fatal_signal_pending(p);

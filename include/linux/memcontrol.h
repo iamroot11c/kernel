@@ -317,6 +317,7 @@ static inline bool mm_match_cgroup(struct mm_struct *mm,
 	return true;
 }
 
+// 2016-01-30
 static inline bool task_in_mem_cgroup(struct task_struct *task,
 				      const struct mem_cgroup *memcg)
 {

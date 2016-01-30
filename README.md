@@ -1,6 +1,20 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [85주차]() `2016.01.30`
+ - [kmem_cache_init() 진행중]()
+ - page_alloc.c:__alloc_pages_slowpath() 진행중
+ - page_alloc.c:__alloc_pages_direct_reclaim() 완료
+ - page_alloc.c:drain_all_pages() 완료
+ - kernel/smp.c:on_each_cpu_mask() 완료
+ - kernel/smp.c:smp_call_function_many() drain_local_pages() 함수 제외한 분석 완료
+ - mm/page_alloc.c:drain_local_pages() 진행 완료
+ - mm/page_alloc.c:__alloc_pages_may_oom 진행중
+ - mm/oom_kill.c:try_set_zonelist_oom() 완료
+ - mm/oom_kill.c:out_of_memory() 진행중
+ - kernel/notifier.c:blocking_notifier_call_chain() 완료
+ - mm/oom_kill.c:oom_kill_process() 차주 진행 예정
+
 + [84주차](bit.ly/1Nrm8s4) `2016.01.23`
  - [kmem_cache_init() 진행중]()
  - page_alloc.c:__alloc_pages_slowpath() 진행중

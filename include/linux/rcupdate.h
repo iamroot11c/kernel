@@ -619,6 +619,7 @@ static inline void rcu_preempt_sleep_check(void)
 // 식사 전
 // rcu_dereference_check((p), lockdep_is_held(&sched_domains_mutex)
 // 2015-12-12
+// 2016-01-30
 #define rcu_dereference_check(p, c) \
 	__rcu_dereference_check((p), rcu_read_lock_held() || (c), __rcu)
 
@@ -644,6 +645,7 @@ static inline void rcu_preempt_sleep_check(void)
 				__rcu)
 
 // 2015-12-12
+// 2016-01-30
 #define rcu_dereference_raw(p) rcu_dereference_check(p, 1) /*@@@ needed? @@@*/
 
 /*

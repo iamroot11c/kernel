@@ -259,6 +259,7 @@ struct inode;
 #define page_private(page)		((page)->private)
 // 2015-10-24;
 // 2015-12-17;
+// 2016-01-30, rmv_page_order()로 부터 호출, buddy list에서 삭제될 때 호출되었음.
 #define set_page_private(page, v)	((page)->private = (v))
 
 /* It's valid only if the page is free path or free_list */

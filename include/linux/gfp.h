@@ -69,6 +69,8 @@ struct vm_area_struct;
  * __GFP_NOFAIL: The VM implementation _must_ retry infinitely: the caller
  * cannot handle allocation failures.  This modifier is deprecated and no new
  * users should be added.
+ * 무한 retry
+ * 그러나 deprecated 되었다!!!
  *
  * __GFP_NORETRY: The VM implementation must not retry indefinitely.
  *
@@ -93,7 +95,7 @@ struct vm_area_struct;
 							 * set
 							 */
 #define __GFP_HARDWALL   ((__force gfp_t)___GFP_HARDWALL) /* Enforce hardwall cpuset memory allocs */
-#define __GFP_THISNODE	((__force gfp_t)___GFP_THISNODE)/* No fallback, no policies */
+#define __GFP_THISNODE	((__force gfp_t)___GFP_THISNODE)/* No fallback (대비책), no policies */
 #define __GFP_RECLAIMABLE ((__force gfp_t)___GFP_RECLAIMABLE) /* Page is reclaimable */
 #define __GFP_NOTRACK	((__force gfp_t)___GFP_NOTRACK)  /* Don't track with kmemcheck */
 

@@ -110,6 +110,7 @@ EXPORT_SYMBOL(node_states);
 static DEFINE_SPINLOCK(managed_page_count_lock);
 
 // 2015-05-09;
+// 2016-01-30
 unsigned long totalram_pages __read_mostly;
 unsigned long totalreserve_pages __read_mostly;
 /*
@@ -598,6 +599,11 @@ static inline int page_is_buddy(struct page *page, struct page *buddy,
 // 
 // 2015-07-11, 정상적으로 호출되었으니, 제대로 보고 있는 중
 // 결국에는 해당 page를 free_list에 추가하는 기능
+//
+// 2016-01-30
+//  __free_one_page(page, zone, 0, mt);
+//  page가 list_del을 통해서 소속 list로부터 삭제된 상태이다.
+//  ref: http://woodz.tistory.com/60
 static inline void __free_one_page(struct page *page,
 		struct zone *zone, unsigned int order,
 		int migratetype)
@@ -615,6 +621,8 @@ static inline void __free_one_page(struct page *page,
 
 	VM_BUG_ON(migratetype == -1);
 
+	// page_idx (page frame number) 를 구하는 공식이다.
+	//
 	// page_idx는 0 ~ 1023의 값을 가진다.
 	// pfn이 1023을 넘어가면 0부터 다시 시작
 	page_idx = page_to_pfn(page) & ((1 << MAX_ORDER) - 1);
@@ -626,8 +634,24 @@ static inline void __free_one_page(struct page *page,
 	// order 0으로 가정
 	while (order < MAX_ORDER-1) {
 		// page_idx(0), order(0)인 경우, buddy_idx는 1
+		// 2016-01-30, buddy_idx는 2의 0승, 1승 이런 개념
+		//
+		// 2016-01-30, __find_buddy_index() 를 통해 buddy page frame number를 구해 온다.
+		// 현재 free 하려는 index 가 2 이고 order 가 1이라면, 2 ^ (1 << 1) = 0 이 된다. 
+		// 즉 order 1(page 2개가 묶음)에서 2번 page frame의 buddy는 0번 page frame이다. 
 		buddy_idx = __find_buddy_index(page_idx, order);
+
+		// page index(page frame number) 기준으로 page 구조체 주소를 얻어 올 수 있다. 
+		// 현재 해제 하려는 기준의 page 구조체는 parameter 로 받아왔으니 
+		// buddy 의 page 구조체를 구하는 것은 index 를 더하고 빼면 나올 것이다.
 		buddy = page + (buddy_idx - page_idx);	// buddy page이다.
+
+		// a. buddy page 가 유효한 page 인지 확인
+		// b. 현재 해제 요청한 page 와 buddy 가 같은 zone 에 있는 지 확인.
+		// c. buddy 의 order 가 해제 요청한 page 의 order 와 같은지 비교 및 guard 상태인지 확인.
+		//    guard 상태의 확인은 kernel option에서 
+		//    CONFIG_DEBUG_PAGEALLOC 가 enable 되어 있다면 뭔가 정보를 확인하겠지만 
+		//    아니라면 무조건 false 를 return 한다.
 		if (!page_is_buddy(page, buddy, order))
 			break;
 		/*
@@ -641,7 +665,18 @@ static inline void __free_one_page(struct page *page,
 			__mod_zone_freepage_state(zone, 1 << order,
 						  migratetype);
 		} else {
+                    // free_area[order] 의 nr_free 값을 하나 줄이고 
+                    // buddy 의 page 속성 중 lru list 에서만 제거한다. 
+		    // merge 는 위에서 보듯이 order 1의 index 2 의 요청이면 
+		    // buddy가 0번 page 일 테고, merge 가 되면 0번 page 가 index 로 된다.(합쳐 졌으니)
+		    // 그리고 상위 order 로 이동하여 위의 작업을 다시 하고, 
+		    // buddy check 에서 buddy가 아니거나 없으면 그만 둔다. 
+		    // 이 while loop 에서 최대한 상위 order 로의 merge 가 완료 된 후, 
+		    // 다음에 설명할 code 에서 실제 free_area 구조체에 정보를 update 한다.
+
+			// 삭제 루틴들
 			list_del(&buddy->lru);
+			// free_area에 buddy들이 존재
 			zone->free_area[order].nr_free--;
 			rmv_page_order(buddy);
 		}
@@ -662,6 +697,17 @@ static inline void __free_one_page(struct page *page,
 	 * as a higher order page
 	 */
 	// CONFIG_HOLES_IN_ZONE 미 정의로 pfn_valid_within() 함수는 항상 1을 리턴
+	//
+	// 현재 계산된 order 가 합쳐질 수 있는 최상의 order 가 맞는지 확인하고(order 9), 
+	// pfn_valid_within() 함수로 pfn 이 zone 내부에 있는 지 확인하는 것인데, 
+	// zone 내부에 memory hole을 포함하고 있지 않다면 무조건 1 을 return 한다. 
+	// line 10 ~ 15 위의 while 문과 아주 비슷한 행동을 하는데, 
+	// 실제로 상위 order 의 free_area 를 확인해서 뭔가 처리하는 code가 아닌 
+	// 그냥 확인용(?) 같은 느낌이 든다. 
+	// line 15 에서 page_is_buddy 로 현재 구해진 order 에 +1 하여 상위 order 에 
+	// page buddy 를 확인해서 buddy page 가 같은 order 에 있는 상태를 확인했음에도 
+	// line 16 에서 free_area는 order + 1이 아니라 order 를 갖고 와서 적용한다. 
+	// 한번 고민을 해봐야 할 듯 한 code이다.
 	if ((order < MAX_ORDER-2) && pfn_valid_within(page_to_pfn(buddy))) {
 		struct page *higher_page, *higher_buddy;
 		combined_idx = buddy_idx & page_idx;
@@ -675,6 +721,9 @@ static inline void __free_one_page(struct page *page,
 		}
 	}
 
+	// while 문 내부에서 현재 해제 시도에서 최상위 merge 까지 했다면 
+	// list_add 의 단 한 줄이면 정리가 끝난다. 
+	// 블로그 저자도 이해가가지 않는단다.
 	list_add(&page->lru, &zone->free_area[order].free_list[migratetype]);
 out:
 	zone->free_area[order].nr_free++;
@@ -702,14 +751,29 @@ static inline int free_pages_check(struct page *page)
  * Assumes all pages on list are in same zone, and of same order.
  * count is the number of pages to free.
  *
+ *
  * If the zone was previously in an "all pages pinned" state then look to
  * see if this freeing clears that state.
  *
  * And clear the zone's pages_scanned counter, to hold off the "all pages are
  * pinned" detection logic.
+ *
+ * 존의 pages_scanned counter를 clear해라, "all pages are pinned" 감지 로직을 연기하기 위해서,
+ *
  */
 // 2015-04-25
 // free_pcppages_bulk(zone, batch, pcp);
+//
+// 2016-01-30
+// pcp->count 만큼의 page를 삭제, 즉 현재 관리하는 모든값
+// free_pcppages_bulk(zone, pcp->count, pcp);
+// 중간에 batch_free 값을 이용해서, 왕창 해제하지는 않는 것으로 보이나.
+// 아래를 통해서 결국 to_free만큼 해제하게 된다.
+//
+// /* This is the only non-empty list. Free them all. */
+// if (batch_free == MIGRATE_PCPTYPES)
+//    batch_free = to_free;
+//
 static void free_pcppages_bulk(struct zone *zone, int count,
 					struct per_cpu_pages *pcp)
 {
@@ -718,6 +782,8 @@ static void free_pcppages_bulk(struct zone *zone, int count,
 	int to_free = count;
 
 	spin_lock(&zone->lock);
+
+	// 존의 pages_scanned counter를 clear해라, "all pages are pinned" 감지 로직을 연기하기 위해서,
 	zone->pages_scanned = 0;
 
 	while (to_free) {
@@ -735,6 +801,8 @@ static void free_pcppages_bulk(struct zone *zone, int count,
 		// 그런데, 모든 리스트가 empty라면 어떻게 되는가?
 		do {
 			batch_free++;
+			// 2016-01-30
+			// RECLAIMABLE부터 순회가 시작된다.
 			if (++migratetype == MIGRATE_PCPTYPES)
 				migratetype = 0;
 			list = &pcp->lists[migratetype];
@@ -749,9 +817,11 @@ static void free_pcppages_bulk(struct zone *zone, int count,
 
 			page = list_entry(list->prev, struct page, lru);
 			/* must delete as __free_one_page list manipulates */
+			// 리스트에서 삭제뿐만 아니라, __free_one_page를 통해서 삭제하라는 애기
 			list_del(&page->lru);
 			mt = get_freepage_migratetype(page);
 			/* MIGRATE_MOVABLE list may include MIGRATE_RESERVEs */
+			// buddy list에 추가하는 기능
 			__free_one_page(page, zone, 0, mt);	// 핵심 기능
 			trace_mm_page_pcpu_drain(page, 0, mt);	// debug 기능임으로 일단은 건너뜀
 			// 아래는 항상 실행 될 것이다.
@@ -1357,6 +1427,10 @@ void drain_zone_pages(struct zone *zone, struct per_cpu_pages *pcp)
 //
 // 2015-11-14;
 // drain_pages(get_cpu());
+//
+// 2016-01-30
+// 분석 결과, zone->per_cpu_pageset가 관리하는 page들을 해제하고
+// 그 해제한 page들을 버디할당자에게 전달한다.
 static void drain_pages(unsigned int cpu)
 {
 	unsigned long flags;
@@ -1390,6 +1464,7 @@ static void drain_pages(unsigned int cpu)
 /*
  * Spill all of this CPU's per-cpu pages back into the buddy allocator.
  */
+// 2016-01-30
 void drain_local_pages(void *arg)
 {
 	drain_pages(smp_processor_id());
@@ -1453,7 +1528,7 @@ void drain_all_pages(void)
 			cpumask_clear_cpu(cpu, &cpus_with_pcps);
 	} // for_each_online_cpu
 
-	// 2016-02-23 시작;
+	// 2016-01-23 시작;
 	// drain_local_pages() 함수 제외한 분석 완료
 	// 다음주에(2016-02-30) drain_local_pages() 함수 분석 예정
 	on_each_cpu_mask(&cpus_with_pcps, drain_local_pages, NULL, 1);
@@ -2144,6 +2219,13 @@ static inline void init_zone_allows_reclaim(int nid)
 //                           zonelist, high_zoneidx,
 //                           alloc_flags & ~ALLOC_NO_WATERMARKS,
 //                           preferred_zone, migratetype);
+//
+// 2016-01-30
+//          page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask,
+//                  order, zonelist, high_zoneidx, 
+//                  ALLOC_WMARK_HIGH|ALLOC_CPUSET,
+//                  preferred_zone, migratetype);
+//
 static struct page *
 get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
 		struct zonelist *zonelist, int high_zoneidx, int alloc_flags,
@@ -2452,6 +2534,11 @@ should_alloc_retry(gfp_t gfp_mask, unsigned int order,
 	return 0;
 }
 
+// 2016-01-31
+//      page = __alloc_pages_may_oom(gfp_mask, order,
+//                             zonelist, high_zoneidx,
+//                             nodemask, preferred_zone,
+//                                     migratetype);
 static inline struct page *
 __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
 	struct zonelist *zonelist, enum zone_type high_zoneidx,
@@ -2461,7 +2548,11 @@ __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
 	struct page *page;
 
 	/* Acquire the OOM killer lock for the zones in zonelist */
+	// 0 : oom locked
 	if (!try_set_zonelist_oom(zonelist, gfp_mask)) {
+		// zonelist의 zone 중 하나라도, 이미 oom lock을 획득했다면
+		// 아래 구문 실행
+		// current->state = TASK_UNINTERRUPTIBLE;
 		schedule_timeout_uninterruptible(1);
 		return NULL;
 	}
@@ -2478,6 +2569,7 @@ __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
 	if (page)
 		goto out;
 
+	// true일 확률 높다
 	if (!(gfp_mask & __GFP_NOFAIL)) {
 		/* The OOM killer will not help higher order allocs */
 		if (order > PAGE_ALLOC_COSTLY_ORDER)
@@ -2496,6 +2588,7 @@ __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
 			goto out;
 	}
 	/* Exhausted what can be done so it's blamo time */
+	// 2016-01-30
 	out_of_memory(zonelist, gfp_mask, order, nodemask, false);
 
 out:
@@ -2677,6 +2770,7 @@ retry:
 	//2016-01-23 시작;
 	if (!page && !drained) {
 		drain_all_pages();
+		// 2016-01-30완료
 		drained = true;
 		goto retry;
 	}
@@ -2968,6 +3062,7 @@ rebalance:
 					nodemask,
 					alloc_flags, preferred_zone,
 					migratetype, &did_some_progress);
+	// 2016-01-30 완료
 	if (page)
 		goto got_pg;
 
@@ -2975,7 +3070,10 @@ rebalance:
 	 * If we failed to make any progress reclaiming, then we are
 	 * running out of options and have to consider going OOM
 	 */
+	// did_some_progress는 회수한 page의 갯수
+	// 회수를 시도했지만, page 할당도 못 받고, 회수도 실패한 경우
 	if (!did_some_progress) {
+		//  __GFP_NORETRY는 deprecated임으로 아래 조건에서 true일 확률 높다.
 		if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)) {
 			if (oom_killer_disabled)
 				goto nopage;
@@ -2983,6 +3081,8 @@ rebalance:
 			if ((current->flags & PF_DUMPCORE) &&
 			    !(gfp_mask & __GFP_NOFAIL))
 				goto nopage;
+
+			// 2015-01-30
 			page = __alloc_pages_may_oom(gfp_mask, order,
 					zonelist, high_zoneidx,
 					nodemask, preferred_zone,
@@ -2990,6 +3090,7 @@ rebalance:
 			if (page)
 				goto got_pg;
 
+			// true일 확률이 높다.
 			if (!(gfp_mask & __GFP_NOFAIL)) {
 				/*
 				 * The oom killer is not called for high-order
@@ -3041,7 +3142,7 @@ nopage:
 	warn_alloc_failed(gfp_mask, order, NULL);
 	return page;
 got_pg:
-	if (kmemcheck_enabled)
+	if (kmemcheck_enabled/*0*/)
 		kmemcheck_pagealloc_alloc(page, order, gfp_mask);
 
 	return page;

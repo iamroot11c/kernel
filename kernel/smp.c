@@ -649,6 +649,8 @@ void on_each_cpu_mask(const struct cpumask *mask, smp_call_func_t func,
 
 	// 2016-01-23 시작;
 	smp_call_function_many(mask, func, info, wait);
+
+	// 2016-01-30, drain_local_pages() 분석 시작 
 	if (cpumask_test_cpu(cpu, mask)) {
 		unsigned long flags;
 		local_irq_save(flags);

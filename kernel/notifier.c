@@ -87,6 +87,8 @@ static int notifier_chain_unregister(struct notifier_block **nl,
  *	@returns:	notifier_call_chain returns the value returned by the
  *			last notifier function called.
  */
+// 2016-01-30
+// ret = notifier_call_chain(&nh->head, 0, &freed, -1, NULL);
 static int __kprobes notifier_call_chain(struct notifier_block **nl,
 					unsigned long val, void *v,
 					int nr_to_call,	int *nr_calls)
@@ -96,6 +98,7 @@ static int __kprobes notifier_call_chain(struct notifier_block **nl,
 
 	nb = rcu_dereference_raw(*nl);
 
+	// 초기 : nr_to_call(-1)
 	while (nb && nr_to_call) {
 		next_nb = rcu_dereference_raw(nb->next);
 
@@ -106,8 +109,11 @@ static int __kprobes notifier_call_chain(struct notifier_block **nl,
 			continue;
 		}
 #endif
+		// 등록한 function 호출
+		// 무엇을 등록했는지는 모르겠음
 		ret = nb->notifier_call(nb, val, v);
 
+		// 2016-01-30, nr_calls : NULL임
 		if (nr_calls)
 			(*nr_calls)++;
 
@@ -313,7 +319,12 @@ EXPORT_SYMBOL_GPL(blocking_notifier_chain_unregister);
  *	the notifier function which halted execution.
  *	Otherwise the return value is the return value
  *	of the last notifier function called.
+ *
+ *      NOTIFY_STOP_MASK가 리턴되면 바로 리턴
+ *      리턴값은, 가장 마지막에 호출된 the last notifier function이다.
  */
+// 2016-01-30
+// __blocking_notifier_call_chain(nh, 0, v, -1, NULL);
 int __blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 				   unsigned long val, void *v,
 				   int nr_to_call, int *nr_calls)
@@ -325,6 +336,7 @@ int __blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 	 * racy then it does not matter what the result of the test
 	 * is, we re-check the list after having taken the lock anyway:
 	 */
+        // rcu_dereference_raw() 차주에 보자(2016-01-30)
 	if (rcu_dereference_raw(nh->head)) {
 		down_read(&nh->rwsem);
 		ret = notifier_call_chain(&nh->head, val, v, nr_to_call,
@@ -335,6 +347,7 @@ int __blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 }
 EXPORT_SYMBOL_GPL(__blocking_notifier_call_chain);
 
+// 2016-01-30
 int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 		unsigned long val, void *v)
 {

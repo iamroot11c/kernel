@@ -220,6 +220,7 @@ static inline void rebuild_sched_domains(void)
 	partition_sched_domains(1, NULL, NULL);
 }
 
+// 2016-01-30
 static inline void cpuset_print_task_mems_allowed(struct task_struct *p)
 {
 }

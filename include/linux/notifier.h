@@ -48,10 +48,12 @@
  */
 
 // 2015-04-04
+// 2016-01-30
 typedef	int (*notifier_fn_t)(struct notifier_block *nb,
 			unsigned long action, void *data);
 
 // 2015-04-04
+// 2016-01-30
 struct notifier_block {
 	notifier_fn_t notifier_call;
 	struct notifier_block __rcu *next;
@@ -63,6 +65,7 @@ struct atomic_notifier_head {
 	struct notifier_block __rcu *head;
 };
 
+// 2016-01-30
 struct blocking_notifier_head {
 	struct rw_semaphore rwsem;
 	struct notifier_block __rcu *head;
@@ -98,6 +101,8 @@ extern void srcu_init_notifier_head(struct srcu_notifier_head *nh);
 #define ATOMIC_NOTIFIER_INIT(name) {				\
 		.lock = __SPIN_LOCK_UNLOCKED(name.lock),	\
 		.head = NULL }
+
+// 2016-01-30
 #define BLOCKING_NOTIFIER_INIT(name) {				\
 		.rwsem = __RWSEM_INITIALIZER((name).rwsem),	\
 		.head = NULL }
@@ -109,6 +114,8 @@ extern void srcu_init_notifier_head(struct srcu_notifier_head *nh);
 #define ATOMIC_NOTIFIER_HEAD(name)				\
 	struct atomic_notifier_head name =			\
 		ATOMIC_NOTIFIER_INIT(name)
+
+// 2016-01-30
 #define BLOCKING_NOTIFIER_HEAD(name)				\
 	struct blocking_notifier_head name =			\
 		BLOCKING_NOTIFIER_INIT(name)

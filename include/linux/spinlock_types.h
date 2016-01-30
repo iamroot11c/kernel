@@ -17,16 +17,17 @@
 
 #include <linux/lockdep.h>
 
+// 2016-01-30
 typedef struct raw_spinlock {
 	arch_spinlock_t raw_lock;
-#ifdef CONFIG_GENERIC_LOCKBREAK
+#ifdef CONFIG_GENERIC_LOCKBREAK // =n
 	unsigned int break_lock;
 #endif
-#ifdef CONFIG_DEBUG_SPINLOCK
+#ifdef CONFIG_DEBUG_SPINLOCK    // =y
 	unsigned int magic, owner_cpu;
 	void *owner;
 #endif
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
+#ifdef CONFIG_DEBUG_LOCK_ALLOC  // =n
 	struct lockdep_map dep_map;
 #endif
 } raw_spinlock_t;
@@ -61,6 +62,7 @@ typedef struct raw_spinlock {
 
 #define DEFINE_RAW_SPINLOCK(x)	raw_spinlock_t x = __RAW_SPIN_LOCK_UNLOCKED(x)
 
+// 2016-01-30
 typedef struct spinlock {
 	union {
 		struct raw_spinlock rlock;
@@ -83,6 +85,7 @@ typedef struct spinlock {
 #define __SPIN_LOCK_UNLOCKED(lockname) \
 	(spinlock_t ) __SPIN_LOCK_INITIALIZER(lockname)
 
+// 2016-01-30
 #define DEFINE_SPINLOCK(x)	spinlock_t x = __SPIN_LOCK_UNLOCKED(x)
 
 #include <linux/rwlock_types.h>

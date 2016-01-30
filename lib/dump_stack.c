@@ -23,6 +23,8 @@ static void __dump_stack(void)
 #ifdef CONFIG_SMP
 static atomic_t dump_lock = ATOMIC_INIT(-1);
 
+// 2016-01-30
+// At glance
 asmlinkage void dump_stack(void)
 {
 	int was_locked;

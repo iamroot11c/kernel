@@ -31,9 +31,13 @@
 /*
  * PAGE_ALLOC_COSTLY_ORDER is the order at which allocations are deemed
  * costly to service.  That is between allocation orders which should
- * coalesce naturally under reasonable reclaim pressure and those which
+ * coalesce(유착) naturally under reasonable reclaim pressure and those which
  * will not.
+ * 
+ * deem : 여기다, 간주하다
  */
+
+// 2016-01-30, 2^3
 #define PAGE_ALLOC_COSTLY_ORDER 3
 
 // 2015-05-23;
@@ -389,6 +393,7 @@ struct zone {
 	/* see spanned/present_pages for more description */
 	seqlock_t		span_seqlock;
 #endif
+    // 2016-01-30, For Buddy
 	struct free_area	free_area[MAX_ORDER/*11*/];
 
 #ifndef CONFIG_SPARSEMEM
@@ -522,6 +527,9 @@ struct zone {
 // 2016-01-09
 typedef enum {
 	ZONE_RECLAIM_LOCKED,		/* prevents concurrent reclaim */
+    // 2016-01-30
+    // OOM killer zonelist라는 것이 있고, 그것 안에 있는 zone?
+    // zone_set_flag(zone, ZONE_OOM_LOCKED); 형태로 zone의 성격? 상태?가 결정
 	ZONE_OOM_LOCKED,		/* zone is in OOM killer zonelist */
 	ZONE_CONGESTED,			/* zone has many dirty pages backed by
 					 * a congested BDI
@@ -572,6 +580,7 @@ static inline int zone_is_reclaim_locked(const struct zone *zone)
 	return test_bit(ZONE_RECLAIM_LOCKED, &zone->flags);
 }
 
+// 2016-01-30
 static inline int zone_is_oom_locked(const struct zone *zone)
 {
 	return test_bit(ZONE_OOM_LOCKED, &zone->flags);
