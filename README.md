@@ -1,7 +1,7 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
-+ [85주차]() `2016.01.30`
++ [85주차](http://bit.ly/20dlgny) `2016.01.30`
  - [kmem_cache_init() 진행중]()
  - page_alloc.c:__alloc_pages_slowpath() 진행중
  - page_alloc.c:__alloc_pages_direct_reclaim() 완료
