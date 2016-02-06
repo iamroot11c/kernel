@@ -191,6 +191,7 @@ extern int vfp_restore_user_hwstate(struct user_vfp __user *,
 #define TIF_NOHZ		12	/* in adaptive nohz mode */
 #define TIF_USING_IWMMXT	17
 // 2016-01-30
+// 2016-02-06
 #define TIF_MEMDIE		18	/* is terminating due to OOM killer */
 #define TIF_RESTORE_SIGMASK	20
 

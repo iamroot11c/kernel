@@ -220,7 +220,8 @@ int __lockfunc _raw_read_trylock(rwlock_t *lock)
 EXPORT_SYMBOL(_raw_read_trylock);
 #endif
 
-#ifndef CONFIG_INLINE_READ_LOCK
+#ifndef CONFIG_INLINE_READ_LOCK // not define
+// 2016-02-06;
 void __lockfunc _raw_read_lock(rwlock_t *lock)
 {
 	__raw_read_lock(lock);
@@ -252,7 +253,8 @@ void __lockfunc _raw_read_lock_bh(rwlock_t *lock)
 EXPORT_SYMBOL(_raw_read_lock_bh);
 #endif
 
-#ifndef CONFIG_INLINE_READ_UNLOCK
+#ifndef CONFIG_INLINE_READ_UNLOCK // not define
+// 2016-02-06;
 void __lockfunc _raw_read_unlock(rwlock_t *lock)
 {
 	__raw_read_unlock(lock);

@@ -94,6 +94,13 @@ int max_threads;		/* tunable limit on nr_threads */
 
 DEFINE_PER_CPU(unsigned long, process_counts) = 0;
 
+// 2016-02-06;
+// rwlock_t tasklist_lock = (rwlock_t) {
+//	 .raw_lock = __ARCH_RW_LOCK_UNLOCKED,    \
+//       .magic = RWLOCK_MAGIC,          \
+//       .owner = SPINLOCK_OWNER_INIT,       \
+//       .owner_cpu = -1,            \
+//       RW_DEP_MAP_INIT(lockname) }
 __cacheline_aligned DEFINE_RWLOCK(tasklist_lock);  /* outer */
 
 #ifdef CONFIG_PROVE_RCU
@@ -232,6 +239,7 @@ static inline void put_signal_struct(struct signal_struct *sig)
 }
 
 // 2015-08-08 glance;
+// 2016-02-06 glance;
 void __put_task_struct(struct task_struct *tsk)
 {
 	WARN_ON(!tsk->exit_state);

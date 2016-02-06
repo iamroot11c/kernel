@@ -33,6 +33,7 @@
 #endif
 
 #ifndef __cacheline_aligned
+// 2016-02-06;
 #define __cacheline_aligned					\
   __attribute__((__aligned__(SMP_CACHE_BYTES),			\
 		 __section__(".data..cacheline_aligned")))

@@ -205,6 +205,7 @@ static void __read_lock_debug(rwlock_t *lock)
 }
 #endif
 
+// 2016-02-06;
 void do_raw_read_lock(rwlock_t *lock)
 {
 	RWLOCK_BUG_ON(lock->magic != RWLOCK_MAGIC, lock, "bad magic");
@@ -224,6 +225,7 @@ int do_raw_read_trylock(rwlock_t *lock)
 	return ret;
 }
 
+// 2016-02-06;
 void do_raw_read_unlock(rwlock_t *lock)
 {
 	RWLOCK_BUG_ON(lock->magic != RWLOCK_MAGIC, lock, "bad magic");

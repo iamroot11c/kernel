@@ -52,8 +52,24 @@
 #else
 // 2015-11-07
 // 모든 프로세서에 시그널을 보내는 명령
-// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.faqs/ka15473.html 
+// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.faqs/ka15473.html
+// SEV causes an event to be signaled to all cores within a multiprocessor system.
+// If SEV is implemented, WFE must also be implemented.
+// SEV - Set Event 
 #define SEV		ALT_SMP("sev", "nop")
+// 2016-02-06
+// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0489f/CIHEGBBF.html
+// If the Event Register is not set, WFE suspends execution until one of the following events occurs:
+//  - an IRQ interrupt, unless masked by the CPSR I-bit
+//  - an FIQ interrupt, unless masked by the CPSR F-bit
+//  - an Imprecise Data abort, unless masked by the CPSR A-bit
+//  - a Debug Entry request, if Debug is enabled
+//  - an Event signaled by another processor using the SEV instruction.
+//
+// If the Event Register is set, WFE clears it and returns immediately.
+//
+// If WFE is implemented, SEV must also be implemented.
+// WFE - Wait For Event,
 #define WFE(cond)	ALT_SMP("wfe" cond, "nop")
 #endif
 
@@ -263,6 +279,7 @@ static inline void arch_write_unlock(arch_rwlock_t *rw)
  * currently active.  However, we know we won't have any write
  * locks.
  */
+// 2016-02-06;
 static inline void arch_read_lock(arch_rwlock_t *rw)
 {
 	unsigned long tmp, tmp2;
@@ -271,8 +288,16 @@ static inline void arch_read_lock(arch_rwlock_t *rw)
 "1:	ldrex	%0, [%2]\n"
 "	adds	%0, %0, #1\n"
 "	strexpl	%1, %0, [%2]\n"
-	WFE("mi")
-"	rsbpls	%0, %1, #0\n"
+	WFE("mi") /* tmp의 값이 증가해도 마이너스이면 대기함 */
+/*"9998:  " wfemi "\n"                  \
+"   .pushsection \".alt.smp.init\", \"a\"\n"    \
+"   .long   9998b\n"                \
+"   " nop "\n"                   \
+"   .popsection\n"
+// pl - positive or zero
+// mi - negative
+*/
+"	rsbpls	%0, %1, #0\n" /* 증가된 tmp의 값이 양(+)일 때 조건 검사를 함 */
 "	bmi	1b"
 	: "=&r" (tmp), "=&r" (tmp2)
 	: "r" (&rw->lock)
@@ -281,10 +306,13 @@ static inline void arch_read_lock(arch_rwlock_t *rw)
 	smp_mb();
 }
 
+// 2016-02-06
+// arch_read_unlock(&lock->raw_lock)
 static inline void arch_read_unlock(arch_rwlock_t *rw)
 {
 	unsigned long tmp, tmp2;
 
+    // 락을 풀때는 먼저 실행
 	smp_mb();
 
 	__asm__ __volatile__(
@@ -297,6 +325,7 @@ static inline void arch_read_unlock(arch_rwlock_t *rw)
 	: "r" (&rw->lock)
 	: "cc");
 
+    // rw->lock이 감소한 값이 0일 때 시그널 발생
 	if (tmp == 0)
 		dsb_sev();
 }

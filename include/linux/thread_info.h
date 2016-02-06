@@ -69,6 +69,8 @@ extern long do_no_restart_syscall(struct restart_block *parm);
  */
 
 // 2016-01-30
+// 2016-02-06
+// set_ti_thread_flag((struct thread_info *)(task)->stack, TIF_MEMDIE)
 static inline void set_ti_thread_flag(struct thread_info *ti, int flag)
 {
 	set_bit(flag, (unsigned long *)&ti->flags);

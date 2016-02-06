@@ -26,11 +26,14 @@
  * 1 means go ahead and do it.
  */
 // 2014-12-06
+// 2016-02-06; rate - 비율, 평가하다
+// ___ratelimit(&oom_rs, oom_kill_process)
 int ___ratelimit(struct ratelimit_state *rs, const char *func)
 {
 	unsigned long flags;
 	int ret;
 
+	// 2016-02-06 interval 값은 500
 	if (!rs->interval)
 		return 1;
 
@@ -43,6 +46,7 @@ int ___ratelimit(struct ratelimit_state *rs, const char *func)
 	if (!raw_spin_trylock_irqsave(&rs->lock, flags))
 		return 0;
 
+	// 2016-02-06 begin 값이 0이어서, jiffies로 설정됨
 	if (!rs->begin)
 		rs->begin = jiffies;
 
@@ -56,6 +60,7 @@ int ___ratelimit(struct ratelimit_state *rs, const char *func)
 		rs->printed = 0;
 		rs->missed  = 0;
 	}
+	// 2016-02-06 burst 멤버는 설정, printed 멤버는 미 설정으로 printed 멤버 1증가
 	if (rs->burst && rs->burst > rs->printed) {
 		rs->printed++;
 		ret = 1;

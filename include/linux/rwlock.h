@@ -28,7 +28,7 @@ do {								\
 	do { *(lock) = __RW_LOCK_UNLOCKED(lock); } while (0)
 #endif
 
-#ifdef CONFIG_DEBUG_SPINLOCK
+#ifdef CONFIG_DEBUG_SPINLOCK // defined
  extern void do_raw_read_lock(rwlock_t *lock) __acquires(lock);
 #define do_raw_read_lock_flags(lock, flags) do_raw_read_lock(lock)
  extern int do_raw_read_trylock(rwlock_t *lock);
@@ -62,6 +62,8 @@ do {								\
 #define write_trylock(lock)	__cond_lock(lock, _raw_write_trylock(lock))
 
 #define write_lock(lock)	_raw_write_lock(lock) // __LOCK(lock) 
+// 2016-02-06;
+// read_lock(&tasklist_lock)
 #define read_lock(lock)		_raw_read_lock(lock)
 
 #if defined(CONFIG_SMP) || defined(CONFIG_DEBUG_SPINLOCK)
@@ -96,6 +98,7 @@ do {								\
 #define read_lock_bh(lock)		_raw_read_lock_bh(lock)
 #define write_lock_irq(lock)		_raw_write_lock_irq(lock)
 #define write_lock_bh(lock)		_raw_write_lock_bh(lock)
+// 2016-02-06
 #define read_unlock(lock)		_raw_read_unlock(lock)
 #define write_unlock(lock)		_raw_write_unlock(lock)
 #define read_unlock_irq(lock)		_raw_read_unlock_irq(lock)

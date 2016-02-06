@@ -4,9 +4,11 @@
 #include <linux/param.h>
 #include <linux/spinlock.h>
 
-#define DEFAULT_RATELIMIT_INTERVAL	(5 * HZ)
+// 2016-02-06;
+#define DEFAULT_RATELIMIT_INTERVAL	(5 * HZ) // 500
 #define DEFAULT_RATELIMIT_BURST		10
 
+// 2016-02-06;
 struct ratelimit_state {
 	raw_spinlock_t	lock;		/* protect the state */
 
@@ -17,6 +19,7 @@ struct ratelimit_state {
 	unsigned long	begin;
 };
 
+// 2016-02-06;
 #define DEFINE_RATELIMIT_STATE(name, interval_init, burst_init)		\
 									\
 	struct ratelimit_state name = {					\
@@ -39,6 +42,8 @@ static inline void ratelimit_state_init(struct ratelimit_state *rs,
 extern struct ratelimit_state printk_ratelimit_state;
 
 extern int ___ratelimit(struct ratelimit_state *rs, const char *func);
+// 2016-02-06;
+// __ratelimit(&oom_rs)
 #define __ratelimit(state) ___ratelimit(state, __func__)
 
 #ifdef CONFIG_PRINTK

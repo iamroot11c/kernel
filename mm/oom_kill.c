@@ -386,6 +386,8 @@ static void dump_tasks(const struct mem_cgroup *memcg, const nodemask_t *nodemas
 
 // 2016-01-30
 // At glance
+// 2016-02-06 glance
+// dump_header(p, gfp_mask, order, memcg, nodemask)
 static void dump_header(struct task_struct *p, gfp_t gfp_mask, int order,
 			struct mem_cgroup *memcg, const nodemask_t *nodemask)
 {
@@ -412,6 +414,9 @@ static void dump_header(struct task_struct *p, gfp_t gfp_mask, int order,
  * returning.
  */
 // 2016-01-30, 차주에 보자
+// 2016-02-06 시작;
+// oom_kill_process(p, gfp_mask, order, points, totalpages, NULL,
+//                  nodemask, "Out of memory");
 void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 		      unsigned int points, unsigned long totalpages,
 		      struct mem_cgroup *memcg, nodemask_t *nodemask,
@@ -422,6 +427,14 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 	struct task_struct *t = p;
 	struct mm_struct *mm;
 	unsigned int victim_points = 0;
+	//#define DEFINE_RATELIMIT_STATE(name, interval_init, burst_init)     \
+	//                              \
+	//struct ratelimit_state name = {                 \
+	//     .lock       = __RAW_SPIN_LOCK_UNLOCKED(name.lock),  \
+	//      .interval   = interval_init,            \
+	//       .burst      = burst_init,               \
+	//    }
+	//
 	static DEFINE_RATELIMIT_STATE(oom_rs, DEFAULT_RATELIMIT_INTERVAL,
 					      DEFAULT_RATELIMIT_BURST);
 
@@ -435,9 +448,11 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 		return;
 	}
 
+	// ___ratelimit(&oom_rs, oom_kill_process)
 	if (__ratelimit(&oom_rs))
 		dump_header(p, gfp_mask, order, memcg, nodemask);
 
+	// pr_err이 tty이므로 task_lock을 함 
 	task_lock(p);
 	pr_err("%s: Kill process %d (%s) score %d or sacrifice child\n",
 		message, task_pid_nr(p), p->comm, points);
@@ -450,6 +465,8 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 	 * still freeing memory.
 	 */
 	read_lock(&tasklist_lock);
+	// 2016-02-06 read_lock, read_unlock 함수를 먼저 분석
+	// 차주에 while 문 분석
 	do {
 		list_for_each_entry(child, &t->children, sibling) {
 			unsigned int child_points;
@@ -468,8 +485,10 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 				get_task_struct(victim);
 			}
 		}
+	// #define while_each_thread(g, t) \
+	//     while ((t = next_thread(t)) != g)
 	} while_each_thread(p, t);
-	read_unlock(&tasklist_lock);
+	read_unlock(&tasklist_lock); // 락을 걸고, 푸는 것을 먼저 분석
 
 	rcu_read_lock();
 	p = find_lock_task_mm(victim);
@@ -514,7 +533,7 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 		}
 	rcu_read_unlock();
 
-	set_tsk_thread_flag(victim, TIF_MEMDIE);
+	(victim, TIF_MEMDIE);
 	do_send_sig_info(SIGKILL, SEND_SIG_FORCED, victim, true);
 	put_task_struct(victim);
 }
@@ -713,6 +732,7 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
 	}
 	if (p != (void *)-1UL) {
 		// 죽인다.
+		// 2016-02-06 시작;
 		oom_kill_process(p, gfp_mask, order, points, totalpages, NULL,
 				 nodemask, "Out of memory");
 		killed = 1;

@@ -40,7 +40,7 @@ void __lockfunc
 _raw_write_unlock_irqrestore(rwlock_t *lock, unsigned long flags)
 							__releases(lock);
 
-#ifdef CONFIG_INLINE_READ_LOCK
+#ifdef CONFIG_INLINE_READ_LOCK // not define
 #define _raw_read_lock(lock) __raw_read_lock(lock)
 #endif
 
@@ -80,7 +80,7 @@ _raw_write_unlock_irqrestore(rwlock_t *lock, unsigned long flags)
 #define _raw_write_trylock(lock) __raw_write_trylock(lock)
 #endif
 
-#ifdef CONFIG_INLINE_READ_UNLOCK
+#ifdef CONFIG_INLINE_READ_UNLOCK // not define
 #define _raw_read_unlock(lock) __raw_read_unlock(lock)
 #endif
 
@@ -141,12 +141,16 @@ static inline int __raw_write_trylock(rwlock_t *lock)
  * even on CONFIG_PREEMPT, because lockdep assumes that interrupts are
  * not re-enabled during lock-acquire (which the preempt-spin-ops do):
  */
-#if !defined(CONFIG_GENERIC_LOCKBREAK) || defined(CONFIG_DEBUG_LOCK_ALLOC)
+#if !defined(CONFIG_GENERIC_LOCKBREAK/*not define*/) || defined(CONFIG_DEBUG_LOCK_ALLOC/*not define*/)
 
+// 2016-02-06;
 static inline void __raw_read_lock(rwlock_t *lock)
 {
 	preempt_disable();
+    // CONFIG_LOCKDEP 미 설정으로 No OP.
 	rwlock_acquire_read(&lock->dep_map, 0, 0, _RET_IP_);
+
+    // do_raw_read_lock(lock);
 	LOCK_CONTENDED(lock, do_raw_read_trylock, do_raw_read_lock);
 }
 
@@ -222,9 +226,10 @@ static inline void __raw_write_unlock(rwlock_t *lock)
 	preempt_enable();
 }
 
+// 2016-02-06
 static inline void __raw_read_unlock(rwlock_t *lock)
 {
-	rwlock_release(&lock->dep_map, 1, _RET_IP_);
+	rwlock_release(&lock->dep_map, 1, _RET_IP_); // No OP.
 	do_raw_read_unlock(lock);
 	preempt_enable();
 }

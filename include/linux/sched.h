@@ -211,6 +211,7 @@ extern char ___assert_task_state[1 - 2*!!(
 	set_mb(current->state, (state_value))
 
 /* Task command name length */
+// 2016-02-06
 #define TASK_COMM_LEN 16
 
 #include <linux/spinlock.h>
@@ -221,6 +222,7 @@ extern char ___assert_task_state[1 - 2*!!(
  * _adding_ to the beginning of the run-queue has
  * a separate lock).
  */
+// 2016-02-06;
 extern rwlock_t tasklist_lock;
 extern spinlock_t mmlist_lock;
 
@@ -1206,7 +1208,8 @@ struct task_struct {
 					 * credentials (COW) */
 	const struct cred __rcu *cred;	/* effective (overridable) subjective task
 					 * credentials (COW) */
-	char comm[TASK_COMM_LEN]; /* executable name excluding path
+    // 2016-02-06;
+	char comm[TASK_COMM_LEN/*16*/]; /* executable name excluding path
 				     - access with [gs]et_task_comm (which lock
 				       it with task_lock())
 				     - initialized normally by setup_new_exec */
@@ -1255,6 +1258,7 @@ struct task_struct {
    	u32 self_exec_id;
 /* Protection of (de-)allocation: mm, files, fs, tty, keyrings, mems_allowed,
  * mempolicy */
+    // 2016-02-06;
 	spinlock_t alloc_lock;
 
 	/* Protection of the PI data structures: */
@@ -1595,6 +1599,7 @@ extern void free_task(struct task_struct *tsk);
 extern void __put_task_struct(struct task_struct *t);
 
 // 2015-08-08 glance;
+// 2016-02-06 glance;
 static inline void put_task_struct(struct task_struct *t)
 {
 	if (atomic_dec_and_test(&t->usage))
@@ -1638,6 +1643,7 @@ extern void thread_group_cputime_adjusted(struct task_struct *p, cputime_t *ut, 
 /*
  * Per process flags
  */
+// 2016-02-06;
 #define PF_EXITING	0x00000004	/* getting shut down */
 #define PF_EXITPIDONE	0x00000008	/* pi exit done on shut down */
 #define PF_VCPU		0x00000010	/* I'm a virtual CPU */
@@ -2194,6 +2200,7 @@ extern bool current_is_single_threaded(void);
 #define do_each_thread(g, t) \
 	for (g = t = &init_task ; (g = t = next_task(g)) != &init_task ; ) do
 
+// 2016-02-06
 #define while_each_thread(g, t) \
 	while ((t = next_thread(t)) != g)
 
@@ -2248,6 +2255,7 @@ static inline int thread_group_empty(struct task_struct *p)
  * It must not be nested with write_lock_irq(&tasklist_lock),
  * neither inside nor outside.
  */
+// 2016-02-06;
 static inline void task_lock(struct task_struct *p)
 {
 	spin_lock(&p->alloc_lock);
@@ -2371,6 +2379,8 @@ static inline unsigned long stack_not_used(struct task_struct *p)
 /* set thread flags in other task's structures
  * - see asm/thread_info.h for TIF_xxxx flags available
  */
+// 2016-02-06;
+// set_tsk_thread_flag(p, TIF_MEMDIE);
 static inline void set_tsk_thread_flag(struct task_struct *tsk, int flag)
 {
 	set_ti_thread_flag(task_thread_info(tsk), flag);

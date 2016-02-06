@@ -39,6 +39,7 @@ asmlinkage void dump_stack(void)
 
 retry:
 	cpu = smp_processor_id();
+	// 2016-02-06 CAS;
 	old = atomic_cmpxchg(&dump_lock, -1, cpu);
 	if (old == -1) {
 		was_locked = 0;

@@ -99,6 +99,7 @@ static inline u64 get_jiffies_64(void)
  * wouldn't care). Gcc is currently neither.
  */
 // 2015-09-12
+// 2016-02-06; b에서 a를 뺀 후 long 타입으로 변환해서 0보다 작은지 검사 
 #define time_after(a,b)		\
 	(typecheck(unsigned long, a) && \
 	 typecheck(unsigned long, b) && \
@@ -165,6 +166,8 @@ static inline u64 get_jiffies_64(void)
 // 참고: http://letsgetstartedbydavid.blogspot.kr/2013/01/jiffies-wraparound-timeafter-macro.html?m=1
 
 /* time_is_before_jiffies(a) return true if a is before jiffies */
+// 2016-02-06;
+// time_is_before_jiffies(rs->begin + rs->interval)
 #define time_is_before_jiffies(a) time_after(jiffies, a)
 //                                ((long)(a - jiffies) < 0) ? true : false
 

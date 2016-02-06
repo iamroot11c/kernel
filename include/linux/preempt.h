@@ -20,6 +20,7 @@
 # define sub_preempt_count(val)	do { preempt_count() -= (val); } while (0)
 #endif
 
+// 2016-02-06;
 #define inc_preempt_count() add_preempt_count(1)
 #define dec_preempt_count() sub_preempt_count(1)
 
@@ -61,6 +62,7 @@ do { \
 
 #ifdef CONFIG_PREEMPT_COUNT // set
 
+// 2016-02-06;
 #define preempt_disable() \
 do { \
 	inc_preempt_count(); \
@@ -79,6 +81,7 @@ do { \
 
 // 2015-11-07
 // preempt count 감소, 만약 필요하다면 리스케줄
+// 2016-02-06
 #define preempt_enable() \
 do { \
 	preempt_enable_no_resched(); \
