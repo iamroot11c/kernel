@@ -424,6 +424,7 @@ static inline int rcu_read_lock_sched_held(void)
 # define rcu_lock_release(a)		do { } while (0)
 
 // 2015-09-12
+// 2016-02-13;
 static inline int rcu_read_lock_held(void)
 {
 	return 1;
@@ -520,6 +521,8 @@ static inline void rcu_preempt_sleep_check(void)
 	})
 // 2015-09-12
 // 1) p 포인터를 지역 변수에 복사 2) p 포인터 검사 3) 복사한 지역변수 리턴
+// 2016-02-13;
+// __rcu_dereference_check((p), 1 || 1, __rcu)
 #define __rcu_dereference_check(p, c, space) \
 	({ \
 		typeof(*p) *_________p1 = (typeof(*p)*__force )ACCESS_ONCE(p); \
@@ -620,8 +623,11 @@ static inline void rcu_preempt_sleep_check(void)
 // rcu_dereference_check((p), lockdep_is_held(&sched_domains_mutex)
 // 2015-12-12
 // 2016-01-30
+// 2016-02-13;
+// rcu_dereference_check(p, 1)
+// rcu_dereference_check(p, 0)
 #define rcu_dereference_check(p, c) \
-	__rcu_dereference_check((p), rcu_read_lock_held() || (c), __rcu)
+	__rcu_dereference_check((p), rcu_read_lock_held()/*1*/ || (c), __rcu)
 
 /**
  * rcu_dereference_bh_check() - rcu_dereference_bh with debug checking
@@ -646,6 +652,7 @@ static inline void rcu_preempt_sleep_check(void)
 
 // 2015-12-12
 // 2016-01-30
+// 2016-02-13
 #define rcu_dereference_raw(p) rcu_dereference_check(p, 1) /*@@@ needed? @@@*/
 
 /*
@@ -719,6 +726,7 @@ static inline void rcu_preempt_sleep_check(void)
  *
  * This is a simple wrapper around rcu_dereference_check().
  */
+// 2016-02-13;
 #define rcu_dereference(p) rcu_dereference_check(p, 0)
 
 /**

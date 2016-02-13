@@ -378,6 +378,7 @@ void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect);
 // http://egloos.zum.com/studyfoss/v/5682616
 // 
 // 2015-08-08;
+// 2016-02-13;
 #define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
 
 /* Ignore/forbid kprobes attach on very low level functions marked by this attribute: */

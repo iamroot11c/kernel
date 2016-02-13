@@ -209,7 +209,7 @@ static inline int arch_spin_is_contended(arch_spinlock_t *lock)
  * Write locks are easy - we just set bit 31.  When unlocking, we can
  * just write zero since the lock is exclusively held.
  */
-
+// 2016-02-13;
 static inline void arch_write_lock(arch_rwlock_t *rw)
 {
 	unsigned long tmp;
@@ -217,12 +217,21 @@ static inline void arch_write_lock(arch_rwlock_t *rw)
 	__asm__ __volatile__(
 "1:	ldrex	%0, [%1]\n"
 "	teq	%0, #0\n"
-	WFE("ne")
+	WFE("ne") /* reader가 없을 때까지 대기  */
+/*"9998:  " wfene "\n"                  \
+"   .pushsection \".alt.smp.init\", \"a\"\n"    \
+"   .long   9998b\n"                \
+"   nop \n"                   \
+"   .popsection\n"
+// pl - positive or zero
+// mi - negative
+// ne - Not equal
+*/
 "	strexeq	%0, %2, [%1]\n"
 "	teq	%0, #0\n"
 "	bne	1b"
 	: "=&r" (tmp)
-	: "r" (&rw->lock), "r" (0x80000000)
+	: "r" (&rw->lock), "r" (0x80000000/*음수*/)
 	: "cc");
 
 	smp_mb();
@@ -251,6 +260,7 @@ static inline int arch_write_trylock(arch_rwlock_t *rw)
 	}
 }
 
+// 2016-02-13;
 static inline void arch_write_unlock(arch_rwlock_t *rw)
 {
 	smp_mb();
@@ -284,6 +294,18 @@ static inline void arch_read_lock(arch_rwlock_t *rw)
 {
 	unsigned long tmp, tmp2;
 
+    /* writer가 락을 획득하면 0x8000_0000 값을 lock 멤버에 기록을 해서
+     * 최상위 비트를 1로 바꿔 음의 상태(N flags)로 변경된다
+     * 그러면 reader는 lock 멤버를 갱신하지 못하며 'wfemi'명령어로
+     * 대기하도록 만들어 졌다.
+     *
+     * MI Minus
+     * Instructions with this condition only execute if the N (negative) flag is set.
+     * Such a condition would occur when the last data operation gave a result 
+     * which was negative. That is, the N flag reflects the state of bit 31 of the result.
+     * (All data operations work on 32-bit numbers.)
+     * [http://www.peter-cockerell.net/aalp/html/ch-3.html]
+     */
 	__asm__ __volatile__(
 "1:	ldrex	%0, [%2]\n"
 "	adds	%0, %0, #1\n"
@@ -292,12 +314,12 @@ static inline void arch_read_lock(arch_rwlock_t *rw)
 /*"9998:  " wfemi "\n"                  \
 "   .pushsection \".alt.smp.init\", \"a\"\n"    \
 "   .long   9998b\n"                \
-"   " nop "\n"                   \
+"   nop \n"                   \
 "   .popsection\n"
 // pl - positive or zero
 // mi - negative
 */
-"	rsbpls	%0, %1, #0\n" /* 증가된 tmp의 값이 양(+)일 때 조건 검사를 함 */
+"	rsbpls	%0, %1, #0\n" /* lock 멤버의 갱신 결과인 tmp의 값이 양(+)일 때 조건 검사를 함 */
 "	bmi	1b"
 	: "=&r" (tmp), "=&r" (tmp2)
 	: "r" (&rw->lock)

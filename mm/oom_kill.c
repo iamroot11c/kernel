@@ -100,6 +100,7 @@ static bool has_intersects_mems_allowed(struct task_struct *tsk,
  * pointer.  Return p, or any of its subthreads with a valid ->mm, with
  * task_lock() held.
  */
+// 2016-02-13;
 struct task_struct *find_lock_task_mm(struct task_struct *p)
 {
 	struct task_struct *t = p;
@@ -109,6 +110,7 @@ struct task_struct *find_lock_task_mm(struct task_struct *p)
 		if (likely(t->mm))
 			return t;
 		task_unlock(t);
+	/* while ((t = next_thread(t)) != p) */
 	} while_each_thread(p, t);
 
 	return NULL;
@@ -116,6 +118,9 @@ struct task_struct *find_lock_task_mm(struct task_struct *p)
 
 /* return true if the task is not adequate as candidate victim task. */
 // 2016-01-30
+// 2016-02-13
+// oom_unkillable_task(child, memcg, nodemask)
+// init 프로세스와 커널 쓰레드인지 확인
 static bool oom_unkillable_task(struct task_struct *p,
 		const struct mem_cgroup *memcg, const nodemask_t *nodemask)
 {
@@ -131,7 +136,7 @@ static bool oom_unkillable_task(struct task_struct *p,
 
 	// Ignore, has_intersects_mems_allowed return true always
 	/* p may not have freeable memory in nodemask */
-	if (!has_intersects_mems_allowed(p, nodemask))
+	if (!has_intersects_mems_allowed(p, nodemask)/*항상 true 리턴*/)
 		return true;
 
 	return false;
@@ -146,21 +151,26 @@ static bool oom_unkillable_task(struct task_struct *p,
  * predictable as possible.  The goal is to return the highest value for the
  * task consuming the most memory to avoid subsequent oom failures.
  */
+// 2016-02-13;
+// oom_badness(child, memcg, nodemask, totalpages)
 unsigned long oom_badness(struct task_struct *p, struct mem_cgroup *memcg,
 			  const nodemask_t *nodemask, unsigned long totalpages)
 {
 	long points;
 	long adj;
 
+	// init 또는 커널 쓰레드인지 확인
 	if (oom_unkillable_task(p, memcg, nodemask))
 		return 0;
 
+	// find_lock_task_mm() 함수내에서 p를 찾으면 
+	// task_lock() 함수 호출하여 락을 걸음
 	p = find_lock_task_mm(p);
 	if (!p)
 		return 0;
 
 	adj = (long)p->signal->oom_score_adj;
-	if (adj == OOM_SCORE_ADJ_MIN) {
+	if (adj == OOM_SCORE_ADJ_MIN/*-1000*/) {
 		task_unlock(p);
 		return 0;
 	}
@@ -177,6 +187,7 @@ unsigned long oom_badness(struct task_struct *p, struct mem_cgroup *memcg,
 	 * Root processes get 3% bonus, just like the __vm_enough_memory()
 	 * implementation used by LSMs.
 	 */
+	// LSM - Linux Security Modules
 	if (has_capability_noaudit(p, CAP_SYS_ADMIN))
 		points -= (points * 3) / 100;
 
@@ -467,6 +478,10 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 	read_lock(&tasklist_lock);
 	// 2016-02-06 read_lock, read_unlock 함수를 먼저 분석
 	// 차주에 while 문 분석
+	//
+	// 2016-02-13 시작
+	// reader-writer lock 소스 분석함
+	// arch_read_lock() arch_read_unlock() arch_write_lock() arch_write_unlock()
 	do {
 		list_for_each_entry(child, &t->children, sibling) {
 			unsigned int child_points;
@@ -519,6 +534,8 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 	 * That thread will now get access to memory reserves since it has a
 	 * pending fatal signal.
 	 */
+	// #define for_each_process(p) \
+	//     for (p = &init_task ; (p = next_task(p)) != &init_task ; )
 	for_each_process(p)
 		if (p->mm == mm && !same_thread_group(p, victim) &&
 		    !(p->flags & PF_KTHREAD)) {
@@ -529,6 +546,8 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 			pr_err("Kill process %d (%s) sharing same memory\n",
 				task_pid_nr(p), p->comm);
 			task_unlock(p);
+			// SIGKILL 시스널 발생
+			// 2016-02-13 여기까지, 다음주 함수 분석 예정
 			do_send_sig_info(SIGKILL, SEND_SIG_FORCED, p, true);
 		}
 	rcu_read_unlock();

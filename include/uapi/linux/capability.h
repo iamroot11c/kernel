@@ -351,8 +351,8 @@ struct vfs_cap_data {
  * Bit location of each capability (used by user-space library and kernel)
  */
 
-#define CAP_TO_INDEX(x)     ((x) >> 5)        /* 1 << 5 == bits in __u32 */
-#define CAP_TO_MASK(x)      (1 << ((x) & 31)) /* mask for indexed __u32 */
+#define CAP_TO_INDEX(x)     ((x) >> 5)        /* 1 << 5 == bits in __u32 몫 */
+#define CAP_TO_MASK(x)      (1 << ((x) & 31)) /* mask for indexed __u32  나머지 */
 
 
 #endif /* _UAPI_LINUX_CAPABILITY_H */

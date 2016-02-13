@@ -1938,6 +1938,8 @@ static inline int security_capable(const struct cred *cred,
 	return cap_capable(cred, ns, cap, SECURITY_CAP_AUDIT);
 }
 
+// 2016-02-13;
+// security_capable_noaudit(__task_cred(p), &init_user_ns, CAP_SYS_ADMIN)
 static inline int security_capable_noaudit(const struct cred *cred,
 					   struct user_namespace *ns, int cap) {
 	return cap_capable(cred, ns, cap, SECURITY_CAP_NOAUDIT);

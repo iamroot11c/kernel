@@ -278,6 +278,7 @@ static inline void put_cred(const struct cred *_cred)
  * The result of this function should not be passed directly to get_cred();
  * rather get_task_cred() should be used instead.
  */
+// 2016-02-13;
 #define __task_cred(task)	\
 	rcu_dereference((task)->real_cred)
 

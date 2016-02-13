@@ -1600,6 +1600,7 @@ extern void __put_task_struct(struct task_struct *t);
 
 // 2015-08-08 glance;
 // 2016-02-06 glance;
+// 2016-02-13 glance;
 static inline void put_task_struct(struct task_struct *t)
 {
 	if (atomic_dec_and_test(&t->usage))
@@ -2086,6 +2087,7 @@ static inline int kill_cad_pid(int sig, int priv)
 /* These can be the second arg to send_sig_info/send_group_sig_info.  */
 #define SEND_SIG_NOINFO ((struct siginfo *) 0)
 #define SEND_SIG_PRIV	((struct siginfo *) 1)
+// 2016-02-13;
 #define SEND_SIG_FORCED	((struct siginfo *) 2)
 
 /*
@@ -2188,6 +2190,7 @@ static inline unsigned long wait_task_inactive(struct task_struct *p,
 #define next_task(p) \
 	list_entry_rcu((p)->tasks.next, struct task_struct, tasks)
 
+// 2016-02-13;
 #define for_each_process(p) \
 	for (p = &init_task ; (p = next_task(p)) != &init_task ; )
 
@@ -2201,6 +2204,7 @@ extern bool current_is_single_threaded(void);
 	for (g = t = &init_task ; (g = t = next_task(g)) != &init_task ; ) do
 
 // 2016-02-06
+// 2016-02-13;
 #define while_each_thread(g, t) \
 	while ((t = next_thread(t)) != g)
 
@@ -2225,14 +2229,24 @@ static inline bool has_group_leader_pid(struct task_struct *p)
 	return task_pid(p) == p->signal->leader_pid;
 }
 
+// 2016-02-13;
 static inline
 bool same_thread_group(struct task_struct *p1, struct task_struct *p2)
 {
 	return p1->signal == p2->signal;
 }
 
+// 2016-02-13;
 static inline struct task_struct *next_thread(const struct task_struct *p)
 {
+    //#define list_entry_rcu(ptr, type, member) \
+    //    ({typeof (*ptr) __rcu *__ptr = (typeof (*ptr) __rcu __force *)ptr; \
+    //     container_of((typeof(ptr))rcu_dereference_raw(__ptr), type, member); \
+    //    })
+    //
+    // { struct list __rcu *__ptr = (struct list __rcu __force *)ptr;
+    //  container_of((struct list*)rcu_dereference_raw(__ptr), struct task_struct, thread_group)
+    // }
 	return list_entry_rcu(p->thread_group.next,
 			      struct task_struct, thread_group);
 }
@@ -2255,12 +2269,15 @@ static inline int thread_group_empty(struct task_struct *p)
  * It must not be nested with write_lock_irq(&tasklist_lock),
  * neither inside nor outside.
  */
+// read_lock()이 중첩되어도 되나, write_lock_irq()은 중첩되면 안됨
 // 2016-02-06;
+// 2016-02-23;
 static inline void task_lock(struct task_struct *p)
 {
 	spin_lock(&p->alloc_lock);
 }
 
+// 2016-02-23;
 static inline void task_unlock(struct task_struct *p)
 {
 	spin_unlock(&p->alloc_lock);

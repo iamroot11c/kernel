@@ -328,7 +328,10 @@ struct task_rss_stat {
 };
 #endif /* USE_SPLIT_PTLOCKS */
 
+// RSS - Resident Set Size
+// the non-swapped physical memory that a task has used(in kilobyte).
 // 2015-09-19;
+// 2016-02-13;
 struct mm_rss_stat {
 	atomic_long_t count[NR_MM_COUNTERS/*3*/];
 };

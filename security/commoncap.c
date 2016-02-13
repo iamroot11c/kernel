@@ -73,6 +73,8 @@ int cap_netlink_send(struct sock *sk, struct sk_buff *skb)
  * cap_has_capability() returns 0 when a task has a capability, but the
  * kernel's capable() and has_capability() returns 1 for this case.
  */
+// 2016-02-13;
+// cap_capable(__task_cred(p), &init_user_ns, CAP_SYS_ADMIN/*21*/, SECURITY_CAP_NOAUDIT/*0*/)
 int cap_capable(const struct cred *cred, struct user_namespace *targ_ns,
 		int cap, int audit)
 {
@@ -85,6 +87,7 @@ int cap_capable(const struct cred *cred, struct user_namespace *targ_ns,
 	for (;;) {
 		/* Do we have the necessary capabilities? */
 		if (ns == cred->user_ns)
+			 /* (cred->cap_effective).cap[CAP_TO_INDEX(CAP_SYS_ADMIN)] & CAP_TO_MASK(CAP_SYS_ADMIN) */
 			return cap_raised(cred->cap_effective, cap) ? 0 : -EPERM;
 
 		/* Have we tried all of the parent namespaces? */

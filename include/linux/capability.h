@@ -94,6 +94,7 @@ extern const kernel_cap_t __cap_init_eff_set;
 
 #define cap_raise(c, flag)  ((c).cap[CAP_TO_INDEX(flag)] |= CAP_TO_MASK(flag))
 #define cap_lower(c, flag)  ((c).cap[CAP_TO_INDEX(flag)] &= ~CAP_TO_MASK(flag))
+// 2016-02-13;
 #define cap_raised(c, flag) ((c).cap[CAP_TO_INDEX(flag)] & CAP_TO_MASK(flag))
 
 #define CAP_BOP_ALL(c, a, b, OP)                                    \

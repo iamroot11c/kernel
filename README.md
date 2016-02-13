@@ -7,6 +7,15 @@
  - mm/page_alloc.c:__alloc_pages_may_oom 진행중
  - mm/oom_kill.c:out_of_memory() 진행중
  - mm/oom_kill.c:oom_kill_process() 분석 중
+ - mm/oom_kill.c:oom_badness() 분석 완료
+ - `Reader-Writer lock` 분석
+
++ [86주차](bit.ly/1PZhaEA) `2016.02.06`
+ - [kmem_cache_init() 진행중]()
+ - page_alloc.c:__alloc_pages_slowpath() 진행중
+ - mm/page_alloc.c:__alloc_pages_may_oom 진행중
+ - mm/oom_kill.c:out_of_memory() 진행중
+ - mm/oom_kill.c:oom_kill_process() 분석 중
 
 + [85주차](http://bit.ly/20dlgny) `2016.01.30`
  - [kmem_cache_init() 진행중]()

@@ -1214,6 +1214,8 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
 // 2015-09-19;
 // get_mm_counter(mm, MM_FILEPAGES);
 // get_mm_counter(mm, MM_ANONPAGES); 
+// 2016-02-13;
+// get_mm_counter(p->mm, MM_SWAPENTS);
 static inline unsigned long get_mm_counter(struct mm_struct *mm, int member)
 {
 	long val = atomic_long_read(&mm->rss_stat.count[member]);
@@ -1226,6 +1228,7 @@ static inline unsigned long get_mm_counter(struct mm_struct *mm, int member)
 	if (val < 0)
 		val = 0;
 #endif
+    // 리턴할 때 타입을 바꿈
 	return (unsigned long)val;
 }
 
@@ -1251,7 +1254,10 @@ static inline void dec_mm_counter(struct mm_struct *mm, int member)
 	atomic_long_dec(&mm->rss_stat.count[member]);
 }
 
+
 // 2015-09-15;
+// 2016-02-13;
+// get_mm_rss(p->mm)
 static inline unsigned long get_mm_rss(struct mm_struct *mm)
 {
 	return get_mm_counter(mm, MM_FILEPAGES) +

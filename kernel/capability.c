@@ -337,6 +337,8 @@ bool has_capability(struct task_struct *t, int cap)
  *
  * Note that this does not set PF_SUPERPRIV on the task.
  */
+// 2016-02-13;
+// has_ns_capability_noaudit(p, &init_user_ns, CAP_SYS_ADMIN)
 bool has_ns_capability_noaudit(struct task_struct *t,
 			       struct user_namespace *ns, int cap)
 {
@@ -361,6 +363,8 @@ bool has_ns_capability_noaudit(struct task_struct *t,
  *
  * Note that this does not set PF_SUPERPRIV on the task.
  */
+// 2016-02-13;
+// has_capability_noaudit(p, CAP_SYS_ADMIN)
 bool has_capability_noaudit(struct task_struct *t, int cap)
 {
 	return has_ns_capability_noaudit(t, &init_user_ns, cap);

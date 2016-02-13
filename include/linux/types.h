@@ -34,6 +34,7 @@ typedef __kernel_mqd_t		mqd_t;
 
 typedef _Bool			bool;
 
+// 2016-02-13;
 typedef __kernel_uid32_t	uid_t;
 typedef __kernel_gid32_t	gid_t;
 typedef __kernel_uid16_t        uid16_t;

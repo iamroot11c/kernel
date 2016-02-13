@@ -17,7 +17,7 @@
 struct user_namespace;
 extern struct user_namespace init_user_ns;
 
-#ifdef CONFIG_UIDGID_STRICT_TYPE_CHECKS
+#ifdef CONFIG_UIDGID_STRICT_TYPE_CHECKS // not define
 
 typedef struct {
 	uid_t val;
@@ -43,9 +43,11 @@ static inline gid_t __kgid_val(kgid_t gid)
 
 #else
 
+// 2016-02-13
 typedef uid_t kuid_t;
 typedef gid_t kgid_t;
 
+// 2016-02-13
 static inline uid_t __kuid_val(kuid_t uid)
 {
 	return uid;
@@ -67,6 +69,7 @@ static inline gid_t __kgid_val(kgid_t gid)
 #define INVALID_UID KUIDT_INIT(-1)
 #define INVALID_GID KGIDT_INIT(-1)
 
+// 2016-02-13;
 static inline bool uid_eq(kuid_t left, kuid_t right)
 {
 	return __kuid_val(left) == __kuid_val(right);

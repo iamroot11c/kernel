@@ -45,6 +45,7 @@ typedef int		__kernel_daddr_t;
 #endif
 
 #ifndef __kernel_uid32_t
+// 2016-02-13;
 typedef unsigned int	__kernel_uid32_t;
 typedef unsigned int	__kernel_gid32_t;
 #endif
