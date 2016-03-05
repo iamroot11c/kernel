@@ -104,6 +104,7 @@ do {								\
 	do { *(lock) = __RAW_SPIN_LOCK_UNLOCKED(lock); } while (0)
 #endif
 
+// 2016-03-05
 #define raw_spin_is_locked(lock)	arch_spin_is_locked(&(lock)->raw_lock)
 
 #ifdef CONFIG_GENERIC_LOCKBREAK
@@ -357,6 +358,7 @@ static inline void spin_unlock_irq(spinlock_t *lock)
 	raw_spin_unlock_irq(&lock->rlock);
 }
 
+// 2016-03-05
 static inline void spin_unlock_irqrestore(spinlock_t *lock, unsigned long flags)
 {
     // raw_spin_unlock_irqrestore 매크로는 아래와 같이 바뀜
@@ -403,6 +405,7 @@ static inline int spin_can_lock(spinlock_t *lock)
 	return raw_spin_can_lock(&lock->rlock);
 }
 
+// 2016-03-05
 #define assert_spin_locked(lock)	assert_raw_spin_locked(&(lock)->rlock)
 
 /*

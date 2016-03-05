@@ -22,6 +22,7 @@ struct sigqueue {
 /* flags values. */
 #define SIGQUEUE_PREALLOC	1
 
+// 2016-03-05
 struct sigpending {
 	struct list_head list;
 	sigset_t signal;
@@ -36,6 +37,7 @@ struct sigpending {
 
 /* We don't use <linux/bitops.h> for these because there is no need to
    be atomic.  */
+// 2016-03-05
 static inline void sigaddset(sigset_t *set, int _sig)
 {
 	unsigned long sig = _sig - 1;
@@ -56,14 +58,18 @@ static inline void sigdelset(sigset_t *set, int _sig)
 
 // 2015-06-27 set->sig 비트필드 검사
 // 2015-11-14;
+// 2016-03-05
+// sigismember(&t->blocked, SIGKILL) 
+// signal에 대해서 비트 필드로 관리하고 있다.
 static inline int sigismember(sigset_t *set, int _sig)
 {
-	unsigned long sig = _sig - 1;
+	unsigned long sig = _sig - 1; // 8
     // _NSIG_WORDS == 64/32
 	if (_NSIG_WORDS == 1)
 		return 1 & (set->sig[0] >> sig);
 	else
-		return 1 & (set->sig[sig / _NSIG_BPW] >> (sig % _NSIG_BPW));
+        // 2016-03-05
+		return 1 & (set->sig[sig / _NSIG_BPW/*32*/] >> (sig/*8*/ % _NSIG_BPW/*32*/));
 }
 
 static inline int sigfindinword(unsigned long word)
@@ -90,6 +96,7 @@ static inline int sigisemptyset(sigset_t *set)
 	}
 }
 
+// 2016-03-05
 #define sigmask(sig)	(1UL << ((sig) - 1))
 
 #ifndef __HAVE_ARCH_SIG_SETOPS
@@ -252,6 +259,7 @@ extern void __set_current_blocked(const sigset_t *);
 extern int show_unhandled_signals;
 extern int sigsuspend(sigset_t *);
 
+// 2016-03-05
 struct sigaction {
 #ifndef __ARCH_HAS_IRIX_SIGACTION
 	__sighandler_t	sa_handler;
@@ -266,6 +274,7 @@ struct sigaction {
 	sigset_t	sa_mask;	/* mask last for extensibility */
 };
 
+// 2016-03-05
 struct k_sigaction {
 	struct sigaction sa;
 #ifdef __ARCH_HAS_KA_RESTORER
@@ -389,11 +398,13 @@ int unhandled_signal(struct task_struct *tsk, int sig);
 #define SIGEMT_MASK	0
 #endif
 
-#if SIGRTMIN > BITS_PER_LONG
+#if SIGRTMIN/*32*/ > BITS_PER_LONG/*32*/
 #define rt_sigmask(sig)	(1ULL << ((sig)-1))
 #else
+// 2016-03-05
 #define rt_sigmask(sig)	sigmask(sig)
 #endif
+// 2016-03-05
 #define siginmask(sig, mask) (rt_sigmask(sig) & (mask))
 
 #define SIG_KERNEL_ONLY_MASK (\
@@ -403,6 +414,7 @@ int unhandled_signal(struct task_struct *tsk, int sig);
 	rt_sigmask(SIGSTOP)   |  rt_sigmask(SIGTSTP)   | \
 	rt_sigmask(SIGTTIN)   |  rt_sigmask(SIGTTOU)   )
 
+// 2016-03-05
 #define SIG_KERNEL_COREDUMP_MASK (\
         rt_sigmask(SIGQUIT)   |  rt_sigmask(SIGILL)    | \
 	rt_sigmask(SIGTRAP)   |  rt_sigmask(SIGABRT)   | \
@@ -411,16 +423,20 @@ int unhandled_signal(struct task_struct *tsk, int sig);
         rt_sigmask(SIGXCPU)   |  rt_sigmask(SIGXFSZ)   | \
 	SIGEMT_MASK				       )
 
+// 2016-03-05
 #define SIG_KERNEL_IGNORE_MASK (\
         rt_sigmask(SIGCONT)   |  rt_sigmask(SIGCHLD)   | \
 	rt_sigmask(SIGWINCH)  |  rt_sigmask(SIGURG)    )
 
 #define sig_kernel_only(sig) \
 	(((sig) < SIGRTMIN) && siginmask(sig, SIG_KERNEL_ONLY_MASK))
+// 2016-03-05
 #define sig_kernel_coredump(sig) \
 	(((sig) < SIGRTMIN) && siginmask(sig, SIG_KERNEL_COREDUMP_MASK))
+// 2016-03-05
 #define sig_kernel_ignore(sig) \
 	(((sig) < SIGRTMIN) && siginmask(sig, SIG_KERNEL_IGNORE_MASK))
+// 2016-03-05
 #define sig_kernel_stop(sig) \
 	(((sig) < SIGRTMIN) && siginmask(sig, SIG_KERNEL_STOP_MASK))
 
@@ -428,6 +444,7 @@ int unhandled_signal(struct task_struct *tsk, int sig);
 	(((t)->sighand->action[(signr)-1].sa.sa_handler != SIG_DFL) &&	\
 	 ((t)->sighand->action[(signr)-1].sa.sa_handler != SIG_IGN))
 
+// 2016-03-05
 #define sig_fatal(t, signr) \
 	(!siginmask(signr, SIG_KERNEL_IGNORE_MASK|SIG_KERNEL_STOP_MASK) && \
 	 (t)->sighand->action[(signr)-1].sa.sa_handler == SIG_DFL)

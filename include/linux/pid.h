@@ -5,6 +5,7 @@
 
 enum pid_type
 {
+    // 2016-03-05
 	PIDTYPE_PID,
 	PIDTYPE_PGID,
 	PIDTYPE_SID,
@@ -47,13 +48,16 @@ enum pid_type
  * find_pid_ns() using the int nr and struct pid_namespace *ns.
  */
 
+// 2016-03-05
 struct upid {
 	/* Try to keep pid_chain in the same cacheline as nr for find_vpid */
 	int nr;
+    // 2016-03-05
 	struct pid_namespace *ns;
 	struct hlist_node pid_chain;
 };
 
+// 2016-03-05
 struct pid
 {
 	atomic_t count;
@@ -66,6 +70,7 @@ struct pid
 
 extern struct pid init_struct_pid;
 
+// 2016-03-05
 struct pid_link
 {
 	struct hlist_node node;
@@ -131,6 +136,8 @@ extern void disable_pid_allocation(struct pid_namespace *ns);
  * 	is expected to be non-NULL. If @pid is NULL, caller should handle
  * 	the resulting NULL pid-ns.
  */
+// 2016-03-05
+// ns : namespace
 static inline struct pid_namespace *ns_of_pid(struct pid *pid)
 {
 	struct pid_namespace *ns = NULL;

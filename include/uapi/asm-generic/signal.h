@@ -4,8 +4,8 @@
 #include <linux/types.h>
 
 #define _NSIG		64
-#define _NSIG_BPW	__BITS_PER_LONG
-#define _NSIG_WORDS	(_NSIG / _NSIG_BPW)
+#define _NSIG_BPW/*32*/	__BITS_PER_LONG/*32*/
+#define _NSIG_WORDS/*2*/	(_NSIG / _NSIG_BPW)
 
 #define SIGHUP		 1
 #define SIGINT		 2
@@ -46,6 +46,8 @@
 #define	SIGUNUSED	31
 
 /* These should not be considered constants from userland.  */
+// 2016-03-05
+// SIGNAL의 기본 개수는 32개이며, 그 이상은 추가로 정의 할 수 있다.
 #define SIGRTMIN	32
 #ifndef SIGRTMAX
 #define SIGRTMAX	_NSIG

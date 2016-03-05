@@ -17,6 +17,7 @@
 
 int in_lock_functions(unsigned long addr);
 
+// 2016-03-05
 #define assert_raw_spin_locked(x)	BUG_ON(!raw_spin_is_locked(x))
 
 void __lockfunc _raw_spin_lock(raw_spinlock_t *lock)		__acquires(lock);

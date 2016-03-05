@@ -554,6 +554,8 @@ static inline int zone_test_and_set_flag(struct zone *zone, zone_flags_t flag)
 	return test_and_set_bit(flag, &zone->flags);
 }
 
+// 2016-03-05
+// zone_clear_flag(zone, ZONE_OOM_LOCKED);
 static inline void zone_clear_flag(struct zone *zone, zone_flags_t flag)
 {
 	clear_bit(flag, &zone->flags);
@@ -1135,6 +1137,7 @@ static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
  *
  * This iterator iterates though all zones at or below a given zone index.
  */
+// 2016-03-05
 #define for_each_zone_zonelist(zone, z, zlist, highidx) \
 	for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, NULL)
 

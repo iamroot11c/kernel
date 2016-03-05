@@ -580,6 +580,7 @@ static inline void cpumask_copy(struct cpumask *dstp,
  * cpumask_of - the cpumask containing just a given cpu
  * @cpu: the cpu (<= nr_cpu_ids)
  */
+// 2016-03-05
 #define cpumask_of(cpu) (get_cpu_mask(cpu))
 
 /**
@@ -823,10 +824,12 @@ static inline int __check_is_bitmap(const unsigned long *bitmap)
  * padding to the left and the right, and return the constant pointer
  * appropriately offset.
  */
+// 2016-03-05
 extern const unsigned long
 	cpu_bit_bitmap[BITS_PER_LONG+1][BITS_TO_LONGS(NR_CPUS)];
 
 // 2014-11-29; 
+// 2016-03-05
 static inline const struct cpumask *get_cpu_mask(unsigned int cpu)
 {
 	const unsigned long *p = cpu_bit_bitmap[1 + cpu % BITS_PER_LONG];

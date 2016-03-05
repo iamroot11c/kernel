@@ -21,6 +21,7 @@ struct pidmap {
 struct bsd_acct_struct;
 
 // 2015-03-07
+// 2016-03-05
 struct pid_namespace {
 	struct kref kref;
 	struct pidmap pidmap[PIDMAP_ENTRIES/*1*/];

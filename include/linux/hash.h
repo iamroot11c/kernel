@@ -24,6 +24,7 @@
 
 #if BITS_PER_LONG == 32
 #define GOLDEN_RATIO_PRIME GOLDEN_RATIO_PRIME_32
+// 2016-03-05
 #define hash_long(val, bits) hash_32(val, bits)
 #elif BITS_PER_LONG == 64
 #define hash_long(val, bits) hash_64(val, bits)

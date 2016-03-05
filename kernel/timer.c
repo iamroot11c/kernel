@@ -1475,6 +1475,7 @@ static void process_timeout(unsigned long __data)
 // 2015-06-20,
 // 2016-01-30
 // glance
+// 2016-03-05, glance
 signed long __sched schedule_timeout(signed long timeout)
 {
 	struct timer_list timer;
@@ -1492,6 +1493,7 @@ signed long __sched schedule_timeout(signed long timeout)
 		 */
 		schedule();
 		goto out;
+        // 2016-03-05, 1
 	default:
 		/*
 		 * Another bit of PARANOID. Note that the retval will be
@@ -1538,6 +1540,8 @@ signed long __sched schedule_timeout_interruptible(signed long timeout)
 EXPORT_SYMBOL(schedule_timeout_interruptible);
 
 // 2016-01-30
+// 2016-03-05
+// schedule_timeout_killable(1);
 signed long __sched schedule_timeout_killable(signed long timeout)
 {
 	__set_current_state(TASK_KILLABLE);

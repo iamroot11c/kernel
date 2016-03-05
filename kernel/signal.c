@@ -51,11 +51,15 @@ static struct kmem_cache *sigqueue_cachep;
 
 int print_fatal_signals __read_mostly;
 
+// 2016-03-05
+// sig_handler(t, SIGKILL)
 static void __user *sig_handler(struct task_struct *t, int sig)
 {
-	return t->sighand->action[sig - 1].sa.sa_handler;
+	return t->sighand->action[sig - 1/*8*/].sa.sa_handler;
 }
 
+// 2016-03-05
+// ignored를 하는 것이 아니라, ignored인지를 판단하는 기능
 static int sig_handler_ignored(void __user *handler, int sig)
 {
 	/* Is it explicitly or implicitly ignored? */
@@ -63,6 +67,8 @@ static int sig_handler_ignored(void __user *handler, int sig)
 		(handler == SIG_DFL && sig_kernel_ignore(sig));
 }
 
+// 2016-03-05
+// sig_task_ignored(t, SIGKILL, true)
 static int sig_task_ignored(struct task_struct *t, int sig, bool force)
 {
 	void __user *handler;
@@ -76,6 +82,10 @@ static int sig_task_ignored(struct task_struct *t, int sig, bool force)
 	return sig_handler_ignored(handler, sig);
 }
 
+// 2016-03-05
+// sig_ignored(t, SIGKILL, true)
+// ignorede된 signal인지를 판단하는 기능
+// return 0 : ignored 되지 않았다.
 static int sig_ignored(struct task_struct *t, int sig, bool force)
 {
 	/*
@@ -83,9 +93,11 @@ static int sig_ignored(struct task_struct *t, int sig, bool force)
 	 * signal handler may change by the time it is
 	 * unblocked.
 	 */
+	// blocked signals은 무시하면 안된다.
 	if (sigismember(&t->blocked, sig) || sigismember(&t->real_blocked, sig))
 		return 0;
 
+	// 진짜 하고 싶은 일
 	if (!sig_task_ignored(t, sig, force))
 		return 0;
 
@@ -271,11 +283,12 @@ bool task_set_jobctl_pending(struct task_struct *task, unsigned int mask)
  * CONTEXT:
  * Must be called with @task->sighand->siglock held.
  */
+// 2016-03-05
 void task_clear_jobctl_trapping(struct task_struct *task)
 {
 	if (unlikely(task->jobctl & JOBCTL_TRAPPING)) {
 		task->jobctl &= ~JOBCTL_TRAPPING;
-		wake_up_bit(&task->jobctl, JOBCTL_TRAPPING_BIT);
+		wake_up_bit(&task->jobctl, JOBCTL_TRAPPING_BIT/*21*/);
 	}
 }
 
@@ -294,13 +307,16 @@ void task_clear_jobctl_trapping(struct task_struct *task)
  * CONTEXT:
  * Must be called with @task->sighand->siglock held.
  */
+// 2016-03-05
+// task_clear_jobctl_pending(t, JOBCTL_PENDING_MASK)
 void task_clear_jobctl_pending(struct task_struct *task, unsigned int mask)
 {
 	BUG_ON(mask & ~JOBCTL_PENDING_MASK);
 
 	if (mask & JOBCTL_STOP_PENDING)
-		mask |= JOBCTL_STOP_CONSUME | JOBCTL_STOP_DEQUEUED;
+		mask |= JOBCTL_STOP_CONSUME/*18th*/ | JOBCTL_STOP_DEQUEUED/*16*/;
 
+	// 위에서 설정한 bit clear
 	task->jobctl &= ~mask;
 
 	if (!(task->jobctl & JOBCTL_PENDING_MASK))
@@ -684,6 +700,8 @@ int dequeue_signal(struct task_struct *tsk, sigset_t *mask, siginfo_t *info)
  * No need to set need_resched since signal event passing
  * goes through ->blocked
  */
+// 2016-03-05
+// signal_wake_up_state(t, 1);
 void signal_wake_up_state(struct task_struct *t, unsigned int state)
 {
 	set_tsk_thread_flag(t, TIF_SIGPENDING);
@@ -754,6 +772,8 @@ static inline int is_si_special(const struct siginfo *info)
 	return info <= SEND_SIG_FORCED;
 }
 
+// 2016-03-05
+// SEND_SIG_FORCED
 static inline bool si_fromuser(const struct siginfo *info)
 {
 	return info == SEND_SIG_NOINFO ||
@@ -855,8 +875,11 @@ static void ptrace_trap_notify(struct task_struct *t)
  * Returns true if the signal should be actually delivered, otherwise
  * it should be dropped.
  */
+// 2016-03-05
+// prepare_signal(SIGKILL, p, true)
 static bool prepare_signal(int sig, struct task_struct *p, bool force)
 {
+	// task_struct에 signal, sighand가 있는데 아래는 signal을 할당
 	struct signal_struct *signal = p->signal;
 	struct task_struct *t;
 
@@ -867,6 +890,7 @@ static bool prepare_signal(int sig, struct task_struct *p, bool force)
 		 * The process is in the middle of dying, nothing to do.
 		 */
 	} else if (sig_kernel_stop(sig)) {
+		// 2016-03-05, 현재 우리는 SIGKILL임으로 나중에 보자
 		/*
 		 * This is a stop signal.  Remove SIGCONT from all queues.
 		 */
@@ -876,6 +900,7 @@ static bool prepare_signal(int sig, struct task_struct *p, bool force)
 			rm_from_queue(sigmask(SIGCONT), &t->pending);
 		} while_each_thread(p, t);
 	} else if (sig == SIGCONT) {
+		// 2016-03-05, 현재 우리는 SIGKILL임으로 나중에 보자
 		unsigned int why;
 		/*
 		 * Remove all stop signals from all queues, wake all threads.
@@ -928,19 +953,23 @@ static bool prepare_signal(int sig, struct task_struct *p, bool force)
  * as soon as they're available, so putting the signal on the shared queue
  * will be equivalent to sending it to one such thread.
  */
+// 2016-03-05
 static inline int wants_signal(int sig, struct task_struct *p)
 {
 	if (sigismember(&p->blocked, sig))
 		return 0;
 	if (p->flags & PF_EXITING)
 		return 0;
-	if (sig == SIGKILL)
+	if (sig == SIGKILL) // 2016-03-05
 		return 1;
 	if (task_is_stopped_or_traced(p))
 		return 0;
 	return task_curr(p) || !signal_pending(p);
 }
 
+// 2016-03-05
+// SEND_SIG_FORCED
+// complete_signal(SIGKILL, t, true)
 static void complete_signal(int sig, struct task_struct *p, int group)
 {
 	struct signal_struct *signal = p->signal;
@@ -952,6 +981,8 @@ static void complete_signal(int sig, struct task_struct *p, int group)
 	 * If the main thread wants the signal, it gets first crack.
 	 * Probably the least surprising to the average bear.
 	 */
+	// 2016-03-05, wants_signal() == true
+	// 다른 조건에 해당되지 않음, 
 	if (wants_signal(sig, p))
 		t = p;
 	else if (!group || thread_group_empty(p))
@@ -982,6 +1013,7 @@ static void complete_signal(int sig, struct task_struct *p, int group)
 	 * Found a killable thread.  If the signal will be fatal,
 	 * then start taking the whole group down immediately.
 	 */
+	// 2016-03-05
 	if (sig_fatal(p, sig) &&
 	    !(signal->flags & (SIGNAL_UNKILLABLE | SIGNAL_GROUP_EXIT)) &&
 	    !sigismember(&t->real_blocked, sig) &&
@@ -1001,9 +1033,11 @@ static void complete_signal(int sig, struct task_struct *p, int group)
 			signal->group_stop_count = 0;
 			t = p;
 			do {
-				task_clear_jobctl_pending(t, JOBCTL_PENDING_MASK);
+				task_clear_jobctl_pending(t, JOBCTL_PENDING_MASK/*17, 19, 20번째 비트가 설정*/);
+				// 2016-03-05, 식사후 시작
 				sigaddset(&t->pending.signal, SIGKILL);
 				signal_wake_up(t, 1);
+			// while ((t = next_thread(t)) != p)
 			} while_each_thread(p, t);
 			return;
 		}
@@ -1017,6 +1051,7 @@ static void complete_signal(int sig, struct task_struct *p, int group)
 	return;
 }
 
+// 2016-03-05
 static inline int legacy_queue(struct sigpending *signals, int sig)
 {
 	return (sig < SIGRTMIN) && sigismember(&signals->signal, sig);
@@ -1043,6 +1078,9 @@ static inline void userns_fixup_signal_uid(struct siginfo *info, struct task_str
 }
 #endif
 
+// 2016-03-05
+// __send_signal(SIGKILL, SEND_SIG_FORCED, p, true, from_ancestor_ns);
+// 현재, 우리는 SIGKILL임으로, 다른 경우는 살펴보지 않았다.
 static int __send_signal(int sig, struct siginfo *info, struct task_struct *t,
 			int group, int from_ancestor_ns)
 {
@@ -1054,6 +1092,7 @@ static int __send_signal(int sig, struct siginfo *info, struct task_struct *t,
 	assert_spin_locked(&t->sighand->siglock);
 
 	result = TRACE_SIGNAL_IGNORED;
+	// 2016-03-05
 	if (!prepare_signal(sig, t,
 			from_ancestor_ns || (info == SEND_SIG_FORCED)))
 		goto ret;
@@ -1073,6 +1112,8 @@ static int __send_signal(int sig, struct siginfo *info, struct task_struct *t,
 	 * fast-pathed signals for kernel-internal things like SIGSTOP
 	 * or SIGKILL.
 	 */
+	// 2016-03-05
+	// 현재 우리는 SIGKILL임으로 out_set으로 간다
 	if (info == SEND_SIG_FORCED)
 		goto out_set;
 
@@ -1139,21 +1180,27 @@ static int __send_signal(int sig, struct siginfo *info, struct task_struct *t,
 	}
 
 out_set:
+        // 2016-03-05
 	signalfd_notify(t, sig);
+	// 2016-03-05
+	// pending->signal에 SIGKILL 등록
 	sigaddset(&pending->signal, sig);
+	// 2016-03-05
 	complete_signal(sig, t, group);
 ret:
 	trace_signal_generate(sig, info, t, group, result);
 	return ret;
 }
 
+// 2016-03-05
+// send_signal(SIGKILL, SEND_SIG_FORCED, p, true);
 static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
 			int group)
 {
 	int from_ancestor_ns = 0;
 
-#ifdef CONFIG_PID_NS
-	from_ancestor_ns = si_fromuser(info) &&
+#ifdef CONFIG_PID_NS	// =y
+	from_ancestor_ns = si_fromuser(info)/*false*/&&
 			   !task_pid_nr_ns(current, task_active_pid_ns(t));
 #endif
 
@@ -1206,6 +1253,7 @@ specific_send_sig_info(int sig, struct siginfo *info, struct task_struct *t)
 }
 
 // 2016-02-13; 차주 진행
+//  do_send_sig_info(SIGKILL, SEND_SIG_FORCED, p, true);
 int do_send_sig_info(int sig, struct siginfo *info, struct task_struct *p,
 			bool group)
 {
@@ -1213,6 +1261,7 @@ int do_send_sig_info(int sig, struct siginfo *info, struct task_struct *p,
 	int ret = -ESRCH;
 
 	if (lock_task_sighand(p, &flags)) {
+		// send_signal(SIGKILL, SEND_SIG_FORCED, p, true);
 		ret = send_signal(sig, info, p, group);
 		unlock_task_sighand(p, &flags);
 	}
@@ -1281,12 +1330,19 @@ int zap_other_threads(struct task_struct *p)
 	return count;
 }
 
+// 2016-03-05
+// task->sighand를 구하고, spin_lock을 하는 기능
 struct sighand_struct *__lock_task_sighand(struct task_struct *tsk,
 					   unsigned long *flags)
 {
 	struct sighand_struct *sighand;
 
+	// 2016-03-05
 	for (;;) {
+                //  do {                        \
+                //     raw_local_irq_save(flags);      \
+                //     trace_hardirqs_off();           \
+                //     } while (0) 
 		local_irq_save(*flags);
 		rcu_read_lock();
 		sighand = rcu_dereference(tsk->sighand);
@@ -1297,8 +1353,10 @@ struct sighand_struct *__lock_task_sighand(struct task_struct *tsk,
 		}
 
 		spin_lock(&sighand->siglock);
+		// 진짜 하고 싶은것
 		if (likely(sighand == tsk->sighand)) {
 			rcu_read_unlock();
+                        // 여기서 탈출하면 spin_unlock은 아직 하지 않은 상태
 			break;
 		}
 		spin_unlock(&sighand->siglock);

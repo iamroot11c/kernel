@@ -62,6 +62,7 @@ volatile int pen_release = -1;
 enum ipi_msg_type {
 	IPI_WAKEUP,
 	IPI_TIMER,
+	// 201-03-05
 	IPI_RESCHEDULE,
 	IPI_CALL_FUNC,
 	IPI_CALL_FUNC_SINGLE,
@@ -596,6 +597,7 @@ void handle_IPI(int ipinr, struct pt_regs *regs)
 	set_irq_regs(old_regs);
 }
 
+// 2016-03-05
 void smp_send_reschedule(int cpu)
 {
 	smp_cross_call(cpumask_of(cpu), IPI_RESCHEDULE);

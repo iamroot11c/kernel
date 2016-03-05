@@ -619,6 +619,8 @@ EXPORT_SYMBOL(congestion_wait);
  * @zone has experienced recent congestion, this waits for up to @timeout
  * jiffies for either a BDI to exit congestion of the given @sync queue
  * or a write to complete.
+ * 
+ * 2016-03-05, BDI : backing device info
  *
  * In the absence of zone congestion, cond_resched() is called to yield
  * the processor if necessary but otherwise does not sleep.
@@ -630,6 +632,7 @@ EXPORT_SYMBOL(congestion_wait);
 // 2015-06-20
 // wait_iff_congested(preferred_zone, BLK_RW_ASYNC/*0*/, HZ/*100*//50);
 // glance
+// 2016-03-05, glance
 long wait_iff_congested(struct zone *zone, int sync, long timeout)
 {
 	long ret;

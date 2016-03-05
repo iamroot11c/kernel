@@ -14,12 +14,15 @@
 #endif
 
 #ifndef __ASSEMBLY__
+// 2016-03-05
 typedef void __signalfn_t(int);
+// 2016-03-05
 typedef __signalfn_t __user *__sighandler_t;
 
 typedef void __restorefn_t(void);
 typedef __restorefn_t __user *__sigrestore_t;
 
+// 2016-03-05
 #define SIG_DFL	((__force __sighandler_t)0)	/* default signal handling */
 #define SIG_IGN	((__force __sighandler_t)1)	/* ignore signal */
 #define SIG_ERR	((__force __sighandler_t)-1)	/* error return from signal */

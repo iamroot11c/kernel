@@ -290,6 +290,7 @@ EXPORT_SYMBOL(out_of_line_wait_on_bit_lock);
 // 
 // 2015-10-24;
 // __wake_up_bit(page_waitqueue(page), &page->flags, PG_writeback)
+// 2016-03-05
 void __wake_up_bit(wait_queue_head_t *wq, void *word, int bit)
 {
 	struct wait_bit_key key = __WAIT_BIT_KEY_INITIALIZER(word, bit);
@@ -315,12 +316,15 @@ EXPORT_SYMBOL(__wake_up_bit);
  * may need to use a less regular barrier, such fs/inode.c's smp_mb(),
  * because spin_unlock() does not guarantee a memory barrier.
  */
+// 2016-03-05
+// wake_up_bit(&task->jobctl, JOBCTL_TRAPPING_BIT/*21*/);
 void wake_up_bit(void *word, int bit)
 {
 	__wake_up_bit(bit_waitqueue(word, bit), word, bit);
 }
 EXPORT_SYMBOL(wake_up_bit);
 
+// 2016-03-05
 wait_queue_head_t *bit_waitqueue(void *word, int bit)
 {
 	const int shift = BITS_PER_LONG == 32 ? 5 : 6;

@@ -548,11 +548,14 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 			task_unlock(p);
 			// SIGKILL 시스널 발생
 			// 2016-02-13 여기까지, 다음주 함수 분석 예정
+			
+			// 2016-03-05 시작
 			do_send_sig_info(SIGKILL, SEND_SIG_FORCED, p, true);
+			// 2016-03-05
 		}
 	rcu_read_unlock();
 
-	(victim, TIF_MEMDIE);
+	set_tsk_thread_flag(victim, TIF_MEMDIE);
 	do_send_sig_info(SIGKILL, SEND_SIG_FORCED, victim, true);
 	put_task_struct(victim);
 }
@@ -663,13 +666,17 @@ out:
  * allocation attempts with zonelists containing them may now recall the OOM
  * killer, if necessary.
  */
+// 2016-03-05
 void clear_zonelist_oom(struct zonelist *zonelist, gfp_t gfp_mask)
 {
 	struct zoneref *z;
 	struct zone *zone;
 
 	spin_lock(&zone_scan_lock);
+	// #define for_each_zone_zonelist(zone, z, zlist, highidx) \
+	//      for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, NULL)
 	for_each_zone_zonelist(zone, z, zonelist, gfp_zone(gfp_mask)) {
+		// 핵심기능
 		zone_clear_flag(zone, ZONE_OOM_LOCKED);
 	}
 	spin_unlock(&zone_scan_lock);

@@ -141,6 +141,7 @@ print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq);
 #define EXIT_DEAD		32
 /* in tsk->state again */
 #define TASK_DEAD		64
+// 2016-03-05
 #define TASK_WAKEKILL		128
 #define TASK_WAKING		256
 #define TASK_PARKED		512
@@ -386,6 +387,7 @@ extern int get_dumpable(struct mm_struct *mm);
 
 #define MMF_INIT_MASK		(MMF_DUMPABLE_MASK | MMF_DUMP_FILTER_MASK)
 
+// 2016-03-05
 struct sighand_struct {
 	atomic_t		count;
 	struct k_sigaction	action[_NSIG/*64*/];
@@ -486,6 +488,7 @@ struct autogroup;
  * sighand_struct is always a proper superset of
  * the locking of signal_struct.
  */
+// 2016-03-05
 struct signal_struct {
 	atomic_t		sigcnt;
 	atomic_t		live;
@@ -1052,6 +1055,7 @@ struct task_struct {
     // 2016-01-30
 	atomic_t usage;
 	unsigned int flags;	/* per process flags, defined below */
+    // 2016-03-05
 	unsigned int ptrace;
 
 #ifdef CONFIG_SMP
@@ -1162,6 +1166,7 @@ struct task_struct {
 	 */
 	struct list_head children;	/* list of my children */
 	struct list_head sibling;	/* linkage in my parent's children list */
+    // 2016-03-05
 	struct task_struct *group_leader;	/* threadgroup leader */
 
 	/*
@@ -1173,6 +1178,7 @@ struct task_struct {
 	struct list_head ptrace_entry;
 
 	/* PID/PID hash table linkage. */
+    // 2016-03-05
 	struct pid_link pids[PIDTYPE_MAX/*3*/];
 	struct list_head thread_group;
 
@@ -1233,8 +1239,10 @@ struct task_struct {
 	struct nsproxy *nsproxy;
 /* signal handlers */
 	struct signal_struct *signal;
+    // 2016-03-05
 	struct sighand_struct *sighand;
 
+    // 2016-03-05
 	sigset_t blocked, real_blocked;
 	sigset_t saved_sigmask;	/* restored if set_restore_sigmask() was used */
 	struct sigpending pending;
@@ -1457,6 +1465,7 @@ static inline void set_numabalancing_state(bool enabled)
 }
 #endif
 
+// 2016-03-05
 static inline struct pid *task_pid(struct task_struct *task)
 {
 	return task->pids[PIDTYPE_PID].pid;
@@ -1505,6 +1514,7 @@ static inline pid_t task_pid_nr(struct task_struct *tsk)
 	return tsk->pid;
 }
 
+// 2016-03-05
 static inline pid_t task_pid_nr_ns(struct task_struct *tsk,
 					struct pid_namespace *ns)
 {
@@ -1569,6 +1579,7 @@ static inline pid_t task_pgrp_nr(struct task_struct *tsk)
  *
  * Return: 1 if the process is alive. 0 otherwise.
  */
+// 2016-03-05
 static inline int pid_alive(struct task_struct *p)
 {
 	return p->pids[PIDTYPE_PID].pid != NULL;
@@ -1601,6 +1612,7 @@ extern void __put_task_struct(struct task_struct *t);
 // 2015-08-08 glance;
 // 2016-02-06 glance;
 // 2016-02-13 glance;
+// 2016-03-05 glance;
 static inline void put_task_struct(struct task_struct *t)
 {
 	if (atomic_dec_and_test(&t->usage))
@@ -1729,23 +1741,37 @@ static inline void memalloc_noio_restore(unsigned int flags)
  */
 #define JOBCTL_STOP_SIGMASK	0xffff	/* signr of the last group stop */
 
+// 2016-03-05
 #define JOBCTL_STOP_DEQUEUED_BIT 16	/* stop signal dequeued */
+// 2016-03-05
 #define JOBCTL_STOP_PENDING_BIT	17	/* task should stop for group stop */
+// 2016-03-05
 #define JOBCTL_STOP_CONSUME_BIT	18	/* consume group stop count */
+// 2016-03-05
 #define JOBCTL_TRAP_STOP_BIT	19	/* trap for STOP */
+// 2016-03-05
 #define JOBCTL_TRAP_NOTIFY_BIT	20	/* trap for NOTIFY */
 #define JOBCTL_TRAPPING_BIT	21	/* switching to TRACED */
 #define JOBCTL_LISTENING_BIT	22	/* ptracer is listening for events */
 
+// 2016-03-05
 #define JOBCTL_STOP_DEQUEUED	(1 << JOBCTL_STOP_DEQUEUED_BIT)
+// 2016-03-05
 #define JOBCTL_STOP_PENDING	(1 << JOBCTL_STOP_PENDING_BIT)
+// 2016-03-05
 #define JOBCTL_STOP_CONSUME	(1 << JOBCTL_STOP_CONSUME_BIT)
+// 2016-03-05
 #define JOBCTL_TRAP_STOP	(1 << JOBCTL_TRAP_STOP_BIT)
+// 2016-03-05
 #define JOBCTL_TRAP_NOTIFY	(1 << JOBCTL_TRAP_NOTIFY_BIT)
+// 2016-03-05
 #define JOBCTL_TRAPPING		(1 << JOBCTL_TRAPPING_BIT)
 #define JOBCTL_LISTENING	(1 << JOBCTL_LISTENING_BIT)
 
+// 2016-03-05
 #define JOBCTL_TRAP_MASK	(JOBCTL_TRAP_STOP | JOBCTL_TRAP_NOTIFY)
+
+// 2016-03-05
 #define JOBCTL_PENDING_MASK	(JOBCTL_STOP_PENDING | JOBCTL_TRAP_MASK)
 
 extern bool task_set_jobctl_pending(struct task_struct *task,
@@ -2205,6 +2231,7 @@ extern bool current_is_single_threaded(void);
 
 // 2016-02-06
 // 2016-02-13;
+// 2016-03-05
 #define while_each_thread(g, t) \
 	while ((t = next_thread(t)) != g)
 
@@ -2286,6 +2313,7 @@ static inline void task_unlock(struct task_struct *p)
 extern struct sighand_struct *__lock_task_sighand(struct task_struct *tsk,
 							unsigned long *flags);
 
+// 2016-03-05
 static inline struct sighand_struct *lock_task_sighand(struct task_struct *tsk,
 						       unsigned long *flags)
 {
@@ -2296,6 +2324,7 @@ static inline struct sighand_struct *lock_task_sighand(struct task_struct *tsk,
 	return ret;
 }
 
+// 2016-03-05
 static inline void unlock_task_sighand(struct task_struct *tsk,
 						unsigned long *flags)
 {
@@ -2398,6 +2427,8 @@ static inline unsigned long stack_not_used(struct task_struct *p)
  */
 // 2016-02-06;
 // set_tsk_thread_flag(p, TIF_MEMDIE);
+// 2016-03-05
+// set_tsk_thread_flag(t, TIF_SIGPENDING);
 static inline void set_tsk_thread_flag(struct task_struct *tsk, int flag)
 {
 	set_ti_thread_flag(task_thread_info(tsk), flag);
@@ -2674,6 +2705,8 @@ extern void recalc_sigpending(void);
 
 extern void signal_wake_up_state(struct task_struct *t, unsigned int state);
 
+// 2016-03-05
+// signal_wake_up(t, 1);
 static inline void signal_wake_up(struct task_struct *t, bool resume)
 {
 	signal_wake_up_state(t, resume ? TASK_WAKEKILL : 0);
@@ -2688,6 +2721,7 @@ static inline void ptrace_signal_wake_up(struct task_struct *t, bool resume)
  */
 #ifdef CONFIG_SMP
 
+// 2016-03-05
 static inline unsigned int task_cpu(const struct task_struct *p)
 {
 	return task_thread_info(p)->cpu;

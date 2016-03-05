@@ -2443,6 +2443,7 @@ static DEFINE_RATELIMIT_STATE(nopage_rs,
 		DEFAULT_RATELIMIT_INTERVAL,
 		DEFAULT_RATELIMIT_BURST);
 
+// 2016-03-05, glance
 void warn_alloc_failed(gfp_t gfp_mask, int order, const char *fmt, ...)
 {
 	unsigned int filter = SHOW_MEM_FILTER_NODES;
@@ -2492,6 +2493,7 @@ void warn_alloc_failed(gfp_t gfp_mask, int order, const char *fmt, ...)
 		show_mem(filter);
 }
 
+// 2016-03-05
 static inline int
 should_alloc_retry(gfp_t gfp_mask, unsigned int order,
 				unsigned long did_some_progress,
@@ -2592,6 +2594,7 @@ __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
 	out_of_memory(zonelist, gfp_mask, order, nodemask, false);
 
 out:
+	// 2016-03-05
 	clear_zonelist_oom(zonelist, gfp_mask);
 	return page;
 }
@@ -3082,14 +3085,16 @@ rebalance:
 			    !(gfp_mask & __GFP_NOFAIL))
 				goto nopage;
 
-			// 2015-01-30
+			// 2016-01-30
 			page = __alloc_pages_may_oom(gfp_mask, order,
 					zonelist, high_zoneidx,
 					nodemask, preferred_zone,
 					migratetype);
+			// 2016-03-05
 			if (page)
 				goto got_pg;
 
+			// oom을 했음에도 볼구하고 page를 얻어오지 못하는 경우
 			// true일 확률이 높다.
 			if (!(gfp_mask & __GFP_NOFAIL)) {
 				/*
@@ -3112,13 +3117,17 @@ rebalance:
 			goto restart;
 		}
 	}
+	// 2016-03-05, end
 
 	/* Check if we should retry the allocation */
 	pages_reclaimed += did_some_progress;
+	// 2016-03-05
 	if (should_alloc_retry(gfp_mask, order, did_some_progress,
 						pages_reclaimed)) {
+		// iff : if and only if 
+		// a mathematical and logical connector indicating that either both statements are true or both are false
 		/* Wait for some write requests to complete then retry */
-		wait_iff_congested(preferred_zone, BLK_RW_ASYNC, HZ/50);
+		wait_iff_congested(preferred_zone, BLK_RW_ASYNC, HZ/50/*2*/);
 		goto rebalance;
 	} else {
 		/*
@@ -3139,6 +3148,7 @@ rebalance:
 	}
 
 nopage:
+	// 2016-03-05
 	warn_alloc_failed(gfp_mask, order, NULL);
 	return page;
 got_pg:
@@ -3260,10 +3270,12 @@ retry:
 		page = __alloc_pages_slowpath(gfp_mask, order,
 				zonelist, high_zoneidx, nodemask,
 				preferred_zone, migratetype);
+		// 2016-03-05, end
 	}
 
 	trace_mm_page_alloc(page, order, gfp_mask, migratetype);
 
+// 2016-03-06, 차주 여기부터 시작
 out:
 	/*
 	 * When updating a task's mems_allowed, it is possible to race with

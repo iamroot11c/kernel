@@ -947,6 +947,7 @@ static int effective_prio(struct task_struct *p)
  *
  * Return: 1 if the task is currently executing. 0 otherwise.
  */
+// 2016-03-05
 inline int task_curr(const struct task_struct *p)
 {
 	return cpu_curr(task_cpu(p)) == p;
@@ -1156,12 +1157,14 @@ unsigned long wait_task_inactive(struct task_struct *p, long match_state)
  * to another CPU then no harm is done and the purpose has been
  * achieved as well.
  */
+// 2016-03-05
 void kick_process(struct task_struct *p)
 {
 	int cpu;
 
 	preempt_disable();
 	cpu = task_cpu(p);
+	// 다른 processor에서 실행 중인 task라면
 	if ((cpu != smp_processor_id()) && task_curr(p))
 		smp_send_reschedule(cpu);
 	preempt_enable();
@@ -1486,6 +1489,8 @@ static void ttwu_queue(struct task_struct *p, int cpu)
 // 2015-08-08 glance;
 // try_to_wake_up(p, TASK_NORMAL, 0);
 // 2015-10-17 glance;
+// 2016-03-05 glance
+// try_to_wake_up(p, 1, 0)
 static int
 try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 {
@@ -1600,6 +1605,8 @@ int wake_up_process(struct task_struct *p)
 }
 EXPORT_SYMBOL(wake_up_process);
 
+// 2016-03-05
+// wake_up_state(t, 1 | TASK_INTERRUPTIBLE)
 int wake_up_state(struct task_struct *p, unsigned int state)
 {
 	return try_to_wake_up(p, state, 0);

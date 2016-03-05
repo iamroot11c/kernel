@@ -449,6 +449,7 @@ struct rq {
 	 */
 	unsigned long nr_uninterruptible;
 
+    // 2016-03-05, curr
 	struct task_struct *curr, *idle, *stop;
 	unsigned long next_balance;
 	struct mm_struct *prev_mm;
@@ -542,9 +543,12 @@ static inline int cpu_of(struct rq *rq)
 // extern 선언
 DECLARE_PER_CPU(struct rq, runqueues);
 
+// 2016-03-05
 #define cpu_rq(cpu)		(&per_cpu(runqueues, (cpu)))
 #define this_rq()		(&__get_cpu_var(runqueues))
 #define task_rq(p)		cpu_rq(task_cpu(p))
+// 2016-03-05
+// rq->curr
 #define cpu_curr(cpu)		(cpu_rq(cpu)->curr)
 #define raw_rq()		(&__raw_get_cpu_var(runqueues))
 

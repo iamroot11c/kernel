@@ -10,7 +10,7 @@
 #include <uapi/linux/signalfd.h>
 
 
-#ifdef CONFIG_SIGNALFD
+#ifdef CONFIG_SIGNALFD // =y
 
 /*
  * Deliver the signal to listening signalfd.

@@ -24,6 +24,7 @@ typedef unsigned int	__kernel_mode_t;
 #endif
 
 #ifndef __kernel_pid_t
+// 2016-03-05
 typedef int		__kernel_pid_t;
 #endif
 

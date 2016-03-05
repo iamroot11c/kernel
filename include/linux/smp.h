@@ -73,6 +73,7 @@ extern void smp_send_stop(void);
 /*
  * sends a 'reschedule' event to another CPU:
  */
+// 2016-03-05
 extern void smp_send_reschedule(int cpu);
 
 
