@@ -1,7 +1,7 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
-+ [90주차]() `2016.03.05`
++ [90주차](bit.ly/1oXHaKr) `2016.03.05`
  - [kmem_cache_init() 진행중]()
  - page_alloc.c:__alloc_pages_nodemask() 진행 중
  - page_alloc.c:__alloc_pages_slowpath() 분석 완료
@@ -10,7 +10,6 @@
  - mm/oom_kill.c:oom_kill_process() 분석 완료
  - mm/oom_kill.c:do_send_sig_info() 분석 완료
  
-
 + [89주차]() `2016.02.27`
    - 리눅스 커널 디바이스트리 이해
    - 디바이스드라이버 소스 분석 방법
