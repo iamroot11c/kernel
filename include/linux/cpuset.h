@@ -235,6 +235,7 @@ static inline unsigned int get_mems_allowed(void)
 	return 0;
 }
 
+// 2016-03-12
 static inline bool put_mems_allowed(unsigned int seq)
 {
 	return true;

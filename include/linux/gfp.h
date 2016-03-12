@@ -374,6 +374,7 @@ __alloc_pages(gfp_t gfp_mask, unsigned int order,
 {
     // 2015-05-23 시작;
 	return __alloc_pages_nodemask(gfp_mask, order, zonelist, NULL);
+    // 2016-03-12 분석완료
 }
 
 // 2015-09-19;
@@ -393,6 +394,7 @@ static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
 //14-12-06 구경만 하고 돌아감
 // 2015-05-23 시작;
 // alloc_pages_exact_node(node, flags, order);
+// 2016-03-12 분석완료
 static inline struct page *alloc_pages_exact_node(int nid, gfp_t gfp_mask,
 						unsigned int order)
 {
@@ -402,6 +404,7 @@ static inline struct page *alloc_pages_exact_node(int nid, gfp_t gfp_mask,
     // 2015-05-23 시작;
 	return __alloc_pages(gfp_mask, order, node_zonelist(nid, gfp_mask));
 	// __alloc_pages(gfp_mask, order, &contig_page_data->node_zonelists[0]);
+    // 2016-03-12 분석완료
 }
 
 #ifdef CONFIG_NUMA

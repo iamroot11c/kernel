@@ -23,6 +23,7 @@
 #ifndef CONFIG_FORCE_MAX_ZONEORDER  // not set
 #define MAX_ORDER 11
 #else
+// 2016-03-12
 #define MAX_ORDER CONFIG_FORCE_MAX_ZONEORDER // 11, 2^11 = 2048(0x0800)
 #endif
 // 2015-05-09;

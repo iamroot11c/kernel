@@ -57,6 +57,7 @@ struct kmem_cache_order_objects {
 };
 
 // 2015-05-16
+// 2016-03-12
 /*
  * Slab cache management.
  */
@@ -85,7 +86,7 @@ struct kmem_cache {
 #ifdef CONFIG_SYSFS
 	struct kobject kobj;	/* For sysfs */
 #endif
-#ifdef CONFIG_MEMCG_KMEM
+#ifdef CONFIG_MEMCG_KMEM // not define
 	struct memcg_cache_params *memcg_params;
 	int max_attr_size; /* for propagation, maximum size of a stored attr */
 #endif
@@ -98,5 +99,4 @@ struct kmem_cache {
 #endif
 	struct kmem_cache_node *node[MAX_NUMNODES/*1*/];
 };
-
 #endif /* _LINUX_SLUB_DEF_H */

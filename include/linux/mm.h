@@ -553,6 +553,8 @@ static inline compound_page_dtor *get_compound_page_dtor(struct page *page)
 
 // 2015-01-24
 // 2015-04-28; 헤더가 아니면 0을 리턴
+//
+// 2016-03-12;
 static inline int compound_order(struct page *page)
 {
 	if (!PageHead(page))
@@ -726,6 +728,7 @@ static inline int zone_to_nid(struct zone *zone)
 extern int page_to_nid(const struct page *page);
 #else
 // 2015-11-14;
+// 2016-03-12;
 static inline int page_to_nid(const struct page *page)
 {
 	return (page->flags >> NODES_PGSHIFT) & NODES_MASK;

@@ -4,7 +4,6 @@
 /*
  * Definitions unique to the original Linux SLAB allocator.
  */
-
 struct kmem_cache {
 /* 1) Cache tunables. Protected by cache_chain_mutex */
 	unsigned int batchcount;

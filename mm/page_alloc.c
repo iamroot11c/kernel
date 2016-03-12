@@ -3169,6 +3169,9 @@ got_pg:
 // 2015-09-19;
 // __alloc_pages_nodemask(gfp_mask, order, &contig_page_data->node_zonelists[0], NULL);
 // gfp_mask = GFP_ATOMIC | __GFP_HIGHMEM
+//
+// 2016-03-12 분석완료
+// get_page_from_freelist() 함수를 통해 page를 구함
 struct page *
 __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
 			struct zonelist *zonelist, nodemask_t *nodemask)
@@ -3283,12 +3286,15 @@ out:
 	 * the mask is being updated. If a page allocation is about to fail,
 	 * check if the cpuset changed during allocation and if so, retry.
 	 */
+	// 2016-03-12 시작;
+	// put_mems_allowed() NO Op.
 	if (unlikely(!put_mems_allowed(cpuset_mems_cookie) && !page))
 		goto retry_cpuset;
 
 	memcg_kmem_commit_charge(page, memcg, order); // NOP
 
 	return page;
+	// 2016-03-12 분석완료
 }
 EXPORT_SYMBOL(__alloc_pages_nodemask);
 

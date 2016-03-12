@@ -201,6 +201,7 @@ static struct notifier_block slab_notifier;
  */
 #define TRACK_ADDRS_COUNT 16
 // 2015-05-16
+// 2016-03-12;
 struct track {
 	unsigned long addr;	/* Called from address */
 #ifdef CONFIG_STACKTRACE	// not set
@@ -238,6 +239,7 @@ static inline void stat(const struct kmem_cache *s, enum stat_item si)
  * 			Core slab cache functions
  *******************************************************************/
 
+// 2016-03-12;
 static inline struct kmem_cache_node *get_node(struct kmem_cache *s, int node)
 {
 	return s->node[node];
@@ -261,6 +263,8 @@ static inline int check_valid_pointer(struct kmem_cache *s,
 	return 1;
 }
 
+// 2016-03-12
+// get_freepointer(kmem_cache_node, n)
 static inline void *get_freepointer(struct kmem_cache *s, void *object)
 {
 	return *(void **)(object + s->offset);
@@ -285,12 +289,15 @@ static inline void *get_freepointer_safe(struct kmem_cache *s, void *object)
 	return p;
 }
 
+// 2016-03-12
+// set_freepointer(s, last, p)
 static inline void set_freepointer(struct kmem_cache *s, void *object, void *fp)
 {
 	*(void **)(object + s->offset) = fp;
 }
 
 /* Loop over all objects in a slab */
+// 2016-03-12
 #define for_each_object(__p, __s, __addr, __objects) \
 	for (__p = (__addr); __p < (__addr) + (__objects) * (__s)->size;\
 			__p += (__s)->size)
@@ -344,14 +351,16 @@ static inline struct kmem_cache_order_objects oo_make(int order,
 }
 
 // 2015-05-23;
+// 2016-03-12;
 static inline int oo_order(struct kmem_cache_order_objects x)
 {
 	return x.x >> OO_SHIFT; // x.x >> 16; 64KB
 }
 
+// 2016-03-12;
 static inline int oo_objects(struct kmem_cache_order_objects x)
 {
-	return x.x & OO_MASK;
+	return x.x & OO_MASK; // x.x & 0xFFFF;
 }
 
 /*
@@ -484,6 +493,9 @@ static void print_section(char *text, u8 *addr, unsigned int length)
 			length, 1);
 }
 
+// 2016-03-12
+// get_track(s, last, TRACK_FREE)
+// get_track(s, last, TRACK_ALLOC)
 static struct track *get_track(struct kmem_cache *s, void *object,
 	enum track_item alloc)
 {
@@ -497,13 +509,16 @@ static struct track *get_track(struct kmem_cache *s, void *object,
 	return p + alloc;
 }
 
+// 2016-03-12
+// set_track(s, last, TRACK_FREE, 0UL);
+// set_track(s, last, TRACK_ALLOC, 0UL);
 static void set_track(struct kmem_cache *s, void *object,
 			enum track_item alloc, unsigned long addr)
 {
 	struct track *p = get_track(s, object, alloc);
 
 	if (addr) {
-#ifdef CONFIG_STACKTRACE
+#ifdef CONFIG_STACKTRACE // not define
 		struct stack_trace trace;
 		int i;
 
@@ -529,6 +544,9 @@ static void set_track(struct kmem_cache *s, void *object,
 		memset(p, 0, sizeof(struct track));
 }
 
+// 2016-03-12
+// init_tracking(s, last)
+// init_tracking(kmem_cache_node, n)
 static void init_tracking(struct kmem_cache *s, void *object)
 {
 	if (!(s->flags & SLAB_STORE_USER))
@@ -659,6 +677,9 @@ static void slab_err(struct kmem_cache *s, struct page *page,
 	dump_stack();
 }
 
+// 2016-03-12
+// init_object(s, last, SLUB_RED_INACTIVE);
+// init_object(kmem_cache_node, n, SLUB_RED_ACTIVE);
 static void init_object(struct kmem_cache *s, void *object, u8 val)
 {
 	u8 *p = object;
@@ -669,7 +690,7 @@ static void init_object(struct kmem_cache *s, void *object, u8 val)
 	}
 
 	if (s->flags & SLAB_RED_ZONE)
-		memset(p + s->object_size, val, s->inuse - s->object_size);
+		memset(p + s->object_size, val/*0xbb*/, s->inuse - s->object_size);
 }
 
 static void restore_bytes(struct kmem_cache *s, char *message, u8 data,
@@ -1035,6 +1056,10 @@ static inline unsigned long node_nr_slabs(struct kmem_cache_node *n)
 	return atomic_long_read(&n->nr_slabs);
 }
 
+// 2016-03-12;
+// inc_slabs_node(s, page_to_nid(page), page->objects);
+//
+// inc_slabs_node(kmem_cache_node, node, page->objects);
 static inline void inc_slabs_node(struct kmem_cache *s, int node, int objects)
 {
 	struct kmem_cache_node *n = get_node(s, node);
@@ -1059,6 +1084,8 @@ static inline void dec_slabs_node(struct kmem_cache *s, int node, int objects)
 }
 
 /* Object debug checks for alloc/free paths */
+// 2016-03-12;
+// setup_object_debug(s, page, last)
 static void setup_object_debug(struct kmem_cache *s, struct page *page,
 								void *object)
 {
@@ -1302,6 +1329,7 @@ static inline void slab_free_hook(struct kmem_cache *s, void *x) {}
  */
 // 2015-05-23; 시작
 // alloc_slab_page(alloc_gfp, node, oo);
+// 2016-03-12; 완료
 static inline struct page *alloc_slab_page(gfp_t flags, int node,
 					struct kmem_cache_order_objects oo)
 {
@@ -1314,6 +1342,7 @@ static inline struct page *alloc_slab_page(gfp_t flags, int node,
 	else {
 		// node의 값이 0으로 전달되어 이 함수가 호출될 것으로 판단
 		return alloc_pages_exact_node(node, flags, order);
+		// 2016-03-12 분석완료
 	}
 }
 
@@ -1322,6 +1351,9 @@ static inline struct page *alloc_slab_page(gfp_t flags, int node,
 //		GFP_NOWAIT/*(__GFP_HIGH) & ~__GFP_HIGH)*/ 
 //			& (GFP_RECLAIM_MASK | GFP_CONSTRAINT_MASK), 
 //		node);
+//
+// 2016-03-12 분석완료;
+// alloc_slab_page() 함수를 통해 page를 구함
 static struct page *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 {
 	struct page *page;
@@ -1349,6 +1381,9 @@ static struct page *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 
 	// 2015-05-23; 시작
 	page = alloc_slab_page(alloc_gfp, node, oo);
+	// 2016-03-12 분석완료
+	
+	// 2016-03-12 시작
 	if (unlikely(!page)) {
 		oo = s->min;
 		/*
@@ -1365,16 +1400,16 @@ static struct page *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 		&& !(s->flags & (SLAB_NOTRACK | DEBUG_DEFAULT_FLAGS))) {
 		int pages = 1 << oo_order(oo);
 
-		kmemcheck_alloc_shadow(page, oo_order(oo), flags, node);
+		kmemcheck_alloc_shadow(page, oo_order(oo), flags, node); // NO Op.
 
 		/*
 		 * Objects from caches that have a constructor don't get
 		 * cleared when they're allocated, so we need to do it here.
 		 */
 		if (s->ctor)
-			kmemcheck_mark_uninitialized_pages(page, pages);
+			kmemcheck_mark_uninitialized_pages(page, pages); // NO Op.
 		else
-			kmemcheck_mark_unallocated_pages(page, pages);
+			kmemcheck_mark_unallocated_pages(page, pages);   // No Op.
 	}
 
 	if (flags & __GFP_WAIT)
@@ -1389,8 +1424,11 @@ static struct page *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 		1 << oo_order(oo));
 
 	return page;
+	// 2016-03-12 분석완료
 }
 
+// 2016-03-12
+// setup_object(s, page, last)
 static void setup_object(struct kmem_cache *s, struct page *page,
 				void *object)
 {
@@ -1418,30 +1456,39 @@ static struct page *new_slab(struct kmem_cache *s, gfp_t flags, int node)
 	// 2015-05-23; 시작
 	page = allocate_slab(s,
 		flags & (GFP_RECLAIM_MASK | GFP_CONSTRAINT_MASK), node);
+	// 2016-03-12 분석완료;
+	
+	// 2016-03-12 시작;
 	if (!page)
 		goto out;
 
 	order = compound_order(page);
 	inc_slabs_node(s, page_to_nid(page), page->objects);
-	memcg_bind_pages(s, order);
+	memcg_bind_pages(s, order); // NO Op.
 	page->slab_cache = s;
-	__SetPageSlab(page);
+	__SetPageSlab(page); // PG_slab비트를 page->flags에 셋함
 	if (page->pfmemalloc)
 		SetPageSlabPfmemalloc(page);
 
 	start = page_address(page);
 
 	if (unlikely(s->flags & SLAB_POISON))
-		memset(start, POISON_INUSE, PAGE_SIZE << order);
+		memset(start, POISON_INUSE/*0x5a*/, PAGE_SIZE << order);
 
 	last = start;
+	// #define for_each_object(__p, __s, __addr, __objects) \
+	//         for (__p = (__addr); __p < (__addr) + (__objects) * (__s)->size;\
+	//                          __p += (__s)->size)
+	// 
+	// for (p = start; p < start + page->objects * s->size; p += s->size)
 	for_each_object(p, s, start, page->objects) {
 		setup_object(s, page, last);
 		set_freepointer(s, last, p);
 		last = p;
 	}
+	// 다시 한번 호출
 	setup_object(s, page, last);
-	set_freepointer(s, last, NULL);
+	set_freepointer(s, last, NULL); // p 대신 NULL
 
 	page->freelist = start;
 	page->inuse = page->objects;
@@ -1530,6 +1577,8 @@ static void discard_slab(struct kmem_cache *s, struct page *page)
  *
  * list_lock must be held.
  */
+// 2016-03-12;
+// add_partial(n, page, DEACTIVATE_TO_HEAD);
 static inline void add_partial(struct kmem_cache_node *n,
 				struct page *page, int tail)
 {
@@ -2865,28 +2914,32 @@ static inline int calculate_order(int size, int reserved)
 	return -ENOSYS;
 }
 
+// 2016-03-12;
 static void
 init_kmem_cache_node(struct kmem_cache_node *n)
 {
 	n->nr_partial = 0;
 	spin_lock_init(&n->list_lock);
 	INIT_LIST_HEAD(&n->partial);
-#ifdef CONFIG_SLUB_DEBUG
+#ifdef CONFIG_SLUB_DEBUG // defined
 	atomic_long_set(&n->nr_slabs, 0);
 	atomic_long_set(&n->total_objects, 0);
 	INIT_LIST_HEAD(&n->full);
 #endif
 }
 
+// 2016-03-12;
+// alloc_kmem_cache_cpus(kmem_cache_node)
 static inline int alloc_kmem_cache_cpus(struct kmem_cache *s)
 {
-	BUILD_BUG_ON(PERCPU_DYNAMIC_EARLY_SIZE <
-			KMALLOC_SHIFT_HIGH * sizeof(struct kmem_cache_cpu));
+	BUILD_BUG_ON(PERCPU_DYNAMIC_EARLY_SIZE/*12KB*/ <
+			KMALLOC_SHIFT_HIGH/*13*/ * sizeof(struct kmem_cache_cpu));
 
 	/*
 	 * Must align to double word boundary for the double cmpxchg
 	 * instructions to work; see __pcpu_double_call_return_bool().
 	 */
+	// 2016-03-12 시작;
 	s->cpu_slab = __alloc_percpu(sizeof(struct kmem_cache_cpu),
 				     2 * sizeof(void *));
 
@@ -2898,6 +2951,7 @@ static inline int alloc_kmem_cache_cpus(struct kmem_cache *s)
 	return 1;
 }
 
+// 2016-03-12;
 static struct kmem_cache *kmem_cache_node;
 
 /*
@@ -2922,7 +2976,9 @@ static void early_kmem_cache_node_alloc(int node)
 
 	// 2015-05-23; 시작
 	page = new_slab(kmem_cache_node, GFP_NOWAIT, node);
+	// 2016-03-12 분석완료;
 
+	// 2016-03-12 시작;
 	BUG_ON(!page);
 	if (page_to_nid(page) != node) {
 		printk(KERN_ERR "SLUB: Unable to allocate memory from "
@@ -2931,6 +2987,7 @@ static void early_kmem_cache_node_alloc(int node)
 				"in order to be able to continue\n");
 	}
 
+	// 참고: https://github.com/arm10c/linux-stable/issues/8
 	n = page->freelist;
 	BUG_ON(!n);
 	page->freelist = get_freepointer(kmem_cache_node, n);
@@ -2945,6 +3002,7 @@ static void early_kmem_cache_node_alloc(int node)
 	inc_slabs_node(kmem_cache_node, node, page->objects);
 
 	add_partial(n, page, DEACTIVATE_TO_HEAD);
+	// 2016-03-12 분석완료;
 }
 
 static void free_kmem_cache_nodes(struct kmem_cache *s)
@@ -2976,6 +3034,7 @@ static int init_kmem_cache_nodes(struct kmem_cache *s)
 		// 초기 설정은 'DOWN'
 		if (slab_state == DOWN) {
 			early_kmem_cache_node_alloc(node);
+			// 2016-03-12 분석완료;
 			// slab_state가 'DOWN'이면 여기까지만 진행
 			continue;
 		}
@@ -3120,7 +3179,7 @@ static int calculate_sizes(struct kmem_cache *s, int forced_order)
 }
 
 // 2015-05-16
-// SLAB_HWCACHE_ALIGN
+// kmem_cache_open(kmem_cache_node, SLAB_HWCACHE_ALIGN)
 static int kmem_cache_open(struct kmem_cache *s, unsigned long flags)
 {
 	s->flags = kmem_cache_flags(s->size, flags, s->name, s->ctor);
@@ -3196,7 +3255,9 @@ static int kmem_cache_open(struct kmem_cache *s, unsigned long flags)
 	// 2015-05-23; 시작
 	if (!init_kmem_cache_nodes(s))
 		goto error;
+	// 2016-03-12 분석완료;
 
+	// 2016-03-12 시작;
 	if (alloc_kmem_cache_cpus(s))
 		return 0;
 
@@ -3820,7 +3881,7 @@ __kmem_cache_alias(struct mem_cgroup *memcg, const char *name, size_t size,
 }
 
 // 2015-05-16
-// SLAB_HWCACHE_ALIGN
+// __kmem_cache_create(kmem_cache_node, SLAB_HWCACHE_ALIGN)
 int __kmem_cache_create(struct kmem_cache *s, unsigned long flags)
 {
 	int err;

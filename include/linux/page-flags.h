@@ -182,6 +182,7 @@ static inline int __TestClearPage##uname(struct page *page)		\
 // __PAGEFLAG(Slab, slab)
 // int PageSlab(const struct page *page) { test_bit(PG_slab, &page->flags); }
 //
+// 2016-03-12;
 // void __SetPageSlab(struct page *page) { __set_bit(PG_slab, &page->flags); }
 //
 // void __ClearPageSlab(struct page *page) { __clear_bit(PG_slab, &page->flags); }
@@ -406,6 +407,8 @@ __SETPAGEFLAG(Head, compound)  __CLEARPAGEFLAG(Head, compound)
 // 2015-01-24
 // 2015-04-18;
 // page의 flags에서 PG_head_mask가 있는지 확인
+// 
+// 2016-03-12;
 static inline int PageHead(struct page *page)
 {
 	return ((page->flags & PG_head_tail_mask) == PG_head_mask);
@@ -506,6 +509,7 @@ static inline int PageSlabPfmemalloc(struct page *page)
 	return PageActive(page);
 }
 
+// 2016-03-12;
 static inline void SetPageSlabPfmemalloc(struct page *page)
 {
 	VM_BUG_ON(!PageSlab(page));

@@ -25,7 +25,11 @@
  * is a transposition of the code from copy_template.S but with the copy
  * occurring in the opposite direction.
  */
-
+// 2016-03-12 glance; 
+// memmove(&chunk->map[i + nr_extra], 
+//         &chunk->map[i],
+//         sizeof(chunk->map[0]) * (chunk->map_used - i));
+// 
 ENTRY(memmove)
 
 		subs	ip, r0, r1

@@ -1,6 +1,20 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [91주차]() `2016.03.12`
+ - [kmem_cache_init() 진행중]()
+ - mm/slub.c:alloc_kmem_cache_cpus() - 진행 중
+ - mm/percpu.c:__alloc_percpu() - 진행 중
+ - mm/percup.c:pcpu_alloc() - 진행 중
+ - mm/slub.c:init_kmem_cache_nodes() - 분석 완료
+ - mm/slub.c:early_kmem_cache_node_alloc() - 분석 완료
+ - mm/slub.c:new_slab() - 분석 완료
+ - mm/slub.c:allocate_slab() - 분석 완료 
+ - mm/slub.c:alloc_slab_page() - 분석 완료
+ - include/linux/gfp.h:alloc_pages_exact_node() - 분석 완료
+ - include/linux/gfp.h:__alloc_pages() - 분석 완료
+ - mm/page_alloc.c:__alloc_pages_nodemask - 분석 완료
+  
 + [90주차](bit.ly/1oXHaKr) `2016.03.05`
  - [kmem_cache_init() 진행중]()
  - page_alloc.c:__alloc_pages_nodemask() 진행 중

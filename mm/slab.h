@@ -185,6 +185,7 @@ static inline bool cache_match_memcg(struct kmem_cache *cachep,
 	return true;
 }
 
+// 2016-03-12;
 static inline void memcg_bind_pages(struct kmem_cache *s, int order)
 {
 }
@@ -258,6 +259,7 @@ static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
 /*
  * The slab lists for all objects.
  */
+// 2016-03-12;
 struct kmem_cache_node {
 	spinlock_t list_lock;
 

@@ -198,13 +198,14 @@ struct kmem_cache {
 #endif
 #endif
 
-#ifdef CONFIG_SLUB
+#ifdef CONFIG_SLUB // defined
 /*
  * SLUB allocates up to order 2 pages directly and otherwise
  * passes the request to the page allocator.
  */
-#define KMALLOC_SHIFT_HIGH	(PAGE_SHIFT + 1)
-#define KMALLOC_SHIFT_MAX	(MAX_ORDER + PAGE_SHIFT)
+// 2016-03-12
+#define KMALLOC_SHIFT_HIGH	(PAGE_SHIFT + 1) // 13
+#define KMALLOC_SHIFT_MAX	(MAX_ORDER/*11*/ + PAGE_SHIFT/*12*/) // 23
 #ifndef KMALLOC_SHIFT_LOW
 #define KMALLOC_SHIFT_LOW	3
 #endif
