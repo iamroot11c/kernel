@@ -1,6 +1,16 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [91주차](bit.ly/1VmUeWy) `2016.03.19`
+ - [kmem_cache_init() 진행중]()
+ - mm/slub.c:alloc_kmem_cache_cpus() - 진행 중
+ - mm/percpu.c:__alloc_percpu() - 진행 중
+ - mm/percup.c:pcpu_alloc() - 진행 중
+ - mm/slub.c:pcpu_extend_area_map() - 진행 중
+ - mm/percpu.c:pcpu_mem_zalloc() - 분석 완료
+ - mm/percpu.c:pcpu_mem_free() - 진행 중
+ - mm/slub.c:kfree() - 진행 중
+
 + [91주차](bit.ly/1SIgclZ) `2016.03.12`
  - [kmem_cache_init() 진행중]()
  - mm/slub.c:alloc_kmem_cache_cpus() - 진행 중
