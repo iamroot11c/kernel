@@ -70,6 +70,8 @@
 // 2015-07-18
 // 2015-10-03
 // 2015-10-17
+// 2016-03-19
+// pfn -> 상위 4비트로 mem_section 정보 얻어옴 -> mem_section의 page_table + pfn으로 일치하는 페이지 주소를 얻음
 #define __pfn_to_page(pfn)				\
 ({	unsigned long __pfn = (pfn);			\
 	struct mem_section *__sec = __pfn_to_section(__pfn);	\
@@ -83,6 +85,7 @@
 // 2015-09-19;
 // 2015-10-03
 // 2015-10-17
+// 2016-03-19
 #define pfn_to_page __pfn_to_page
 
 #endif /* __ASSEMBLY__ */

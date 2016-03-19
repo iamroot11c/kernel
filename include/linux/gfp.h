@@ -315,6 +315,8 @@ static inline enum zone_type gfp_zone(gfp_t flags)
  */
 // 2015-03-28;
 // gfp_zonelist(GFP_KERNEL);
+// 2016-03-19
+// 현재 분석 타겟은 UMA이기 때문에(CONFIG_NUMA 미설정) 무조건 0 리턴
 static inline int gfp_zonelist(gfp_t flags)
 {
 	if (IS_ENABLED(CONFIG_NUMA) && unlikely(flags & __GFP_THISNODE))
@@ -344,6 +346,8 @@ static inline int gfp_zonelist(gfp_t flags)
 //
 // 2015-09-19;
 // node_zonelist(0, GFP_ATOMIC | __GFP_HIGHMEM);
+// 2016-03-19
+// node_zonelist(nid, gfp_mask)
 static inline struct zonelist *node_zonelist(int nid, gfp_t flags)
 {
 	return NODE_DATA(nid)->node_zonelists + gfp_zonelist(flags)/*0*/;
@@ -381,6 +385,10 @@ __alloc_pages(gfp_t gfp_mask, unsigned int order,
 // alloc_pages_node(numa_node_id(), gfp_mask, order);
 // nid = 0 
 // gfp_mask = GFP_ATOMIC | __GFP_HIGHMEM
+// 2016-03-19
+// alloc_pages_node(numa_node_id(), gfp_mask, order);
+// gfp_mask = __GFP_COMP | __GFP_KMEMCG | __GFP_ZERO | GFP_KERNEL
+//  (단 GFP_KERNEL == __GFP_WAIT | __GFP_IO | __GFP_FS)
 static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
 						unsigned int order)
 {
@@ -420,6 +428,7 @@ extern struct page *alloc_pages_vma(gfp_t gfp_mask, int order,
 			int node);
 #else
 // 2015-09-19;
+// 2016-03-19;
 #define alloc_pages(gfp_mask, order) \
 		alloc_pages_node(numa_node_id(), gfp_mask, order)
 #define alloc_pages_vma(gfp_mask, order, vma, addr, node)	\

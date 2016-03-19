@@ -991,6 +991,7 @@ extern char numa_zonelist_order[];
 #ifndef CONFIG_NEED_MULTIPLE_NODES
 
 extern struct pglist_data contig_page_data;
+// 2016-03-19
 #define NODE_DATA(nid)		(&contig_page_data)
 #define NODE_MEM_MAP(nid)	mem_map
 
@@ -1234,7 +1235,7 @@ struct mem_section {
 // SECTIONS_PER_ROOT는 하나의 PAGE를 몇개의 mem_section로 다룰지를 결정
 // 예를 들어, PAGE_SIZE가 10이고, sizeof (struct mem_section)이 2라면
 // 5개로, 하나의 PAGE를 다룰 것이다.
-// 512개로 예상됨.
+// 512개로 예상됨. (mem_section의 크기 : 8byte, PAGE_SIZE : 4K Byte -> 4K / 8 == 512)
 #define SECTIONS_PER_ROOT       (PAGE_SIZE / sizeof (struct mem_section))
 #else
 #define SECTIONS_PER_ROOT	1
@@ -1264,8 +1265,11 @@ static inline struct mem_section *__nr_to_section(unsigned long nr)
     // mem_section[SECTION_NR_TO_ROOT(nr)][nr & SECTION_ROOT_MASK] 구문을 통해
     // 설정한 배열 크기 이상에 해당되는 주소를 얻어와 반환하고 있다.
     // 즉 buffer overflow가 일어나고 있다.
+    // -> 이상하지 않다. nr 값은 0 ~ 15까지이며,  nr / 512 는 무조건 0이다.
+    // 따라서 mem_section[SECTION_NR_TO_ROOT(nr)])는 mem_section[0]과 같다. 
 	if (!mem_section[SECTION_NR_TO_ROOT(nr)])
 		return NULL;
+    // return &mem_section[0][nr]과 같다.
 	return &mem_section[SECTION_NR_TO_ROOT(nr)][nr & SECTION_ROOT_MASK];
 }
 extern int __section_nr(struct mem_section* ms);
@@ -1285,6 +1289,7 @@ extern unsigned long usemap_size(void);
 // 2015-01-17
 // 2015-08-22
 // 2015-09-19;
+// 2016-03-19
 static inline struct page *__section_mem_map_addr(struct mem_section *section)
 {
 	unsigned long map = section->section_mem_map;

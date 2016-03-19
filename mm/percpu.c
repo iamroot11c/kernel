@@ -300,14 +300,18 @@ static void __maybe_unused pcpu_next_pop(struct pcpu_chunk *chunk,
  * RETURNS:
  * Pointer to the allocated area on success, NULL on failure.
  */
+// 2016-03-19
 static void *pcpu_mem_zalloc(size_t size)
 {
 	if (WARN_ON_ONCE(!slab_is_available()))
 		return NULL;
 
 	if (size <= PAGE_SIZE)
+		// 1page 크기 이하인 경우
 		return kzalloc(size, GFP_KERNEL);
 	else
+		// glance. 2016.03.19 분석 시점에서는
+		// 해당 코드에 들어올 경우가 거의 없기 때문
 		return vzalloc(size);
 }
 
@@ -318,6 +322,7 @@ static void *pcpu_mem_zalloc(size_t size)
  *
  * Free @ptr.  @ptr should have been allocated using pcpu_mem_zalloc().
  */
+// 2016-03-19
 static void pcpu_mem_free(void *ptr, size_t size)
 {
 	if (size <= PAGE_SIZE)
@@ -400,12 +405,16 @@ static int pcpu_need_to_extend(struct pcpu_chunk *chunk)
  * RETURNS:
  * 0 on success, -errno on failure.
  */
+
+// 2016-03-19
+// pcpu_extend_area_map(chunk, new_alloc)
 static int pcpu_extend_area_map(struct pcpu_chunk *chunk, int new_alloc)
 {
 	int *old = NULL, *new = NULL;
 	size_t old_size = 0, new_size = new_alloc * sizeof(new[0]);
 	unsigned long flags;
 
+	// 2016-03-19
 	new = pcpu_mem_zalloc(new_size);
 	if (!new)
 		return -ENOMEM;
@@ -423,6 +432,8 @@ static int pcpu_extend_area_map(struct pcpu_chunk *chunk, int new_alloc)
 
 	chunk->map_alloc = new_alloc;
 	chunk->map = new;
+	// out_unlock에서 메모리 해제가 되지 않게 하기 위해
+	// new값을 null값으로 세팅
 	new = NULL;
 
 out_unlock:
@@ -794,6 +805,7 @@ restart:
 			if (new_alloc) {
 				spin_unlock_irqrestore(&pcpu_lock, flags);
 				// 2016-03-12; 자주에 분석!
+				// 2016-03-19 시작
 				if (pcpu_extend_area_map(chunk,
 							 new_alloc) < 0) {
 					err = "failed to extend area map";

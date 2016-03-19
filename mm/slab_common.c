@@ -288,6 +288,7 @@ void kmem_cache_destroy(struct kmem_cache *s)
 EXPORT_SYMBOL(kmem_cache_destroy);
 
 // 2014-12-20;
+// 2016-03-19
 int slab_is_available(void)
 {
 	return slab_state >= UP; // slab_state::UP 또는 
@@ -334,6 +335,7 @@ struct kmem_cache *__init create_kmalloc_cache(const char *name, size_t size,
 	return s;
 }
 
+// 2016-03-19
 struct kmem_cache *kmalloc_caches[KMALLOC_SHIFT_HIGH + 1];
 EXPORT_SYMBOL(kmalloc_caches);
 
@@ -375,6 +377,8 @@ static s8 size_index[24] = {
 	2	/* 192 */
 };
 
+// 2016-03-19
+// size_index_elem(size)
 static inline int size_index_elem(size_t bytes)
 {
 	return (bytes - 1) / 8;
@@ -384,6 +388,8 @@ static inline int size_index_elem(size_t bytes)
  * Find the kmem_cache structure that serves a given size of
  * allocation
  */
+// 2016-03-19
+// kmalloc_slab(size, flags);
 struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)
 {
 	int index;
@@ -396,16 +402,20 @@ struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)
 	if (size <= 192) {
 		if (!size)
 			return ZERO_SIZE_PTR;
-
+		// size_index 내부의 값은 1~7까지의 값이 정의되어 있다.
 		index = size_index[size_index_elem(size)];
 	} else
 		index = fls(size - 1);
 
-#ifdef CONFIG_ZONE_DMA
+#ifdef CONFIG_ZONE_DMA // not define
 	if (unlikely((flags & GFP_DMA)))
 		return kmalloc_dma_caches[index];
 
 #endif
+	// 2016-03-19 식사 전
+	// 현재 분석 시점에서는 kmalloc_caches를 세팅하는
+	//  create_kmalloc_caches가 불려지지 않았으며
+	//  kmalloc_caches 배열 내부는 null일 것이다.
 	return kmalloc_caches[index];
 }
 

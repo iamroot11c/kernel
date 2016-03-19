@@ -37,12 +37,13 @@ enum stat_item {
 	CPU_PARTIAL_DRAIN,	/* Drain cpu partial to node partial */
 	NR_SLUB_STAT_ITEMS };
 
+// 2016-03-19
 struct kmem_cache_cpu {
 	void **freelist;	/* Pointer to next available object */
 	unsigned long tid;	/* Globally unique transaction id */
 	struct page *page;	/* The slab from which we are allocating */
 	struct page *partial;	/* Partially allocated frozen slabs */
-#ifdef CONFIG_SLUB_STATS
+#ifdef CONFIG_SLUB_STATS // not defined
 	unsigned stat[NR_SLUB_STAT_ITEMS];
 #endif
 };

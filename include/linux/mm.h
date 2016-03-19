@@ -396,6 +396,7 @@ static inline void compound_unlock_irqrestore(struct page *page,
 // 마지막이 아니라면 바로 리턴함
 //
 // 2015-07-25;
+// 2016-03-19
 static inline struct page *compound_head(struct page *page)
 {
 	if (unlikely(PageTail(page))) {
@@ -472,6 +473,7 @@ static inline void get_page(struct page *page)
 	atomic_inc(&page->_count);
 }
 
+// 2016-03-19
 static inline struct page *virt_to_head_page(const void *x)
 {
 	struct page *page = virt_to_page(x);
@@ -853,6 +855,8 @@ static inline void set_page_links(struct page *page, enum zone_type zone,
 // page 구조체의 flags 멤버 변수의 상위 4비트(28~31)를 인덱스로 하여
 // mem_section배열에서 (베이스) 주소를 구한 후 
 // 이 값을 page에서 빼야 PFN을 구할 수 있다
+// 2016-03-19
+// 페이지 주소 -> 해당 페이지의 물리주소 -> 가상주소로 변환한 값을 리턴
 static __always_inline void *lowmem_page_address(const struct page *page)
 {
 	return __va(PFN_PHYS(page_to_pfn(page)));

@@ -1732,6 +1732,8 @@ EXPORT_SYMBOL(vmalloc);
  *	For tight control over page level allocator and protection flags
  *	use __vmalloc() instead.
  */
+// 2016-03-19
+// glance
 void *vzalloc(unsigned long size)
 {
 	return __vmalloc_node_flags(size, NUMA_NO_NODE,

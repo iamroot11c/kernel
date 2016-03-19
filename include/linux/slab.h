@@ -93,6 +93,8 @@
  */
 #define ZERO_SIZE_PTR ((void *)16)
 
+// 2016-03-19
+// ZERO_SIZE_PTR보다 작은 값인 경우 (0x0 ~ 0x010)
 #define ZERO_OR_NULL_PTR(x) ((unsigned long)(x) <= \
 				(unsigned long)ZERO_SIZE_PTR)
 
@@ -204,6 +206,7 @@ struct kmem_cache {
  * passes the request to the page allocator.
  */
 // 2016-03-12
+// 2016-03-19
 #define KMALLOC_SHIFT_HIGH	(PAGE_SHIFT + 1) // 13
 #define KMALLOC_SHIFT_MAX	(MAX_ORDER/*11*/ + PAGE_SHIFT/*12*/) // 23
 #ifndef KMALLOC_SHIFT_LOW
@@ -225,8 +228,12 @@ struct kmem_cache {
 #endif
 
 /* Maximum allocatable size */
+// 2016-03-19
+// 분석 타겟 기준으로 slub할당자를 사용하므로 최대 사이즈는 8M Byte
 #define KMALLOC_MAX_SIZE	(1UL << KMALLOC_SHIFT_MAX)
 /* Maximum size for which we actually use a slab cache */
+// 2016-03-19  
+// 분석 타겟 기준으로 slub할당자를 사용하므로 2page(8k byte)할당 가능
 #define KMALLOC_MAX_CACHE_SIZE	(1UL << KMALLOC_SHIFT_HIGH)
 /* Maximum order allocatable via the slab allocagtor */
 #define KMALLOC_MAX_ORDER	(KMALLOC_SHIFT_MAX - PAGE_SHIFT)
@@ -356,6 +363,7 @@ kmem_cache_alloc_node_trace(struct kmem_cache *s,
 #include <linux/slub_def.h>
 #endif
 
+// 2016-03-19
 static __always_inline void *
 kmalloc_order(size_t size, gfp_t flags, unsigned int order)
 {
@@ -363,13 +371,15 @@ kmalloc_order(size_t size, gfp_t flags, unsigned int order)
 
 	flags |= (__GFP_COMP | __GFP_KMEMCG);
 	ret = (void *) __get_free_pages(flags, order);
-	kmemleak_alloc(ret, size, 1, flags);
+	kmemleak_alloc(ret, size, 1, flags); // NO OP
 	return ret;
 }
 
 #ifdef CONFIG_TRACING
 extern void *kmalloc_order_trace(size_t size, gfp_t flags, unsigned int order);
 #else
+// 2016-03-19
+// kmalloc_order_trace(size, flags, order);
 static __always_inline void *
 kmalloc_order_trace(size_t size, gfp_t flags, unsigned int order)
 {
@@ -377,6 +387,8 @@ kmalloc_order_trace(size_t size, gfp_t flags, unsigned int order)
 }
 #endif
 
+// 2016-03-19
+// kmalloc_large(size, flags);
 static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
 {
 	unsigned int order = get_order(size);
@@ -391,8 +403,13 @@ static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
  * kmalloc is the normal method of allocating memory
  * for objects smaller than page size in the kernel.
  */
+// 2016-03-19
+// kmalloc(size, flags | __GFP_ZERO);
 static __always_inline void *kmalloc(size_t size, gfp_t flags)
 {
+    // __builtin_constant_p : 컴파일 타임에 값이 결정될 수 있는 경우 참 리턴
+    // 2016-03-19 분석 시점에서는 size값이 런타임에서 결정되기 때문에
+    // 아래 if 문은 타지 않는다.
 	if (__builtin_constant_p(size)) {
 		if (size > KMALLOC_MAX_CACHE_SIZE)
 			return kmalloc_large(size, flags);
@@ -408,7 +425,8 @@ static __always_inline void *kmalloc(size_t size, gfp_t flags)
 		}
 #endif
 	}
-	return __kmalloc(size, flags);
+	// 2016-03-19
+    return __kmalloc(size, flags);
 }
 
 /*
@@ -638,6 +656,8 @@ static inline void *kmem_cache_zalloc(struct kmem_cache *k, gfp_t flags)
  * @size: how many bytes of memory are required.
  * @flags: the type of memory to allocate (see kmalloc).
  */
+// 2016-03-19
+// kzalloc(size, GFP_KERNEL);
 static inline void *kzalloc(size_t size, gfp_t flags)
 {
 	return kmalloc(size, flags | __GFP_ZERO);

@@ -228,9 +228,10 @@ static inline void sysfs_slab_remove(struct kmem_cache *s) { }
 static inline void memcg_propagate_slab_attrs(struct kmem_cache *s) { }
 #endif
 
+// 2016-03-19
 static inline void stat(const struct kmem_cache *s, enum stat_item si)
 {
-#ifdef CONFIG_SLUB_STATS
+#ifdef CONFIG_SLUB_STATS // not defined
 	__this_cpu_inc(s->cpu_slab->stat[si]);
 #endif
 }
@@ -991,8 +992,8 @@ static inline void slab_post_alloc_hook(struct kmem_cache *s,
 	// 구할 수 있음
 	//
 	// CONFIG_KMEMCHECK 비 활성화로 kmemcheck_slab_alloc() 함수는 무시
-	kmemcheck_slab_alloc(s, flags, object, slab_ksize(s));
-	kmemleak_alloc_recursive(object, s->object_size, 1, s->flags, flags);
+	kmemcheck_slab_alloc(s, flags, object, slab_ksize(s)); // NO OP
+	kmemleak_alloc_recursive(object, s->object_size, 1, s->flags, flags); // NO OP
 }
 
 static inline void slab_free_hook(struct kmem_cache *s, void *x)
@@ -2443,6 +2444,8 @@ new_slab:
  *
  * Otherwise we can simply pick the next object from the lockless free list.
  */
+// 2016-03-19
+// kmem_cache *s의 cpu_slab에서 다음 할당 가능한 object 주소(freelist) 값을 얻어온다.
 static __always_inline void *slab_alloc_node(struct kmem_cache *s,
 		gfp_t gfpflags, int node, unsigned long addr)
 {
@@ -2491,12 +2494,13 @@ redo:
 	object = c->freelist;
 	page = c->page;
 	if (unlikely(!object || !node_match(page, node)))
+		// freelist가 없으면 새로 slab을 할당
 		object = __slab_alloc(s, gfpflags, node, addr, c);
 
 	else {
 		void *next_object = get_freepointer_safe(s, object);
-		//void *next_object = *(void **)(object + s->offset);
-
+		// void *next_object = *(void **)(object + s->offset);
+		// prepatch할 object를 설정하기 위해 next_object를 구함
 		/*
 		 * The cmpxchg will only match if there was no additional
 		 * operation and if we are on the right processor.
@@ -2531,6 +2535,7 @@ redo:
 	return object;
 }
 
+// 2016-03-19
 static __always_inline void *slab_alloc(struct kmem_cache *s,
 		gfp_t gfpflags, unsigned long addr)
 {
@@ -3400,19 +3405,26 @@ static int __init setup_slub_nomerge(char *str)
 
 __setup("slub_nomerge", setup_slub_nomerge);
 
+// 2016-03-19
+//  __kmalloc(size, flags);
 void *__kmalloc(size_t size, gfp_t flags)
 {
 	struct kmem_cache *s;
 	void *ret;
 
+	// 8k 이상 할당을 시도하는 경우
 	if (unlikely(size > KMALLOC_MAX_CACHE_SIZE))
 		return kmalloc_large(size, flags);
 
+	// kmem_cache 값을 리턴받는다는 것을 주의
 	s = kmalloc_slab(size, flags);
 
+	// 2016.03.19 분석 시점에서는 kmem_cache을 관리하는
+	// 전역 배열 초기화가 되지 않은 상태이기 때문에 null 포인터 반환될 것이다.
 	if (unlikely(ZERO_OR_NULL_PTR(s)))
 		return s;
 
+	// kmem_cache의 cpu_slab에서 다음 할당 가능한 메모리 주소를 얻어온다.
 	ret = slab_alloc(s, flags, _RET_IP_);
 
 	trace_kmalloc(_RET_IP_, ret, size, s->size, flags);
@@ -3483,6 +3495,7 @@ size_t ksize(const void *object)
 }
 EXPORT_SYMBOL(ksize);
 
+// 2016-03-19
 void kfree(const void *x)
 {
 	struct page *page;
@@ -3492,8 +3505,9 @@ void kfree(const void *x)
 
 	if (unlikely(ZERO_OR_NULL_PTR(x)))
 		return;
-
+	// 2016-03-19
 	page = virt_to_head_page(x);
+	// 2016-03-19 여기까지
 	if (unlikely(!PageSlab(page))) {
 		BUG_ON(!PageCompound(page));
 		kmemleak_free(x);
