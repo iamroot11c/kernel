@@ -24,6 +24,8 @@ static inline void __set_bit(int nr, volatile unsigned long *addr)
 
 // 2015-01-25
 // 2015-06-20
+// 2016-03-26
+// __clear_bit(PG_locked, &page->flags)
 static inline void __clear_bit(int nr, volatile unsigned long *addr)
 {
 	unsigned long mask = BIT_MASK(nr);

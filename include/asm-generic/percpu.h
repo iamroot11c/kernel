@@ -68,6 +68,7 @@ extern unsigned long __per_cpu_offset[NR_CPUS]; // NR_CPUS = 2;
 #ifndef __this_cpu_ptr
 // 2015-12-12
 // 2016-01-23
+// 2016-03-26
 #define __this_cpu_ptr(ptr) SHIFT_PERCPU_PTR(ptr, __my_cpu_offset)
 #endif
 #ifdef CONFIG_DEBUG_PREEMPT // defined

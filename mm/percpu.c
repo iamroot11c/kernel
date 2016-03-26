@@ -443,6 +443,7 @@ out_unlock:
 	 * pcpu_mem_free() might end up calling vfree() which uses
 	 * IRQ-unsafe lock and thus can't be called under pcpu_lock.
 	 */
+	// 2016-03-19
 	pcpu_mem_free(old, old_size);
 	pcpu_mem_free(new, new_size);
 

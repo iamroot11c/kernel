@@ -72,6 +72,7 @@
  * SPARSEMEM_EXTREME with !SPARSEMEM_VMEMMAP).
  */
 enum pageflags {
+    // 2016-03-26;
 	PG_locked,		/* Page is locked. Don't touch. */
 	PG_error,
 	PG_referenced,

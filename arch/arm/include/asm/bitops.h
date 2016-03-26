@@ -184,6 +184,8 @@ extern int _find_next_bit_be(const unsigned long *p, int size, int offset);
 	(__builtin_constant_p(nr) ? ____atomic_##name(nr, p) : _##name(nr,p))
 #else 
 // 2016-01-16
+// 2016-03-26
+// _test_and_set_bit(PG_locked, &page->flags)
 #define ATOMIC_BITOP(name,nr,p)		_##name(nr,p)
 #endif
 
@@ -196,6 +198,8 @@ extern int _find_next_bit_be(const unsigned long *p, int size, int offset);
 #define change_bit(nr,p)		ATOMIC_BITOP(change_bit,nr,p)
 // 2014-12-13
 // _test_and_set_bit(nr, p)
+// 2016-03-26
+// test_and_set_bit(PG_locked, &page->flags)
 #define test_and_set_bit(nr,p)		ATOMIC_BITOP(test_and_set_bit,nr,p)
 // 2014-12-13
 // _test_and_clear_bit(nr, p)

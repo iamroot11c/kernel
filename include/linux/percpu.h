@@ -188,6 +188,8 @@ extern void __bad_size_call_parameter(void);
 // -> __this_cpu_read_2
 // -> __this_cpu_read_4
 // -> __this_cpu_read_8
+// 2016-03-26;
+// __pcpu_size_call_return(__this_cpu_read_, (pcp))
 #define __pcpu_size_call_return(stem, variable)				\
 ({	typeof(variable) pscr_ret__;					\
 	__verify_pcpu_ptr(&(variable));					\
@@ -228,6 +230,18 @@ extern void __bad_size_call_parameter(void);
  * a double cmpxchg instruction, since it's a cheap requirement, and it
  * avoids breaking the requirement for architectures with the instruction.
  */
+// 2016-03-26
+// __pcpu_double_call_return_bool(
+//         this_cpu_cmpxchg_double_,
+//         s->cpu_slab->freelist, s->cpu_slab->tid,
+//         c->freelist, tid,
+//         object, next_tid(tid))
+//
+// stmp = this_cpu_cmpxchg_double_
+// this_cpu_cmpxchg_double_1
+// this_cpu_cmpxchg_double_2
+// this_cpu_cmpxchg_double_4
+// this_cpu_cmpxchg_double_8
 #define __pcpu_double_call_return_bool(stem, pcp1, pcp2, ...)		\
 ({									\
 	bool pdcrb_ret__;						\
@@ -247,6 +261,8 @@ extern void __bad_size_call_parameter(void);
 	pdcrb_ret__;							\
 })
 
+// 2016-03-26;
+// __pcpu_size_call(__this_cpu_write_, (pcp), (val))
 #define __pcpu_size_call(stem, variable, ...)				\
 do {									\
 	__verify_pcpu_ptr(&(variable));					\
@@ -509,6 +525,7 @@ do {									\
  * very limited hardware support for these operations, so only certain
  * sizes may work.
  */
+// 2016-03-26
 #define _this_cpu_generic_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nval2)	\
 ({									\
 	int ret__;							\
@@ -520,6 +537,7 @@ do {									\
 	ret__;								\
 })
 
+// 2016-03-26;
 #ifndef this_cpu_cmpxchg_double
 # ifndef this_cpu_cmpxchg_double_1
 #  define this_cpu_cmpxchg_double_1(pcp1, pcp2, oval1, oval2, nval1, nval2)	\
@@ -537,6 +555,11 @@ do {									\
 #  define this_cpu_cmpxchg_double_8(pcp1, pcp2, oval1, oval2, nval1, nval2)	\
 	_this_cpu_generic_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nval2)
 # endif
+// 2016-03-26
+// this_cpu_cmpxchg_double(
+//        s->cpu_slab->freelist, s->cpu_slab->tid,
+//        c->freelist, tid,
+//        object, next_tid(tid))
 # define this_cpu_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nval2)	\
 	__pcpu_double_call_return_bool(this_cpu_cmpxchg_double_, (pcp1), (pcp2), (oval1), (oval2), (nval1), (nval2))
 #endif
@@ -555,6 +578,7 @@ do {									\
  * or an interrupt occurred and the same percpu variable was modified from
  * the interrupt context.
  */
+// 2016-03-26;
 #ifndef __this_cpu_read
 # ifndef __this_cpu_read_1
 #  define __this_cpu_read_1(pcp)	(*__this_cpu_ptr(&(pcp)))
@@ -568,14 +592,18 @@ do {									\
 # ifndef __this_cpu_read_8
 #  define __this_cpu_read_8(pcp)	(*__this_cpu_ptr(&(pcp)))
 # endif
+// 2016-03-26;
 # define __this_cpu_read(pcp)	__pcpu_size_call_return(__this_cpu_read_, (pcp))
 #endif
 
+// 2016-03-26;
+// __this_cpu_generic_to_op((pcp), (val), =)
 #define __this_cpu_generic_to_op(pcp, val, op)				\
 do {									\
 	*__this_cpu_ptr(&(pcp)) op val;					\
 } while (0)
 
+// 2016-03-26;
 #ifndef __this_cpu_write
 # ifndef __this_cpu_write_1
 #  define __this_cpu_write_1(pcp, val)	__this_cpu_generic_to_op((pcp), (val), =)
@@ -589,6 +617,7 @@ do {									\
 # ifndef __this_cpu_write_8
 #  define __this_cpu_write_8(pcp, val)	__this_cpu_generic_to_op((pcp), (val), =)
 # endif
+// 2016-03-26;
 # define __this_cpu_write(pcp, val)	__pcpu_size_call(__this_cpu_write_, (pcp), (val))
 #endif
 
@@ -750,6 +779,7 @@ do {									\
 	__pcpu_size_call_return2(__this_cpu_cmpxchg_, pcp, oval, nval)
 #endif
 
+// 2016-03-26;
 #define __this_cpu_generic_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nval2)	\
 ({									\
 	int __ret = 0;							\

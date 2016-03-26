@@ -362,7 +362,7 @@ typedef char *va_list;
 #define  _ADNBND                (sizeof (acpi_native_int) - 1)
 
 /* Variable argument list macro definitions */
-
+// 2016-03-26
 #define _bnd(X, bnd)            (((sizeof (X)) + (bnd)) & (~(bnd)))
 #define va_arg(ap, T)           (*(T *)(((ap) += (_bnd (T, _AUPBND))) - (_bnd (T,_ADNBND))))
 #define va_end(ap)              (ap = (va_list) NULL)

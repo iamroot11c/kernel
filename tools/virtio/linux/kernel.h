@@ -85,6 +85,7 @@ static inline void free_page(unsigned long addr)
 	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
 	(type *)( (char *)__mptr - offsetof(type,member) );})
 
+// 2016-03-26;
 #define uninitialized_var(x) x = x
 
 # ifndef likely

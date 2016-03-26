@@ -557,6 +557,7 @@ static inline compound_page_dtor *get_compound_page_dtor(struct page *page)
 // 2015-04-28; 헤더가 아니면 0을 리턴
 //
 // 2016-03-12;
+// 2016-03-26;
 static inline int compound_order(struct page *page)
 {
 	if (!PageHead(page))

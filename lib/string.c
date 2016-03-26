@@ -759,6 +759,7 @@ void *memchr(const void *s, int c, size_t n)
 EXPORT_SYMBOL(memchr);
 #endif
 
+// 2016-03-26 1 Byte 단위로 검사;
 static void *check_bytes8(const u8 *start, u8 value, unsigned int bytes)
 {
 	while (bytes) {
@@ -779,6 +780,9 @@ static void *check_bytes8(const u8 *start, u8 value, unsigned int bytes)
  * returns the address of the first character other than @c, or %NULL
  * if the whole buffer contains just @c.
  */
+// 2016-03-26;
+// memchr_inv(end - remainder, POISON_INUSE/*0x5a*/, remainder)
+// start 포인터부터 c와 비교해서 다른 포인터 위치를 찾음
 void *memchr_inv(const void *start, int c, size_t bytes)
 {
 	u8 value = c;
@@ -789,6 +793,8 @@ void *memchr_inv(const void *start, int c, size_t bytes)
 		return check_bytes8(start, value, bytes);
 
 	value64 = value;
+// 2016-03-26
+// ARCH_HAS_FAST_MULTIPLIER는 정의 안되어 있음
 #if defined(ARCH_HAS_FAST_MULTIPLIER) && BITS_PER_LONG == 64
 	value64 *= 0x0101010101010101;
 #elif defined(ARCH_HAS_FAST_MULTIPLIER)

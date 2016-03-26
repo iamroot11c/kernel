@@ -116,6 +116,7 @@
  * 			the fast path and disables lockless freelists.
  */
 
+ // 2016-03-26;
 static inline int kmem_cache_debug(struct kmem_cache *s)
 {
 #ifdef CONFIG_SLUB_DEBUG	// set
@@ -126,6 +127,7 @@ static inline int kmem_cache_debug(struct kmem_cache *s)
 }
 
 // 2015-05-16
+// 2016-03-26;
 static inline bool kmem_cache_has_cpu_partial(struct kmem_cache *s)
 {
 #ifdef CONFIG_SLUB_CPU_PARTIAL	// set
@@ -147,6 +149,7 @@ static inline bool kmem_cache_has_cpu_partial(struct kmem_cache *s)
 #undef SLUB_RESILIENCY_TEST
 
 /* Enable to log cmpxchg failures */
+// 2016-03-26;
 #undef SLUB_DEBUG_CMPXCHG
 
 /*
@@ -185,6 +188,7 @@ static inline bool kmem_cache_has_cpu_partial(struct kmem_cache *s)
 
 #define OO_SHIFT	16
 #define OO_MASK		((1 << OO_SHIFT) - 1)
+// 2016-03-26
 #define MAX_OBJS_PER_PAGE	32767 /* since page.objects is u15 */
 
 /* Internal SLUB flags */
@@ -202,6 +206,7 @@ static struct notifier_block slab_notifier;
 #define TRACK_ADDRS_COUNT 16
 // 2015-05-16
 // 2016-03-12;
+// 2016-03-26;
 struct track {
 	unsigned long addr;	/* Called from address */
 #ifdef CONFIG_STACKTRACE	// not set
@@ -241,12 +246,16 @@ static inline void stat(const struct kmem_cache *s, enum stat_item si)
  *******************************************************************/
 
 // 2016-03-12;
+// 2016-03-26;
+// get_node(s, page_to_nid(page))
 static inline struct kmem_cache_node *get_node(struct kmem_cache *s, int node)
 {
 	return s->node[node];
 }
 
 /* Verify that a pointer has an address that is valid within a slab page */
+// 2016-03-26
+// check_valid_pointer(s, page, object)
 static inline int check_valid_pointer(struct kmem_cache *s,
 				struct page *page, const void *object)
 {
@@ -292,6 +301,8 @@ static inline void *get_freepointer_safe(struct kmem_cache *s, void *object)
 
 // 2016-03-12
 // set_freepointer(s, last, p)
+// 2016-03-26;
+// set_freepointer(page->slab_cache, object, c->freelist);
 static inline void set_freepointer(struct kmem_cache *s, void *object, void *fp)
 {
 	*(void **)(object + s->offset) = fp;
@@ -335,6 +346,8 @@ static inline size_t slab_ksize(const struct kmem_cache *s)
 
 // 2015-05-16
 // 계산식의 의미는?
+// 2016-03-26;
+// order_objects(compound_order(page), s->size, s->reserved)
 static inline int order_objects(int order, unsigned long size, int reserved)
 {
 	return ((PAGE_SIZE << order) - reserved) / size;
@@ -367,11 +380,13 @@ static inline int oo_objects(struct kmem_cache_order_objects x)
 /*
  * Per slab locking using the pagelock
  */
+// 2016-03-26;
 static __always_inline void slab_lock(struct page *page)
 {
 	bit_spin_lock(PG_locked, &page->flags);
 }
 
+// 2016-03-26;
 static __always_inline void slab_unlock(struct page *page)
 {
 	__bit_spin_unlock(PG_locked, &page->flags);
@@ -415,11 +430,17 @@ static inline bool __cmpxchg_double_slab(struct kmem_cache *s, struct page *page
 	return 0;
 }
 
+// 2016-03-26
+// !cmpxchg_double_slab(s, page,
+//                prior, counters,
+//                object, new.counters,
+//                "__slab_free")
 static inline bool cmpxchg_double_slab(struct kmem_cache *s, struct page *page,
 		void *freelist_old, unsigned long counters_old,
 		void *freelist_new, unsigned long counters_new,
 		const char *n)
 {
+// CONFIG_HAVE_CMPXCHG_DOUBLE, CONFIG_HAVE_ALIGNED_STRUCT_PAGE not define
 #if defined(CONFIG_HAVE_CMPXCHG_DOUBLE) && \
     defined(CONFIG_HAVE_ALIGNED_STRUCT_PAGE)
 	if (s->flags & __CMPXCHG_DOUBLE) {
@@ -513,6 +534,8 @@ static struct track *get_track(struct kmem_cache *s, void *object,
 // 2016-03-12
 // set_track(s, last, TRACK_FREE, 0UL);
 // set_track(s, last, TRACK_ALLOC, 0UL);
+// 2016-03-26
+// set_track(s, object, TRACK_FREE, addr);
 static void set_track(struct kmem_cache *s, void *object,
 			enum track_item alloc, unsigned long addr)
 {
@@ -610,6 +633,8 @@ static void slab_bug(struct kmem_cache *s, char *fmt, ...)
 	add_taint(TAINT_BAD_PAGE, LOCKDEP_NOW_UNRELIABLE);
 }
 
+// 2016-03-26
+// slab_fix(s, "Restoring 0x%p-0x%p=0x%x\n", end - remainder, end - 1, POISON_INUSE/*0x5a*/)
 static void slab_fix(struct kmem_cache *s, char *fmt, ...)
 {
 	va_list args;
@@ -664,6 +689,7 @@ static void object_err(struct kmem_cache *s, struct page *page,
 	print_trailer(s, page, object);
 }
 
+// 2016-03-26;
 static void slab_err(struct kmem_cache *s, struct page *page,
 			const char *fmt, ...)
 {
@@ -681,6 +707,8 @@ static void slab_err(struct kmem_cache *s, struct page *page,
 // 2016-03-12
 // init_object(s, last, SLUB_RED_INACTIVE);
 // init_object(kmem_cache_node, n, SLUB_RED_ACTIVE);
+// 2016-03-26
+// init_object(s, object, SLUB_RED_INACTIVE);
 static void init_object(struct kmem_cache *s, void *object, u8 val)
 {
 	u8 *p = object;
@@ -694,6 +722,8 @@ static void init_object(struct kmem_cache *s, void *object, u8 val)
 		memset(p + s->object_size, val/*0xbb*/, s->inuse - s->object_size);
 }
 
+// 2016-03-26
+// restore_bytes(s, "slab padding", POISON_INUSE/*0x5a*/, end - remainder, end)
 static void restore_bytes(struct kmem_cache *s, char *message, u8 data,
 						void *from, void *to)
 {
@@ -701,6 +731,7 @@ static void restore_bytes(struct kmem_cache *s, char *message, u8 data,
 	memset(from, data, to - from);
 }
 
+// 2016-03-26
 static int check_bytes_and_report(struct kmem_cache *s, struct page *page,
 			u8 *object, char *what,
 			u8 *start, unsigned int value, unsigned int bytes)
@@ -762,7 +793,7 @@ static int check_bytes_and_report(struct kmem_cache *s, struct page *page,
  * ignored. And therefore no slab options that rely on these boundaries
  * may be used with merged slabcaches.
  */
-
+// 2016-03-26;
 static int check_pad_bytes(struct kmem_cache *s, struct page *page, u8 *p)
 {
 	unsigned long off = s->inuse;	/* The end of info */
@@ -782,6 +813,7 @@ static int check_pad_bytes(struct kmem_cache *s, struct page *page, u8 *p)
 				p + off, POISON_INUSE, s->size - off);
 }
 
+// 2016-03-26;
 /* Check the pad bytes at the end of a slab page */
 static int slab_pad_check(struct kmem_cache *s, struct page *page)
 {
@@ -814,6 +846,8 @@ static int slab_pad_check(struct kmem_cache *s, struct page *page)
 	return 0;
 }
 
+// 2016-03-26
+// check_object(s, page, object, SLUB_RED_ACTIVE/*0xcc*/)
 static int check_object(struct kmem_cache *s, struct page *page,
 					void *object, u8 val)
 {
@@ -866,6 +900,7 @@ static int check_object(struct kmem_cache *s, struct page *page,
 	return 1;
 }
 
+// 2016-03-26;
 static int check_slab(struct kmem_cache *s, struct page *page)
 {
 	int maxobj;
@@ -897,6 +932,8 @@ static int check_slab(struct kmem_cache *s, struct page *page)
  * Determine if a certain object on a page is on the freelist. Must hold the
  * slab lock to guarantee that the chains are in a consistent state.
  */
+// 2016-03-26;
+// on_freelist(s, page, object)
 static int on_freelist(struct kmem_cache *s, struct page *page, void *search)
 {
 	int nr = 0;
@@ -928,7 +965,7 @@ static int on_freelist(struct kmem_cache *s, struct page *page, void *search)
 	}
 
 	max_objects = order_objects(compound_order(page), s->size, s->reserved);
-	if (max_objects > MAX_OBJS_PER_PAGE)
+	if (max_objects > MAX_OBJS_PER_PAGE/*32767*/)
 		max_objects = MAX_OBJS_PER_PAGE;
 
 	if (page->objects != max_objects) {
@@ -996,15 +1033,20 @@ static inline void slab_post_alloc_hook(struct kmem_cache *s,
 	kmemleak_alloc_recursive(object, s->object_size, 1, s->flags, flags); // NO OP
 }
 
+// 2016-03-26;
+// slab_free_hook(page->slab_cache, (void *)object)
+// CONFIG_DEBUG_KMEMLEAK, CONFIG_DEBUG_OBJECTS_FREE 비 활성화로
+// 함수에서 하는것이 없다. 
 static inline void slab_free_hook(struct kmem_cache *s, void *x)
 {
-	kmemleak_free_recursive(x, s->flags);
+	kmemleak_free_recursive(x, s->flags); // No OP.
 
 	/*
 	 * Trouble is that we may no longer disable interupts in the fast path
 	 * So in order to make the debug calls that expect irqs to be
 	 * disabled we need to disable interrupts temporarily.
 	 */
+// CONFIG_KMEMCHECK, CONFIG_LOCKDEP Not define
 #if defined(CONFIG_KMEMCHECK) || defined(CONFIG_LOCKDEP)
 	{
 		unsigned long flags;
@@ -1016,7 +1058,7 @@ static inline void slab_free_hook(struct kmem_cache *s, void *x)
 	}
 #endif
 	if (!(s->flags & SLAB_DEBUG_OBJECTS))
-		debug_check_no_obj_freed(x, s->object_size);
+		debug_check_no_obj_freed(x, s->object_size); // No OP.
 }
 
 /*
@@ -1133,6 +1175,8 @@ bad:
 	return 0;
 }
 
+// 2016-03-26;
+// free_debug_processing(s, page, x, addr, &flags)
 static noinline struct kmem_cache_node *free_debug_processing(
 	struct kmem_cache *s, struct page *page, void *object,
 	unsigned long addr, unsigned long *flags)
@@ -1151,6 +1195,7 @@ static noinline struct kmem_cache_node *free_debug_processing(
 	}
 
 	if (on_freelist(s, page, object)) {
+		// object 포인터가 NULL 이면 오류 상태로 판단
 		object_err(s, page, object, "Object already free");
 		goto fail;
 	}
@@ -1815,6 +1860,7 @@ static inline unsigned int init_tid(int cpu)
 	return cpu;
 }
 
+// 2016-03-26;
 static inline void note_cmpxchg_failure(const char *n,
 		const struct kmem_cache *s, unsigned long tid)
 {
@@ -2601,6 +2647,8 @@ EXPORT_SYMBOL(kmem_cache_alloc_node_trace);
  * lock and free the item. If there is no additional partial page
  * handling required then we can return immediately.
  */
+// 2016-03-26;
+// __slab_free(s, page, x, addr)
 static void __slab_free(struct kmem_cache *s, struct page *page,
 			void *x, unsigned long addr)
 {
@@ -2610,10 +2658,11 @@ static void __slab_free(struct kmem_cache *s, struct page *page,
 	struct page new;
 	unsigned long counters;
 	struct kmem_cache_node *n = NULL;
-	unsigned long uninitialized_var(flags);
+	unsigned long uninitialized_var(flags); // flags = flags;
 
 	stat(s, FREE_SLOWPATH);
 
+	// 2016-03-26
 	if (kmem_cache_debug(s) &&
 		!(n = free_debug_processing(s, page, x, addr, &flags)))
 		return;
@@ -2657,10 +2706,15 @@ static void __slab_free(struct kmem_cache *s, struct page *page,
 			}
 		}
 
+	// (a) page->freelist == prior
+	// (b) page->counters == counters
+	// cmpxchg_double_slab() 함수는 위 두 조건이 모두 참이면 
+	// 함수안에서 새로운 값으로 저장하고 리턴 1을 함
 	} while (!cmpxchg_double_slab(s, page,
 		prior, counters,
 		object, new.counters,
 		"__slab_free"));
+	// 2016-03-26 여기까지;
 
 	if (likely(!n)) {
 
@@ -2725,6 +2779,8 @@ slab_empty:
  * with all sorts of special processing.
  */
 // 2015-08-15, glance
+// 2016-03-26;
+// slab_free(page->slab_cache, page, object, _RET_IP_)
 static __always_inline void slab_free(struct kmem_cache *s,
 			struct page *page, void *x, unsigned long addr)
 {
@@ -2732,6 +2788,9 @@ static __always_inline void slab_free(struct kmem_cache *s,
 	struct kmem_cache_cpu *c;
 	unsigned long tid;
 
+	// 2016-03-26
+	// CONFIG_DEBUG_KMEMLEAK, CONFIG_DEBUG_OBJECTS_FREE 비 활성화로
+	// 함수에서 하는것이 없다.
 	slab_free_hook(s, x);
 
 redo:
@@ -2750,6 +2809,17 @@ redo:
 	if (likely(page == c->page)) {
 		set_freepointer(s, object, c->freelist);
 
+		// int this_cpu_cmpxchg_double() {
+		// if ((s->cpu_slab->freelist == c->freelist) 
+		//		&& (s->cpu_slab->tid)  == tid) {
+		//	*__this_cpu_ptr(&(s->cpu_slab->freelist)) = object;
+		//	*__this_cpu_ptr(&(s->cpu_slab->tid) = next_tid(tid);
+		//	return 1;	
+		// }
+		// else 
+		//	return 0;
+		// }
+		//
 		if (unlikely(!this_cpu_cmpxchg_double(
 				s->cpu_slab->freelist, s->cpu_slab->tid,
 				c->freelist, tid,
@@ -2760,6 +2830,7 @@ redo:
 		}
 		stat(s, FREE_FASTPATH);
 	} else
+		// 2016-03-26 시작;
 		__slab_free(s, page, x, addr);
 
 }
@@ -3508,12 +3579,15 @@ void kfree(const void *x)
 	// 2016-03-19
 	page = virt_to_head_page(x);
 	// 2016-03-19 여기까지
+	
+	// 2016-03-26 시작;
 	if (unlikely(!PageSlab(page))) {
 		BUG_ON(!PageCompound(page));
 		kmemleak_free(x);
 		__free_memcg_kmem_pages(page, compound_order(page));
 		return;
 	}
+	// 2016-03-26 시작;
 	slab_free(page->slab_cache, page, object, _RET_IP_);
 }
 EXPORT_SYMBOL(kfree);

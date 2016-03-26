@@ -9,6 +9,8 @@
  * This operation is atomic and provides acquire barrier semantics.
  * It can be used to implement bit locks.
  */
+// 2016-03-26
+// test_and_set_bit_lock(PG_locked, &page->flags)
 #define test_and_set_bit_lock(nr, addr)	test_and_set_bit(nr, addr)
 
 /**
@@ -35,6 +37,8 @@ do {					\
  * any bits in the memory until the lock is released (a good example is
  * if the bit lock itself protects access to the other bits in the word).
  */
+// 2016-03-26
+// __clear_bit_unlock(PG_locked, &page->flags)
 #define __clear_bit_unlock(nr, addr)	\
 do {					\
 	smp_mb();			\

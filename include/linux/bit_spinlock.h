@@ -12,6 +12,8 @@
  * Don't use this unless you really need to: spin_lock() and spin_unlock()
  * are significantly faster.
  */
+// 2016-03-26
+// bit_spin_lock(PG_locked, &page->flags)
 static inline void bit_spin_lock(int bitnum, unsigned long *addr)
 {
 	/*
@@ -22,15 +24,18 @@ static inline void bit_spin_lock(int bitnum, unsigned long *addr)
 	 * attempt to acquire the lock bit.
 	 */
 	preempt_disable();
+// CONFIG_SMP, CONFIG_DEBUG_SPINLOCK defined
 #if defined(CONFIG_SMP) || defined(CONFIG_DEBUG_SPINLOCK)
 	while (unlikely(test_and_set_bit_lock(bitnum, addr))) {
 		preempt_enable();
 		do {
-			cpu_relax();
+			cpu_relax(); // barrier()
 		} while (test_bit(bitnum, addr));
 		preempt_disable();
 	}
 #endif
+    // 2016-03-26;
+    // 정적분석 도구로 분석하지 않음
 	__acquire(bitlock);
 }
 
@@ -70,11 +75,14 @@ static inline void bit_spin_unlock(int bitnum, unsigned long *addr)
  *  non-atomic version, which can be used eg. if the bit lock itself is
  *  protecting the rest of the flags in the word.
  */
+// 2016-03-26
+// __bit_spin_unlock(PG_locked, &page->flags);
 static inline void __bit_spin_unlock(int bitnum, unsigned long *addr)
 {
-#ifdef CONFIG_DEBUG_SPINLOCK
+#ifdef CONFIG_DEBUG_SPINLOCK // defined
 	BUG_ON(!test_bit(bitnum, addr));
 #endif
+// CONFIG_SMP, CONFIG_DEBUG_SPINLOCK defined
 #if defined(CONFIG_SMP) || defined(CONFIG_DEBUG_SPINLOCK)
 	__clear_bit_unlock(bitnum, addr);
 #endif

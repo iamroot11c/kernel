@@ -43,10 +43,12 @@
 
 // 2016-03-12
 #define SLUB_RED_INACTIVE	0xbb
+// 2016-03-26;
 #define SLUB_RED_ACTIVE		0xcc
 
 /* ...and for poisoning */
 // 2016-03-12
+// 2016-03-26;
 #define	POISON_INUSE	0x5a	/* for use-uninitialised poisoning */
 #define POISON_FREE	0x6b	/* for use-after-free poisoning */
 #define	POISON_END	0xa5	/* end-byte of poisoning */
