@@ -79,6 +79,7 @@ enum pageflags {
 	PG_uptodate,
 	PG_dirty,
 	PG_lru,
+    // 2016-04-02
 	PG_active,
 	PG_slab,
 	PG_owner_priv_1,	/* Owner use. If pagecache, fs may use*/
@@ -517,9 +518,11 @@ static inline void SetPageSlabPfmemalloc(struct page *page)
 	SetPageActive(page);
 }
 
+// 2016-04-02
 static inline void __ClearPageSlabPfmemalloc(struct page *page)
 {
 	VM_BUG_ON(!PageSlab(page));
+    // PG_active를 클리어
 	__ClearPageActive(page);
 }
 

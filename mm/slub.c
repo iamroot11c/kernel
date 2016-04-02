@@ -128,6 +128,7 @@ static inline int kmem_cache_debug(struct kmem_cache *s)
 
 // 2015-05-16
 // 2016-03-26;
+// 2016-04-02
 static inline bool kmem_cache_has_cpu_partial(struct kmem_cache *s)
 {
 #ifdef CONFIG_SLUB_CPU_PARTIAL	// set
@@ -393,12 +394,19 @@ static __always_inline void slab_unlock(struct page *page)
 }
 
 /* Interrupts must be disabled (for the fallback code to work right) */
+// 2016-04-02
+// (!__cmpxchg_double_slab(s, page,
+//                                  old.freelist, old.counters,
+//                                  new.freelist, new.counters,
+//                                  "unfreezing slab"))
 static inline bool __cmpxchg_double_slab(struct kmem_cache *s, struct page *page,
 		void *freelist_old, unsigned long counters_old,
 		void *freelist_new, unsigned long counters_new,
 		const char *n)
 {
 	VM_BUG_ON(!irqs_disabled());
+// CONFIG_HAVE_CMPXCHG_DOUBLE =n
+// CONFIG_HAVE_ALIGNED_STRUCT_PAGE =n
 #if defined(CONFIG_HAVE_CMPXCHG_DOUBLE) && \
     defined(CONFIG_HAVE_ALIGNED_STRUCT_PAGE)
 	if (s->flags & __CMPXCHG_DOUBLE) {
@@ -410,6 +418,7 @@ static inline bool __cmpxchg_double_slab(struct kmem_cache *s, struct page *page
 #endif
 	{
 		slab_lock(page);
+		// compare and exchange
 		if (page->freelist == freelist_old &&
 					page->counters == counters_old) {
 			page->freelist = freelist_new;
@@ -1078,6 +1087,7 @@ static void add_full(struct kmem_cache *s,
 /*
  * list_lock must be held.
  */
+// 2016-04-02
 static void remove_full(struct kmem_cache *s, struct page *page)
 {
 	if (!(s->flags & SLAB_STORE_USER))
@@ -1118,11 +1128,15 @@ static inline void inc_slabs_node(struct kmem_cache *s, int node, int objects)
 		atomic_long_add(objects, &n->total_objects);
 	}
 }
+
+// 2016-04-02
+// dec_slabs_node(s, page_to_nid(page), page->objects);
 static inline void dec_slabs_node(struct kmem_cache *s, int node, int objects)
 {
 	struct kmem_cache_node *n = get_node(s, node);
 
 	atomic_long_dec(&n->nr_slabs);
+	// objects갯수만큼 빼준다.
 	atomic_long_sub(objects, &n->total_objects);
 }
 
@@ -1511,11 +1525,14 @@ static struct page *new_slab(struct kmem_cache *s, gfp_t flags, int node)
 	order = compound_order(page);
 	inc_slabs_node(s, page_to_nid(page), page->objects);
 	memcg_bind_pages(s, order); // NO Op.
+
+	// slab_cache 설정
 	page->slab_cache = s;
 	__SetPageSlab(page); // PG_slab비트를 page->flags에 셋함
 	if (page->pfmemalloc)
 		SetPageSlabPfmemalloc(page);
 
+	// 해당 페이지에 대한 가상주소로 구해서, start에 assigns
 	start = page_address(page);
 
 	if (unlikely(s->flags & SLAB_POISON))
@@ -1536,6 +1553,7 @@ static struct page *new_slab(struct kmem_cache *s, gfp_t flags, int node)
 	setup_object(s, page, last);
 	set_freepointer(s, last, NULL); // p 대신 NULL
 
+	// freelist에는 page의 가상주소가 저장되어 있다.
 	page->freelist = start;
 	page->inuse = page->objects;
 	page->frozen = 1;
@@ -1543,11 +1561,13 @@ out:
 	return page;
 }
 
+// 2016-04-02
 static void __free_slab(struct kmem_cache *s, struct page *page)
 {
 	int order = compound_order(page);
-	int pages = 1 << order;
+	int pages = 1 << order;	// order : 2, pages : 4
 
+	// skip
 	if (kmem_cache_debug(s)) {
 		void *p;
 
@@ -1557,6 +1577,7 @@ static void __free_slab(struct kmem_cache *s, struct page *page)
 			check_object(s, page, p, SLUB_RED_INACTIVE);
 	}
 
+	// NOP
 	kmemcheck_free_shadow(page, compound_order(page));
 
 	mod_zone_page_state(page_zone(page),
@@ -1567,6 +1588,7 @@ static void __free_slab(struct kmem_cache *s, struct page *page)
 	__ClearPageSlabPfmemalloc(page);
 	__ClearPageSlab(page);
 
+	// NOP
 	memcg_release_pages(s, order);
 	page_mapcount_reset(page);
 	if (current->reclaim_state)
@@ -1589,6 +1611,7 @@ static void rcu_free_slab(struct rcu_head *h)
 	__free_slab(page->slab_cache, page);
 }
 
+// 2016-04-02
 static void free_slab(struct kmem_cache *s, struct page *page)
 {
 	if (unlikely(s->flags & SLAB_DESTROY_BY_RCU)) {
@@ -1612,9 +1635,11 @@ static void free_slab(struct kmem_cache *s, struct page *page)
 		__free_slab(s, page);
 }
 
+// 2016-04-02
 static void discard_slab(struct kmem_cache *s, struct page *page)
 {
 	dec_slabs_node(s, page_to_nid(page), page->objects);
+	// 2016-04-02
 	free_slab(s, page);
 }
 
@@ -1625,10 +1650,14 @@ static void discard_slab(struct kmem_cache *s, struct page *page)
  */
 // 2016-03-12;
 // add_partial(n, page, DEACTIVATE_TO_HEAD);
+// 2016-04-02
+//  add_partial(n, page, DEACTIVATE_TO_TAIL);
 static inline void add_partial(struct kmem_cache_node *n,
 				struct page *page, int tail)
 {
 	n->nr_partial++;
+	// 2016-04-02, DEACTIVATE_TO_TAIL
+	// kmem_cache_node에 page를 추가한다.
 	if (tail == DEACTIVATE_TO_TAIL)
 		list_add_tail(&page->lru, &n->partial);
 	else
@@ -1638,6 +1667,7 @@ static inline void add_partial(struct kmem_cache_node *n,
 /*
  * list_lock must be held.
  */
+// 2016-04-02
 static inline void remove_partial(struct kmem_cache_node *n,
 					struct page *page)
 {
@@ -1831,7 +1861,8 @@ static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
  * during cmpxchg. The transactions start with the cpu number and are then
  * incremented by CONFIG_NR_CPUS.
  */
-#define TID_STEP  roundup_pow_of_two(CONFIG_NR_CPUS)
+// 2016-04-02
+#define TID_STEP  roundup_pow_of_two(CONFIG_NR_CPUS/*2*/)	// 2
 #else
 /*
  * No preemption supported therefore also no need to check for
@@ -1840,9 +1871,10 @@ static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
 #define TID_STEP 1
 #endif
 
+// 2016-04-02
 static inline unsigned long next_tid(unsigned long tid)
 {
-	return tid + TID_STEP;
+	return tid + TID_STEP/*2*/;
 }
 
 static inline unsigned int tid_to_cpu(unsigned long tid)
@@ -1896,6 +1928,7 @@ static void init_kmem_cache_cpus(struct kmem_cache *s)
 /*
  * Remove the cpu slab
  */
+// 2016-04-02, TODO, glance
 static void deactivate_slab(struct kmem_cache *s, struct page *page,
 				void *freelist)
 {
@@ -2045,6 +2078,7 @@ redo:
  * for the cpu using c (or some other guarantee must be there
  * to guarantee no concurrent accesses).
  */
+// 2016-04-02
 static void unfreeze_partials(struct kmem_cache *s,
 		struct kmem_cache_cpu *c)
 {
@@ -2052,6 +2086,8 @@ static void unfreeze_partials(struct kmem_cache *s,
 	struct kmem_cache_node *n = NULL, *n2 = NULL;
 	struct page *page, *discard_page = NULL;
 
+	// kmem_cache_cpu->partial을 순회하면서, frozon = 0으로 설정한 상태로
+	// add_partial(n, page, DEACTIVATE_TO_TAIL);을 통해서 kmem_cache_node->partial에 추가시켜 주고 있다.
 	while ((page = c->partial)) {
 		struct page new;
 		struct page old;
@@ -2059,6 +2095,8 @@ static void unfreeze_partials(struct kmem_cache *s,
 		c->partial = page->next;
 
 		n2 = get_node(s, page_to_nid(page));
+
+		// spin lock을 컨트롤 하기 위한 구문으로 보인다.
 		if (n != n2) {
 			if (n)
 				spin_unlock(&n->list_lock);
@@ -2076,8 +2114,14 @@ static void unfreeze_partials(struct kmem_cache *s,
 			new.counters = old.counters;
 			new.freelist = old.freelist;
 
+			// page 구초제의 data type이 중요한데
+			// frozen은 1비트 크기를 가진다.
+			// old는 frozen을 가정하고 있고
+			// new에서는 !frozen으로 설정하고 있다.
 			new.frozen = 0;
-
+			
+			// 그러므로, old.counters와 new.counters는 다른 값일 것이다.
+			// new값으로 page의 멤버값을 설정한다.
 		} while (!__cmpxchg_double_slab(s, page,
 				old.freelist, old.counters,
 				new.freelist, new.counters,
@@ -2087,10 +2131,11 @@ static void unfreeze_partials(struct kmem_cache *s,
 			page->next = discard_page;
 			discard_page = page;
 		} else {
+			// 2016-04-02
 			add_partial(n, page, DEACTIVATE_TO_TAIL);
 			stat(s, FREE_ADD_PARTIAL);
 		}
-	}
+	}	// while
 
 	if (n)
 		spin_unlock(&n->list_lock);
@@ -2115,9 +2160,10 @@ static void unfreeze_partials(struct kmem_cache *s,
  * If we did not find a slot then simply move all the partials to the
  * per node partial list.
  */
+// put_cpu_partial(s, page, 1);
 static void put_cpu_partial(struct kmem_cache *s, struct page *page, int drain)
 {
-#ifdef CONFIG_SLUB_CPU_PARTIAL
+#ifdef CONFIG_SLUB_CPU_PARTIAL	// =y
 	struct page *oldpage;
 	int pages;
 	int pobjects;
@@ -2137,6 +2183,8 @@ static void put_cpu_partial(struct kmem_cache *s, struct page *page, int drain)
 				 * set to the per node partial list.
 				 */
 				local_irq_save(flags);
+				// 2016-04-02
+				// buddy 할당자에 반납
 				unfreeze_partials(s, this_cpu_ptr(s->cpu_slab));
 				local_irq_restore(flags);
 				oldpage = NULL;
@@ -2158,9 +2206,11 @@ static void put_cpu_partial(struct kmem_cache *s, struct page *page, int drain)
 #endif
 }
 
+// 2016-04-02
 static inline void flush_slab(struct kmem_cache *s, struct kmem_cache_cpu *c)
 {
 	stat(s, CPUSLAB_FLUSH);
+	// 2016-04-02, 봐야함
 	deactivate_slab(s, c->page, c->freelist);
 
 	c->tid = next_tid(c->tid);
@@ -2281,6 +2331,8 @@ slab_out_of_memory(struct kmem_cache *s, gfp_t gfpflags, int nid)
 	}
 }
 
+// 2016-04-02
+// new_slab_objects(s, gfpflags, node, &c);
 static inline void *new_slab_objects(struct kmem_cache *s, gfp_t flags,
 			int node, struct kmem_cache_cpu **pc)
 {
@@ -2293,6 +2345,7 @@ static inline void *new_slab_objects(struct kmem_cache *s, gfp_t flags,
 	if (freelist)
 		return freelist;
 
+	// 여기부터 먼저 봄
 	page = new_slab(s, flags, node);
 	if (page) {
 		c = __this_cpu_ptr(s->cpu_slab);
@@ -2307,6 +2360,7 @@ static inline void *new_slab_objects(struct kmem_cache *s, gfp_t flags,
 		page->freelist = NULL;
 
 		stat(s, ALLOC_SLAB);
+		// 할당받은 page를 여기에 설정
 		c->page = page;
 		*pc = c;
 	} else
@@ -2333,6 +2387,8 @@ static inline bool pfmemalloc_match(struct page *page, gfp_t gfpflags)
  *
  * This function must be called with interrupt disabled.
  */
+// 2016-04-02
+// page의 freelist를 넘겨주는 것이 기본 기능
 static inline void *get_freelist(struct kmem_cache *s, struct page *page)
 {
 	struct page new;
@@ -2340,6 +2396,7 @@ static inline void *get_freelist(struct kmem_cache *s, struct page *page)
 	void *freelist;
 
 	do {
+		// freelist를 설정
 		freelist = page->freelist;
 		counters = page->counters;
 
@@ -2373,6 +2430,8 @@ static inline void *get_freelist(struct kmem_cache *s, struct page *page)
  * we need to allocate a new slab. This is the slowest path since it involves
  * a call to the page allocator and the setup of a new slab.
  */
+// 2016-04-02
+// 놓쳤지만, 지금이라도 보자.
 static void *__slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
 			  unsigned long addr, struct kmem_cache_cpu *c)
 {
@@ -2391,6 +2450,7 @@ static void *__slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
 #endif
 
 	page = c->page;
+	// 없는 경우부터 먼저 봄
 	if (!page)
 		goto new_slab;
 redo:
@@ -2422,6 +2482,7 @@ redo:
 
 	stat(s, ALLOC_SLOWPATH);
 
+	// get freelist
 	freelist = get_freelist(s, page);
 
 	if (!freelist) {
@@ -2438,12 +2499,14 @@ load_freelist:
 	 * page is pointing to the page from which the objects are obtained.
 	 * That page must be frozen for per cpu allocations to work.
 	 */
+	// cpu_slab의 값을 다음 값으로 설정
 	VM_BUG_ON(!c->page->frozen);
 	c->freelist = get_freepointer(s, freelist);
 	c->tid = next_tid(c->tid);
 	local_irq_restore(flags);
 	return freelist;
 
+// 2016-04-02, 여기부터 
 new_slab:
 
 	if (c->partial) {
@@ -2454,6 +2517,8 @@ new_slab:
 		goto redo;
 	}
 
+	// 최초 할당?
+	// 이것은 page의 가상주소
 	freelist = new_slab_objects(s, gfpflags, node, &c);
 
 	if (unlikely(!freelist)) {
@@ -2473,6 +2538,7 @@ new_slab:
 			!alloc_debug_processing(s, page, freelist, addr))
 		goto new_slab;	/* Slab failed checks. Next slab needed */
 
+	// 206-04-02, TODO
 	deactivate_slab(s, page, get_freepointer(s, freelist));
 	c->page = NULL;
 	c->freelist = NULL;
@@ -2534,14 +2600,17 @@ redo:
 	 * occurs on the right processor and that there was no operation on the
 	 * linked list in between.
 	 */
-	tid = c->tid;
+	tid = c->tid;	// transaction id
 	preempt_enable(); // 검색이 완료되어 선점을 활성화
 
+	// cache된 것이 있다면, 이것이 리턴될 것이다.
 	object = c->freelist;
 	page = c->page;
 	if (unlikely(!object || !node_match(page, node)))
 		// freelist가 없으면 새로 slab을 할당
+		// 2016-04-02
 		object = __slab_alloc(s, gfpflags, node, addr, c);
+		// 2016-04-02
 
 	else {
 		void *next_object = get_freepointer_safe(s, object);
@@ -2578,6 +2647,7 @@ redo:
 
 	slab_post_alloc_hook(s, gfpflags, object);
 
+	// c->freelist
 	return object;
 }
 
@@ -2585,6 +2655,7 @@ redo:
 static __always_inline void *slab_alloc(struct kmem_cache *s,
 		gfp_t gfpflags, unsigned long addr)
 {
+	// 2016-04-02
 	return slab_alloc_node(s, gfpflags, NUMA_NO_NODE, addr);
 }
 
@@ -2716,6 +2787,7 @@ static void __slab_free(struct kmem_cache *s, struct page *page,
 		"__slab_free"));
 	// 2016-03-26 여기까지;
 
+	// 2016-04-02
 	if (likely(!n)) {
 
 		/*
@@ -2723,7 +2795,9 @@ static void __slab_free(struct kmem_cache *s, struct page *page,
 		 * per cpu partial list.
 		 */
 		if (new.frozen && !was_frozen) {
+			// 2016-04-02
 			put_cpu_partial(s, page, 1);
+			// 2016-04-02
 			stat(s, CPU_PARTIAL_FREE);
 		}
 		/*
@@ -2745,6 +2819,7 @@ static void __slab_free(struct kmem_cache *s, struct page *page,
 	if (!kmem_cache_has_cpu_partial(s) && unlikely(!prior)) {
 		if (kmem_cache_debug(s))
 			remove_full(s, page);
+		// 추가
 		add_partial(n, page, DEACTIVATE_TO_TAIL);
 		stat(s, FREE_ADD_PARTIAL);
 	}
@@ -2760,10 +2835,12 @@ slab_empty:
 		stat(s, FREE_REMOVE_PARTIAL);
 	} else
 		/* Slab must be on the full list */
+		// NOTE: 인자가 partial과 다르다!!!
 		remove_full(s, page);
 
 	spin_unlock_irqrestore(&n->list_lock, flags);
 	stat(s, FREE_SLAB);
+	// 실제 메모리 반납은 여기서 이루어진다.
 	discard_slab(s, page);
 }
 
@@ -2832,6 +2909,7 @@ redo:
 	} else
 		// 2016-03-26 시작;
 		__slab_free(s, page, x, addr);
+		// 2016-04-02
 
 }
 
@@ -3496,7 +3574,9 @@ void *__kmalloc(size_t size, gfp_t flags)
 		return s;
 
 	// kmem_cache의 cpu_slab에서 다음 할당 가능한 메모리 주소를 얻어온다.
+	// 2016-04-02
 	ret = slab_alloc(s, flags, _RET_IP_);
+	// 2016-04-02
 
 	trace_kmalloc(_RET_IP_, ret, size, s->size, flags);
 
@@ -3589,6 +3669,7 @@ void kfree(const void *x)
 	}
 	// 2016-03-26 시작;
 	slab_free(page->slab_cache, page, object, _RET_IP_);
+	// 2016-04-02
 }
 EXPORT_SYMBOL(kfree);
 

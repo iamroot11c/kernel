@@ -38,25 +38,33 @@ static struct page *pcpu_chunk_page(struct pcpu_chunk *chunk,
  * RETURNS:
  * Pointer to temp pages array on success, NULL on failure.
  */
+// 2016-04-02
+// pcpu_get_pages_and_bitmap(chunk, &populated, true)
 static struct page **pcpu_get_pages_and_bitmap(struct pcpu_chunk *chunk,
 					       unsigned long **bitmapp,
 					       bool may_alloc)
 {
 	static struct page **pages;
 	static unsigned long *bitmap;
-	size_t pages_size = pcpu_nr_units * pcpu_unit_pages * sizeof(pages[0]);
+	size_t pages_size = pcpu_nr_units * pcpu_unit_pages * sizeof(pages[0]/*20?*/);
 	size_t bitmap_size = BITS_TO_LONGS(pcpu_unit_pages) *
 			     sizeof(unsigned long);
 
 	if (!pages || !bitmap) {
 		if (may_alloc && !pages)
+			// 2016-04-02
 			pages = pcpu_mem_zalloc(pages_size);
+			// 2016-04-02
 		if (may_alloc && !bitmap)
+			// 2016-04-02
 			bitmap = pcpu_mem_zalloc(bitmap_size);
+			// 2016-04-02
 		if (!pages || !bitmap)
 			return NULL;
 	}
-
+	// 2016-04-02 여기까지
+	
+	// 2016-04-09, TODO
 	bitmap_copy(bitmap, chunk->populated, pcpu_unit_pages);
 
 	*bitmapp = bitmap;
@@ -298,8 +306,10 @@ static void pcpu_post_map_flush(struct pcpu_chunk *chunk,
  * CONTEXT:
  * pcpu_alloc_mutex, does GFP_KERNEL allocation.
  */
+// 2016-04-02
 static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int off, int size)
 {
+	// page frame 단위로 다룬다.
 	int page_start = PFN_DOWN(off);
 	int page_end = PFN_UP(off + size);
 	int free_end = page_start, unmap_end = page_start;
@@ -310,6 +320,7 @@ static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int off, int size)
 
 	/* quick path, check whether all pages are already there */
 	rs = page_start;
+	// 2016-04-02
 	pcpu_next_pop(chunk, &rs, &re, page_end);
 	if (rs == page_start && re == page_end)
 		goto clear;
@@ -317,6 +328,7 @@ static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int off, int size)
 	/* need to allocate and map pages, this chunk can't be immutable */
 	WARN_ON(chunk->immutable);
 
+	// 2016-04-02
 	pages = pcpu_get_pages_and_bitmap(chunk, &populated, true);
 	if (!pages)
 		return -ENOMEM;
@@ -340,6 +352,7 @@ static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int off, int size)
 	/* commit new bitmap */
 	bitmap_copy(chunk->populated, populated, pcpu_unit_pages);
 clear:
+	// 0으로 memset
 	for_each_possible_cpu(cpu)
 		memset((void *)pcpu_chunk_addr(chunk, cpu, 0) + off, 0, size);
 	return 0;

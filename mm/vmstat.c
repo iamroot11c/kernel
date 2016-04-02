@@ -456,6 +456,13 @@ EXPORT_SYMBOL(dec_zone_page_state);
 //               (s->flags & SLAB_RECLAIM_ACCOUNT) ?
 //               NR_SLAB_RECLAIMABLE : NR_SLAB_UNRECLAIMABLE,
 //                1 << oo_order(oo));
+//
+// 2016-04-02
+// mod_zone_page_state(page_zone(page),
+//                  (s->flags & SLAB_RECLAIM_ACCOUNT) ?
+//                  NR_SLAB_RECLAIMABLE : NR_SLAB_UNRECLAIMABLE,
+//                  -pages);
+//
 void mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
 					int delta)
 {

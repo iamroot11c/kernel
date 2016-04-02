@@ -92,6 +92,7 @@ extern int page_group_by_mobility_disabled;
 // MIGRATE_MOVABLE 등의 상태를 조사
 // 2015-07-11
 // 2015-07-18
+// 2016-04-02
 static inline int get_pageblock_migratetype(struct page *page)
 {
 	return get_pageblock_flags_group(page, PB_migrate, PB_migrate_end);

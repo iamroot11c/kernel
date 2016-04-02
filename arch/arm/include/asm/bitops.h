@@ -211,6 +211,9 @@ extern int _find_next_bit_be(const unsigned long *p, int size, int offset);
  * These are the little endian, atomic definitions.
  */
 #define find_first_zero_bit(p,sz)	_find_first_zero_bit_le(p,sz)
+// 2016-04-02
+// 첫번째 0인 비트인 값을 찾는다.
+// 0x7fffffff; => 31
 #define find_next_zero_bit(p,sz,off)	_find_next_zero_bit_le(p,sz,off)
 #define find_first_bit(p,sz)		_find_first_bit_le(p,sz)
 // 2015-02-28;

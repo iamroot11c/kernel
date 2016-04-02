@@ -427,7 +427,9 @@ static __always_inline void *kmalloc(size_t size, gfp_t flags)
 #endif
 	}
 	// 2016-03-19
+    // 2016-04-02
     return __kmalloc(size, flags);
+    // 2016-04-02
 }
 
 /*
@@ -661,7 +663,9 @@ static inline void *kmem_cache_zalloc(struct kmem_cache *k, gfp_t flags)
 // kzalloc(size, GFP_KERNEL);
 static inline void *kzalloc(size_t size, gfp_t flags)
 {
+    // 2016-04-02
 	return kmalloc(size, flags | __GFP_ZERO);
+    // 2016-04-02
 }
 
 /**

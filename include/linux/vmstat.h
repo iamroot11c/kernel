@@ -57,6 +57,8 @@ static inline void count_vm_event(enum vm_event_item item)
 //
 // 2015-12-05;
 // __count_vm_events(PGREFILL_NORMAL - ZONE_NORMAL + zone_idx(zone), delta)
+//
+// 2016-04-02
 static inline void __count_vm_events(enum vm_event_item item, long delta)
 {
 	__this_cpu_add(vm_event_states.event[item], delta);

@@ -268,6 +268,11 @@ struct inode;
 // 2015-05-30
 static inline void set_freepage_migratetype(struct page *page, int migratetype)
 {
+    // migratetype = get_pageblock_migratetype(page);
+    // migratetype은 위와 같은 방법으로 구한다.
+    // 구한 값은, bitmap을 조사하고, 특정 인덱스의 비트의 설정 유무로 판단한 결과이다.
+    // 예) 101b
+    // 그러므로, 아래의 index는 우리가 알고 있는, 일반적인 개념의 index는 아니다. 
 	page->index = migratetype;
 }
 
@@ -421,6 +426,7 @@ static inline struct page *compound_head(struct page *page)
  * both from it and to it can be tracked, using atomic_inc_and_test
  * and atomic_add_negative(-1).
  */
+// 2016-04-02
 static inline void page_mapcount_reset(struct page *page)
 {
 	atomic_set(&(page)->_mapcount, -1);

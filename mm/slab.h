@@ -190,6 +190,7 @@ static inline void memcg_bind_pages(struct kmem_cache *s, int order)
 {
 }
 
+// 2016-04-02
 static inline void memcg_release_pages(struct kmem_cache *s, int order)
 {
 }

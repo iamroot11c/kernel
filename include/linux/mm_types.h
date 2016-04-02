@@ -77,6 +77,7 @@ struct page {
 			 * As the rest of the double word is protected by
 			 * slab_lock but _count is not.
 			 */
+            // 2016-04-02
 			unsigned counters;
 #endif
 
@@ -101,6 +102,7 @@ struct page {
 					 */
 					atomic_t _mapcount;
 
+                    // 2016-04-02
 					struct { /* SLUB */
 						unsigned inuse:16;
 						unsigned objects:15;

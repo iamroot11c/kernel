@@ -207,6 +207,8 @@ extern void __bad_size_call_parameter(void);
 // __this_cpu_add_return_
 // 2015-10-10;
 //__pcpu_size_call_return2(__this_cpu_add_return_, pcp, -1)
+// 2016-04-02
+// __pcpu_size_call_return2(this_cpu_cmpxchg_, s->cpu_slab->partial, oldpage, page)
 #define __pcpu_size_call_return2(stem, variable, ...)			\
 ({									\
 	typeof(variable) pscr2_ret__;					\
@@ -488,6 +490,9 @@ do {									\
 	__pcpu_size_call_return2(this_cpu_xchg_, (pcp), nval)
 #endif
 
+// 2016-04-02
+// _this_cpu_generic_cmpxchg(s->cpu_slab->partial, oldpage, page)
+// s->cpu_slab->partial을 기준으로, oldpage와 같다면, page값을 write한다
 #define _this_cpu_generic_cmpxchg(pcp, oval, nval)			\
 ({									\
 	typeof(pcp) ret__;						\
@@ -513,6 +518,8 @@ do {									\
 # ifndef this_cpu_cmpxchg_8
 #  define this_cpu_cmpxchg_8(pcp, oval, nval)	_this_cpu_generic_cmpxchg(pcp, oval, nval)
 # endif
+// 2016-04-02
+// this_cpu_cmpxchg(s->cpu_slab->partial, oldpage, page)
 # define this_cpu_cmpxchg(pcp, oval, nval)	\
 	__pcpu_size_call_return2(this_cpu_cmpxchg_, pcp, oval, nval)
 #endif

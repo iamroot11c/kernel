@@ -6,6 +6,7 @@ static inline bool is_migrate_isolate_page(struct page *page)
 {
 	return get_pageblock_migratetype(page) == MIGRATE_ISOLATE;
 }
+
 static inline bool is_migrate_isolate(int migratetype)
 {
 	return migratetype == MIGRATE_ISOLATE;
@@ -19,6 +20,7 @@ static inline bool is_migrate_isolate_page(struct page *page)
 }
 
 // 2015-04-25
+// 2016-04-02
 static inline bool is_migrate_isolate(int migratetype)
 {
 	return false;

@@ -198,6 +198,7 @@ static inline void bitmap_fill(unsigned long *dst, int nbits)
 }
 
 // 2015-08-29
+// 2016-04-02
 static inline void bitmap_copy(unsigned long *dst, const unsigned long *src,
 			int nbits)
 {

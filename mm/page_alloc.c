@@ -604,6 +604,9 @@ static inline int page_is_buddy(struct page *page, struct page *buddy,
 //  __free_one_page(page, zone, 0, mt);
 //  page가 list_del을 통해서 소속 list로부터 삭제된 상태이다.
 //  ref: http://woodz.tistory.com/60
+//
+//  2016-04-02
+//  __free_one_page(page, zone, order, migratetype)
 static inline void __free_one_page(struct page *page,
 		struct zone *zone, unsigned int order,
 		int migratetype)
@@ -732,6 +735,7 @@ out:
 // 2015-04-18;
 static inline int free_pages_check(struct page *page)
 {
+	// 이 중에, 하나라도 해당이되면, free 해서는 안되는 page이다.
 	if (unlikely(page_mapcount(page) |
 		(page->mapping != NULL)  |
 		(atomic_read(&page->_count) != 0) |
@@ -838,14 +842,18 @@ static void free_pcppages_bulk(struct zone *zone, int count,
 // 2015-04-18;
 // free_one_page(page_zone(page), page, order, migratetype);
 // 2015-07-11
+//
+// 2016-04-02
+// free_one_page(page_zone(page), page, order, migratetype);
 static void free_one_page(struct zone *zone, struct page *page, int order,
 				int migratetype)
 {
 	spin_lock(&zone->lock);
 	zone->pages_scanned = 0;
 
+	// 2016-04-02, buddy list에 추가
 	__free_one_page(page, zone, order, migratetype);
-	if (unlikely(!is_migrate_isolate(migratetype)))
+	if (unlikely(!is_migrate_isolate(migratetype)))	
 		__mod_zone_freepage_state(zone, 1 << order, migratetype);
 	spin_unlock(&zone->lock);
 }
@@ -871,8 +879,10 @@ static bool free_pages_prepare(struct page *page, unsigned int order)
 		return false;
 
 	if (!PageHighMem(page)) {
+		// NOP
 		debug_check_no_locks_freed(page_address(page),
 					   PAGE_SIZE << order);
+		// NOP
 		debug_check_no_obj_freed(page_address(page),
 					   PAGE_SIZE << order);
 	}
@@ -892,6 +902,8 @@ static bool free_pages_prepare(struct page *page, unsigned int order)
 // 2015-05-09;
 // __free_pages_ok(page, order);
 // 2015-07-11, order 0으로 가정
+//
+// 2016-04-02, order 2로 가정
 static void __free_pages_ok(struct page *page, unsigned int order)
 {
 	unsigned long flags;
@@ -902,8 +914,10 @@ static void __free_pages_ok(struct page *page, unsigned int order)
 
 	local_irq_save(flags);
 	__count_vm_events(PGFREE, 1 << order);
+	// bitmap을 조사해서 구성된다. 예를 들어, 0110011b 
 	migratetype = get_pageblock_migratetype(page);
 	set_freepage_migratetype(page, migratetype);
+	// 진짜 기능
 	free_one_page(page_zone(page), page, order, migratetype);
 	local_irq_restore(flags);
 }
@@ -3333,6 +3347,9 @@ EXPORT_SYMBOL(get_zeroed_page);
 //
 // 2015-11-14;
 // __free_pages((page), 0)
+//
+// 2016-04-02
+// __free_pages(page, order);
 void __free_pages(struct page *page, unsigned int order)
 {
 	// 2015-05-16, __free_reserved_page() 수행 중,
@@ -3343,7 +3360,7 @@ void __free_pages(struct page *page, unsigned int order)
 		if (order == 0)
 			free_hot_cold_page(page, 0); // hot
 		else
-			__free_pages_ok(page, order);
+			__free_pages_ok(page, order);   // page를 buddy list에 추가시켜준다.
 	}
 }
 
@@ -3370,9 +3387,10 @@ EXPORT_SYMBOL(free_pages);
  *
  * The caller knows better which flags it relies on.
  */
+// 2016-04-02
 void __free_memcg_kmem_pages(struct page *page, unsigned int order)
 {
-	memcg_kmem_uncharge_pages(page, order);
+	memcg_kmem_uncharge_pages(page, order);	// NOP
 	__free_pages(page, order);
 }
 
@@ -6786,6 +6804,9 @@ static inline int pfn_to_bitidx(struct zone *zone, unsigned long pfn)
 // get_pageblock_flags_group(page, PB_migrate, PB_migrate_end)
 // 2015-07-18
 // get_pageblock_flags_group(page, PB_migrate_skip, PB_migrate_skip)
+//
+// 2016-04-02
+// get_pageblock_flags_group(page, PB_migrate, PB_migrate_end);
 unsigned long get_pageblock_flags_group(struct page *page,
 					int start_bitidx, int end_bitidx)
 {

@@ -9,6 +9,9 @@
 #define BITS_PER_BYTE		8
 // 2016-01-16
 // BITS_TO_LONGS(1)
+// nr(개수)만큼 표현할 수 있는 비트의 개수 -> 이것을 표현할 수 있는 LONG의 개수를
+// ex) 비트로 7개를 표현하고 싶다면, long 변수 1개면 됨
+// ex) 63 => 2
 #define BITS_TO_LONGS(nr)	DIV_ROUND_UP(nr, BITS_PER_BYTE/*8*/ * sizeof(long))
 #endif
 

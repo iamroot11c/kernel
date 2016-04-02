@@ -111,8 +111,10 @@ struct pcpu_chunk {
 	unsigned long		populated[];	/* populated bitmap */
 };
 
+// 2016-04-02
 static int pcpu_unit_pages __read_mostly;
 static int pcpu_unit_size __read_mostly;
+// 2016-04-02
 static int pcpu_nr_units __read_mostly;
 static int pcpu_atom_size __read_mostly;
 // 2016-03-12;
@@ -263,6 +265,8 @@ static void __maybe_unused pcpu_next_unpop(struct pcpu_chunk *chunk,
 	*re = find_next_bit(chunk->populated, end, *rs + 1);
 }
 
+// 2016-04-02
+// pcpu_next_pop(chunk, &rs, &re, page_end);
 static void __maybe_unused pcpu_next_pop(struct pcpu_chunk *chunk,
 					 int *rs, int *re, int end)
 {
@@ -301,6 +305,7 @@ static void __maybe_unused pcpu_next_pop(struct pcpu_chunk *chunk,
  * Pointer to the allocated area on success, NULL on failure.
  */
 // 2016-03-19
+// 2016-04-02
 static void *pcpu_mem_zalloc(size_t size)
 {
 	if (WARN_ON_ONCE(!slab_is_available()))
@@ -308,7 +313,9 @@ static void *pcpu_mem_zalloc(size_t size)
 
 	if (size <= PAGE_SIZE)
 		// 1page 크기 이하인 경우
+		// 2016-04-02
 		return kzalloc(size, GFP_KERNEL);
+		// 2016-04-02
 	else
 		// glance. 2016.03.19 분석 시점에서는
 		// 해당 코드에 들어올 경우가 거의 없기 때문
@@ -325,8 +332,10 @@ static void *pcpu_mem_zalloc(size_t size)
 // 2016-03-19
 static void pcpu_mem_free(void *ptr, size_t size)
 {
+	// 2016-03-19
 	if (size <= PAGE_SIZE)
 		kfree(ptr);
+	// 2016-04-02
 	else
 		vfree(ptr);
 }
@@ -446,6 +455,7 @@ out_unlock:
 	// 2016-03-19
 	pcpu_mem_free(old, old_size);
 	pcpu_mem_free(new, new_size);
+	// 2016-04-02
 
 	return 0;
 }
@@ -692,6 +702,7 @@ static void pcpu_free_chunk(struct pcpu_chunk *chunk)
  * pcpu_addr_to_page		- translate address to physical address
  * pcpu_verify_alloc_info	- check alloc_info is acceptable during init
  */
+// 2016-04-02
 static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int off, int size);
 static void pcpu_depopulate_chunk(struct pcpu_chunk *chunk, int off, int size);
 static struct pcpu_chunk *pcpu_create_chunk(void);
@@ -812,6 +823,7 @@ restart:
 					err = "failed to extend area map";
 					goto fail_unlock_mutex;
 				}
+				// 2016-04-02
 				spin_lock_irqsave(&pcpu_lock, flags);
 				/*
 				 * pcpu_lock has been dropped, need to
@@ -842,10 +854,12 @@ restart:
 	pcpu_chunk_relocate(chunk, -1);
 	goto restart;
 
+// 여기부터 먼저 봄
 area_found:
 	spin_unlock_irqrestore(&pcpu_lock, flags);
 
 	/* populate, map and clear the area */
+	// 2016-04-02
 	if (pcpu_populate_chunk(chunk, off, size)) {
 		spin_lock_irqsave(&pcpu_lock, flags);
 		pcpu_free_area(chunk, off);
