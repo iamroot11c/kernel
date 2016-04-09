@@ -219,7 +219,8 @@ int cpumask_any_but(const struct cpumask *mask, unsigned int cpu);
 // 먼저 배열에서 다음 값을 구하고, 총 CPU 개수보다 작을때까지 순회 
 // 2015-09-12;
 // 2016-01-16;
-// 2016-01-23; 
+// 2016-01-23;
+// 2016-04-09 
 #define for_each_cpu(cpu, mask)				\
 	for ((cpu) = -1;				\
 		(cpu) = cpumask_next((cpu), (mask)),	\
@@ -808,6 +809,8 @@ void init_cpu_online(const struct cpumask *src);
 // 2015-08-15, to_cpumask(cpu_online_bits)
 // 2015-09-12, to_cpumask(sd->span);
 // 2016-01-23, to_cpumask(cpu_possible_bits)
+// 2016-04-09
+// == (struct* cpumask*) (bitmap)
 #define to_cpumask(bitmap)						\
 	((struct cpumask *)(1 ? (bitmap)				\
 			    : (void *)sizeof(__check_is_bitmap(bitmap))))

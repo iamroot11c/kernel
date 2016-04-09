@@ -40,10 +40,13 @@ static struct page *pcpu_chunk_page(struct pcpu_chunk *chunk,
  */
 // 2016-04-02
 // pcpu_get_pages_and_bitmap(chunk, &populated, true)
+// 참고. 3.17 버전 이후 해당 로직은 pcpu_get_pages라는 함수로 통합
 static struct page **pcpu_get_pages_and_bitmap(struct pcpu_chunk *chunk,
 					       unsigned long **bitmapp,
 					       bool may_alloc)
 {
+	// 주의!. pages, bitmap은 static 변수로 세팅되어 있다.
+	// 초기값은 어짜피 0
 	static struct page **pages;
 	static unsigned long *bitmap;
 	size_t pages_size = pcpu_nr_units * pcpu_unit_pages * sizeof(pages[0]/*20?*/);
@@ -51,6 +54,7 @@ static struct page **pcpu_get_pages_and_bitmap(struct pcpu_chunk *chunk,
 			     sizeof(unsigned long);
 
 	if (!pages || !bitmap) {
+		// page, bitmap이 널포인터면 메모리 할당을 시도하고, 할당에 실패한 경우 null을 리턴
 		if (may_alloc && !pages)
 			// 2016-04-02
 			pages = pcpu_mem_zalloc(pages_size);
@@ -64,7 +68,8 @@ static struct page **pcpu_get_pages_and_bitmap(struct pcpu_chunk *chunk,
 	}
 	// 2016-04-02 여기까지
 	
-	// 2016-04-09, TODO
+	// 2016-04-09, 시작
+	// chunk->populated에서 pcpu_unit_pages 사이즈만큼 bitmap에 복사
 	bitmap_copy(bitmap, chunk->populated, pcpu_unit_pages);
 
 	*bitmapp = bitmap;
@@ -82,6 +87,9 @@ static struct page **pcpu_get_pages_and_bitmap(struct pcpu_chunk *chunk,
  * Free pages [@page_start and @page_end) in @pages for all units.
  * The pages were allocated for @chunk.
  */
+// 2016-04-09
+// page pointer 배열 내에서 page_start ~ page_end인덱스에 대해 순회하면서
+// 뭔가 메모리가 할당된 게 있으면 해제시킨다. 
 static void pcpu_free_pages(struct pcpu_chunk *chunk,
 			    struct page **pages, unsigned long *populated,
 			    int page_start, int page_end)
@@ -108,9 +116,15 @@ static void pcpu_free_pages(struct pcpu_chunk *chunk,
  * @page_end: page index of the last page to be allocated + 1
  *
  * Allocate pages [@page_start,@page_end) into @pages for all units.
+ * @page_start ~ @page_end까지의 페이지를 모든 unit에 대해 할당한다.
  * The allocation is for @chunk.  Percpu core doesn't care about the
  * content of @pages and will pass it verbatim to pcpu_map_pages().
+ * percpu core는 @pages 의 내용에 대해 관여하지 않으며, pcpu_map_pages()의 정보를 넘긴다.
+ * verbatim : 말 그대로
  */
+// 2016-04-09
+// pcpu_alloc_pages(chunk, pages, populated, rs, re)
+// 이 함수 내에서 populated 파라미터는 사용하지 않는다.
 static int pcpu_alloc_pages(struct pcpu_chunk *chunk,
 			    struct page **pages, unsigned long *populated,
 			    int page_start, int page_end)
@@ -119,10 +133,19 @@ static int pcpu_alloc_pages(struct pcpu_chunk *chunk,
 	unsigned int cpu;
 	int i;
 
+	// for_each_cpu((cpu), cpu_possible_mask)
+	// #define for_each_cpu(cpu, mask)             \
+	//       for ((cpu) = -1;                \
+	//            (cpu) = cpumask_next((cpu), (mask)),    \
+	//             (cpu) < nr_cpu_ids;)
+	// 현재 활성화된 cpu에 대해 이터레이터를 돌음
+	// 아래 루틴이 완료되면 cpu 별로 page_start ~ page_end 까지 해당하는 위치에는
+	// 새로 페이지를 할당한 주소가 저장될 것이다.
 	for_each_possible_cpu(cpu) {
 		for (i = page_start; i < page_end; i++) {
+			// *(pages + pcpu_page_idx)에 사용할 page node를 할당
+			// 참고. pages값은 임시로 만든 page pointer 배열
 			struct page **pagep = &pages[pcpu_page_idx(cpu, i)];
-
 			*pagep = alloc_pages_node(cpu_to_node(cpu), gfp, 0);
 			if (!*pagep) {
 				pcpu_free_pages(chunk, pages, populated,
@@ -216,9 +239,14 @@ static void pcpu_post_unmap_tlb_flush(struct pcpu_chunk *chunk,
 		pcpu_chunk_addr(chunk, pcpu_high_unit_cpu, page_end));
 }
 
+// 2016-04-09
+//__pcpu_map_pages(pcpu_chunk_addr(chunk, cpu, page_start),
+//		&pages[pcpu_page_idx(cpu, page_start)],
+//		page_end - page_start);
 static int __pcpu_map_pages(unsigned long addr, struct page **pages,
 			    int nr_pages)
 {
+	// 2016-04-09
 	return map_kernel_range_noflush(addr, nr_pages << PAGE_SHIFT,
 					PAGE_KERNEL, pages);
 }
@@ -239,6 +267,7 @@ static int __pcpu_map_pages(unsigned long addr, struct page **pages,
  * @chunk->populated bitmap and whatever is necessary for reverse
  * lookup (addr -> chunk).
  */
+// 2016-04-09
 static int pcpu_map_pages(struct pcpu_chunk *chunk,
 			  struct page **pages, unsigned long *populated,
 			  int page_start, int page_end)
@@ -247,6 +276,10 @@ static int pcpu_map_pages(struct pcpu_chunk *chunk,
 	int i, err;
 
 	for_each_possible_cpu(cpu) {
+		// 2016-04-09
+		// 주의. 두번째 파라미터로 넘기는 주소는 
+		// pages + pcpu_page_idx()만큼 점프한 값이다.
+		// 해당 위치를 기점으로 (page_end - page_start) 개수를 매핑한다.
 		err = __pcpu_map_pages(pcpu_chunk_addr(chunk, cpu, page_start),
 				       &pages[pcpu_page_idx(cpu, page_start)],
 				       page_end - page_start);
@@ -316,11 +349,16 @@ static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int off, int size)
 	struct page **pages;
 	unsigned long *populated;
 	unsigned int cpu;
+	// 임시 용도로 사용하는 것으로 보임
 	int rs, re, rc;
 
 	/* quick path, check whether all pages are already there */
 	rs = page_start;
 	// 2016-04-02
+	//--------------------------------------------------------
+	//------|page_start---------------------------page_end|---
+	//--------------------rs<------------>re------------------
+	// pcpu->populate로부터 처음 1이 세팅된 비트 위치를 rs, re에 저장
 	pcpu_next_pop(chunk, &rs, &re, page_end);
 	if (rs == page_start && re == page_end)
 		goto clear;
@@ -329,19 +367,34 @@ static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int off, int size)
 	WARN_ON(chunk->immutable);
 
 	// 2016-04-02
+	// 임시로 사용할 0으로 초기화된 page* 배열 주소를 얻어옴
 	pages = pcpu_get_pages_and_bitmap(chunk, &populated, true);
 	if (!pages)
 		return -ENOMEM;
 
 	/* alloc and map */
+/*
+ *#define pcpu_for_each_unpop_region(chunk, rs, re, start, end)               \
+ *         for ((rs) = (start), pcpu_next_unpop((chunk), &(rs), &(re), (end));\
+ *              (rs) < (re);                                                   \
+ *               (rs) = (re) + 1, pcpu_next_unpop((chunk), &(rs), &(re), (end)))
+ * */
+	// 1) for문 초기 세팅 : pcpu_next_unpop 호출로 start ~ end까지의 인덱스 중 처음 unpopup(0값)
+	// 으로 세팅된 범위를 얻음
+	// 2) for문 1회 순회 시 세팅 : re + 1 ~ end까지의 인덱스 중 처음 unpopup(0값)
+	// 으로 세팅된 범위를 얻음
 	pcpu_for_each_unpop_region(chunk, rs, re, page_start, page_end) {
+		// 2016-04-09
+		// pages에 unpopup된 인덱스에 페이지 할당을 하여 저장
 		rc = pcpu_alloc_pages(chunk, pages, populated, rs, re);
 		if (rc)
 			goto err_free;
 		free_end = re;
 	}
+	// 위의 루틴이 완료되었으면, 모든 unpopup된 인덱스에 대해 cpu별로 페이지가 할당되었을 것이다.
 
 	pcpu_for_each_unpop_region(chunk, rs, re, page_start, page_end) {
+		// 2016-04-09
 		rc = pcpu_map_pages(chunk, pages, populated, rs, re);
 		if (rc)
 			goto err_unmap;

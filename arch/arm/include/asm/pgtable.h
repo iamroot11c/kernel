@@ -190,6 +190,9 @@ extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
 // == &swapper_pg_dir[pgd_index(addr)]
 // 
 // 2015-08-22
+// 2016-04-09
+// 왠지.. 함수의 네이밍이 잘못된 것 같다.
+// 실제 얻을 수 있는 값은 오프셋이 아니라 실제 접근 가능한 메모리 주소
 #define pgd_offset(mm, addr)	((mm)->pgd + pgd_index(addr))
 
 /* to find an entry in a kernel page-table-directory */

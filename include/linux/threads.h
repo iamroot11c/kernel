@@ -17,6 +17,7 @@
 #endif
 
 /* Places which use this should consider cpumask_var_t. */
+// 2016-04-09, 현재 분석 기준으로는 2개
 #define NR_CPUS		CONFIG_NR_CPUS
 
 #define MIN_THREADS_LEFT_FOR_ROOT 4

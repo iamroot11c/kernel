@@ -107,6 +107,9 @@ static void vunmap_page_range(unsigned long addr, unsigned long end)
 	} while (pgd++, addr = next, addr != end);
 }
 
+// 2016-04-09
+// vmap_pte_range(pmd, addr, next, prot, pages, nr)
+// glance
 static int vmap_pte_range(pmd_t *pmd, unsigned long addr,
 		unsigned long end, pgprot_t prot, struct page **pages, int *nr)
 {
@@ -133,34 +136,44 @@ static int vmap_pte_range(pmd_t *pmd, unsigned long addr,
 	return 0;
 }
 
+// 2016-04-09
 static int vmap_pmd_range(pud_t *pud, unsigned long addr,
 		unsigned long end, pgprot_t prot, struct page **pages, int *nr)
 {
 	pmd_t *pmd;
 	unsigned long next;
 
+	// pmd = pgd
 	pmd = pmd_alloc(&init_mm, pud, addr);
 	if (!pmd)
 		return -ENOMEM;
 	do {
+		// next = end
 		next = pmd_addr_end(addr, end);
+		// 2016-04-09 여기까지
+		// vmap_pte_range glance
 		if (vmap_pte_range(pmd, addr, next, prot, pages, nr))
 			return -ENOMEM;
 	} while (pmd++, addr = next, addr != end);
 	return 0;
 }
 
+// 2016-04-09
+// vmap_pud_range(pgd, addr, next, prot, pages, &nr);
 static int vmap_pud_range(pgd_t *pgd, unsigned long addr,
 		unsigned long end, pgprot_t prot, struct page **pages, int *nr)
 {
 	pud_t *pud;
 	unsigned long next;
 
+	// pud = pgd
 	pud = pud_alloc(&init_mm, pgd, addr);
 	if (!pud)
 		return -ENOMEM;
 	do {
+		// next = end
 		next = pud_addr_end(addr, end);
+		// 2016-04-09
 		if (vmap_pmd_range(pud, addr, next, prot, pages, nr))
 			return -ENOMEM;
 	} while (pud++, addr = next, addr != end);
@@ -172,7 +185,11 @@ static int vmap_pud_range(pgd_t *pgd, unsigned long addr,
  * will have pfns corresponding to the "pages" array.
  *
  * Ie. pte at addr+N*PAGE_SIZE shall point to pfn corresponding to pages[N]
+ *  => *(addr + N * PAGE_SIZE) == pages[N]
  */
+// 2016-04-09
+//  map_kernel_range_noflush(addr, nr_pages << PAGE_SHIFT, PAGE_KERNEL, pages)
+// vmap_page_range_noflush(addr, addr + size, prot, pages)
 static int vmap_page_range_noflush(unsigned long start, unsigned long end,
 				   pgprot_t prot, struct page **pages)
 {
@@ -183,8 +200,10 @@ static int vmap_page_range_noflush(unsigned long start, unsigned long end,
 	int nr = 0;
 
 	BUG_ON(addr >= end);
+	// addr로부터 페이지 디렉토리의 주소를 얻어온다.
 	pgd = pgd_offset_k(addr);
 	do {
+		// page directory 단위로 올림한 값을 얻음(end 값 보정)
 		next = pgd_addr_end(addr, end);
 		err = vmap_pud_range(pgd, addr, next, prot, pages, &nr);
 		if (err)
@@ -1222,6 +1241,8 @@ void __init vmalloc_init(void)
  * RETURNS:
  * The number of pages mapped on success, -errno on failure.
  */
+// 2016-04-09
+// map_kernel_range_noflush(addr, nr_pages << PAGE_SHIFT, PAGE_KERNEL, pages)
 int map_kernel_range_noflush(unsigned long addr, unsigned long size,
 			     pgprot_t prot, struct page **pages)
 {

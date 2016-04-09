@@ -12,6 +12,7 @@
 //결국은, long 변수 하나 선언, 비트 패턴으로 컨트롤?
 // DECLARE_BITMAP(cpu_possible_bits, CONFIG_NR_CPUS)
 // 2016-01-23
+// 2016-04-09
 #define DECLARE_BITMAP(name,bits) \
 	unsigned long name[BITS_TO_LONGS(bits)]
 

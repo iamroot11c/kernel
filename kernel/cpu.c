@@ -682,6 +682,8 @@ static DECLARE_BITMAP(cpu_possible_bits, CONFIG_NR_CPUS/*2*/) __read_mostly;
 // 2016-01-16;
 // 2016-01-23;
 // const struct cpumask *const cpu_possible_mask = (struct cpumask *)cpu_possible_bits;
+// 2016-04-09
+// cpu_possible_bits는 현재 cpu 상태를 관리하는 전역 배열의 시작주소
 const struct cpumask *const cpu_possible_mask = to_cpumask(cpu_possible_bits);
 EXPORT_SYMBOL(cpu_possible_mask);
 

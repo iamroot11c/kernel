@@ -246,11 +246,18 @@ static struct pcpu_chunk *pcpu_get_page_chunk(struct page *page)
 	return (struct pcpu_chunk *)page->index;
 }
 
+// 2016-04-09
+// pcpu_page_idx(cpu, i)
+// cpu, page_index로부터 percpu에서 사용할 index를 얻는다.
 static int __maybe_unused pcpu_page_idx(unsigned int cpu, int page_idx)
 {
+	// pcpu unit index * unit의 페이지 사용 개수 + 기준 page index
 	return pcpu_unit_map[cpu] * pcpu_unit_pages + page_idx;
 }
 
+// 2016-04-09
+// pcpu_chunk_addr(chunk, cpu, page_start)
+// {chunk, cpu, page_index}와 매핑되는 가상주소를 얻음
 static unsigned long pcpu_chunk_addr(struct pcpu_chunk *chunk,
 				     unsigned int cpu, int page_idx)
 {
@@ -258,10 +265,14 @@ static unsigned long pcpu_chunk_addr(struct pcpu_chunk *chunk,
 		(page_idx << PAGE_SHIFT);
 }
 
+// pcpu_next_unpop((chunk), &(rs), &(re), (end));
+// 코드로 볼 때 0 : unpopup / 1 : popup인 값이다. 
 static void __maybe_unused pcpu_next_unpop(struct pcpu_chunk *chunk,
 					   int *rs, int *re, int end)
 {
+	// (populated + *rs) ~ (populated + *rs + end) 사이에서 처음 0인 값을 찾음
 	*rs = find_next_zero_bit(chunk->populated, end, *rs);
+	// (populated + *rs + 1) ~ (populated + *rs + end) 사이에서 처음 1인 값을 찾음
 	*re = find_next_bit(chunk->populated, end, *rs + 1);
 }
 
@@ -528,6 +539,7 @@ static void pcpu_split_block(struct pcpu_chunk *chunk, int i,
  */
 // 2016-03-12
 // pcpu_alloc_area(chunk, sizeof(struct kmem_cache_cpu), 2 * sizeof(void *))
+// 할당이 가능하다 -> freesize 감소, 사용 중 표시, 청크 리스트 재조정
 static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align)
 {
 	int oslot = pcpu_chunk_slot(chunk);
@@ -833,12 +845,13 @@ restart:
 			}
 
 			// 2016-03-12;
+			// 실제 할당 동작
 			off = pcpu_alloc_area(chunk, size, align);
 			if (off >= 0)
 				goto area_found;
 			// 2016-03-12 여기까지;
 		}
-	}
+	} // for
 
 	/* hmmm... no space left, create a new chunk */
 	spin_unlock_irqrestore(&pcpu_lock, flags);

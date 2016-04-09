@@ -153,7 +153,9 @@ extern int bitmap_ord_to_pos(const unsigned long *bitmap, int n, int bits);
 // cpu 상태를 표시하는데 필요한 비트수를 십진수로 계산
 // 즉 cpu가 2개일 때 비트 2개로 표현할 수 있으며 이를 
 // 십진수로 표시하면 '3'이다
+// 현재 사용 가능한 cpu 개수에 대해 1로 세팅
 // 2015-08-29
+// 2016-04-09
 #define BITMAP_LAST_WORD_MASK(nbits)					\
 (									\
 	((nbits) % BITS_PER_LONG) ?					\
@@ -199,6 +201,8 @@ static inline void bitmap_fill(unsigned long *dst, int nbits)
 
 // 2015-08-29
 // 2016-04-02
+// 2016-04-09
+// bitmap_copy(bitmap, chunk->populated, pcpu_unit_pages);
 static inline void bitmap_copy(unsigned long *dst, const unsigned long *src,
 			int nbits)
 {

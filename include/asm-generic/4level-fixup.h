@@ -14,6 +14,7 @@
 	((unlikely(pgd_none(*(pud))) && __pmd_alloc(mm, pud, address))? \
  		NULL: pmd_offset(pud, address))
 
+// 2016-04-09
 #define pud_alloc(mm, pgd, address)	(pgd)
 #define pud_offset(pgd, start)		(pgd)
 #define pud_none(pud)			0
@@ -32,6 +33,7 @@
 #define __pud_free_tlb(tlb, x, addr)	do { } while (0)
 
 #undef  pud_addr_end
+// 2016-04-09
 #define pud_addr_end(addr, end)		(end)
 
 #endif
