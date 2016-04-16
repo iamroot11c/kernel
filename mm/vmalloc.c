@@ -52,7 +52,7 @@ static void free_work(struct work_struct *w)
 }
 
 /*** Page table manipulation functions ***/
-
+// 2016-04-16
 static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end)
 {
 	pte_t *pte;
@@ -64,6 +64,7 @@ static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end)
 	} while (pte++, addr += PAGE_SIZE, addr != end);
 }
 
+// 2016-04-16
 static void vunmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end)
 {
 	pmd_t *pmd;
@@ -78,6 +79,8 @@ static void vunmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end)
 	} while (pmd++, addr = next, addr != end);
 }
 
+// 2016-04-16
+// vunmap_pud_range(pgd, addr, next)
 static void vunmap_pud_range(pgd_t *pgd, unsigned long addr, unsigned long end)
 {
 	pud_t *pud;
@@ -92,6 +95,8 @@ static void vunmap_pud_range(pgd_t *pgd, unsigned long addr, unsigned long end)
 	} while (pud++, addr = next, addr != end);
 }
 
+// 2016-04-16
+// vunmap_page_range(addr, addr + size)
 static void vunmap_page_range(unsigned long addr, unsigned long end)
 {
 	pgd_t *pgd;
@@ -109,7 +114,8 @@ static void vunmap_page_range(unsigned long addr, unsigned long end)
 
 // 2016-04-09
 // vmap_pte_range(pmd, addr, next, prot, pages, nr)
-// glance
+// 
+// 2016-04-16
 static int vmap_pte_range(pmd_t *pmd, unsigned long addr,
 		unsigned long end, pgprot_t prot, struct page **pages, int *nr)
 {
@@ -151,9 +157,11 @@ static int vmap_pmd_range(pud_t *pud, unsigned long addr,
 		// next = end
 		next = pmd_addr_end(addr, end);
 		// 2016-04-09 여기까지
-		// vmap_pte_range glance
+
+		// 2016-04-16 시작;
 		if (vmap_pte_range(pmd, addr, next, prot, pages, nr))
 			return -ENOMEM;
+		// 2016-04-16 마침;
 	} while (pmd++, addr = next, addr != end);
 	return 0;
 }
@@ -176,6 +184,7 @@ static int vmap_pud_range(pgd_t *pgd, unsigned long addr,
 		// 2016-04-09
 		if (vmap_pmd_range(pud, addr, next, prot, pages, nr))
 			return -ENOMEM;
+		// 2016-04-16 마침
 	} while (pud++, addr = next, addr != end);
 	return 0;
 }
@@ -206,10 +215,12 @@ static int vmap_page_range_noflush(unsigned long start, unsigned long end,
 		// page directory 단위로 올림한 값을 얻음(end 값 보정)
 		next = pgd_addr_end(addr, end);
 		err = vmap_pud_range(pgd, addr, next, prot, pages, &nr);
+		// 2016-04-16 마침
 		if (err)
 			return err;
 	} while (pgd++, addr = next, addr != end);
 
+	// pte 총 개수를 리턴함
 	return nr;
 }
 
@@ -1247,6 +1258,7 @@ int map_kernel_range_noflush(unsigned long addr, unsigned long size,
 			     pgprot_t prot, struct page **pages)
 {
 	return vmap_page_range_noflush(addr, addr + size, prot, pages);
+	// 2016-04-16 마침
 }
 
 /**
@@ -1263,6 +1275,8 @@ int map_kernel_range_noflush(unsigned long addr, unsigned long size,
  * responsible for calling flush_cache_vunmap() on to-be-mapped areas
  * before calling this function and flush_tlb_kernel_range() after.
  */
+// 2016-04-16
+// unmap_kernel_range_noflush(addr, nr_pages << PAGE_SHIFT)
 void unmap_kernel_range_noflush(unsigned long addr, unsigned long size)
 {
 	vunmap_page_range(addr, addr + size);

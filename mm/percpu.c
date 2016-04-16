@@ -122,6 +122,8 @@ static int pcpu_nr_slots __read_mostly;
 static size_t pcpu_chunk_struct_size __read_mostly;
 
 /* cpus with the lowest and highest unit addresses */
+// 2016-04-16
+// pcpu_setup_first_chunk() 함수에서 NR_CPUS(2)로 초기화됨
 static unsigned int pcpu_low_unit_cpu __read_mostly;
 static unsigned int pcpu_high_unit_cpu __read_mostly;
 
@@ -130,6 +132,8 @@ void *pcpu_base_addr __read_mostly;
 EXPORT_SYMBOL_GPL(pcpu_base_addr);
 
 static const int *pcpu_unit_map __read_mostly;		/* cpu -> unit */
+// 2016-04-16
+// pcpu_setup_first_chunk() 함수에서 초기화됨
 const unsigned long *pcpu_unit_offsets __read_mostly;	/* cpu -> unit offset */
 
 /* group information, used for vm allocation */
@@ -235,6 +239,8 @@ static int pcpu_chunk_slot(const struct pcpu_chunk *chunk)
 }
 
 /* set the pointer to a chunk in a page struct */
+// 2016-04-16
+// pcpu_set_page_chunk(pages[pcpu_page_idx(cpu, i)], chunk)
 static void pcpu_set_page_chunk(struct page *page, struct pcpu_chunk *pcpu)
 {
 	page->index = (unsigned long)pcpu;
@@ -249,6 +255,7 @@ static struct pcpu_chunk *pcpu_get_page_chunk(struct page *page)
 // 2016-04-09
 // pcpu_page_idx(cpu, i)
 // cpu, page_index로부터 percpu에서 사용할 index를 얻는다.
+// 2016-04-16
 static int __maybe_unused pcpu_page_idx(unsigned int cpu, int page_idx)
 {
 	// pcpu unit index * unit의 페이지 사용 개수 + 기준 page index
@@ -258,6 +265,7 @@ static int __maybe_unused pcpu_page_idx(unsigned int cpu, int page_idx)
 // 2016-04-09
 // pcpu_chunk_addr(chunk, cpu, page_start)
 // {chunk, cpu, page_index}와 매핑되는 가상주소를 얻음
+// 2016-04-16
 static unsigned long pcpu_chunk_addr(struct pcpu_chunk *chunk,
 				     unsigned int cpu, int page_idx)
 {

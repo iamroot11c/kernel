@@ -160,14 +160,19 @@ void flush_tlb_range(struct vm_area_struct *vma,
 	broadcast_tlb_mm_a15_erratum(vma->vm_mm);
 }
 
+// 2016-04-16;
+// lush_tlb_kernel_range(pcpu_chunk_addr(chunk, pcpu_low_unit_cpu, page_start),
+//                       pcpu_chunk_addr(chunk, pcpu_high_unit_cpu, page_end))
 void flush_tlb_kernel_range(unsigned long start, unsigned long end)
 {
+	// tlb_ops_need_broadcast() 함수를 분석결과 false를 리턴함
 	if (tlb_ops_need_broadcast()) {
 		struct tlb_args ta;
 		ta.ta_start = start;
 		ta.ta_end = end;
 		on_each_cpu(ipi_flush_tlb_kernel_range, &ta, 1);
 	} else
+		// 2016-04-16 여기까지, 차주 분석 예정
 		local_flush_tlb_kernel_range(start, end);
 	broadcast_tlb_a15_erratum();
 }

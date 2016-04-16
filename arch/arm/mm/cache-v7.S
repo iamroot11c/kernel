@@ -122,6 +122,7 @@ ENDPROC(v7_flush_dcache_louis)
  *
  *	- mm    - mm_struct describing address space
  */
+// 2016-04-16
 ENTRY(v7_flush_dcache_all)
 	dmb					@ ensure ordering with previous memory accesses
 	mrc	p15, 1, r0, c0, c0, 1		@ read clidr
@@ -257,13 +258,15 @@ ENDPROC(v7_flush_dcache_all)
  */
 // 2014년 11월 01일 자세히 보지 않음
 ENTRY(v7_flush_kern_cache_all)
- ARM(	stmfd	sp!, {r4-r5, r7, r9-r11, lr}	)
+ ARM(	stmfd	sp!, {r4-r5, r7, r9-r11, lr}	) // 스택에 
+	                                          // r4, r5, r7, r9, r10, r11, lr
+						  // 레지스터 값을 저장
  THUMB(	stmfd	sp!, {r4-r7, r9-r11, lr}	)
-	bl	v7_flush_dcache_all
+	bl	v7_flush_dcache_all // D-cache(데이터)를 비움
 	mov	r0, #0
 	ALT_SMP(mcr	p15, 0, r0, c7, c1, 0)	@ invalidate I-cache inner shareable
 	ALT_UP(mcr	p15, 0, r0, c7, c5, 0)	@ I+BTB cache invalidate
- ARM(	ldmfd	sp!, {r4-r5, r7, r9-r11, lr}	)
+ ARM(	ldmfd	sp!, {r4-r5, r7, r9-r11, lr}	) // 스택에 저장한 레지스터 값을 복원
  THUMB(	ldmfd	sp!, {r4-r7, r9-r11, lr}	)
 	mov	pc, lr
 ENDPROC(v7_flush_kern_cache_all)

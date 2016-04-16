@@ -68,13 +68,16 @@
  * until either the TLB entry is evicted under pressure, or a context
  * switch which changes the user space mapping occurs.
  */
+// 2016-04-16
 #define PTRS_PER_PTE		512
 #define PTRS_PER_PMD		1
 #define PTRS_PER_PGD		2048
 
+// 2016-04-16
 #define PTE_HWTABLE_PTRS	(PTRS_PER_PTE)
-#define PTE_HWTABLE_OFF		(PTE_HWTABLE_PTRS * sizeof(pte_t))
-#define PTE_HWTABLE_SIZE	(PTRS_PER_PTE * sizeof(u32))
+#define PTE_HWTABLE_OFF		(PTE_HWTABLE_PTRS * sizeof(pte_t)) // 2KB = 2048
+#define PTE_HWTABLE_SIZE	(PTRS_PER_PTE * sizeof(u32)) // 2048 = 512 * 4
+                                                         // 2KB
 
 /*
  * PMD_SHIFT determines the size of the area a second-level page table can map
@@ -207,6 +210,7 @@ static inline pmd_t *pmd_offset(pud_t *pud, unsigned long addr)
 // 2015-10-03
 // 2015-10-10; set_pte_ext(pte, swp_pte, ext)
 // 2015-12-26, set_pte_ext(ptep, __pte(0), 0)
+// 2016-04-16 set_pte_ext(ptep, pteval, ext)
 #define set_pte_ext(ptep,pte,ext) cpu_set_pte_ext(ptep,pte,ext)
 
 #endif /* __ASSEMBLY__ */

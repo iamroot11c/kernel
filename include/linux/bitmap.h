@@ -146,6 +146,7 @@ extern int bitmap_allocate_region(unsigned long *bitmap, int pos, int order);
 extern void bitmap_copy_le(void *dst, const unsigned long *src, int nbits);
 extern int bitmap_ord_to_pos(const unsigned long *bitmap, int n, int bits);
 
+// 2016-04-16
 #define BITMAP_FIRST_WORD_MASK(start) (~0UL << ((start) % BITS_PER_LONG))
 
 // (2 % 32) ? (1 << (2%32)) - 1 : !0
@@ -203,6 +204,8 @@ static inline void bitmap_fill(unsigned long *dst, int nbits)
 // 2016-04-02
 // 2016-04-09
 // bitmap_copy(bitmap, chunk->populated, pcpu_unit_pages);
+// 2016-04-16
+// bitmap_copy(chunk->populated, populated, pcpu_unit_pages)
 static inline void bitmap_copy(unsigned long *dst, const unsigned long *src,
 			int nbits)
 {

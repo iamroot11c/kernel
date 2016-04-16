@@ -69,12 +69,17 @@
  * dcache_line_size - get the minimum D-cache line size from the CTR register
  * on ARMv7.
  */
+// 2016-04-16
+// dcache_line_size r2, r3
 	.macro	dcache_line_size, reg, tmp
-	mrc	p15, 0, \tmp, c0, c0, 1		@ read ctr 
+	mrc	p15, 0, \tmp, c0, c0, 1		@ read ctr
+                                                // ctr - Cache Type Register	
 	                                        /* L1lp: PIPT */ 
 	lsr	\tmp, \tmp, #16                 /* DminLine */
 	                                        /* 0x4 Smallest data cache line size is 16 words. */
+	                                        // 가장 작은 cache line size를 log2를 한 값
 	and	\tmp, \tmp, #0xf		@ cache line size encoding
+	                                        // DminLine 값을 제외한 상위 값을 지움 
 	mov	\reg, #4			@ bytes per word
 	mov	\reg, \reg, lsl \tmp		@ actual cache line size
                                                 /* reg = 4 << 4 */

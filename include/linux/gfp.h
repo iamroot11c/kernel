@@ -389,6 +389,9 @@ __alloc_pages(gfp_t gfp_mask, unsigned int order,
 // alloc_pages_node(numa_node_id(), gfp_mask, order);
 // gfp_mask = __GFP_COMP | __GFP_KMEMCG | __GFP_ZERO | GFP_KERNEL
 //  (단 GFP_KERNEL == __GFP_WAIT | __GFP_IO | __GFP_FS)
+//
+// 2016-04-16
+// alloc_pages_node(numa_node_id(), PGALLOC_GFP, 0)
 static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
 						unsigned int order)
 {
@@ -429,6 +432,8 @@ extern struct page *alloc_pages_vma(gfp_t gfp_mask, int order,
 #else
 // 2015-09-19;
 // 2016-03-19;
+// 2016-04-16
+// alloc_pages(PGALLOC_GFP, 0)
 #define alloc_pages(gfp_mask, order) \
 		alloc_pages_node(numa_node_id(), gfp_mask, order)
 #define alloc_pages_vma(gfp_mask, order, vma, addr, node)	\
@@ -450,6 +455,8 @@ void free_pages_exact(void *virt, size_t size);
 /* This is different from alloc_pages_exact_node !!! */
 void *alloc_pages_exact_nid(int nid, size_t size, gfp_t gfp_mask);
 
+// 2016-04-16
+// __get_free_page(PGALLOC_GFP)
 #define __get_free_page(gfp_mask) \
 		__get_free_pages((gfp_mask), 0)
 

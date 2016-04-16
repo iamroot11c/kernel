@@ -24,6 +24,8 @@
 #define dsb(option) __asm__ __volatile__ ("dsb " #option : : : "memory")
 // dmb, Data Access에 대한 모든 명령어가 끝나고 나서, dmb 명령 이후, Data Access가
 // 발생하는 것을 보장한다.
+// 2016-04-16
+// dmb(ishst)
 #define dmb(option) __asm__ __volatile__ ("dmb " #option : : : "memory")
 #elif defined(CONFIG_CPU_XSC3) || __LINUX_ARM_ARCH__ == 6
 #define isb(x) __asm__ __volatile__ ("mcr p15, 0, %0, c7, c5, 4" \
@@ -66,6 +68,7 @@
 #define smp_mb()	dmb(ish)
 // 2015-04-18;
 #define smp_rmb()	smp_mb()
+// 2016-04-16;
 #define smp_wmb()	dmb(ishst)
 #endif
 

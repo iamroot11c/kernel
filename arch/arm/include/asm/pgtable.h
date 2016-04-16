@@ -200,12 +200,14 @@ extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
 #define pgd_offset_k(addr)	pgd_offset(&init_mm, addr)
 
 // return (pmd.pmd == 0)
+// 2016-04-16
 #define pmd_none(pmd)		(!pmd_val(pmd))
 // 2015-08-22
 #define pmd_present(pmd)	(pmd_val(pmd))
 
 // 2015-08-22
 // 가상주소를 pte_t형으로 리턴
+// 2016-04-16
 static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 {
 	// pmd.pmd 값을 PAGE_MASK 단위로 ALIGN
@@ -231,8 +233,11 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 
 // pte bit(20:12) 값 추출
 // 2015-08-22
+// 2016-04-16
 #define pte_index(addr)		(((addr) >> PAGE_SHIFT/*12*/) & (PTRS_PER_PTE - 1)/*0x01FF*/)
 // vaddr -> pmd[0] 4kb align + vaddr[20:12]
+// 2016-04-16
+// pte_offset_kernel(pmd, address)
 #define pte_offset_kernel(pmd,addr)	(pmd_page_vaddr(*(pmd)) + pte_index(addr))
 
 // 2015-08-22
@@ -248,6 +253,7 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 #define pte_pfn(pte)		((pte_val(pte) & PHYS_MASK/* 0xFFFF_FFFF*/) >> PAGE_SHIFT/*12*/)
 // 물리 주소와, PTE mask값을 or하면, pte가 된다.
 // 2015-10-24;
+// 2016-04-16
 #define pfn_pte(pfn,prot)	__pte(__pfn_to_phys(pfn) | pgprot_val(prot))
 
 // 2015-09-19;
@@ -255,6 +261,8 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 // 2015-01-31
 // 2015-10-24;
 // mk_pte(new, vma->vm_page_prot)
+// 2016-04-16
+// mk_pte(page, prot)
 #define mk_pte(page,prot)	pfn_pte(page_to_pfn(page), prot)
 
 // 2015-08-22
@@ -262,6 +270,7 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 // 2015-12-26
 #define pte_clear(mm,addr,ptep)	set_pte_ext(ptep, __pte(0), 0)
 
+// 2016-04-16
 #define pte_none(pte)		(!pte_val(pte))
 // 2015-08-22
 // 2015-10-03
@@ -295,6 +304,8 @@ extern void __sync_icache_dcache(pte_t pteval);
 // 2015-10-10;
 // set_pte_at(mm, address, pte, swp_pte);
 // 2015-12-26
+// 2016-04-16
+// set_pte_at(&init_mm, addr, pte, mk_pte(page, prot))
 static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
 			      pte_t *ptep, pte_t pteval)
 {

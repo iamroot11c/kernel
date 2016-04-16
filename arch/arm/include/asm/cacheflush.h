@@ -236,7 +236,8 @@ static inline void __flush_icache_all(void)
 
 // 2014년 11월 01일
 // mm/cache-v7.S 파일의 ENTRY(v7_flush_kern_cache_all)로 연결
-// 자세히 보지 않음 
+// 자세히 보지 않음
+// 2016-04-16 
 #define flush_cache_all()		__cpuc_flush_kern_all()
 
 static inline void vivt_flush_cache_mm(struct mm_struct *mm)
@@ -299,6 +300,8 @@ extern void flush_cache_page(struct vm_area_struct *vma, unsigned long user_addr
  * Perform necessary cache operations to ensure that the TLB will
  * see data written in the specified area.
  */
+// 2016-04-16
+// clean_dcache_area(pte + PTE_HWTABLE_PTRS, PTE_HWTABLE_SIZE)
 #define clean_dcache_area(start,size)	cpu_dcache_clean_area(start, size)
 
 /*
@@ -361,9 +364,14 @@ extern void flush_kernel_dcache_page(struct page *);
  * data, we need to do a full cache flush to ensure that writebacks
  * don't corrupt data placed into these pages via the new mappings.
  */
+// 2016-04-16
+// flush_cache_vmap(pcpu_chunk_addr(chunk, pcpu_low_unit_cpu, page_start),
+//                  pcpu_chunk_addr(chunk, pcpu_high_unit_cpu, page_end));
+// D-cache는 flush, I-cache는 invalidate 함
 static inline void flush_cache_vmap(unsigned long start, unsigned long end)
 {
 	if (!cache_is_vipt_nonaliasing())
+        // 2016-04-16
 		flush_cache_all();
 	else
 		/*

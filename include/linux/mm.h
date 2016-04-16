@@ -1394,6 +1394,7 @@ static inline pmd_t *pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long a
 /*
  * We use mm->page_table_lock to guard all pagetable pages of the mm.
  */
+// 2016-04-16;
 #define pte_lock_init(page)	do {} while (0)
 #define pte_lock_deinit(page)	do {} while (0)
 // 2015-08-22
@@ -1402,9 +1403,11 @@ static inline pmd_t *pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long a
 #define pte_lockptr(mm, pmd)	({(void)(pmd); &(mm)->page_table_lock;})
 #endif /* USE_SPLIT_PTLOCKS */
 
+// 2016-04-16
+// pgtable_page_ctor(pte)
 static inline void pgtable_page_ctor(struct page *page)
 {
-	pte_lock_init(page);
+	pte_lock_init(page); // no OP.
 	inc_zone_page_state(page, NR_PAGETABLE);
 }
 
@@ -1442,6 +1445,7 @@ static inline void pgtable_page_dtor(struct page *page)
 							pmd, address))?	\
 		NULL: pte_offset_map_lock(mm, pmd, address, ptlp))
 
+// 2016-04-16;
 #define pte_alloc_kernel(pmd, address)			\
 	((unlikely(pmd_none(*(pmd))) && __pte_alloc_kernel(pmd, address))? \
 		NULL: pte_offset_kernel(pmd, address))

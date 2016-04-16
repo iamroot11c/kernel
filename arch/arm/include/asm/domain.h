@@ -32,14 +32,16 @@
  * 36-bit addressing and supersections are only available on
  * CPUs based on ARMv6+ or the Intel XSC3 core.
  */
-#ifndef CONFIG_IO_36
+#ifndef CONFIG_IO_36 // not define
 #define DOMAIN_KERNEL	0
 #define DOMAIN_TABLE	0
 #define DOMAIN_USER	1
 #define DOMAIN_IO	2
 #else
+// 2016-04-16
 #define DOMAIN_KERNEL	2
 #define DOMAIN_TABLE	2
+// 2016-04-16
 #define DOMAIN_USER	1
 #define DOMAIN_IO	0
 #endif

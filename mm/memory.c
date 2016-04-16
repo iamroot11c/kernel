@@ -561,9 +561,13 @@ void free_pgtables(struct mmu_gather *tlb, struct vm_area_struct *vma,
 	}
 }
 
+// 2016-04-16
+// __pte_alloc(mm, vma, pmd, address)
 int __pte_alloc(struct mm_struct *mm, struct vm_area_struct *vma,
 		pmd_t *pmd, unsigned long address)
 {
+	// typedef struct page *pgtable_t;
+	// 한 페이지를 구함(order 0)
 	pgtable_t new = pte_alloc_one(mm, address);
 	int wait_split_huge_page;
 	if (!new)
@@ -590,9 +594,11 @@ int __pte_alloc(struct mm_struct *mm, struct vm_area_struct *vma,
 		mm->nr_ptes++;
 		pmd_populate(mm, pmd, new);
 		new = NULL;
-	} else if (unlikely(pmd_trans_splitting(*pmd)))
+	} else if (unlikely(pmd_trans_splitting(*pmd)/*NO Op.*/))
 		wait_split_huge_page = 1;
 	spin_unlock(&mm->page_table_lock);
+
+	// 대부분 new는 NULL 일 것 같다 
 	if (new)
 		pte_free(mm, new);
 	if (wait_split_huge_page)
@@ -600,6 +606,8 @@ int __pte_alloc(struct mm_struct *mm, struct vm_area_struct *vma,
 	return 0;
 }
 
+// 2016-04-16
+// __pte_alloc_kernel(pmd, address)
 int __pte_alloc_kernel(pmd_t *pmd, unsigned long address)
 {
 	pte_t *new = pte_alloc_one_kernel(&init_mm, address);

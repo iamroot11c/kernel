@@ -16,11 +16,13 @@
  * + Level 1 descriptor (PMD)
  *   - common
  */
+// 2016-04-16
 #define PMD_TYPE_MASK		(_AT(pmdval_t, 3) << 0)
 #define PMD_TYPE_FAULT		(_AT(pmdval_t, 0) << 0)
-#define PMD_TYPE_TABLE		(_AT(pmdval_t, 1) << 0)
+#define PMD_TYPE_TABLE		(_AT(pmdval_t, 1) << 0) // 0x01
 #define PMD_TYPE_SECT		(_AT(pmdval_t, 2) << 0)
-#define PMD_BIT4		(_AT(pmdval_t, 1) << 4)
+#define PMD_BIT4		(_AT(pmdval_t, 1) << 4) // 0x10
+// PMD_DOMAIN(DOMAIN_USER/*1*/) // 0x20
 #define PMD_DOMAIN(x)		(_AT(pmdval_t, (x)) << 5)
 #define PMD_PROTECTION		(_AT(pmdval_t, 1) << 9)		/* v5 */
 /*

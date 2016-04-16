@@ -154,6 +154,7 @@ extern void copy_page(void *to, const void *from);
 
 #endif /* CONFIG_MMU */
 
+// 2016-04-16;
 typedef struct page *pgtable_t;
 
 #ifdef CONFIG_HAVE_ARCH_PFN_VALID // true

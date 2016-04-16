@@ -74,16 +74,21 @@ ENTRY(cpu_v7_do_idle)
 	mov	pc, lr
 ENDPROC(cpu_v7_do_idle)
 
+// 2016-04-16
+// cpu_v7_dcache_clean_area(pte + PTE_HWTABLE_PTRS, PTE_HWTABLE_SIZE)
 ENTRY(cpu_v7_dcache_clean_area)
 	ALT_SMP(W(nop))			@ MP extensions imply L1 PTW
 	ALT_UP_B(1f)
 	mov	pc, lr
-1:	dcache_line_size r2, r3
+1:	dcache_line_size r2, r3  @// arch/arm/mm/proc-macros.S
+                                 @// 가장 작은 cache line size를 구함
+				 @// 그래서 r2에 64를 구함 
 2:	mcr	p15, 0, r0, c7, c10, 1		@ clean D entry
-	add	r0, r0, r2
+                                                @// Clean data cache line
+	add	r0, r0, r2 @// pte + PTE_HWTABLE_PTRS + 64
 	subs	r1, r1, r2
-	bhi	2b
-	dsb	ishst
+	bhi	2b         @// 64단위로 PTE_HWTABLE_SIZE 크기만큼 순회
+	dsb	ishst      @// Data Synchronization Barrier
 	mov	pc, lr
 ENDPROC(cpu_v7_dcache_clean_area)
 

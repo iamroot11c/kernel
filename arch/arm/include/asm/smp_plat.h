@@ -38,6 +38,7 @@ static inline bool is_smp(void)
 // to shareability and defined behavior of instructions.
 //
 // 우리는 false이다.
+// 2016-04-16
 static inline int tlb_ops_need_broadcast(void)
 {
 	if (!is_smp())

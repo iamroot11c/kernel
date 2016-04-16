@@ -296,10 +296,13 @@ void bitmap_set(unsigned long *map, int start, int nr)
 }
 EXPORT_SYMBOL(bitmap_set);
 
+// 2016-04-16
+// bitmap_clear(populated, page_start, page_end - page_start)
 void bitmap_clear(unsigned long *map, int start, int nr)
 {
 	unsigned long *p = map + BIT_WORD(start);
 	const int size = start + nr;
+	// 4 byte 정렬했을 때 나머지에 대해서 클리어를 하기 위함
 	int bits_to_clear = BITS_PER_LONG - (start % BITS_PER_LONG);
 	unsigned long mask_to_clear = BITMAP_FIRST_WORD_MASK(start);
 
@@ -310,6 +313,7 @@ void bitmap_clear(unsigned long *map, int start, int nr)
 		mask_to_clear = ~0UL;
 		p++;
 	}
+	// 클러이되지않는 부분이 있을 수 있어, 해당되는 부분에 대해 클리어를 함
 	if (nr) {
 		mask_to_clear &= BITMAP_LAST_WORD_MASK(size);
 		*p &= ~mask_to_clear;

@@ -21,6 +21,7 @@
 
 #include <asm/types.h>
 
+// 2016-04-16
 typedef u32 pteval_t;
 typedef u32 pmdval_t;
 
@@ -41,6 +42,7 @@ typedef struct { pteval_t pgprot; } pgprot_t;
 #define pgprot_val(x)   ((x).pgprot)
 
 #define __pte(x)        ((pte_t) { (x) } )
+// 2016-04-16
 #define __pmd(x)        ((pmd_t) { (x) } )
 #define __pgprot(x)     ((pgprot_t) { (x) } )
 
@@ -48,6 +50,7 @@ typedef struct { pteval_t pgprot; } pgprot_t;
 /*
  * .. while these make it easier on the compiler
  */
+// 2016-04-16
 typedef pteval_t pte_t;
 typedef pmdval_t pmd_t;
 // 2015-08-22, 배열로 typedef하군요...
@@ -58,6 +61,7 @@ typedef pteval_t pgprot_t;
 // 2015-09-05
 #define pte_val(x)      (x)
 // 2015-08-22
+// 2016-04-16
 #define pmd_val(x)      (x)
 #define pgd_val(x)	((x)[0])
 #define pgprot_val(x)   (x) // 2015-01-31

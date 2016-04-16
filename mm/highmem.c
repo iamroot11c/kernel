@@ -359,6 +359,8 @@ static struct page_address_slot *page_slot(const struct page *page)
 // 2015-01-24, 시작
 // 2015-01-31
 // 2016-03-12
+// 2016-04-16
+// 페이지 포인터에 대한 가상 주소를 리턴
 void *page_address(const struct page *page)
 {
 	unsigned long flags;

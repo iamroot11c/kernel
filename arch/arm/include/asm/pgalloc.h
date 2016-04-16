@@ -22,8 +22,12 @@
 
 #ifdef CONFIG_MMU
 
-#define _PAGE_USER_TABLE	(PMD_TYPE_TABLE | PMD_BIT4 | PMD_DOMAIN(DOMAIN_USER))
-#define _PAGE_KERNEL_TABLE	(PMD_TYPE_TABLE | PMD_BIT4 | PMD_DOMAIN(DOMAIN_KERNEL))
+// 2016-04-16
+#define _PAGE_USER_TABLE	(PMD_TYPE_TABLE/*0x01*/ | PMD_BIT4/*0x10*/ | PMD_DOMAIN(DOMAIN_USER/*1*/)/*0x20*/)
+                            // 0x31
+// 2016-04-16
+#define _PAGE_KERNEL_TABLE	(PMD_TYPE_TABLE | PMD_BIT4 | PMD_DOMAIN(DOMAIN_KERNEL/*2*/)/*0x40*/)
+                            // 0x81
 
 #ifdef CONFIG_ARM_LPAE
 
@@ -59,6 +63,8 @@ extern void pgd_free(struct mm_struct *mm, pgd_t *pgd);
 
 #define PGALLOC_GFP	(GFP_KERNEL | __GFP_NOTRACK | __GFP_REPEAT | __GFP_ZERO)
 
+// 2016-04-16;
+// clean_pte_table(page_address(pte))
 static inline void clean_pte_table(pte_t *pte)
 {
 	clean_dcache_area(pte + PTE_HWTABLE_PTRS, PTE_HWTABLE_SIZE);
@@ -80,11 +86,14 @@ static inline void clean_pte_table(pte_t *pte)
  *  |  h/w pt 1  |
  *  +------------+
  */
+// 2016-04-16
+// pte_alloc_one_kernel(&init_mm, address)
 static inline pte_t *
 pte_alloc_one_kernel(struct mm_struct *mm, unsigned long addr)
 {
 	pte_t *pte;
 
+    // 페이지 하나를 구함(order 0)
 	pte = (pte_t *)__get_free_page(PGALLOC_GFP);
 	if (pte)
 		clean_pte_table(pte);
@@ -92,12 +101,13 @@ pte_alloc_one_kernel(struct mm_struct *mm, unsigned long addr)
 	return pte;
 }
 
+// 2016-04-16;
 static inline pgtable_t
 pte_alloc_one(struct mm_struct *mm, unsigned long addr)
 {
 	struct page *pte;
 
-#ifdef CONFIG_HIGHPTE
+#ifdef CONFIG_HIGHPTE // not define
 	pte = alloc_pages(PGALLOC_GFP | __GFP_HIGHMEM, 0);
 #else
 	pte = alloc_pages(PGALLOC_GFP, 0);
@@ -114,6 +124,7 @@ pte_alloc_one(struct mm_struct *mm, unsigned long addr)
 /*
  * Free one PTE table.
  */
+// 2016-04-16
 static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
 {
 	if (pte)
@@ -127,23 +138,26 @@ static inline void pte_free(struct mm_struct *mm, pgtable_t pte)
 }
 
 //small page setting
+// 2016-04-16
+// __pmd_populate(pmdp, page_to_phys(ptep), _PAGE_USER_TABLE/*0x31*/)
+// __pmd_populate(pmdp, __pa(ptep), _PAGE_KERNEL_TABLE/*0x81*/)
 static inline void __pmd_populate(pmd_t *pmdp, phys_addr_t pte,
 				  pmdval_t prot)
 {
 	// + 11bit add 후  2bit setting
-	pmdval_t pmdval = (pte + PTE_HWTABLE_OFF) | prot;
+	pmdval_t pmdval = (pte + PTE_HWTABLE_OFF/*2048*/) | prot;
     /*
      * pgd[0] = pte+ 2048 | prot 
      * */
 	pmdp[0] = __pmd(pmdval);
-#ifndef CONFIG_ARM_LPAE
+#ifndef CONFIG_ARM_LPAE // not define
 	// pmd[1] = pmd[0] + 10bit add
     /*
      *  왜 10bit를 더했을가?
      *  pgd[2][2048] 이므로 pgd 1개당 1MB를 관리.
      *  pmdp[1]은 pmdp[0]+1MB에서의 1MB를 관리해야하므로 1MB를 더한것?
      */
-	pmdp[1] = __pmd(pmdval + 256 * sizeof(pte_t));
+	pmdp[1] = __pmd(pmdval + 256 * sizeof(pte_t)); // = pmdval + 1024
 #endif
 	flush_pmd_entry(pmdp);
 }
@@ -154,6 +168,8 @@ static inline void __pmd_populate(pmd_t *pmdp, phys_addr_t pte,
  *
  * Ensure that we always set both PMD entries.
  */
+// 2016-04-16
+// pmd_populate_kernel(&init_mm, pmd, new)
 static inline void
 pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmdp, pte_t *ptep)
 {
@@ -163,6 +179,8 @@ pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmdp, pte_t *ptep)
 	__pmd_populate(pmdp, __pa(ptep), _PAGE_KERNEL_TABLE);
 }
 
+// 2016-04-16
+// pmd_populate(mm, pmd, new)
 static inline void
 pmd_populate(struct mm_struct *mm, pmd_t *pmdp, pgtable_t ptep)
 {

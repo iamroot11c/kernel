@@ -14,6 +14,8 @@
  */
 // 2015-01-25
 // 2015-12-17;
+// 2016-04-16
+// __set_bit(i, populated);
 static inline void __set_bit(int nr, volatile unsigned long *addr)
 {
 	unsigned long mask = BIT_MASK(nr);

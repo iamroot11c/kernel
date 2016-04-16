@@ -956,6 +956,8 @@ static inline int is_highmem_idx(enum zone_type idx)
  * @zone - pointer to struct zone variable
  */
 // 2015-01-24
+// 2016-04-16;
+// is_highmem(page_zone(__p))
 static inline int is_highmem(struct zone *zone)
 {
 #ifdef CONFIG_HIGHMEM // defined

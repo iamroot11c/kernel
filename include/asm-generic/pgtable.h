@@ -84,6 +84,8 @@ int pmdp_clear_flush_young(struct vm_area_struct *vma,
 #ifndef __HAVE_ARCH_PTEP_GET_AND_CLEAR
 // 2015-08-22
 // 2015-12-26
+// 2016-04-16
+// ptep_get_and_clear(&init_mm, addr, pte)
 static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
 				       unsigned long address,
 				       pte_t *ptep)
@@ -540,13 +542,15 @@ static inline unsigned long my_zero_pfn(unsigned long addr)
 
 #ifdef CONFIG_MMU
 
-#ifndef CONFIG_TRANSPARENT_HUGEPAGE
+#ifndef CONFIG_TRANSPARENT_HUGEPAGE // not define
 // 2015-08-22
 // 2015-10-24;
 static inline int pmd_trans_huge(pmd_t pmd)
 {
 	return 0;
 }
+
+// 2016-04-16
 static inline int pmd_trans_splitting(pmd_t pmd)
 {
 	return 0;

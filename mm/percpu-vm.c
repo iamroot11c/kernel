@@ -169,6 +169,7 @@ static int pcpu_alloc_pages(struct pcpu_chunk *chunk,
  * doing it for each cpu.  This could be an overkill but is more
  * scalable.
  */
+// 2016-04-16
 static void pcpu_pre_unmap_flush(struct pcpu_chunk *chunk,
 				 int page_start, int page_end)
 {
@@ -177,9 +178,11 @@ static void pcpu_pre_unmap_flush(struct pcpu_chunk *chunk,
 		pcpu_chunk_addr(chunk, pcpu_high_unit_cpu, page_end));
 }
 
+// 2016-04-16
+// __pcpu_unmap_pages(pcpu_chunk_addr(chunk, tcpu, page_start), page_end - page_start)
 static void __pcpu_unmap_pages(unsigned long addr, int nr_pages)
 {
-	unmap_kernel_range_noflush(addr, nr_pages << PAGE_SHIFT);
+	unmap_kernel_range_noflush(addr, nr_pages << PAGE_SHIFT); 
 }
 
 /**
@@ -196,6 +199,8 @@ static void __pcpu_unmap_pages(unsigned long addr, int nr_pages)
  * called after all unmaps are finished.  The caller should call
  * proper pre/post flush functions.
  */
+// 2016-04-16
+// pcpu_unmap_pages(chunk, pages, populated, rs, re)
 static void pcpu_unmap_pages(struct pcpu_chunk *chunk,
 			     struct page **pages, unsigned long *populated,
 			     int page_start, int page_end)
@@ -231,9 +236,12 @@ static void pcpu_unmap_pages(struct pcpu_chunk *chunk,
  * As with pcpu_pre_unmap_flush(), TLB flushing also is done at once
  * for the whole region.
  */
+// 2016-04-16
+// pcpu_post_unmap_tlb_flush(chunk, page_start, unmap_end)
 static void pcpu_post_unmap_tlb_flush(struct pcpu_chunk *chunk,
 				      int page_start, int page_end)
 {
+	// 2016-04-16 시작;
 	flush_tlb_kernel_range(
 		pcpu_chunk_addr(chunk, pcpu_low_unit_cpu, page_start),
 		pcpu_chunk_addr(chunk, pcpu_high_unit_cpu, page_end));
@@ -249,6 +257,7 @@ static int __pcpu_map_pages(unsigned long addr, struct page **pages,
 	// 2016-04-09
 	return map_kernel_range_noflush(addr, nr_pages << PAGE_SHIFT,
 					PAGE_KERNEL, pages);
+	// 2016-04-16 마침
 }
 
 /**
@@ -280,15 +289,18 @@ static int pcpu_map_pages(struct pcpu_chunk *chunk,
 		// 주의. 두번째 파라미터로 넘기는 주소는 
 		// pages + pcpu_page_idx()만큼 점프한 값이다.
 		// 해당 위치를 기점으로 (page_end - page_start) 개수를 매핑한다.
+		// __pcpu_map_pages() 함수의 리턴값은 pte의 총 개수이다
 		err = __pcpu_map_pages(pcpu_chunk_addr(chunk, cpu, page_start),
 				       &pages[pcpu_page_idx(cpu, page_start)],
 				       page_end - page_start);
+		// 2016-04-16 마침
 		if (err < 0)
 			goto err;
 	}
 
 	/* mapping successful, link chunk and mark populated */
 	for (i = page_start; i < page_end; i++) {
+		// 2016-04-16
 		for_each_possible_cpu(cpu)
 			pcpu_set_page_chunk(pages[pcpu_page_idx(cpu, i)],
 					    chunk);
@@ -301,6 +313,7 @@ err:
 	for_each_possible_cpu(tcpu) {
 		if (tcpu == cpu)
 			break;
+		// 2016-04-16
 		__pcpu_unmap_pages(pcpu_chunk_addr(chunk, tcpu, page_start),
 				   page_end - page_start);
 	}
@@ -319,6 +332,8 @@ err:
  * As with pcpu_pre_unmap_flush(), TLB flushing also is done at once
  * for the whole region.
  */
+// 2016-04-16
+// pcpu_post_map_flush(chunk, page_start, page_end)
 static void pcpu_post_map_flush(struct pcpu_chunk *chunk,
 				int page_start, int page_end)
 {
@@ -396,10 +411,12 @@ static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int off, int size)
 	pcpu_for_each_unpop_region(chunk, rs, re, page_start, page_end) {
 		// 2016-04-09
 		rc = pcpu_map_pages(chunk, pages, populated, rs, re);
+		// 2016-04-16 마침
 		if (rc)
 			goto err_unmap;
 		unmap_end = re;
 	}
+	// D-cache는 flush, I-cache는 invalidate 함
 	pcpu_post_map_flush(chunk, page_start, page_end);
 
 	/* commit new bitmap */
@@ -411,9 +428,17 @@ clear:
 	return 0;
 
 err_unmap:
+	// D-cache는 flush, I-cache는 invalidate 함
 	pcpu_pre_unmap_flush(chunk, page_start, unmap_end);
+	/*
+	*#define pcpu_for_each_unpop_region(chunk, rs, re, start, end)               \
+	*     for ((rs) = (start), pcpu_next_unpop((chunk), &(rs), &(re), (end));\
+	*          (rs) < (re);                                                   \
+	*           (rs) = (re) + 1, pcpu_next_unpop((chunk), &(rs), &(re), (end)))
+	* */
 	pcpu_for_each_unpop_region(chunk, rs, re, page_start, unmap_end)
 		pcpu_unmap_pages(chunk, pages, populated, rs, re);
+	// 2016-04-16 시작
 	pcpu_post_unmap_tlb_flush(chunk, page_start, unmap_end);
 err_free:
 	pcpu_for_each_unpop_region(chunk, rs, re, page_start, free_end)

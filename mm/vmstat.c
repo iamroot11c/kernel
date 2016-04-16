@@ -295,6 +295,8 @@ EXPORT_SYMBOL(__mod_zone_page_state);
 // 2015-09-05;
 // 2015-12-19;
 // inc_zone_page_state(zone, NR_VMSCAN_IMMEDIATE);
+// 2016-04-16
+// __inc_zone_state(zone, NR_PAGETABLE)
 void __inc_zone_state(struct zone *zone, enum zone_stat_item item)
 {
 	struct per_cpu_pageset __percpu *pcp = zone->pageset;
@@ -485,6 +487,8 @@ void inc_zone_state(struct zone *zone, enum zone_stat_item item)
 
 // 2015-12-19;
 // inc_zone_page_state(page, NR_VMSCAN_IMMEDIATE);
+// 2016-04-16
+// inc_zone_page_state(page, NR_PAGETABLE);
 void inc_zone_page_state(struct page *page, enum zone_stat_item item)
 {
 	unsigned long flags;

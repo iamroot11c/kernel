@@ -253,6 +253,8 @@
 #define cpu_proc_fin			__glue(CPU_NAME,_proc_fin)
 #define cpu_reset			__glue(CPU_NAME,_reset)
 #define cpu_do_idle			__glue(CPU_NAME,_do_idle)
+// 2016-04-16
+// cpu_v7_dcache_clean_area(pte + PTE_HWTABLE_PTRS, PTE_HWTABLE_SIZE)
 #define cpu_dcache_clean_area		__glue(CPU_NAME,_dcache_clean_area)
 #define cpu_do_switch_mm		__glue(CPU_NAME,_switch_mm)
 // 2015-08-22, cpu_set_pte_ext(ptep, __pte(0), 0)

@@ -245,6 +245,8 @@ struct cpu_tlb_fns {
 #else
 
 #define __cpu_flush_user_tlb_range	__glue(_TLB,_flush_user_tlb_range)
+// 2016-04-23
+// v7wbi_flush_kern_tlb_range
 #define __cpu_flush_kern_tlb_range	__glue(_TLB,_flush_kern_tlb_range)
 
 extern void __cpu_flush_user_tlb_range(unsigned long, unsigned long, struct vm_area_struct *);
@@ -715,6 +717,8 @@ static inline void dummy_flush_tlb_a15_erratum(void)
  *	PMD entries.
  */
 // [flush] 캐시라인을 비움(0으로 초기화)
+// 2016-04-16
+// flush_pmd_entry(pmdp)
 static inline void flush_pmd_entry(void *pmd)
 {
 	const unsigned int __tlb_flag = __cpu_tlb_flags;
@@ -764,6 +768,7 @@ static inline void clean_pmd_entry(void *pmd)
  * Convert calls to our calling convention.
  */
 #define local_flush_tlb_range(vma,start,end)	__cpu_flush_user_tlb_range(start,end,vma)
+// 2016-04-23
 #define local_flush_tlb_kernel_range(s,e)	__cpu_flush_kern_tlb_range(s,e)
 
 #ifndef CONFIG_SMP // CONFIG_SMP = y
