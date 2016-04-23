@@ -1,6 +1,30 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [96주차]() `2016.04.23`
+ - [kmem_cache_init() 진행중]()
+ - mm/slub.c:bootstrap() 시작
+ - mm/slub.c:__flush_cpu_slab() 진행중
+ - mm/slub.c:flush_slab() 진행중
+ - mm/slub.c:eactivate_slab() 진행중
+ - mm/slab_common.c:create_boot_cache() 완료
+ - mm/slub.c:__kmem_cache_create() 완료
+ - mm/slub.c:kmem_cache_open() 완료
+ - mm/slub.c:free_kmem_cache_nodes() 완료
+ - mm/slub.c:alloc_kmem_cache_cpus() - 완료
+ - mm/percpu.c:__alloc_percpu() - 완료
+ - mm/percup.c:pcpu_alloc() - 완료
+ - mm/percpu-vm.c:pcpu_populate_chunk() - 완료
+ - mm/percpu-vm.c:pcpu_post_unmap_tlb_flush() - 완료
+ - mm/percpu-vm.c:flush_tlb_kernel_range() - 완료
+ - arch/arm/kernel/smp_tlb.c: flush_tlb_kernel_range() 완료
+ - arch/arm/mm/tlb-v7.S:v7wbi_flush_kern_tlb_range() 완료
+
+
+
+
+
+
 + [95주차](http://bit.ly/1qO2NxU) `2016.04.16`
  - [kmem_cache_init() 진행중]()
  - mm/slub.c:alloc_kmem_cache_cpus() - 진행 중

@@ -78,6 +78,7 @@
 #define PCPU_DFL_MAP_ALLOC		16	/* start a map with 16 ents */
 
 #ifdef CONFIG_SMP
+// 2016-04-23
 /* default addr <-> pcpu_ptr mapping, override in asm/percpu.h if necessary */
 #ifndef __addr_to_pcpu_ptr
 #define __addr_to_pcpu_ptr(addr)					\
@@ -188,6 +189,8 @@ static DEFINE_SPINLOCK(pcpu_lock);	/* protects index data structures */
 
 // 2016-03-12;
 // list_head 포인터 배열
+// 2016-04-23
+// chunk들을 관리하는 전역변수
 static struct list_head *pcpu_slot __read_mostly; /* chunk list slots */
 
 /* reclaim work to release fully free chunks, scheduled from free path */
@@ -377,6 +380,7 @@ static void pcpu_mem_free(void *ptr, size_t size)
 // free_size가 같은 것 끼리 list로 관리
 //
 // 2016-03-12;
+// 2016-04-23
 static void pcpu_chunk_relocate(struct pcpu_chunk *chunk, int oslot)
 {
 	// chunk의 free_size가 같은 값이면 같은 nslot값을 리턴할 것이다.
@@ -640,6 +644,8 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align)
  * CONTEXT:
  * pcpu_lock.
  */
+// 2016-04-23
+// pcpu_free_area(chunk, off);
 static void pcpu_free_area(struct pcpu_chunk *chunk, int freeme)
 {
 	int oslot = pcpu_chunk_slot(chunk);
@@ -671,6 +677,7 @@ static void pcpu_free_area(struct pcpu_chunk *chunk, int freeme)
 	}
 
 	chunk->contig_hint = max(chunk->map[i], chunk->contig_hint);
+	// 2016-04-23
 	pcpu_chunk_relocate(chunk, oslot);
 }
 
@@ -833,6 +840,7 @@ restart:
 			if (size > chunk->contig_hint)
 				continue;
 
+			// 늘려줄 필요가 있는가? 확인
 			new_alloc = pcpu_need_to_extend(chunk);
 			if (new_alloc) {
 				spin_unlock_irqrestore(&pcpu_lock, flags);
@@ -882,23 +890,31 @@ area_found:
 	/* populate, map and clear the area */
 	// 2016-04-02
 	if (pcpu_populate_chunk(chunk, off, size)) {
+	// 2016-04-23
 		spin_lock_irqsave(&pcpu_lock, flags);
+		// 2016-04-23
 		pcpu_free_area(chunk, off);
+		// 2016-04-23
 		err = "failed to populate";
 		goto fail_unlock;
 	}
 
+	// 2016-04-23
+	// 정상경우 먼저 봄
+
 	mutex_unlock(&pcpu_alloc_mutex);
 
 	/* return address relative to base address */
+	// 2016-04-23
 	ptr = __addr_to_pcpu_ptr(chunk->base_addr + off);
-	kmemleak_alloc_percpu(ptr, size);
+	kmemleak_alloc_percpu(ptr, size);	// NOP
 	return ptr;
 
 fail_unlock:
 	spin_unlock_irqrestore(&pcpu_lock, flags);
 fail_unlock_mutex:
 	mutex_unlock(&pcpu_alloc_mutex);
+	// warn_limit은 static이다.
 	if (warn_limit) {
 		pr_warning("PERCPU: allocation failed, size=%zu align=%zu, "
 			   "%s\n", size, align, err);

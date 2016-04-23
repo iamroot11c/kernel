@@ -68,7 +68,15 @@ ENDPROC(v7wbi_flush_user_tlb_range)
  *	- start - start address (may not be aligned)
  *	- end   - end address (exclusive, may not be aligned)
  */
-// 2016-04-23 분석 예정
+// 2016-04-23
+// Data Synchronization Barrier(DSB) is a memory barrier that ensures the completion of memory accesses,
+//  local_flush_tlb_kernel_range(start, end);
+//
+//  Instruction Synchronization Barrier (ISB)
+//  MVA : Modified Virtual Address
+//
+//  TLBIMVAIS, TLB Invalidate by MVA, Inner Shareable, VMSA only
+//  TLBIMVA, Invalidate unified TLB by MVA and ASID
 ENTRY(v7wbi_flush_kern_tlb_range)
 	dsb	ish
 	mov	r0, r0, lsr #PAGE_SHIFT		@ align address
@@ -76,12 +84,12 @@ ENTRY(v7wbi_flush_kern_tlb_range)
 	mov	r0, r0, lsl #PAGE_SHIFT
 	mov	r1, r1, lsl #PAGE_SHIFT
 1:
-#ifdef CONFIG_ARM_ERRATA_720789
+#ifdef CONFIG_ARM_ERRATA_720789		// =n
 	ALT_SMP(mcr	p15, 0, r0, c8, c3, 3)	@ TLB invalidate U MVA all ASID (shareable)
 #else
-	ALT_SMP(mcr	p15, 0, r0, c8, c3, 1)	@ TLB invalidate U MVA (shareable)
+	ALT_SMP(mcr	p15, 0, r0, c8, c3, 1)	@ TLB invalidate U MVA (shareable), TLBIMVAIS
 #endif
-	ALT_UP(mcr	p15, 0, r0, c8, c7, 1)	@ TLB invalidate U MVA
+	ALT_UP(mcr	p15, 0, r0, c8, c7, 1)	@ TLB invalidate U MVA, TLBIMVA
 	add	r0, r0, #PAGE_SZ
 	cmp	r0, r1
 	blo	1b

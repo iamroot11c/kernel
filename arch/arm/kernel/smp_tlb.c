@@ -76,8 +76,10 @@ static void ipi_flush_tlb_a15_erratum(void *arg)
 	dmb();
 }
 
+// 2016-04-23
 static void broadcast_tlb_a15_erratum(void)
 {
+	// 2016-04-23, 우리는 return
 	if (!erratum_a15_798181())
 		return;
 
@@ -173,8 +175,9 @@ void flush_tlb_kernel_range(unsigned long start, unsigned long end)
 		on_each_cpu(ipi_flush_tlb_kernel_range, &ta, 1);
 	} else
 		// 2016-04-16 여기까지, 차주 분석 예정
+		// 2016-04-23 시작,
 		local_flush_tlb_kernel_range(start, end);
-	broadcast_tlb_a15_erratum();
+	broadcast_tlb_a15_erratum();	// NOP
 }
 
 void flush_bp_all(void)

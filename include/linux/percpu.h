@@ -154,6 +154,8 @@ extern int __init pcpu_page_first_chunk(size_t reserved_size,
 // 2016-01-23;
 // per_cpu_ptr(zone->pageset, cpu)
 // 주의: __per_cpu_offset[cpu]의  배열 원소값
+// 2016-04-23
+// per_cpu_ptr(s->cpu_slab, cpu) => s->cpu_slab + cpu
 #define per_cpu_ptr(ptr, cpu)	SHIFT_PERCPU_PTR((ptr), per_cpu_offset((cpu)))
 #else
 #define per_cpu_ptr(ptr, cpu)	({ (void)(cpu); VERIFY_PERCPU_PTR((ptr)); })

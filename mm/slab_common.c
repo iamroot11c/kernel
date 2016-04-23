@@ -24,6 +24,7 @@
 #include "slab.h"
 
 enum slab_state slab_state;
+// 2016-04-23
 LIST_HEAD(slab_caches);
 DEFINE_MUTEX(slab_mutex);
 // 2015-05-30
@@ -313,6 +314,7 @@ void __init create_boot_cache(struct kmem_cache *s, const char *name, size_t siz
 	
 	// 2015-05-16
 	err = __kmem_cache_create(s, flags);
+	// 2016-04-23
 
 	if (err)
 		panic("Creation of kmalloc slab %s size=%zu failed. Reason %d\n",

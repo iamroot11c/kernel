@@ -1887,6 +1887,7 @@ static inline unsigned long tid_to_event(unsigned long tid)
 	return tid / TID_STEP;
 }
 
+// 2016-04-23
 static inline unsigned int init_tid(int cpu)
 {
 	return cpu;
@@ -1917,6 +1918,7 @@ static inline void note_cmpxchg_failure(const char *n,
 	stat(s, CMPXCHG_DOUBLE_CPU_FAIL);
 }
 
+// 2016-04-23
 static void init_kmem_cache_cpus(struct kmem_cache *s)
 {
 	int cpu;
@@ -1929,6 +1931,7 @@ static void init_kmem_cache_cpus(struct kmem_cache *s)
  * Remove the cpu slab
  */
 // 2016-04-02, TODO, glance
+// 2016-04-23, TODO, 차주에 시작 예정
 static void deactivate_slab(struct kmem_cache *s, struct page *page,
 				void *freelist)
 {
@@ -2211,6 +2214,7 @@ static inline void flush_slab(struct kmem_cache *s, struct kmem_cache_cpu *c)
 {
 	stat(s, CPUSLAB_FLUSH);
 	// 2016-04-02, 봐야함
+	// 2016-04-23
 	deactivate_slab(s, c->page, c->freelist);
 
 	c->tid = next_tid(c->tid);
@@ -2223,13 +2227,14 @@ static inline void flush_slab(struct kmem_cache *s, struct kmem_cache_cpu *c)
  *
  * Called from IPI handler with interrupts disabled.
  */
+// 2016-04-23
 static inline void __flush_cpu_slab(struct kmem_cache *s, int cpu)
 {
 	struct kmem_cache_cpu *c = per_cpu_ptr(s->cpu_slab, cpu);
 
 	if (likely(c)) {
 		if (c->page)
-			flush_slab(s, c);
+			flush_slab(s, c);   // 2016-04-23
 
 		unfreeze_partials(s, c);
 	}
@@ -2659,6 +2664,8 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
 	return slab_alloc_node(s, gfpflags, NUMA_NO_NODE, addr);
 }
 
+// 2016-04-23
+// kmem_cache_alloc(k, GFP_NOWAIT | __GFP_ZERO);
 void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
 {
 	void *ret = slab_alloc(s, gfpflags, _RET_IP_);
@@ -2918,6 +2925,8 @@ redo:
 // 2015-08-15
 // kmem_cache_free(bh_cachep, bh);
 //
+//2016-04-23
+//kmem_cache_free(kmem_cache_node, n)
 void kmem_cache_free(struct kmem_cache *s, void *x)
 {
 	// 2015-08-08, s가 null임을 가정하고, return 함.
@@ -2927,6 +2936,7 @@ void kmem_cache_free(struct kmem_cache *s, void *x)
 	// 2015-08-08 여기까지...
 	
 	// 2015-08-15, 시작, slab_free 다음에 보자
+        // 2016-03-26;에 봤다.
 	slab_free(s, virt_to_head_page(x), x, _RET_IP_);
 	trace_kmem_cache_free(_RET_IP_, x);
 }
@@ -3096,10 +3106,12 @@ static inline int alloc_kmem_cache_cpus(struct kmem_cache *s)
 	// 2016-03-12 시작;
 	s->cpu_slab = __alloc_percpu(sizeof(struct kmem_cache_cpu),
 				     2 * sizeof(void *));
+	// 2016-04-23, end
 
 	if (!s->cpu_slab)
 		return 0;
 
+	// 2016-04-23
 	init_kmem_cache_cpus(s);
 
 	return 1;
@@ -3159,15 +3171,18 @@ static void early_kmem_cache_node_alloc(int node)
 	// 2016-03-12 분석완료;
 }
 
+// 2016-04-23
 static void free_kmem_cache_nodes(struct kmem_cache *s)
 {
 	int node;
 
+	// #define for_each_node_state(node, __state) \
+	//      for ( (node) = 0; (node) == 0; (node) = 1)
 	for_each_node_state(node, N_NORMAL_MEMORY) {
 		struct kmem_cache_node *n = s->node[node];
 
 		if (n)
-			kmem_cache_free(kmem_cache_node, n);
+			 kmem_cache_free(kmem_cache_node, n);
 
 		s->node[node] = NULL;
 	}
@@ -3414,8 +3429,11 @@ static int kmem_cache_open(struct kmem_cache *s, unsigned long flags)
 	// 2016-03-12 시작;
 	if (alloc_kmem_cache_cpus(s))
 		return 0;
+	// 2016-04-23
 
+	// 2016-04-23
 	free_kmem_cache_nodes(s);
+	// 2016-04-23
 error:
 	if (flags & SLAB_PANIC)
 		panic("Cannot create slab %s size=%lu realsize=%u "
@@ -3828,6 +3846,13 @@ out:
 	return ret;
 }
 
+// 2016-04-23
+// 아래에 의해서, callback 등록
+// static struct notifier_block slab_memory_callback_nb = {
+//          .notifier_call = slab_memory_callback,
+//          .priority = SLAB_CALLBACK_PRI,
+// };
+//
 static int slab_memory_callback(struct notifier_block *self,
 				unsigned long action, void *arg)
 {
@@ -3855,6 +3880,7 @@ static int slab_memory_callback(struct notifier_block *self,
 	return ret;
 }
 
+// 2016-04-23
 static struct notifier_block slab_memory_callback_nb = {
 	.notifier_call = slab_memory_callback,
 	.priority = SLAB_CALLBACK_PRI,
@@ -3870,6 +3896,7 @@ static struct notifier_block slab_memory_callback_nb = {
  * that may be pointing to the wrong kmem_cache structure.
  */
 
+// 2016-04-23
 static struct kmem_cache * __init bootstrap(struct kmem_cache *static_cache)
 {
 	int node;
@@ -3882,7 +3909,10 @@ static struct kmem_cache * __init bootstrap(struct kmem_cache *static_cache)
 	 * up.  Even if it weren't true, IRQs are not up so we couldn't fire
 	 * IPIs around.
 	 */
+	// 2016-04-23
 	__flush_cpu_slab(s, smp_processor_id());
+	// #define for_each_node_state(node, __state) \
+	//      for ( (node) = 0; (node) == 0; (node) = 1)
 	for_each_node_state(node, N_NORMAL_MEMORY) {
 		struct kmem_cache_node *n = get_node(s, node);
 		struct page *p;
@@ -3921,8 +3951,9 @@ void __init kmem_cache_init(void)
 	// 2015-05-16
 	create_boot_cache(kmem_cache_node, "kmem_cache_node",
 		sizeof(struct kmem_cache_node), SLAB_HWCACHE_ALIGN/*0x00002000UL*/);
+	// 2016-04-23
 
-	register_hotmemory_notifier(&slab_memory_callback_nb);
+	register_hotmemory_notifier(&slab_memory_callback_nb);	// NOP
 
 	/* Able to allocate the per node structures */
 	slab_state = PARTIAL;
@@ -3932,6 +3963,7 @@ void __init kmem_cache_init(void)
 				nr_node_ids * sizeof(struct kmem_cache_node *),
 		       SLAB_HWCACHE_ALIGN);
 
+	// 2016-04-23
 	kmem_cache = bootstrap(&boot_kmem_cache);
 
 	/*
@@ -4057,13 +4089,16 @@ int __kmem_cache_create(struct kmem_cache *s, unsigned long flags)
 
 	// 2015-05-16
 	err = kmem_cache_open(s, flags);
+	// 2016-04-23
 	if (err)
 		return err;
 
+	// 2016-04-23, 현재 우리는 PARTIAL임으로 return 할 것이다.
 	/* Mutex is not taken during early boot */
 	if (slab_state <= UP)
 		return 0;
 
+	// 2016-04-23, 아래는 차후에 보자
 	memcg_propagate_slab_attrs(s);
 	mutex_unlock(&slab_mutex);
 	err = sysfs_slab_add(s);

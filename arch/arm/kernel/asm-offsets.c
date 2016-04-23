@@ -119,7 +119,9 @@ int main(void)
   BLANK();
   DEFINE(VM_EXEC,	       	VM_EXEC);
   BLANK();
-  DEFINE(PAGE_SZ,	       	PAGE_SIZE);
+  // 2016-04-23
+  // #define PAGE_SZ PAGE_SIZE
+  DEFINE(PAGE_SZ,	       	PAGE_SIZE/*4K*/);
   BLANK();
   DEFINE(SYS_ERROR0,		0x9f0000);
   BLANK();

@@ -70,6 +70,7 @@ static inline void kmemleak_alloc_recursive(const void *ptr, size_t size,
 					    gfp_t gfp)
 {
 }
+// 2016-04-23
 static inline void kmemleak_alloc_percpu(const void __percpu *ptr, size_t size)
 {
 }
