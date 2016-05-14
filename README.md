@@ -1,7 +1,7 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
-+ [96주차](http://bit.ly/1T5cDlF) `2016.04.23`
++ [97주차](http://bit.ly/1Ot4lmv) `2016.05.14`
  - [kmem_cache_init() 진행중]()
  - mm/slub.c:bootstrap() 완료
  - mm/slub.c:__flush_cpu_slab() 완료
