@@ -163,6 +163,8 @@ static inline void atomic_long_inc(atomic_long_t *l)
 }
 
 // 2015-10-17
+// 2016-05-14
+// *v -= 1
 static inline void atomic_long_dec(atomic_long_t *l)
 {
 	atomic_t *v = (atomic_t *)l;

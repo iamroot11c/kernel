@@ -3,6 +3,14 @@
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
 + [96주차](http://bit.ly/1T5cDlF) `2016.04.23`
  - [kmem_cache_init() 진행중]()
+ - mm/slub.c:bootstrap() 완료
+ - mm/slub.c:__flush_cpu_slab() 완료
+ - mm/slub.c:flush_slab() 완료
+ - mm/slub.c:deactivate_slab() 완료
+ - mm/slub.c:create_kmalloc_caches() 진행 중
+
++ [96주차](http://bit.ly/1T5cDlF) `2016.04.23`
+ - [kmem_cache_init() 진행중]()
  - mm/slub.c:bootstrap() 시작
  - mm/slub.c:__flush_cpu_slab() 진행중
  - mm/slub.c:flush_slab() 진행중

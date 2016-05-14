@@ -278,8 +278,8 @@ struct kmem_cache_node {
 #endif
 
 #ifdef CONFIG_SLUB  // set
-	unsigned long nr_partial;   // 4
-	struct list_head partial;   // 8
+	unsigned long nr_partial;
+	struct list_head partial;
 #ifdef CONFIG_SLUB_DEBUG    // set
 	atomic_long_t nr_slabs;
 	atomic_long_t total_objects;

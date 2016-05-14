@@ -738,6 +738,7 @@ extern int page_to_nid(const struct page *page);
 #else
 // 2015-11-14;
 // 2016-03-12;
+// 항상 0
 static inline int page_to_nid(const struct page *page)
 {
 	return (page->flags >> NODES_PGSHIFT) & NODES_MASK;
