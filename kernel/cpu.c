@@ -22,8 +22,9 @@
 
 #include "smpboot.h"
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
 /* Serializes the updates to cpu_online_mask, cpu_present_mask */
+// 2016-05-28;
 static DEFINE_MUTEX(cpu_add_remove_lock);
 
 /*
@@ -46,6 +47,7 @@ void cpu_maps_update_done(void)
 // #define RAW_NOTIFIER_HEAD(name)                 \
 //     struct raw_notifier_head name =             \
 //         RAW_NOTIFIER_INIT(name)
+// 2016-05-28
 static RAW_NOTIFIER_HEAD(cpu_chain);
 
 /* If set, cpu_up and cpu_down will return -EBUSY and do nothing.
@@ -167,13 +169,16 @@ void cpu_hotplug_enable(void)
 // static struct notifier_block fnpage_alloc_cpu_notify_nb = {
 //     .notifier_call = page_alloc_cpu_notify, .priority = 0 }; 
 // register_cpu_notifier(&fnpage_alloc_cpu_notify_nb);
+//
+// 2016-05-28
+// register_cpu_notifier(&slab_notifier)
 int __ref register_cpu_notifier(struct notifier_block *nb)
 {
 	int ret;
 
 	// begin, done 사이에 실제 register가 이루어 진다.
 	cpu_maps_update_begin();
-	ret = raw_notifier_chain_register(&cpu_chain, nb);
+	ret = raw_notifier_chain_register(&cpu_chain, nb); // 리턴 0
 	cpu_maps_update_done();
 	return ret;
 }

@@ -73,6 +73,7 @@ struct llist_node {
  * init_llist_head - initialize lock-less list head
  * @head:	the head for your lock-less list
  */
+// 2016-05-28
 static inline void init_llist_head(struct llist_head *list)
 {
 	list->first = NULL;

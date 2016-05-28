@@ -197,7 +197,8 @@ static inline bool kmem_cache_has_cpu_partial(struct kmem_cache *s)
 #define __OBJECT_POISON		0x80000000UL /* Poison object */
 #define __CMPXCHG_DOUBLE	0x40000000UL /* Use cmpxchg_double */
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
+// 2016-05-28
 static struct notifier_block slab_notifier;
 #endif
 
@@ -2718,6 +2719,8 @@ redo:
 }
 
 // 2016-03-19
+// 2016-05-28
+// slab_alloc(kmem_cache, GFP_NOWAIT | __GFP_ZER, _RET_IP_)
 static __always_inline void *slab_alloc(struct kmem_cache *s,
 		gfp_t gfpflags, unsigned long addr)
 {
@@ -2727,6 +2730,8 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
 
 // 2016-04-23
 // kmem_cache_alloc(k, GFP_NOWAIT | __GFP_ZERO);
+// 2016-05-28
+// kmem_cache_alloc(kmem_cache, GFP_NOWAIT | __GFP_ZER)
 void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
 {
 	void *ret = slab_alloc(s, gfpflags, _RET_IP_);
@@ -4045,12 +4050,16 @@ void __init kmem_cache_init(void)
 
 	/* Now we can use the kmem_cache to allocate kmalloc slabs */
 	// 2016-05-14 여기까지
+	//
+	// 2016-05-28
 	create_kmalloc_caches(0);
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
 	register_cpu_notifier(&slab_notifier);
 #endif
 
+	// Booting_kernel_exynos5420.log
+	// SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=8, Nodes=1
 	printk(KERN_INFO
 		"SLUB: HWalign=%d, Order=%d-%d, MinObjects=%d,"
 		" CPUs=%d, Nodes=%d\n",
@@ -4154,6 +4163,9 @@ __kmem_cache_alias(struct mem_cgroup *memcg, const char *name, size_t size,
 
 // 2015-05-16
 // __kmem_cache_create(kmem_cache_node, SLAB_HWCACHE_ALIGN)
+//
+// 201605-28
+// __kmem_cache_create(s, 0)
 int __kmem_cache_create(struct kmem_cache *s, unsigned long flags)
 {
 	int err;

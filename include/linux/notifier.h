@@ -54,6 +54,7 @@ typedef	int (*notifier_fn_t)(struct notifier_block *nb,
 
 // 2015-04-04
 // 2016-01-30
+// 2016-05-28
 struct notifier_block {
 	notifier_fn_t notifier_call;
 	struct notifier_block __rcu *next;
@@ -71,6 +72,7 @@ struct blocking_notifier_head {
 	struct notifier_block __rcu *head;
 };
 
+// 2016-05-28
 struct raw_notifier_head {
 	struct notifier_block __rcu *head;
 };

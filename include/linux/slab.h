@@ -148,8 +148,8 @@ size_t ksize(const void *);
 // ARCH_KMALLOC_MINALIGN is true and over 8
 #if defined(ARCH_DMA_MINALIGN) && ARCH_DMA_MINALIGN > 8
 #define ARCH_KMALLOC_MINALIGN ARCH_DMA_MINALIGN  /* 0x40, 64 */
-#define KMALLOC_MIN_SIZE ARCH_DMA_MINALIGN
-#define KMALLOC_SHIFT_LOW ilog2(ARCH_DMA_MINALIGN)
+#define KMALLOC_MIN_SIZE ARCH_DMA_MINALIGN // 0x40; 64
+#define KMALLOC_SHIFT_LOW ilog2(ARCH_DMA_MINALIGN) // 6 = ilog2(64)
 #else
 #define ARCH_KMALLOC_MINALIGN __alignof__(unsigned long long)
 #endif
@@ -208,8 +208,12 @@ struct kmem_cache {
  */
 // 2016-03-12
 // 2016-03-19
+// 2016-05-28
 #define KMALLOC_SHIFT_HIGH	(PAGE_SHIFT + 1) // 13
 #define KMALLOC_SHIFT_MAX	(MAX_ORDER/*11*/ + PAGE_SHIFT/*12*/) // 23
+// 2016-05-28
+// 152번 줄에서 'defined(ARCH_DMA_MINALIGN) && ARCH_DMA_MINALIGN > 8'
+// 조건 만족으로 6으로 설정됨
 #ifndef KMALLOC_SHIFT_LOW
 #define KMALLOC_SHIFT_LOW	3
 #endif
@@ -437,13 +441,14 @@ static __always_inline void *kmalloc(size_t size, gfp_t flags)
  * return size or 0 if a kmalloc cache for that
  * size does not exist
  */
+// 2016-05-28;
 static __always_inline int kmalloc_size(int n)
 {
-#ifndef CONFIG_SLOB
+#ifndef CONFIG_SLOB // not define
 	if (n > 2)
 		return 1 << n;
 
-	if (n == 1 && KMALLOC_MIN_SIZE <= 32)
+	if (n == 1 && KMALLOC_MIN_SIZE/*64; 0x40*/ <= 32)
 		return 96;
 
 	if (n == 2 && KMALLOC_MIN_SIZE <= 64)
@@ -651,6 +656,8 @@ extern void *__kmalloc_node_track_caller(size_t, gfp_t, int, unsigned long);
  */
 // 2016-04-23
 // kmem_cache_zalloc(kmem_cache, GFP_NOWAIT);
+// 2016-05-27
+// kmem_cache_zalloc(kmem_cache, GFP_NOWAIT)
 static inline void *kmem_cache_zalloc(struct kmem_cache *k, gfp_t flags)
 {
 	return kmem_cache_alloc(k, flags | __GFP_ZERO);
@@ -663,6 +670,8 @@ static inline void *kmem_cache_zalloc(struct kmem_cache *k, gfp_t flags)
  */
 // 2016-03-19
 // kzalloc(size, GFP_KERNEL);
+// 2016-05-28
+// kzalloc(sizeof(struct vmap_area), GFP_NOWAIT)
 static inline void *kzalloc(size_t size, gfp_t flags)
 {
     // 2016-04-02

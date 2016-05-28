@@ -22,6 +22,7 @@ BLOCKING_NOTIFIER_HEAD(reboot_notifier_list);
 // notifier_block은 linked list 형태로 관리되며,
 // 우선순위를 고려해서 순서가 결정 된다.
 // 내림차순 정렬이다.
+// 2016-05-28
 static int notifier_chain_register(struct notifier_block **nl,
 		struct notifier_block *n)
 {
@@ -371,6 +372,8 @@ EXPORT_SYMBOL_GPL(blocking_notifier_call_chain);
  *	Currently always returns zero.
  */
 // 2015-04-04
+// 2016-05-28
+// raw_notifier_chain_register(&cpu_chain, &slab_notifier)
 int raw_notifier_chain_register(struct raw_notifier_head *nh,
 		struct notifier_block *n)
 {

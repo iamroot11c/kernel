@@ -486,10 +486,15 @@ static void __init mm_init(void)
 	// 2015-05-09; 시작
 	mem_init();
 	// 2015-05-16, end
-	// 2015-05-15, start
+	// 2015-05-15
 	kmem_cache_init();
+	// 2016-05-28 분석 완료; 
+	
+	// 2016-05-28 시작; 
 	percpu_init_late();
-	pgtable_cache_init();
+	// 2016-05-28 끝; 
+	pgtable_cache_init(); // No OP.
+	// 2016-05-28 시작; 
 	vmalloc_init();
 }
 

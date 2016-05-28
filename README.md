@@ -1,6 +1,15 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [98주차]() `2016.05.28`
+ - [vmalloc_init() 진행중]()
+ - mm/vmalloc.c:vmalloc_init() 진행 중
+ - mm/vmalloc.c:__insert_vmap_area() 진행 중
+ - lib/rbtree.c:__rb_insert() 분석 중
+ - mm/percpu.c:percpu_init_late() 완료
+ - mm/slub.c:kmem_cache_init() 완료
+ - mm/slub.c:create_kmalloc_caches() 완료
+ 
 + [97주차](http://bit.ly/1Ot4lmv) `2016.05.14`
  - [kmem_cache_init() 진행중]()
  - mm/slub.c:bootstrap() 완료

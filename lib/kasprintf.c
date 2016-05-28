@@ -11,6 +11,7 @@
 #include <linux/string.h>
 
 /* Simplified asprintf. */
+// kvasprintf(GFP_NOWAIT, "kmalloc-%d", kmalloc_size(i))
 char *kvasprintf(gfp_t gfp, const char *fmt, va_list ap)
 {
 	unsigned int len;
@@ -31,6 +32,8 @@ char *kvasprintf(gfp_t gfp, const char *fmt, va_list ap)
 }
 EXPORT_SYMBOL(kvasprintf);
 
+// 2016-05-28
+// kasprintf(GFP_NOWAIT, "kmalloc-%d", kmalloc_size(i))
 char *kasprintf(gfp_t gfp, const char *fmt, ...)
 {
 	va_list ap;

@@ -83,17 +83,19 @@ rbstatic const struct rb_augment_callbacks rbname = {			\
 	rbname ## _propagate, rbname ## _copy, rbname ## _rotate	\
 };
 
-
+// 2016-05-28
 #define	RB_RED		0
 #define	RB_BLACK	1
 
 #define __rb_parent(pc)    ((struct rb_node *)(pc & ~3))
 
+// 2016-05-28
 #define __rb_color(pc)     ((pc) & 1)
 #define __rb_is_black(pc)  __rb_color(pc)
 #define __rb_is_red(pc)    (!__rb_color(pc))
 #define rb_color(rb)       __rb_color((rb)->__rb_parent_color)
-#define rb_is_red(rb)      __rb_is_red((rb)->__rb_parent_color)
+#define rb_is_red(rb)      __rb_is_red((rb)->__rb_parent_color) // red 인지 확인
+// rb_is_black(parent)
 #define rb_is_black(rb)    __rb_is_black((rb)->__rb_parent_color)
 
 static inline void rb_set_parent(struct rb_node *rb, struct rb_node *p)
@@ -101,6 +103,8 @@ static inline void rb_set_parent(struct rb_node *rb, struct rb_node *p)
 	rb->__rb_parent_color = rb_color(rb) | (unsigned long)p;
 }
 
+// 2016-05-28
+// rb_set_parent_color(node, NULL, RB_BLACK)
 static inline void rb_set_parent_color(struct rb_node *rb,
 				       struct rb_node *p, int color)
 {

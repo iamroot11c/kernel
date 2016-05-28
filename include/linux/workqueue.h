@@ -26,6 +26,7 @@ void delayed_work_timer_fn(unsigned long __data);
 // 2015-09-05;
 #define work_data_bits(work) ((unsigned long *)(&(work)->data))
 
+// 2016-05-28
 enum {
 	WORK_STRUCT_PENDING_BIT	= 0,	/* work item is pending execution */
                                     // 2015-09-05;
@@ -90,6 +91,7 @@ enum {
 	/* convenience constants */
 	WORK_STRUCT_FLAG_MASK	= (1UL << WORK_STRUCT_FLAG_BITS) - 1,
 	WORK_STRUCT_WQ_DATA_MASK = ~WORK_STRUCT_FLAG_MASK,
+    /* 2016-05-28 */
 	WORK_STRUCT_NO_POOL	= (unsigned long)WORK_OFFQ_POOL_NONE << WORK_OFFQ_POOL_SHIFT,
 
 	/* bit mask for work_busy() return values */
@@ -101,15 +103,17 @@ enum {
 };
 
 // 2015-09-05;
+// 2016-05-28
 struct work_struct {
 	atomic_long_t data;
 	struct list_head entry;
 	work_func_t func;
-#ifdef CONFIG_LOCKDEP
+#ifdef CONFIG_LOCKDEP // not define
 	struct lockdep_map lockdep_map;
 #endif
 };
 
+// 2016-05-28
 #define WORK_DATA_INIT()	ATOMIC_LONG_INIT(WORK_STRUCT_NO_POOL)
 #define WORK_DATA_STATIC_INIT()	\
 	ATOMIC_LONG_INIT(WORK_STRUCT_NO_POOL | WORK_STRUCT_STATIC)
@@ -185,6 +189,7 @@ struct execute_work {
 /*
  * initialize a work item's function pointer
  */
+// 2016-05-28
 #define PREPARE_WORK(_work, _func)					\
 	do {								\
 		(_work)->func = (_func);				\
@@ -193,7 +198,7 @@ struct execute_work {
 #define PREPARE_DELAYED_WORK(_work, _func)				\
 	PREPARE_WORK(&(_work)->work, (_func))
 
-#ifdef CONFIG_DEBUG_OBJECTS_WORK
+#ifdef CONFIG_DEBUG_OBJECTS_WORK // not define
 extern void __init_work(struct work_struct *work, int onstack);
 extern void destroy_work_on_stack(struct work_struct *work);
 static inline unsigned int work_static(struct work_struct *work)
@@ -201,6 +206,7 @@ static inline unsigned int work_static(struct work_struct *work)
 	return *work_data_bits(work) & WORK_STRUCT_STATIC;
 }
 #else
+// 2016-05-28
 static inline void __init_work(struct work_struct *work, int onstack) { }
 static inline void destroy_work_on_stack(struct work_struct *work) { }
 static inline unsigned int work_static(struct work_struct *work) { return 0; }
@@ -213,7 +219,7 @@ static inline unsigned int work_static(struct work_struct *work) { return 0; }
  * assignment of the work data initializer allows the compiler
  * to generate better code.
  */
-#ifdef CONFIG_LOCKDEP
+#ifdef CONFIG_LOCKDEP // not define
 #define __INIT_WORK(_work, _func, _onstack)				\
 	do {								\
 		static struct lock_class_key __key;			\
@@ -225,15 +231,18 @@ static inline unsigned int work_static(struct work_struct *work) { return 0; }
 		PREPARE_WORK((_work), (_func));				\
 	} while (0)
 #else
+// 2016-05-28
 #define __INIT_WORK(_work, _func, _onstack)				\
 	do {								\
-		__init_work((_work), _onstack);				\
+		__init_work((_work), _onstack); /* No OP. */		\
 		(_work)->data = (atomic_long_t) WORK_DATA_INIT();	\
 		INIT_LIST_HEAD(&(_work)->entry);			\
 		PREPARE_WORK((_work), (_func));				\
 	} while (0)
 #endif
 
+// 2016-05-28
+// INIT_WORK(&p->wq, free_work);
 #define INIT_WORK(_work, _func)						\
 	do {								\
 		__INIT_WORK((_work), (_func), 0);			\

@@ -62,6 +62,7 @@
  * preallocate for this.  Keep PERCPU_DYNAMIC_RESERVE equal to or
  * larger than PERCPU_DYNAMIC_EARLY_SIZE.
  */
+// 2016-05-28
 #define PERCPU_DYNAMIC_EARLY_SLOTS	128
 #define PERCPU_DYNAMIC_EARLY_SIZE	(12 << 10) // 12KB
 

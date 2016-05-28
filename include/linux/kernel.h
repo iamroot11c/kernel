@@ -34,6 +34,7 @@
 #define REPEAT_BYTE(x)	((~0ul / 0xff) * (x))
 
 // 2015-05-16,(64, 4)
+// 2015-05-28 ALIGN(64, 4)
 #define ALIGN(x, a)		__ALIGN_KERNEL((x), (a))
 #define __ALIGN_MASK(x, mask)	__ALIGN_KERNEL_MASK((x), (mask))
 // 2015-02-14
@@ -41,6 +42,8 @@
 #define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) == 0)
 
 // 2015-03-21
+// 2016-05-27;
+// 배열의 요소의 총 개수를 구함
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
 
 /*

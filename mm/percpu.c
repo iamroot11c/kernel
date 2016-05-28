@@ -147,6 +147,7 @@ static const size_t *pcpu_group_sizes __read_mostly;
  * chunks, this one can be allocated and mapped in several different
  * ways and thus often doesn't live in the vmalloc area.
  */
+// 2016-05-28;
 static struct pcpu_chunk *pcpu_first_chunk;
 
 /*
@@ -157,6 +158,7 @@ static struct pcpu_chunk *pcpu_first_chunk;
  * respectively.
  */
 // 2016-03-12
+// 2016-05-28;
 static struct pcpu_chunk *pcpu_reserved_chunk;
 static int pcpu_reserved_chunk_limit;
 
@@ -328,6 +330,7 @@ static void __maybe_unused pcpu_next_pop(struct pcpu_chunk *chunk,
  */
 // 2016-03-19
 // 2016-04-02
+// 2016-05-28
 static void *pcpu_mem_zalloc(size_t size)
 {
 	if (WARN_ON_ONCE(!slab_is_available()))
@@ -2146,8 +2149,12 @@ void __init setup_per_cpu_areas(void)
  * This function is called after slab is brought up and replaces those
  * with properly allocated maps.
  */
+// 2016-05-28;
+// local static array에 저장된 데이터를 percpu 영역으로 복사
 void __init percpu_init_late(void)
 {
+	// pcpu_setup_first_chunk() 함수에서 
+	// pcpu_first_chunk, pcpu_reserved_chunk가 설정됨
 	struct pcpu_chunk *target_chunks[] =
 		{ pcpu_first_chunk, pcpu_reserved_chunk, NULL };
 	struct pcpu_chunk *chunk;
@@ -2156,7 +2163,7 @@ void __init percpu_init_late(void)
 
 	for (i = 0; (chunk = target_chunks[i]); i++) {
 		int *map;
-		const size_t size = PERCPU_DYNAMIC_EARLY_SLOTS * sizeof(map[0]);
+		const size_t size = PERCPU_DYNAMIC_EARLY_SLOTS/*128*/ * sizeof(map[0]); // 512
 
 		BUILD_BUG_ON(size > PAGE_SIZE);
 
@@ -2166,6 +2173,11 @@ void __init percpu_init_late(void)
 		spin_lock_irqsave(&pcpu_lock, flags);
 		memcpy(map, chunk->map, size);
 		chunk->map = map;
+		// 2016-05-28 chunk의 map을 새로게 교체하는데 이전의 포인터는
+		// 해제하지 않아 누수가 의심스러움
+		// -> pcpu_setup_first_chunk() 함수에서 smap, dmap local static array 변수 중
+		//    하나를 chunk의 map 멤버에 저장하므로 새로운 map으로 교체해도 
+		//    해제를 하지 않아도됨 
 		spin_unlock_irqrestore(&pcpu_lock, flags);
 	}
 }

@@ -120,6 +120,8 @@ out:
  */
 // 2015-05-16
 // calculate_alignment(SLAB_HWCACHE_ALIGN/*0x00002000UL*/, ARCH_KMALLOC_MINALIGN/*64*/, sizeof(struct kmem_cache_node))
+// 2016-05-28
+// calculate_alignment(0, ARCH_KMALLOC_MINALIGN/*64*/, 64)
 unsigned long calculate_alignment(unsigned long flags,
 		unsigned long align, unsigned long size)
 {
@@ -290,6 +292,7 @@ EXPORT_SYMBOL(kmem_cache_destroy);
 
 // 2014-12-20;
 // 2016-03-19
+// 2016-05-28
 int slab_is_available(void)
 {
 	return slab_state >= UP; // slab_state::UP 또는 
@@ -302,6 +305,8 @@ int slab_is_available(void)
 // 2015-05-16
 // 3620         create_boot_cache(kmem_cache_node, "kmem_cache_node",
 // 3621                 sizeof(struct kmem_cache_node), SLAB_HWCACHE_ALIGN);
+// 2016-05-28
+// create_boot_cache(s, NULL, 64, 0)
 void __init create_boot_cache(struct kmem_cache *s, const char *name, size_t size,
 		unsigned long flags)
 {
@@ -323,6 +328,8 @@ void __init create_boot_cache(struct kmem_cache *s, const char *name, size_t siz
 	s->refcount = -1;	/* Exempt from merging for now */
 }
 
+// 2016-05-28
+// create_kmalloc_cache(NULL, /*64*/1 << i, flags/*0*/);
 struct kmem_cache *__init create_kmalloc_cache(const char *name, size_t size,
 				unsigned long flags)
 {
@@ -331,6 +338,7 @@ struct kmem_cache *__init create_kmalloc_cache(const char *name, size_t size,
 	if (!s)
 		panic("Out of memory when creating slab %s\n", name);
 
+        // 2016-05-28
 	create_boot_cache(s, name, size, flags);
 	list_add(&s->list, &slab_caches);
 	s->refcount = 1;
@@ -338,7 +346,8 @@ struct kmem_cache *__init create_kmalloc_cache(const char *name, size_t size,
 }
 
 // 2016-03-19
-struct kmem_cache *kmalloc_caches[KMALLOC_SHIFT_HIGH + 1];
+// 2016-05-28
+struct kmem_cache *kmalloc_caches[KMALLOC_SHIFT_HIGH/*13*/ + 1];
 EXPORT_SYMBOL(kmalloc_caches);
 
 #ifdef CONFIG_ZONE_DMA
@@ -352,6 +361,10 @@ EXPORT_SYMBOL(kmalloc_dma_caches);
  * of two cache sizes there. The size of larger slabs can be determined using
  * fls.
  */
+// 2016-05-28;
+// create_kmalloc_caches() 함수에서 
+//  - 인덱스 0 ~ 6번까지 KMALLOC_SHIFT_LOW(64, 0x40)으로 값으로 변경
+//  - 인덱스 8 ~ 11까지는 7로 변경
 static s8 size_index[24] = {
 	3,	/* 8 */
 	4,	/* 16 */
@@ -381,6 +394,8 @@ static s8 size_index[24] = {
 
 // 2016-03-19
 // size_index_elem(size)
+//
+// 2016-05-28
 static inline int size_index_elem(size_t bytes)
 {
 	return (bytes - 1) / 8;
@@ -426,6 +441,8 @@ struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)
  * may already have been created because they were needed to
  * enable allocations for slab creation.
  */
+// 2016-05-28 시작
+// create_kmalloc_caches(0);
 void __init create_kmalloc_caches(unsigned long flags)
 {
 	int i;
@@ -441,14 +458,18 @@ void __init create_kmalloc_caches(unsigned long flags)
 	 * Make sure that nothing crazy happens if someone starts tinkering
 	 * around with ARCH_KMALLOC_MINALIGN
 	 */
-	BUILD_BUG_ON(KMALLOC_MIN_SIZE > 256 ||
+	BUILD_BUG_ON(KMALLOC_MIN_SIZE/*64*/ > 256 ||
 		(KMALLOC_MIN_SIZE & (KMALLOC_MIN_SIZE - 1)));
 
+	// i = 8, 16, 24, 32, 40, 48, 56
 	for (i = 8; i < KMALLOC_MIN_SIZE; i += 8) {
-		int elem = size_index_elem(i);
+		int elem = size_index_elem(i); // 0 = size_index_elem(8);
+		                               // 1 = size_index_elem(16);
 
 		if (elem >= ARRAY_SIZE(size_index))
 			break;
+
+                // 인덱스 0 ~ 6번까지 KMALLOC_SHIFT_LOW(64, 0x40)으로 값으로 변경
 		size_index[elem] = KMALLOC_SHIFT_LOW;
 	}
 
@@ -457,11 +478,14 @@ void __init create_kmalloc_caches(unsigned long flags)
 		 * The 96 byte size cache is not used if the alignment
 		 * is 64 byte.
 		 */
+		// i = 72, 80, 88, 96
 		for (i = 64 + 8; i <= 96; i += 8)
+			// 인덱스 8 ~ 11까지 7로 변경
 			size_index[size_index_elem(i)] = 7;
 
 	}
 
+	// KMALLOC_MIN_SIZE가 64로 해당안됨
 	if (KMALLOC_MIN_SIZE >= 128) {
 		/*
 		 * The 192 byte sized cache is not used if the alignment
@@ -471,8 +495,11 @@ void __init create_kmalloc_caches(unsigned long flags)
 		for (i = 128 + 8; i <= 192; i += 8)
 			size_index[size_index_elem(i)] = 8;
 	}
-	for (i = KMALLOC_SHIFT_LOW; i <= KMALLOC_SHIFT_HIGH; i++) {
+	// 2^6 ~ 2^13(8KB)
+	for (i = KMALLOC_SHIFT_LOW/*6*/; i <= KMALLOC_SHIFT_HIGH/*13*/; i++) {
 		if (!kmalloc_caches[i]) {
+			// 해당 요소의 주소가 없을 때 메로리 할당 후 주소를 저장
+			// 새로운 메모리는 slab_caches에도 연결되어 있음
 			kmalloc_caches[i] = create_kmalloc_cache(NULL,
 							1 << i, flags);
 		}
@@ -482,6 +509,7 @@ void __init create_kmalloc_caches(unsigned long flags)
 		 * These have to be created immediately after the
 		 * earlier power of two caches
 		 */
+		// KMALLOC_MIN_SIZE가 64로 아래에 해당되지 않음
 		if (KMALLOC_MIN_SIZE <= 32 && !kmalloc_caches[1] && i == 6)
 			kmalloc_caches[1] = create_kmalloc_cache(NULL, 96, flags);
 
@@ -492,6 +520,7 @@ void __init create_kmalloc_caches(unsigned long flags)
 	/* Kmalloc array is now usable */
 	slab_state = UP;
 
+	// kmalloc_caches 배열의 요소에 대해 이름을 만듬
 	for (i = 0; i <= KMALLOC_SHIFT_HIGH; i++) {
 		struct kmem_cache *s = kmalloc_caches[i];
 		char *n;
@@ -504,7 +533,7 @@ void __init create_kmalloc_caches(unsigned long flags)
 		}
 	}
 
-#ifdef CONFIG_ZONE_DMA
+#ifdef CONFIG_ZONE_DMA // not define
 	for (i = 0; i <= KMALLOC_SHIFT_HIGH; i++) {
 		struct kmem_cache *s = kmalloc_caches[i];
 

@@ -32,14 +32,17 @@
 #include <asm/tlbflush.h>
 #include <asm/shmparam.h>
 
+// 2016-05-28
 struct vfree_deferred {
 	struct llist_head list;
 	struct work_struct wq;
 };
+// 2016-05-28
 static DEFINE_PER_CPU(struct vfree_deferred, vfree_deferred);
 
 static void __vunmap(const void *, int);
 
+// 2016-05-28(분석하지 않음)
 static void free_work(struct work_struct *w)
 {
 	struct vfree_deferred *p = container_of(w, struct vfree_deferred, wq);
@@ -302,7 +305,7 @@ EXPORT_SYMBOL(vmalloc_to_pfn);
 
 
 /*** Global kva allocator ***/
-
+// 2016-05-28
 #define VM_LAZY_FREE	0x01
 #define VM_LAZY_FREEING	0x02
 #define VM_VM_AREA	0x04
@@ -310,6 +313,7 @@ EXPORT_SYMBOL(vmalloc_to_pfn);
 static DEFINE_SPINLOCK(vmap_area_lock);
 /* Export for kexec only */
 LIST_HEAD(vmap_area_list);
+// 2016-05-28
 static struct rb_root vmap_area_root = RB_ROOT;
 
 /* The vmap cache globals are protected by vmap_area_lock */
@@ -339,6 +343,7 @@ static struct vmap_area *__find_vmap_area(unsigned long addr)
 	return NULL;
 }
 
+// 2016-05-28 시작;
 static void __insert_vmap_area(struct vmap_area *va)
 {
 	struct rb_node **p = &vmap_area_root.rb_node;
@@ -359,6 +364,7 @@ static void __insert_vmap_area(struct vmap_area *va)
 	}
 
 	rb_link_node(&va->rb_node, parent, p);
+	// 2016-05-28 시작;
 	rb_insert_color(&va->rb_node, &vmap_area_root);
 
 	/* address-sort this list */
@@ -782,6 +788,7 @@ static void free_unmap_vmap_area_addr(unsigned long addr)
 
 static bool vmap_initialized __read_mostly = false;
 
+// 2016-05-28
 struct vmap_block_queue {
 	spinlock_t lock;
 	struct list_head free;
@@ -797,6 +804,7 @@ struct vmap_block {
 	struct list_head purge;
 };
 
+// 2016-05-28;
 /* Queue of free and dirty vmap blocks, for allocation and flushing purposes */
 static DEFINE_PER_CPU(struct vmap_block_queue, vmap_block_queue);
 
@@ -1146,6 +1154,7 @@ void *vm_map_ram(struct page **pages, unsigned int count, int node, pgprot_t pro
 }
 EXPORT_SYMBOL(vm_map_ram);
 
+// 2016-05-28;
 static struct vm_struct *vmlist __initdata;
 /**
  * vm_area_add_early - add vmap area early during boot
@@ -1200,16 +1209,24 @@ void __init vm_area_register_early(struct vm_struct *vm, size_t align)
 	vm_area_add_early(vm);
 }
 
+// 2016-05-28 시작
 void __init vmalloc_init(void)
 {
 	struct vmap_area *va;
 	struct vm_struct *tmp;
 	int i;
 
+	 // #define for_each_cpu(cpu, mask)             \
+	 //     for ((cpu) = -1;                \
+         //         (cpu) = cpumask_next((cpu), (mask)),    \
+         //         (cpu) < nr_cpu_ids;)
+         // #define for_each_possible_cpu(cpu) for_each_cpu((cpu), cpu_possible_mask)		     
+         // cpu 별로 초기화를 수행
 	for_each_possible_cpu(i) {
 		struct vmap_block_queue *vbq;
 		struct vfree_deferred *p;
 
+		// vmap_block_queue, vfree_deferred는 per_cup 전역 변수
 		vbq = &per_cpu(vmap_block_queue, i);
 		spin_lock_init(&vbq->lock);
 		INIT_LIST_HEAD(&vbq->free);
@@ -1225,6 +1242,7 @@ void __init vmalloc_init(void)
 		va->va_start = (unsigned long)tmp->addr;
 		va->va_end = va->va_start + tmp->size;
 		va->vm = tmp;
+		// 2016-05-28 시작;
 		__insert_vmap_area(va);
 	}
 

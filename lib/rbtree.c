@@ -49,6 +49,7 @@ static inline void rb_set_black(struct rb_node *rb)
 	rb->__rb_parent_color |= RB_BLACK;
 }
 
+// 2016-05-28
 static inline struct rb_node *rb_red_parent(struct rb_node *red)
 {
 	return (struct rb_node *)red->__rb_parent_color;
@@ -69,6 +70,8 @@ __rb_rotate_set_parents(struct rb_node *old, struct rb_node *new,
 	__rb_change_child(old, new, parent, root);
 }
 
+// 2016-05-28
+// __rb_insert(&va->rb_node, &vmap_area_root, dummy_rotate/*No OP.*/)
 static __always_inline void
 __rb_insert(struct rb_node *node, struct rb_root *root,
 	    void (*augment_rotate)(struct rb_node *old, struct rb_node *new))
@@ -87,13 +90,16 @@ __rb_insert(struct rb_node *node, struct rb_root *root,
 			rb_set_parent_color(node, NULL, RB_BLACK);
 			break;
 		} else if (rb_is_black(parent))
+		        // 부모가 블랙
 			break;
 
+		// 부모의 부모를 찾음
 		gparent = rb_red_parent(parent);
 
 		tmp = gparent->rb_right;
-		if (parent != tmp) {	/* parent == gparent->rb_left */
+		if (parent != tmp) {	/* parent == gparent->rb_left; 왼쪽 */
 			if (tmp && rb_is_red(tmp)) {
+				// 부모는 왼쪽이면, 부모와 부모의 형제는 red 일 때
 				/*
 				 * Case 1 - color flips
 				 *
@@ -107,13 +113,17 @@ __rb_insert(struct rb_node *node, struct rb_root *root,
 				 * 4) does not allow this, we need to recurse
 				 * at g.
 				 */
+				// 부모와 부모 형제를 black으로 변경
+				// RED는 소문자, BLACK은 대문자 
 				rb_set_parent_color(tmp, gparent, RB_BLACK);
 				rb_set_parent_color(parent, gparent, RB_BLACK);
 				node = gparent;
 				parent = rb_parent(node);
+				// 부모의 부모를 black으로 변경
 				rb_set_parent_color(node, parent, RB_RED);
 				continue;
 			}
+			// 2016-05-28 여기까지;
 
 			tmp = parent->rb_right;
 			if (node == tmp) {
@@ -377,12 +387,15 @@ EXPORT_SYMBOL(__rb_erase_color);
 
 static inline void dummy_propagate(struct rb_node *node, struct rb_node *stop) {}
 static inline void dummy_copy(struct rb_node *old, struct rb_node *new) {}
+// 2016-05-28
 static inline void dummy_rotate(struct rb_node *old, struct rb_node *new) {}
 
 static const struct rb_augment_callbacks dummy_callbacks = {
 	dummy_propagate, dummy_copy, dummy_rotate
 };
 
+// 2016-05-28
+// rb_insert_color(&va->rb_node, &vmap_area_root)
 void rb_insert_color(struct rb_node *node, struct rb_root *root)
 {
 	__rb_insert(node, root, dummy_rotate);

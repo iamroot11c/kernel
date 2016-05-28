@@ -32,6 +32,7 @@
 #include <linux/kernel.h>
 #include <linux/stddef.h>
 
+// 2016-05-28
 struct rb_node {
 	unsigned long  __rb_parent_color;
 	struct rb_node *rb_right;
@@ -44,9 +45,13 @@ struct rb_root {
 };
 
 
+// 2016-05-23
 #define rb_parent(r)   ((struct rb_node *)((r)->__rb_parent_color & ~3))
 
+// 2016-05-28
 #define RB_ROOT	(struct rb_root) { NULL, }
+// 2016-05-28
+// rb_entry(parent, struct vmap_area, rb_node)
 #define	rb_entry(ptr, type, member) container_of(ptr, type, member)
 
 #define RB_EMPTY_ROOT(root)  ((root)->rb_node == NULL)
@@ -76,6 +81,8 @@ extern struct rb_node *rb_next_postorder(const struct rb_node *);
 extern void rb_replace_node(struct rb_node *victim, struct rb_node *new, 
 			    struct rb_root *root);
 
+// 2016-05-28
+// rb_link_node(&va->rb_node, parent, p)
 static inline void rb_link_node(struct rb_node * node, struct rb_node * parent,
 				struct rb_node ** rb_link)
 {
