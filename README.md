@@ -1,7 +1,7 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
-+ [98주차]() `2016.05.28`
++ [98주차](http://bit.ly/1TLGBOP) `2016.05.28`
  - [vmalloc_init() 진행중]()
  - mm/vmalloc.c:vmalloc_init() 진행 중
  - mm/vmalloc.c:__insert_vmap_area() 진행 중
