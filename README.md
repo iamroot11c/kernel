@@ -9,6 +9,7 @@
  - 트리의 개념과 용어 정리
  - Red Black Tree 동영상 강의 시청(http://ddmix.blogspot.kr/2015/02/cppalgo-19-red-black-tree.html)
  - 저번주 내용 review
+ - Animation: https://www.cs.usfca.edu/~galles/visualization/RedBlack.html
 
 + [99주차]() `2016.06.11`
  - [vmalloc_init() 진행중]()
