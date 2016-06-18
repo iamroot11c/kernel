@@ -1,6 +1,15 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [100주차]() `2016.06.18`
+ - [vmalloc_init() 진행중]()
+ - mm/vmalloc.c:vmalloc_init() 진행 중
+ - mm/vmalloc.c:__insert_vmap_area() 진행 중
+ - lib/rbtree.c:__rb_insert() 분석 중
+ - 트리의 개념과 용어 정리
+ - Red Black Tree 동영상 강의 시청(http://ddmix.blogspot.kr/2015/02/cppalgo-19-red-black-tree.html)
+ - 저번주 내용 review
+
 + [99주차]() `2016.06.11`
  - [vmalloc_init() 진행중]()
  - mm/vmalloc.c:vmalloc_init() 진행 중
