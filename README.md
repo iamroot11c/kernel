@@ -2,7 +2,7 @@
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
 + [101주차]() `2016.06.25`
- - [sched_init() 진행중]()
+ - [sched_init() 진행중](http://bit.ly/28UP1Te)
  - kernel/sched/core.c: sched_init() 진행 중
  - kernel/sched/core.c: init_defrootdomain() 진행 중
  - kernel/sched/core.c: init_rootdomain() 분석 중
