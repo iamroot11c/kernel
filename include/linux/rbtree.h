@@ -34,6 +34,8 @@
 
 // 2016-05-28
 struct rb_node {
+    // 부모의 주소와 자기의 색을 같은 변수에 저장
+    // 최하위 비트가 0이면 RED, 1이면 검정
 	unsigned long  __rb_parent_color;
 	struct rb_node *rb_right;
 	struct rb_node *rb_left;
@@ -52,11 +54,14 @@ struct rb_root {
 #define RB_ROOT	(struct rb_root) { NULL, }
 // 2016-05-28
 // rb_entry(parent, struct vmap_area, rb_node)
+// 2016-06-25
+// rb_entry(tmp, struct vmap_area, rb_node) // struct rb_node *tmp;
 #define	rb_entry(ptr, type, member) container_of(ptr, type, member)
 
 #define RB_EMPTY_ROOT(root)  ((root)->rb_node == NULL)
 
 /* 'empty' nodes are nodes that are known not to be inserted in an rbree */
+// 2016-06-25
 #define RB_EMPTY_NODE(node)  \
 	((node)->__rb_parent_color == (unsigned long)(node))
 #define RB_CLEAR_NODE(node)  \

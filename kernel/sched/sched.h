@@ -373,6 +373,7 @@ struct rt_rq {
  * object.
  *
  */
+// 2016-06-25
 struct root_domain {
 	atomic_t refcount;
 	atomic_t rto_count;
@@ -412,6 +413,8 @@ struct rq {
 	 * remote CPUs use both these fields when doing load calculation.
 	 */
 	unsigned int nr_running;
+    
+    // 2016-06-25
 	#define CPU_LOAD_IDX_MAX 5
 	unsigned long cpu_load[CPU_LOAD_IDX_MAX];
 	unsigned long last_load_update_tick;

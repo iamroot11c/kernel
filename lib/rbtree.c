@@ -60,6 +60,7 @@ static inline struct rb_node *rb_red_parent(struct rb_node *red)
  * - old's parent and color get assigned to new
  * - old gets assigned new as a parent and 'color' as a color.
  */
+// 2016-06-25
 static inline void
 __rb_rotate_set_parents(struct rb_node *old, struct rb_node *new,
 			struct rb_root *root, int color)
@@ -86,12 +87,17 @@ __rb_insert(struct rb_node *node, struct rb_root *root,
 		 * Otherwise, take some corrective action as we don't
 		 * want a red root or two consecutive red nodes.
 		 */
+		// 새로 삽입되는 노드는 leaf에 위치하며, 빨간노드 이다.
 		if (!parent) {
+			// 부모가 없을 때, 새로운 노드이면 색을 검정으로 변경
+			// root에 대해 black으로 설정되며 부모는 없음
 			rb_set_parent_color(node, NULL, RB_BLACK);
 			break;
 		} else if (rb_is_black(parent))
 		        // 부모가 블랙
 			break;
+
+		// 부모의 색이 빨간색 일 때
 
 		// 부모의 부모를 찾음
 		gparent = rb_red_parent(parent);
@@ -113,19 +119,23 @@ __rb_insert(struct rb_node *node, struct rb_root *root,
 				 * 4) does not allow this, we need to recurse
 				 * at g.
 				 */
-				// 부모와 부모 형제를 black으로 변경
+				// 부모와 부모 형제가 red인데 이를 black으로 변경
+				// 그리고 부모의 부모를 red로 바꿈
 				// RED는 소문자, BLACK은 대문자 
 				rb_set_parent_color(tmp, gparent, RB_BLACK);
 				rb_set_parent_color(parent, gparent, RB_BLACK);
 				node = gparent;
 				parent = rb_parent(node);
-				// 부모의 부모를 black으로 변경
+				// 부모의 부모를 red로 변경
 				rb_set_parent_color(node, parent, RB_RED);
 				continue;
 			}
 			// 2016-05-28 여기까지;
+			//
+			// 2016-06-25 시작;
 
 			tmp = parent->rb_right;
+			// node의 오른쪽 형제
 			if (node == tmp) {
 				/*
 				 * Case 2 - left rotate at parent
@@ -167,6 +177,7 @@ __rb_insert(struct rb_node *node, struct rb_root *root,
 			augment_rotate(gparent, parent);
 			break;
 		} else {
+			// 부노가 오른쪽에 있음
 			tmp = gparent->rb_left;
 			if (tmp && rb_is_red(tmp)) {
 				/* Case 1 - color flips */
@@ -201,7 +212,7 @@ __rb_insert(struct rb_node *node, struct rb_root *root,
 			augment_rotate(gparent, parent);
 			break;
 		}
-	}
+	} // while
 }
 
 /*
@@ -489,10 +500,13 @@ struct rb_node *rb_next(const struct rb_node *node)
 }
 EXPORT_SYMBOL(rb_next);
 
+// 2016-06-25
 struct rb_node *rb_prev(const struct rb_node *node)
 {
 	struct rb_node *parent;
 
+	// __rb_parent_color가 자기자신을 가르키며, 색깔이 검정이면
+	// 트리가 비어져있다고 판단함 
 	if (RB_EMPTY_NODE(node))
 		return NULL;
 

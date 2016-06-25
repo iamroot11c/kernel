@@ -311,6 +311,7 @@ EXPORT_SYMBOL(vmalloc_to_pfn);
 #define VM_VM_AREA	0x04
 
 static DEFINE_SPINLOCK(vmap_area_lock);
+// 2016-06-25
 /* Export for kexec only */
 LIST_HEAD(vmap_area_list);
 // 2016-05-28
@@ -344,6 +345,7 @@ static struct vmap_area *__find_vmap_area(unsigned long addr)
 }
 
 // 2016-05-28 시작;
+// 2016-06-25 완료
 static void __insert_vmap_area(struct vmap_area *va)
 {
 	struct rb_node **p = &vmap_area_root.rb_node;
@@ -366,7 +368,9 @@ static void __insert_vmap_area(struct vmap_area *va)
 	rb_link_node(&va->rb_node, parent, p);
 	// 2016-05-28 시작;
 	rb_insert_color(&va->rb_node, &vmap_area_root);
+	// 2016-06-25 완료
 
+	// 2016-06-26 시작
 	/* address-sort this list */
 	tmp = rb_prev(&va->rb_node);
 	if (tmp) {
@@ -374,6 +378,7 @@ static void __insert_vmap_area(struct vmap_area *va)
 		prev = rb_entry(tmp, struct vmap_area, rb_node);
 		list_add_rcu(&va->list, &prev->list);
 	} else
+		// vmap_area_list의 최초 설정(유효한 포인터로 최초 초기화)
 		list_add_rcu(&va->list, &vmap_area_list);
 }
 
@@ -1210,6 +1215,7 @@ void __init vm_area_register_early(struct vm_struct *vm, size_t align)
 }
 
 // 2016-05-28 시작
+// 2016-06-25 완료
 void __init vmalloc_init(void)
 {
 	struct vmap_area *va;
@@ -1244,9 +1250,10 @@ void __init vmalloc_init(void)
 		va->vm = tmp;
 		// 2016-05-28 시작;
 		__insert_vmap_area(va);
+		// 2016-06-25 완료;
 	}
 
-	vmap_area_pcpu_hole = VMALLOC_END;
+	vmap_area_pcpu_hole = VMALLOC_END/*0xff000000UL*/;
 
 	vmap_initialized = true;
 }

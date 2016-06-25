@@ -473,6 +473,7 @@ void __init __weak thread_info_cache_init(void)
  * Set up kernel memory allocators
  */
 // 2015-05-09; 시작
+// 2016-06-25 완료
 static void __init mm_init(void)
 {
 	/*
@@ -496,6 +497,7 @@ static void __init mm_init(void)
 	pgtable_cache_init(); // No OP.
 	// 2016-05-28 시작; 
 	vmalloc_init();
+	// 2016-06-25 완료
 }
 
 asmlinkage void __init start_kernel(void)
@@ -600,12 +602,14 @@ asmlinkage void __init start_kernel(void)
 	             // 2015-05-09, end
 	// 2015-05-09; 시작	
 	mm_init();
+	// 2016-06-25 완료
 
 	/*
 	 * Set up the scheduler prior starting any interrupts (such as the
 	 * timer interrupt). Full topology setup happens at smp_init()
 	 * time - but meanwhile we still have a functioning scheduler.
 	 */
+	// 2016-06-25 시작
 	sched_init();
 	/*
 	 * Disable preemption - early bootup scheduling is extremely

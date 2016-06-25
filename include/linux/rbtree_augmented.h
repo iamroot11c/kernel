@@ -105,12 +105,17 @@ static inline void rb_set_parent(struct rb_node *rb, struct rb_node *p)
 
 // 2016-05-28
 // rb_set_parent_color(node, NULL, RB_BLACK)
+// 2016-06-25
 static inline void rb_set_parent_color(struct rb_node *rb,
 				       struct rb_node *p, int color)
 {
 	rb->__rb_parent_color = (unsigned long)p | color;
 }
 
+// 2016-06-25
+// 자식의 노드(old)와 자식의 노드(new)가 바뀌어서
+// 부모의 부모가 가르키는 자식을 바꿈
+// old가 parent의 자식노드라는 전제로 함
 static inline void
 __rb_change_child(struct rb_node *old, struct rb_node *new,
 		  struct rb_node *parent, struct rb_root *root)

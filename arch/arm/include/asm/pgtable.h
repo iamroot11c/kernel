@@ -45,6 +45,7 @@
 // sanity_check_meminfo() 함수에서 high_memory에 값을 저장
 // 2015-09-19;
 #define VMALLOC_START		(((unsigned long)high_memory + VMALLOC_OFFSET) & ~(VMALLOC_OFFSET-1))
+// 2016-06-25
 #define VMALLOC_END		0xff000000UL
 
 #define LIBRARY_TEXT_START	0x0c000000

@@ -13,6 +13,7 @@
 
 // 2015-08-29
 // 2016-01-23;
+// 2016-05-25
 typedef struct cpumask { DECLARE_BITMAP(bits, NR_CPUS/*2*/)/*1*/; } cpumask_t;
 // typedef struct cpumask { unsigned long bits[BITS_TO_LONGS(NR_CPUS)]; } cpumask_t;
 
@@ -728,6 +729,7 @@ void free_bootmem_cpumask_var(cpumask_var_t mask);
 
 #else
 // 2015-08-29
+// 2016-06-25
 typedef struct cpumask cpumask_var_t[1];
 
 static inline bool alloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
@@ -735,6 +737,7 @@ static inline bool alloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
 	return true;
 }
 
+// 2016-06-25
 static inline bool alloc_cpumask_var_node(cpumask_var_t *mask, gfp_t flags,
 					  int node)
 {

@@ -5073,6 +5073,7 @@ static void rq_attach_root(struct rq *rq, struct root_domain *rd)
 		call_rcu_sched(&old_rd->rcu, free_rootdomain);
 }
 
+// 2016-06-25 시작
 static int init_rootdomain(struct root_domain *rd)
 {
 	memset(rd, 0, sizeof(*rd));
@@ -5083,7 +5084,8 @@ static int init_rootdomain(struct root_domain *rd)
 		goto free_span;
 	if (!alloc_cpumask_var(&rd->rto_mask, GFP_KERNEL))
 		goto free_online;
-
+	// 2016-06-25 여기까지
+	
 	if (cpupri_init(&rd->cpupri) != 0)
 		goto free_rto_mask;
 	return 0;
@@ -5102,10 +5104,13 @@ out:
  * By default the system creates a single root-domain with all cpus as
  * members (mimicking the global state we have today).
  */
+// 2016-06-25
 struct root_domain def_root_domain;
 
+// 2016-06-25 시작
 static void init_defrootdomain(void)
 {
+	// 2016-06-25 시작
 	init_rootdomain(&def_root_domain);
 
 	atomic_set(&def_root_domain.refcount, 1);
@@ -6461,24 +6466,25 @@ LIST_HEAD(task_groups);
 
 DECLARE_PER_CPU(cpumask_var_t, load_balance_mask);
 
+// 2016-06-25 시작
 void __init sched_init(void)
 {
 	int i, j;
 	unsigned long alloc_size = 0, ptr;
 
-#ifdef CONFIG_FAIR_GROUP_SCHED
+#ifdef CONFIG_FAIR_GROUP_SCHED // not define
 	alloc_size += 2 * nr_cpu_ids * sizeof(void **);
 #endif
-#ifdef CONFIG_RT_GROUP_SCHED
+#ifdef CONFIG_RT_GROUP_SCHED // not define
 	alloc_size += 2 * nr_cpu_ids * sizeof(void **);
 #endif
-#ifdef CONFIG_CPUMASK_OFFSTACK
+#ifdef CONFIG_CPUMASK_OFFSTACK // not define
 	alloc_size += num_possible_cpus() * cpumask_size();
 #endif
 	if (alloc_size) {
 		ptr = (unsigned long)kzalloc(alloc_size, GFP_NOWAIT);
 
-#ifdef CONFIG_FAIR_GROUP_SCHED
+#ifdef CONFIG_FAIR_GROUP_SCHED // not define
 		root_task_group.se = (struct sched_entity **)ptr;
 		ptr += nr_cpu_ids * sizeof(void **);
 
@@ -6486,7 +6492,7 @@ void __init sched_init(void)
 		ptr += nr_cpu_ids * sizeof(void **);
 
 #endif /* CONFIG_FAIR_GROUP_SCHED */
-#ifdef CONFIG_RT_GROUP_SCHED
+#ifdef CONFIG_RT_GROUP_SCHED // not define
 		root_task_group.rt_se = (struct sched_rt_entity **)ptr;
 		ptr += nr_cpu_ids * sizeof(void **);
 
@@ -6494,7 +6500,7 @@ void __init sched_init(void)
 		ptr += nr_cpu_ids * sizeof(void **);
 
 #endif /* CONFIG_RT_GROUP_SCHED */
-#ifdef CONFIG_CPUMASK_OFFSTACK
+#ifdef CONFIG_CPUMASK_OFFSTACK // not define
 		for_each_possible_cpu(i) {
 			per_cpu(load_balance_mask, i) = (void *)ptr;
 			ptr += cpumask_size();
@@ -6503,18 +6509,19 @@ void __init sched_init(void)
 	}
 
 #ifdef CONFIG_SMP
+	// 2016-06-25 시작;
 	init_defrootdomain();
 #endif
 
 	init_rt_bandwidth(&def_rt_bandwidth,
 			global_rt_period(), global_rt_runtime());
 
-#ifdef CONFIG_RT_GROUP_SCHED
+#ifdef CONFIG_RT_GROUP_SCHED // not define
 	init_rt_bandwidth(&root_task_group.rt_bandwidth,
 			global_rt_period(), global_rt_runtime());
 #endif /* CONFIG_RT_GROUP_SCHED */
 
-#ifdef CONFIG_CGROUP_SCHED
+#ifdef CONFIG_CGROUP_SCHED // not define
 	list_add(&root_task_group.list, &task_groups);
 	INIT_LIST_HEAD(&root_task_group.children);
 	INIT_LIST_HEAD(&root_task_group.siblings);
@@ -6532,7 +6539,7 @@ void __init sched_init(void)
 		rq->calc_load_update = jiffies + LOAD_FREQ;
 		init_cfs_rq(&rq->cfs);
 		init_rt_rq(&rq->rt, rq);
-#ifdef CONFIG_FAIR_GROUP_SCHED
+#ifdef CONFIG_FAIR_GROUP_SCHED // not define
 		root_task_group.shares = ROOT_TASK_GROUP_LOAD;
 		INIT_LIST_HEAD(&rq->leaf_cfs_rq_list);
 		/*
@@ -6559,17 +6566,17 @@ void __init sched_init(void)
 #endif /* CONFIG_FAIR_GROUP_SCHED */
 
 		rq->rt.rt_runtime = def_rt_bandwidth.rt_runtime;
-#ifdef CONFIG_RT_GROUP_SCHED
+#ifdef CONFIG_RT_GROUP_SCHED // not define
 		INIT_LIST_HEAD(&rq->leaf_rt_rq_list);
 		init_tg_rt_entry(&root_task_group, &rq->rt, NULL, i, NULL);
 #endif
 
-		for (j = 0; j < CPU_LOAD_IDX_MAX; j++)
+		for (j = 0; j < CPU_LOAD_IDX_MAX/*5*/; j++)
 			rq->cpu_load[j] = 0;
 
 		rq->last_load_update_tick = jiffies;
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
 		rq->sd = NULL;
 		rq->rd = NULL;
 		rq->cpu_power = SCHED_POWER_SCALE;
@@ -6585,24 +6592,24 @@ void __init sched_init(void)
 		INIT_LIST_HEAD(&rq->cfs_tasks);
 
 		rq_attach_root(rq, &def_root_domain);
-#ifdef CONFIG_NO_HZ_COMMON
+#ifdef CONFIG_NO_HZ_COMMON // defined
 		rq->nohz_flags = 0;
 #endif
-#ifdef CONFIG_NO_HZ_FULL
+#ifdef CONFIG_NO_HZ_FULL // not define
 		rq->last_sched_tick = 0;
 #endif
 #endif
 		init_rq_hrtick(rq);
 		atomic_set(&rq->nr_iowait, 0);
-	}
+	} // for_each_possible_cpu
 
 	set_load_weight(&init_task);
 
-#ifdef CONFIG_PREEMPT_NOTIFIERS
+#ifdef CONFIG_PREEMPT_NOTIFIERS // not define
 	INIT_HLIST_HEAD(&init_task.preempt_notifiers);
 #endif
 
-#ifdef CONFIG_RT_MUTEXES
+#ifdef CONFIG_RT_MUTEXES // defined
 	plist_head_init(&init_task.pi_waiters);
 #endif
 
@@ -6627,7 +6634,7 @@ void __init sched_init(void)
 	 */
 	current->sched_class = &fair_sched_class;
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
 	zalloc_cpumask_var(&sched_domains_tmpmask, GFP_NOWAIT);
 	/* May be allocated at isolcpus cmdline parse time */
 	if (cpu_isolated_map == NULL)

@@ -122,9 +122,11 @@ EXPORT_SYMBOL(zalloc_cpumask_var_node);
  *
  * See alloc_cpumask_var_node.
  */
+// 2016-06-25
+// alloc_cpumask_var(&rd->span, GFP_KERNEL)
 bool alloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
 {
-	return alloc_cpumask_var_node(mask, flags, NUMA_NO_NODE);
+	return alloc_cpumask_var_node(mask, flags, NUMA_NO_NODE); // No Op.
 }
 EXPORT_SYMBOL(alloc_cpumask_var);
 
