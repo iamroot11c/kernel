@@ -50,6 +50,7 @@ union ktime {
 # ifdef __BIG_ENDIAN
 	s32	sec, nsec;
 # else
+    // 현재 분석환경에서 정의되는 값
 	s32	nsec, sec;
 # endif
 	} tv;
@@ -62,6 +63,7 @@ typedef union ktime ktime_t;		/* Kill this */
  * ktime_t definitions when using the 64-bit scalar representation:
  */
 
+// CONFIG_KTIME_SCALAR = Y
 #if (BITS_PER_LONG == 64) || defined(CONFIG_KTIME_SCALAR)
 
 /**
@@ -92,6 +94,7 @@ static inline ktime_t ktime_set(const long secs, const unsigned long nsecs)
  * Add a ktime_t variable and a scalar nanosecond value.
  * res = kt + nsval:
  */
+// 2016-07-01
 #define ktime_add_ns(kt, nsval) \
 		({ (ktime_t){ .tv64 = (kt).tv64 + (nsval) }; })
 
@@ -371,10 +374,11 @@ extern void ktime_get_ts(struct timespec *ts);
 
 /* Get the real (wall-) time in timespec format: */
 #define ktime_get_real_ts(ts)	getnstimeofday(ts)
-
+// 2016-07-01
 static inline ktime_t ns_to_ktime(u64 ns)
 {
-	static const ktime_t ktime_zero = { .tv64 = 0 };
+	// ktime_zero += ns
+    static const ktime_t ktime_zero = { .tv64 = 0 };
 
 	return ktime_add_ns(ktime_zero, ns);
 }

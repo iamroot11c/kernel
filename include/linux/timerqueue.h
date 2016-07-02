@@ -5,6 +5,7 @@
 #include <linux/ktime.h>
 
 
+// 2016-07-01
 struct timerqueue_node {
 	struct rb_node node;
 	ktime_t expires;
@@ -37,6 +38,8 @@ struct timerqueue_node *timerqueue_getnext(struct timerqueue_head *head)
 	return head->next;
 }
 
+// 2016-07-01
+// timerqueue_init(&timer->node);
 static inline void timerqueue_init(struct timerqueue_node *node)
 {
 	RB_CLEAR_NODE(&node->node);

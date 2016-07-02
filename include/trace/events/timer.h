@@ -127,6 +127,8 @@ DEFINE_EVENT(timer_class, timer_cancel,
  * @clockid:	the hrtimers clock
  * @mode:	the hrtimers mode
  */
+// 2016-07-01 glance
+// trace_hrtimer_init(timer, clockid, mode)
 TRACE_EVENT(hrtimer_init,
 
 	TP_PROTO(struct hrtimer *hrtimer, clockid_t clockid,

@@ -611,6 +611,7 @@ asmlinkage void __init start_kernel(void)
 	 */
 	// 2016-06-25 시작
 	sched_init();
+	// 2016-07-01 완료
 	/*
 	 * Disable preemption - early bootup scheduling is extremely
 	 * fragile until we cpu_idle() for the first time.

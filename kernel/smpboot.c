@@ -34,8 +34,10 @@ struct task_struct *idle_thread_get(unsigned int cpu)
 	return tsk;
 }
 
+// 2016-07-01
 void __init idle_thread_set_boot_cpu(void)
 {
+	// 현재 cpu에 대한 idle_threads를 current로 설정
 	per_cpu(idle_threads, smp_processor_id()) = current;
 }
 

@@ -69,6 +69,7 @@ extern unsigned long __per_cpu_offset[NR_CPUS]; // NR_CPUS = 2;
 // 2015-12-12
 // 2016-01-23
 // 2016-03-26
+// 2016-07-01
 #define __this_cpu_ptr(ptr) SHIFT_PERCPU_PTR(ptr, __my_cpu_offset)
 #endif
 #ifdef CONFIG_DEBUG_PREEMPT // defined
@@ -90,6 +91,7 @@ extern unsigned long __per_cpu_offset[NR_CPUS]; // NR_CPUS = 2;
 // (*(cfd_data + (__per_cpu_offset[smp_processor_id()])))
 #define __get_cpu_var(var) (*this_cpu_ptr(&(var)))
 // 2015-06-20
+// 2016-07-01
 #define __raw_get_cpu_var(var) (*__this_cpu_ptr(&(var)))
 
 #ifdef CONFIG_HAVE_SETUP_PER_CPU_AREA

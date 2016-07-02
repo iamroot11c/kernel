@@ -5649,6 +5649,9 @@ void nohz_balance_enter_idle(int cpu)
 	set_bit(NOHZ_TICK_STOPPED, nohz_flags(cpu));
 }
 
+// 2016-07-01
+// cpu_notifier(sched_ilb_notifier, 0);
+// glance
 static int sched_ilb_notifier(struct notifier_block *nfb,
 					unsigned long action, void *hcpu)
 {
@@ -6082,11 +6085,13 @@ static void set_curr_task_fair(struct rq *rq)
 	}
 }
 
+// 2016-07-01
+// init_cfs_rq(&rq->cfs);
 void init_cfs_rq(struct cfs_rq *cfs_rq)
 {
 	cfs_rq->tasks_timeline = RB_ROOT;
 	cfs_rq->min_vruntime = (u64)(-(1LL << 20));
-#ifndef CONFIG_64BIT
+#ifndef CONFIG_64BIT // not set
 	cfs_rq->min_vruntime_copy = cfs_rq->min_vruntime;
 #endif
 #ifdef CONFIG_SMP
@@ -6318,6 +6323,7 @@ static unsigned int get_rr_interval_fair(struct rq *rq, struct task_struct *task
 /*
  * All the scheduling class methods:
  */
+// 2016-07-01
 const struct sched_class fair_sched_class = {
 	.next			= &idle_sched_class,
 	.enqueue_task		= enqueue_task_fair,
@@ -6367,12 +6373,13 @@ void print_cfs_stats(struct seq_file *m, int cpu)
 }
 #endif
 
+// 2016-07-01
 __init void init_sched_fair_class(void)
 {
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMPi // set
 	open_softirq(SCHED_SOFTIRQ, run_rebalance_domains);
 
-#ifdef CONFIG_NO_HZ_COMMON
+#ifdef CONFIG_NO_HZ_COMMON // set
 	nohz.next_balance = jiffies;
 	zalloc_cpumask_var(&nohz.idle_cpus_mask, GFP_NOWAIT);
 	cpu_notifier(sched_ilb_notifier, 0);

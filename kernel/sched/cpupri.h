@@ -2,15 +2,17 @@
 #define _LINUX_CPUPRI_H
 
 #include <linux/sched.h>
-
+// 2016-07-01
 #define CPUPRI_NR_PRIORITIES	(MAX_RT_PRIO + 2) // 100 + 2
 
+// 2016-07-01
 #define CPUPRI_INVALID -1
 #define CPUPRI_IDLE     0
 #define CPUPRI_NORMAL   1
 /* values 2-101 are RT priorities 0-99 */
 
 // 2016-06-25
+// 2016-07-01
 struct cpupri_vec {
 	atomic_t	count;
 	cpumask_var_t	mask;

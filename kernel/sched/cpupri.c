@@ -205,20 +205,24 @@ void cpupri_set(struct cpupri *cp, int cpu, int newpri)
  *
  * Return: -ENOMEM on memory allocation failure.
  */
+// 2016-07-01
+//  if (cpupri_init(&rd->cpupri) != 0)
 int cpupri_init(struct cpupri *cp)
 {
 	int i;
-
+	
 	memset(cp, 0, sizeof(*cp));
 
+	// 모든 priority에 대한 값을 0으로 초기화
 	for (i = 0; i < CPUPRI_NR_PRIORITIES; i++) {
 		struct cpupri_vec *vec = &cp->pri_to_cpu[i];
-
 		atomic_set(&vec->count, 0);
 		if (!zalloc_cpumask_var(&vec->mask, GFP_KERNEL))
 			goto cleanup;
 	}
 
+	// for_each_cpu((cpu), cpu_possible_mask)
+	// 모든 cpu 개수에 대해 invalid 설정
 	for_each_possible_cpu(i)
 		cp->cpu_to_pri[i] = CPUPRI_INVALID;
 	return 0;

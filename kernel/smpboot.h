@@ -3,7 +3,7 @@
 
 struct task_struct;
 
-#ifdef CONFIG_GENERIC_SMP_IDLE_THREAD
+#ifdef CONFIG_GENERIC_SMP_IDLE_THREAD // set
 struct task_struct *idle_thread_get(unsigned int cpu);
 void idle_thread_set_boot_cpu(void);
 void idle_threads_init(void);

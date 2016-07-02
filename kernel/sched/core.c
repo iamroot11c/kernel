@@ -289,6 +289,8 @@ const_debug unsigned int sysctl_sched_time_avg = MSEC_PER_SEC;
  * period over which we measure -rt task cpu usage in us.
  * default: 1s
  */
+// 2016-07-01
+// (디폴트 1초)
 unsigned int sysctl_sched_rt_period = 1000000;
 
 __read_mostly int scheduler_running;
@@ -297,6 +299,7 @@ __read_mostly int scheduler_running;
  * part of the period that we allow rt tasks to run in us.
  * default: 0.95s
  */
+// 2016-07-01
 int sysctl_sched_rt_runtime = 950000;
 
 
@@ -412,6 +415,8 @@ static int __hrtick_restart(struct rq *rq)
 /*
  * called from hardirq (IPI) context
  */
+// 2016-07-01
+// glance
 static void __hrtick_start(void *arg)
 {
 	struct rq *rq = arg;
@@ -481,7 +486,7 @@ static inline void init_hrtick(void)
 {
 }
 #endif /* CONFIG_SMP */
-
+// 2016-07-01
 static void init_rq_hrtick(struct rq *rq)
 {
 #ifdef CONFIG_SMP
@@ -757,6 +762,7 @@ int tg_nop(struct task_group *tg, void *data)
 }
 #endif
 
+// 2016-07-01
 static void set_load_weight(struct task_struct *p)
 {
 	int prio = p->static_prio - MAX_RT_PRIO;
@@ -1618,6 +1624,7 @@ int wake_up_state(struct task_struct *p, unsigned int state)
  *
  * __sched_fork() is basic setup used by init_idle() too:
  */
+// 2016-07-01
 static void __sched_fork(struct task_struct *p)
 {
 	p->on_rq			= 0;
@@ -1630,17 +1637,17 @@ static void __sched_fork(struct task_struct *p)
 	p->se.vruntime			= 0;
 	INIT_LIST_HEAD(&p->se.group_node);
 
-#ifdef CONFIG_SCHEDSTATS
+#ifdef CONFIG_SCHEDSTATS // not set
 	memset(&p->se.statistics, 0, sizeof(p->se.statistics));
 #endif
 
 	INIT_LIST_HEAD(&p->rt.run_list);
 
-#ifdef CONFIG_PREEMPT_NOTIFIERS
+#ifdef CONFIG_PREEMPT_NOTIFIERS // not set
 	INIT_HLIST_HEAD(&p->preempt_notifiers);
 #endif
 
-#ifdef CONFIG_NUMA_BALANCING
+#ifdef CONFIG_NUMA_BALANCING // not set
 	if (p->mm && atomic_read(&p->mm->mm_users) == 1) {
 		p->mm->numa_next_scan = jiffies;
 		p->mm->numa_next_reset = jiffies;
@@ -4246,6 +4253,7 @@ void init_idle_bootup_task(struct task_struct *idle)
  * NOTE: this function does not set the idle thread's NEED_RESCHED
  * flag, to make booting more robust.
  */
+// 2016-07-01
 void init_idle(struct task_struct *idle, int cpu)
 {
 	struct rq *rq = cpu_rq(cpu);
@@ -4253,10 +4261,11 @@ void init_idle(struct task_struct *idle, int cpu)
 
 	raw_spin_lock_irqsave(&rq->lock, flags);
 
+	// 2016-07-01
 	__sched_fork(idle);
 	idle->state = TASK_RUNNING;
 	idle->se.exec_start = sched_clock();
-
+	// 2016-07-01
 	do_set_cpus_allowed(idle, cpumask_of(cpu));
 	/*
 	 * We're having a chicken and egg problem, even though we are
@@ -4285,14 +4294,15 @@ void init_idle(struct task_struct *idle, int cpu)
 	 * The idle tasks have their own, simple scheduling class:
 	 */
 	idle->sched_class = &idle_sched_class;
-	ftrace_graph_init_idle_task(idle, cpu);
-	vtime_init_idle(idle, cpu);
+	ftrace_graph_init_idle_task(idle, cpu); // no op
+	vtime_init_idle(idle, cpu); // no op
 #if defined(CONFIG_SMP)
 	sprintf(idle->comm, "%s/%d", INIT_TASK_COMM, cpu);
 #endif
 }
 
 #ifdef CONFIG_SMP
+// 2016-07-01
 void do_set_cpus_allowed(struct task_struct *p, const struct cpumask *new_mask)
 {
 	if (p->sched_class && p->sched_class->set_cpus_allowed)
@@ -4696,6 +4706,7 @@ static void unregister_sched_domain_sysctl(void)
 }
 #endif
 
+// 2016-07-01
 static void set_rq_online(struct rq *rq)
 {
 	if (!rq->online) {
@@ -4704,7 +4715,9 @@ static void set_rq_online(struct rq *rq)
 		cpumask_set_cpu(rq->cpu, rq->rd->online);
 		rq->online = 1;
 
+		// for (class = sched_class_highest; class; class = class->next)
 		for_each_class(class) {
+			// rt_sched_class, fair_sched_class만 rq_online이 설정
 			if (class->rq_online)
 				class->rq_online(rq);
 		}
@@ -5036,13 +5049,17 @@ static void free_rootdomain(struct rcu_head *rcu)
 	kfree(rd);
 }
 
+// 2016-07-01
+// rq_attach_root(rq, &def_root_domain);
 static void rq_attach_root(struct rq *rq, struct root_domain *rd)
 {
 	struct root_domain *old_rd = NULL;
 	unsigned long flags;
 
 	raw_spin_lock_irqsave(&rq->lock, flags);
-
+	
+	// 초기화 루틴에서는 rq->rd를 null로 초기화했기 때문에
+	// 아래 구문은 들어오지 않음
 	if (rq->rd) {
 		old_rd = rq->rd;
 
@@ -5063,6 +5080,7 @@ static void rq_attach_root(struct rq *rq, struct root_domain *rd)
 	atomic_inc(&rd->refcount);
 	rq->rd = rd;
 
+	// rd->span의 rd->cpu 번째 비트를 세팅
 	cpumask_set_cpu(rq->cpu, rd->span);
 	if (cpumask_test_cpu(rq->cpu, cpu_active_mask))
 		set_rq_online(rq);
@@ -5085,11 +5103,12 @@ static int init_rootdomain(struct root_domain *rd)
 	if (!alloc_cpumask_var(&rd->rto_mask, GFP_KERNEL))
 		goto free_online;
 	// 2016-06-25 여기까지
-	
+	// 2016-07-01 시작	
 	if (cpupri_init(&rd->cpupri) != 0)
 		goto free_rto_mask;
 	return 0;
 
+	// 현재 분석 환경 상 아래 예외처리는 타지 않고 return 0으로 빠져나온다. 
 free_rto_mask:
 	free_cpumask_var(rd->rto_mask);
 free_online:
@@ -5103,6 +5122,7 @@ out:
 /*
  * By default the system creates a single root-domain with all cpus as
  * members (mimicking the global state we have today).
+ (디폴트로 모든 cpu를 멤버로 취급하는 단일 루트 도메인을 생성한다.
  */
 // 2016-06-25
 struct root_domain def_root_domain;
@@ -6512,7 +6532,7 @@ void __init sched_init(void)
 	// 2016-06-25 시작;
 	init_defrootdomain();
 #endif
-
+	// 2016-07-01 시작
 	init_rt_bandwidth(&def_rt_bandwidth,
 			global_rt_period(), global_rt_runtime());
 
@@ -6528,15 +6548,18 @@ void __init sched_init(void)
 	autogroup_init(&init_task);
 
 #endif /* CONFIG_CGROUP_SCHED */
-
+	
+	// for_each_cpu((cpu), cpu_possible_mask)
 	for_each_possible_cpu(i) {
 		struct rq *rq;
 
+		// 현재 cpu에 맞는 runqueue를 얻어옴
 		rq = cpu_rq(i);
 		raw_spin_lock_init(&rq->lock);
 		rq->nr_running = 0;
 		rq->calc_load_active = 0;
 		rq->calc_load_update = jiffies + LOAD_FREQ;
+		// 2016-07-01
 		init_cfs_rq(&rq->cfs);
 		init_rt_rq(&rq->rt, rq);
 #ifdef CONFIG_FAIR_GROUP_SCHED // not define
@@ -6564,7 +6587,7 @@ void __init sched_init(void)
 		init_cfs_bandwidth(&root_task_group.cfs_bandwidth);
 		init_tg_cfs_entry(&root_task_group, &rq->cfs, NULL, i, NULL);
 #endif /* CONFIG_FAIR_GROUP_SCHED */
-
+		// init_rt_bandwidth()에서 초기화된 rt_runtime값을 rq에 저장
 		rq->rt.rt_runtime = def_rt_bandwidth.rt_runtime;
 #ifdef CONFIG_RT_GROUP_SCHED // not define
 		INIT_LIST_HEAD(&rq->leaf_rt_rq_list);
@@ -6590,7 +6613,7 @@ void __init sched_init(void)
 		rq->avg_idle = 2*sysctl_sched_migration_cost;
 
 		INIT_LIST_HEAD(&rq->cfs_tasks);
-
+		// 2016-07-01
 		rq_attach_root(rq, &def_root_domain);
 #ifdef CONFIG_NO_HZ_COMMON // defined
 		rq->nohz_flags = 0;
@@ -6603,6 +6626,7 @@ void __init sched_init(void)
 		atomic_set(&rq->nr_iowait, 0);
 	} // for_each_possible_cpu
 
+	// 2016-07-01
 	set_load_weight(&init_task);
 
 #ifdef CONFIG_PREEMPT_NOTIFIERS // not define
@@ -6617,7 +6641,7 @@ void __init sched_init(void)
 	 * The boot idle thread does lazy MMU switching as well:
 	 */
 	atomic_inc(&init_mm.mm_count);
-	enter_lazy_tlb(&init_mm, current);
+	enter_lazy_tlb(&init_mm, current); // no op
 
 	/*
 	 * Make us the idle thread. Technically, schedule() should not be
@@ -6625,7 +6649,9 @@ void __init sched_init(void)
 	 * but because we are the idle thread, we just pick up running again
 	 * when this runqueue becomes "idle".
 	 */
+	// 2016-07-01
 	init_idle(current, smp_processor_id());
+	// 2016-07-01 완료
 
 	calc_load_update = jiffies + LOAD_FREQ;
 

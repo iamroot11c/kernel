@@ -61,7 +61,7 @@ extern void update_cpu_load_active(struct rq *this_rq);
 # define scale_load_down(w)	((w) >> SCHED_LOAD_RESOLUTION)
 #else
 # define SCHED_LOAD_RESOLUTION	0
-# define scale_load(w)		(w)
+# define scale_load(w)		(w) // 2016-07-01
 # define scale_load_down(w)	(w)
 #endif
 
@@ -95,11 +95,14 @@ static inline int task_has_rt_policy(struct task_struct *p)
 /*
  * This is the priority-queue data structure of the RT scheduling class:
  */
+// 2016-07-01
+// 우선 순위 별로 링크드 리스트 형태의 작업 큐 저장
 struct rt_prio_array {
 	DECLARE_BITMAP(bitmap, MAX_RT_PRIO+1); /* include 1 bit for delimiter */
 	struct list_head queue[MAX_RT_PRIO];
 };
 
+// 2016-07-01
 struct rt_bandwidth {
 	/* nests inside the rq lock: */
 	raw_spinlock_t		rt_runtime_lock;
@@ -246,6 +249,7 @@ struct cfs_bandwidth { };
 #endif	/* CONFIG_CGROUP_SCHED */
 
 /* CFS-related fields in a runqueue */
+// completely fair scheduler의 약자
 struct cfs_rq {
 	struct load_weight load;
 	unsigned int nr_running, h_nr_running;
@@ -332,6 +336,7 @@ static inline int rt_bandwidth_enabled(void)
 }
 
 /* Real-Time classes' related field in a runqueue: */
+// 2016-07-01
 struct rt_rq {
 	struct rt_prio_array active;
 	unsigned int rt_nr_running;
@@ -418,11 +423,11 @@ struct rq {
 	#define CPU_LOAD_IDX_MAX 5
 	unsigned long cpu_load[CPU_LOAD_IDX_MAX];
 	unsigned long last_load_update_tick;
-#ifdef CONFIG_NO_HZ_COMMON
+#ifdef CONFIG_NO_HZ_COMMON // set
 	u64 nohz_stamp;
 	unsigned long nohz_flags;
 #endif
-#ifdef CONFIG_NO_HZ_FULL
+#ifdef CONFIG_NO_HZ_FULL // not set
 	unsigned long last_sched_tick;
 #endif
 	int skip_clock_update;
@@ -435,12 +440,12 @@ struct rq {
 	struct cfs_rq cfs;
 	struct rt_rq rt;
 
-#ifdef CONFIG_FAIR_GROUP_SCHED
+#ifdef CONFIG_FAIR_GROUP_SCHED // not set
 	/* list of leaf cfs_rq on this cpu: */
 	struct list_head leaf_cfs_rq_list;
 #endif /* CONFIG_FAIR_GROUP_SCHED */
 
-#ifdef CONFIG_RT_GROUP_SCHED
+#ifdef CONFIG_RT_GROUP_SCHED // not set
 	struct list_head leaf_rt_rq_list;
 #endif
 
@@ -463,7 +468,7 @@ struct rq {
 	atomic_t nr_iowait;
 
 #ifdef CONFIG_SMP
-	struct root_domain *rd;
+	struct root_domain *rd; // 루트 도메인의 약자
 	struct sched_domain *sd;
 
 	unsigned long cpu_power;
@@ -680,7 +685,7 @@ extern int group_balance_cpu(struct sched_group *sg);
 #include "stats.h"
 #include "auto_group.h"
 
-#ifdef CONFIG_CGROUP_SCHED
+#ifdef CONFIG_CGROUP_SCHED // not set
 
 /*
  * Return the group to which this tasks belongs.
@@ -728,9 +733,10 @@ static inline struct task_group *task_group(struct task_struct *p)
 
 #endif /* CONFIG_CGROUP_SCHED */
 
+// 2016-07-01
 static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
 {
-	set_task_rq(p, cpu);
+	set_task_rq(p, cpu); // NO OP
 #ifdef CONFIG_SMP
 	/*
 	 * After ->cpu is set up to a new value, task_rq_lock(p, ...) can be
@@ -803,11 +809,15 @@ extern bool numabalancing_enabled;
 #define numabalancing_enabled (0)
 #endif /* CONFIG_NUMA_BALANCING */
 
+// 2016-07-01
+// 초기화 시점에서는 1초로 고정 (ns 시간 단위로 보정)
 static inline u64 global_rt_period(void)
 {
 	return (u64)sysctl_sched_rt_period * NSEC_PER_USEC;
 }
 
+// 2016-07-01
+// 초기화 시점에서는 0.95초로 고정 (ns 시간 단위로 보정)
 static inline u64 global_rt_runtime(void)
 {
 	if (sysctl_sched_rt_runtime < 0)
@@ -980,6 +990,7 @@ static const u32 prio_to_wmult[40] = {
 
 #define DEQUEUE_SLEEP		1
 
+// 2016-07-01
 struct sched_class {
 	const struct sched_class *next;
 
@@ -1026,6 +1037,12 @@ struct sched_class {
 #endif
 };
 
+/*
+ *stop_sched_class
+ -> rt_sched_class
+ -> fair_sched_class
+ -> idle_sched_class 순서로 검사
+ * */
 #define sched_class_highest (&stop_sched_class)
 #define for_each_class(class) \
    for (class = sched_class_highest; class; class = class->next)

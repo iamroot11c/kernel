@@ -105,6 +105,7 @@ enum hrtimer_restart {
  *
  * The hrtimer structure must be initialized by hrtimer_init()
  */
+// 2016-07-01
 struct hrtimer {
 	struct timerqueue_node		node;
 	ktime_t				_softexpires;
@@ -177,6 +178,7 @@ enum  hrtimer_base_type {
  * @max_hang_time:	Maximum time spent in hrtimer_interrupt
  * @clock_base:		array of clock bases for this cpu
  */
+// 2016-07-01
 struct hrtimer_cpu_base {
 	raw_spinlock_t			lock;
 	unsigned int			active_bases;

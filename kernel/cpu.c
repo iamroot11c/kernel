@@ -172,6 +172,8 @@ void cpu_hotplug_enable(void)
 //
 // 2016-05-28
 // register_cpu_notifier(&slab_notifier)
+// 2016-07-01
+// register_cpu_notifier(&fn##_nb);
 int __ref register_cpu_notifier(struct notifier_block *nb)
 {
 	int ret;

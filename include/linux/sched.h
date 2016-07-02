@@ -132,7 +132,7 @@ print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq);
  * modifying one set can't modify the other one by
  * mistake.
  */
-#define TASK_RUNNING		0
+#define TASK_RUNNING		0 // 2016-07-01
 #define TASK_INTERRUPTIBLE	1
 #define TASK_UNINTERRUPTIBLE	2 // 2015-07-04;
 #define __TASK_STOPPED		4
@@ -941,6 +941,8 @@ struct pipe_inode_info;
 struct uts_namespace;
 
 struct load_weight {
+    // http://egloos.zum.com/studyfoss/v/5326671
+    // weight는 load 즉, 우선순위에 대한 가중치이고 inv_weight는 이의 역수(1/weight)에 해당하는 값이다.
 	unsigned long weight, inv_weight;
 };
 
@@ -1071,6 +1073,7 @@ struct task_struct {
 	int prio, static_prio, normal_prio;
 	unsigned int rt_priority;
 	const struct sched_class *sched_class;
+    // 2016-07-01
 	struct sched_entity se;
 	struct sched_rt_entity rt;
 #ifdef CONFIG_CGROUP_SCHED
@@ -2382,6 +2385,7 @@ static inline void threadgroup_unlock(struct task_struct *tsk) {}
 
 #ifndef __HAVE_THREAD_FUNCTIONS
 // 2015-06-27
+// 2016-07-01
 // 자신의 task에 해당하는 thread_info값이 stack에 저장되어 있다.
 #define task_thread_info(task)	((struct thread_info *)(task)->stack)
 // 2015-06-27

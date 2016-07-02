@@ -788,6 +788,7 @@ static inline void rcu_preempt_sleep_check(void)
  * inheritance.
  */
  // 2014-11-15
+ // 2016-07-01
 static inline void rcu_read_lock(void)
 {
 	__rcu_read_lock();

@@ -34,15 +34,19 @@ static enum hrtimer_restart sched_rt_period_timer(struct hrtimer *timer)
 	return idle ? HRTIMER_NORESTART : HRTIMER_RESTART;
 }
 
+// 2016-07-01
+// init_rt_bandwidth(&def_rt_bandwidth,
+//                      global_rt_period(), global_rt_runtime());
 void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime)
 {
 	rt_b->rt_period = ns_to_ktime(period);
 	rt_b->rt_runtime = runtime;
 
 	raw_spin_lock_init(&rt_b->rt_runtime_lock);
-
+	// 2016-07-01
 	hrtimer_init(&rt_b->rt_period_timer,
 			CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+	// 2016-07-01
 	rt_b->rt_period_timer.function = sched_rt_period_timer;
 }
 
@@ -59,20 +63,27 @@ static void start_rt_bandwidth(struct rt_bandwidth *rt_b)
 	raw_spin_unlock(&rt_b->rt_runtime_lock);
 }
 
+// 2016-07-01
+// init_rt_rq(&rq->rt, rq);
 void init_rt_rq(struct rt_rq *rt_rq, struct rq *rq)
 {
 	struct rt_prio_array *array;
 	int i;
 
+	// 우선 순위 별 작업 리스트를 얻어옴
 	array = &rt_rq->active;
 	for (i = 0; i < MAX_RT_PRIO; i++) {
+		// 모든 우선 순위 리스트를 초기화
 		INIT_LIST_HEAD(array->queue + i);
+		// 우선 순위에 해당하는 비트 클리어
 		__clear_bit(i, array->bitmap);
 	}
 	/* delimiter for bitsearch: */
+	// 가장 최대 값은 1로 셋
 	__set_bit(MAX_RT_PRIO, array->bitmap);
 
 #if defined CONFIG_SMP
+	// 우선 순위 및 이동할 개수, pushable_task 초기화
 	rt_rq->highest_prio.curr = MAX_RT_PRIO;
 	rt_rq->highest_prio.next = MAX_RT_PRIO;
 	rt_rq->rt_nr_migratory = 0;

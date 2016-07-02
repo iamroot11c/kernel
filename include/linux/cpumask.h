@@ -222,6 +222,7 @@ int cpumask_any_but(const struct cpumask *mask, unsigned int cpu);
 // 2016-01-16;
 // 2016-01-23;
 // 2016-04-09 
+// 2016-07-01
 #define for_each_cpu(cpu, mask)				\
 	for ((cpu) = -1;				\
 		(cpu) = cpumask_next((cpu), (mask)),	\
@@ -278,6 +279,7 @@ int cpumask_any_but(const struct cpumask *mask, unsigned int cpu);
 // cpumask_set_cpu(cpu, cpu_possible_bits);
 // 2016-01-23;
 // cpumask_set_cpu(cpu, &cpus_with_pcps);
+// 2016-07-01
 static inline void cpumask_set_cpu(unsigned int cpu, struct cpumask *dstp)
 {
 	set_bit(cpumask_check(cpu)/*cpu:0 or 1*/, cpumask_bits(dstp)/*(dstp)->bits*/);
@@ -351,6 +353,7 @@ static inline void cpumask_setall(struct cpumask *dstp)
  * cpumask_clear - clear all cpus (< nr_cpu_ids) in a cpumask
  * @dstp: the cpumask pointer
  */
+// 2016-07-01
 static inline void cpumask_clear(struct cpumask *dstp)
 {
 	bitmap_zero(cpumask_bits(dstp), nr_cpumask_bits);
@@ -744,6 +747,7 @@ static inline bool alloc_cpumask_var_node(cpumask_var_t *mask, gfp_t flags,
 	return true;
 }
 
+// 2016-07-01
 static inline bool zalloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
 {
 	cpumask_clear(*mask);

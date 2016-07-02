@@ -64,6 +64,8 @@ struct rb_root {
 // 2016-06-25
 #define RB_EMPTY_NODE(node)  \
 	((node)->__rb_parent_color == (unsigned long)(node))
+// 2016-07-01
+// 부모 노드를 자신으로 변경, 색은 빨강
 #define RB_CLEAR_NODE(node)  \
 	((node)->__rb_parent_color = (unsigned long)(node))
 

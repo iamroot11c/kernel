@@ -130,6 +130,7 @@ bool alloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
 }
 EXPORT_SYMBOL(alloc_cpumask_var);
 
+// 2016-07-01
 bool zalloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
 {
 	return alloc_cpumask_var(mask, flags | __GFP_ZERO);

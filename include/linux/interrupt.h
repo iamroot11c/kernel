@@ -367,6 +367,7 @@ extern char *softirq_to_name[NR_SOFTIRQS];
  * asm/hardirq.h to get better cache usage.  KAO
  */
 
+// 2016-07-01
 struct softirq_action
 {
 	void	(*action)(struct softirq_action *);

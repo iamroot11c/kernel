@@ -13,6 +13,7 @@
 // DECLARE_BITMAP(cpu_possible_bits, CONFIG_NR_CPUS)
 // 2016-01-23
 // 2016-04-09
+// 2016-07-01
 #define DECLARE_BITMAP(name,bits) \
 	unsigned long name[BITS_TO_LONGS(bits)]
 

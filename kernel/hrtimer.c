@@ -61,12 +61,14 @@
  * to reach a base using a clockid, hrtimer_clockid_to_base()
  * is used to convert from clockid to the proper hrtimer_base_type.
  */
+// 2016-07-01
 DEFINE_PER_CPU(struct hrtimer_cpu_base, hrtimer_bases) =
 {
 
 	.lock = __RAW_SPIN_LOCK_UNLOCKED(hrtimer_bases.lock),
 	.clock_base =
 	{
+		/*hrtimer_base_type 별 clock_base 정보 저장*/
 		{
 			.index = HRTIMER_BASE_MONOTONIC,
 			.clockid = CLOCK_MONOTONIC,
@@ -94,6 +96,7 @@ DEFINE_PER_CPU(struct hrtimer_cpu_base, hrtimer_bases) =
 	}
 };
 
+// 2016-07-01 
 static const int hrtimer_clock_to_base_table[MAX_CLOCKS] = {
 	[CLOCK_REALTIME]	= HRTIMER_BASE_REALTIME,
 	[CLOCK_MONOTONIC]	= HRTIMER_BASE_MONOTONIC,
@@ -101,6 +104,8 @@ static const int hrtimer_clock_to_base_table[MAX_CLOCKS] = {
 	[CLOCK_TAI]		= HRTIMER_BASE_TAI,
 };
 
+// 2016-07-01
+// hrtimer_base_type 타입 enum을 반환
 static inline int hrtimer_clockid_to_base(clockid_t clock_id)
 {
 	return hrtimer_clock_to_base_table[clock_id];
@@ -365,6 +370,7 @@ ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs)
 
 EXPORT_SYMBOL_GPL(ktime_add_safe);
 
+// CONFIG_DEBUG_OBJECTS_TIMERS = n
 #ifdef CONFIG_DEBUG_OBJECTS_TIMERS
 
 static struct debug_obj_descr hrtimer_debug_descr;
@@ -481,12 +487,13 @@ static inline void debug_hrtimer_activate(struct hrtimer *timer) { }
 static inline void debug_hrtimer_deactivate(struct hrtimer *timer) { }
 #endif
 
+// 2016-07-01
 static inline void
 debug_init(struct hrtimer *timer, clockid_t clockid,
 	   enum hrtimer_mode mode)
 {
-	debug_hrtimer_init(timer);
-	trace_hrtimer_init(timer, clockid, mode);
+	debug_hrtimer_init(timer); // NO OP
+	trace_hrtimer_init(timer, clockid, mode); // glance
 }
 
 static inline void debug_activate(struct hrtimer *timer)
@@ -1175,6 +1182,9 @@ ktime_t hrtimer_get_next_event(void)
 }
 #endif
 
+// 2016-07-01
+//  __hrtimer_init(&rt_b->rt_period_timer,
+//                        CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 static void __hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
 			   enum hrtimer_mode mode)
 {
@@ -1183,16 +1193,27 @@ static void __hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
 
 	memset(timer, 0, sizeof(struct hrtimer));
 
+	// 자신의 cpu에 해당하는 hrtimer_bases(per_cpu 타입)의 주소를 얻어옴
 	cpu_base = &__raw_get_cpu_var(hrtimer_bases);
 
 	if (clock_id == CLOCK_REALTIME && mode != HRTIMER_MODE_ABS)
 		clock_id = CLOCK_MONOTONIC;
 
+	// ex) CLOCK_MONOTONIC -> HRTIMER_BASE_MONOTONIC로 base 값 설정
 	base = hrtimer_clockid_to_base(clock_id);
+	// ex) HRTIMER_BASE_MONOTONIC 인 경우->  
+	//	{
+	//		.index = HRTIMER_BASE_MONOTONIC,
+	//		.clockid = CLOCK_MONOTONIC,
+	//		.get_time = &ktime_get,
+	//              .resolution = KTIME_LOW_RES,
+	//	},
+	// 값을 저장하고 있는 구조체 주소로 치환
 	timer->base = &cpu_base->clock_base[base];
+	// 부모 노드를 자신으로 설정
 	timerqueue_init(&timer->node);
 
-#ifdef CONFIG_TIMER_STATS
+#ifdef CONFIG_TIMER_STATS // not set
 	timer->start_site = NULL;
 	timer->start_pid = -1;
 	memset(timer->start_comm, 0, TASK_COMM_LEN);
@@ -1205,6 +1226,10 @@ static void __hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
  * @clock_id:	the clock to be used
  * @mode:	timer mode abs/rel
  */
+// 2016-07-01
+// // hrtimer_init(&rt_b->rt_period_timer,
+//                        CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+// hrtimer_init(&rq->hrtick_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 void hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
 		  enum hrtimer_mode mode)
 {
