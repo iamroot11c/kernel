@@ -1,6 +1,16 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [102주차]() `2016.06.25`
+ - [sched_init() 진행중](http://bit.ly/29aaOFd)
+ - kernel/sched/core.c: sched_init() 분석 완료
+ - kernel/sched/core.c: init_defrootdomain() 분석 완료
+ - kernel/sched/core.c: init_rootdomain() 분석 완료
+ - kernel/sched/core.c: init_rt_bandwidth() 분석 완료
+ - cfs / runtime 스케줄러 동작 정리
+ - http://egloos.zum.com/tory45/v/5167290
+ 
+
 + [101주차]() `2016.06.25`
  - [sched_init() 진행중](http://bit.ly/28UP1Te)
  - kernel/sched/core.c: sched_init() 진행 중
