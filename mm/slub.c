@@ -221,7 +221,7 @@ struct track {
 
 enum track_item { TRACK_ALLOC, TRACK_FREE };
 
-#ifdef CONFIG_SYSFS
+#ifdef CONFIG_SYSFS	// =y
 static int sysfs_slab_add(struct kmem_cache *);
 static int sysfs_slab_alias(struct kmem_cache *, const char *);
 static void sysfs_slab_remove(struct kmem_cache *);
@@ -1330,6 +1330,7 @@ out:
 __setup("slub_debug", setup_slub_debug);
 
 // 2015-05-16
+// 2016-07-09
 static unsigned long kmem_cache_flags(unsigned long object_size,
 	unsigned long flags, const char *name,
 	void (*ctor)(void *))
@@ -4075,6 +4076,7 @@ void __init kmem_cache_init_late(void)
 /*
  * Find a mergeable slab cache
  */
+// 2016-07-09
 static int slab_unmergeable(struct kmem_cache *s)
 {
 	if (slub_nomerge || (s->flags & SLUB_NEVER_MERGE))
@@ -4092,6 +4094,7 @@ static int slab_unmergeable(struct kmem_cache *s)
 	return 0;
 }
 
+// 2016-07-09
 static struct kmem_cache *find_mergeable(struct mem_cgroup *memcg, size_t size,
 		size_t align, unsigned long flags, const char *name,
 		void (*ctor)(void *))
@@ -4109,6 +4112,7 @@ static struct kmem_cache *find_mergeable(struct mem_cgroup *memcg, size_t size,
 	size = ALIGN(size, align);
 	flags = kmem_cache_flags(size, flags, name, NULL);
 
+	// 2016-07-09
 	list_for_each_entry(s, &slab_caches, list) {
 		if (slab_unmergeable(s))
 			continue;
@@ -4136,12 +4140,15 @@ static struct kmem_cache *find_mergeable(struct mem_cgroup *memcg, size_t size,
 	return NULL;
 }
 
+// 2016-07-09
+// 하나의 노드를 만들어서, alias_list에 연결시켜 주는 기능.
 struct kmem_cache *
 __kmem_cache_alias(struct mem_cgroup *memcg, const char *name, size_t size,
 		   size_t align, unsigned long flags, void (*ctor)(void *))
 {
 	struct kmem_cache *s;
 
+	// 2016-07-09
 	s = find_mergeable(memcg, size, align, flags, name, ctor);
 	if (s) {
 		s->refcount++;
@@ -4152,6 +4159,7 @@ __kmem_cache_alias(struct mem_cgroup *memcg, const char *name, size_t size,
 		s->object_size = max(s->object_size, (int)size);
 		s->inuse = max_t(int, s->inuse, ALIGN(size, sizeof(void *)));
 
+		// alias 실제 동작
 		if (sysfs_slab_alias(s, name)) {
 			s->refcount--;
 			s = NULL;
@@ -5638,14 +5646,18 @@ static void sysfs_slab_remove(struct kmem_cache *s)
  * Need to buffer aliases during bootup until sysfs becomes
  * available lest we lose that information.
  */
+// 2016-07-09
+// sysfs는 /sys/에 구성된다.
 struct saved_alias {
 	struct kmem_cache *s;
 	const char *name;
 	struct saved_alias *next;
 };
 
+// 2016-07-09
 static struct saved_alias *alias_list;
 
+// 2016-07-09
 static int sysfs_slab_alias(struct kmem_cache *s, const char *name)
 {
 	struct saved_alias *al;
@@ -5662,6 +5674,7 @@ static int sysfs_slab_alias(struct kmem_cache *s, const char *name)
 	if (!al)
 		return -ENOMEM;
 
+	// alias_list는 가장 최신으로 유지 된다.
 	al->s = s;
 	al->name = name;
 	al->next = alias_list;

@@ -11,6 +11,7 @@ int sched_rr_timeslice = RR_TIMESLICE;
 
 static int do_sched_rt_period_timer(struct rt_bandwidth *rt_b, int overrun);
 
+// 2016-07-09
 struct rt_bandwidth def_rt_bandwidth;
 
 static enum hrtimer_restart sched_rt_period_timer(struct hrtimer *timer)

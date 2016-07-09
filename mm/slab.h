@@ -53,7 +53,7 @@ extern void create_boot_cache(struct kmem_cache *, const char *name,
 			size_t size, unsigned long flags);
 
 struct mem_cgroup;
-#ifdef CONFIG_SLUB
+#ifdef CONFIG_SLUB  // =y
 struct kmem_cache *
 __kmem_cache_alias(struct mem_cgroup *memcg, const char *name, size_t size,
 		   size_t align, unsigned long flags, void (*ctor)(void *));
@@ -88,6 +88,7 @@ __kmem_cache_alias(struct mem_cgroup *memcg, const char *name, size_t size,
 #define SLAB_CACHE_FLAGS (0)
 #endif
 
+// 2016-07-09
 #define CACHE_CREATE_MASK (SLAB_CORE_FLAGS | SLAB_DEBUG_FLAGS | SLAB_CACHE_FLAGS)
 
 int __kmem_cache_shutdown(struct kmem_cache *);
@@ -179,6 +180,7 @@ static inline bool is_root_cache(struct kmem_cache *s)
 	return true;
 }
 
+// 2016-07-09
 static inline bool cache_match_memcg(struct kmem_cache *cachep,
 				     struct mem_cgroup *memcg)
 {

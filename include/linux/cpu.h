@@ -183,7 +183,9 @@ extern struct bus_type cpu_subsys;
 
 extern void cpu_hotplug_begin(void);
 extern void cpu_hotplug_done(void);
+// 2016-07-09
 extern void get_online_cpus(void);
+// 2016-07-09
 extern void put_online_cpus(void);
 extern void cpu_hotplug_disable(void);
 extern void cpu_hotplug_enable(void);

@@ -55,8 +55,9 @@ static RAW_NOTIFIER_HEAD(cpu_chain);
  */
 static int cpu_hotplug_disabled;
 
-#ifdef CONFIG_HOTPLUG_CPU
+#ifdef CONFIG_HOTPLUG_CPU	// y
 
+// 2016-07-09
 static struct {
 	struct task_struct *active_writer;
 	struct mutex lock; /* Synchronizes accesses to refcount, */
@@ -71,9 +72,11 @@ static struct {
 	.refcount = 0,
 };
 
+// 2016-07-09
+// refcount 증가하는 기능
 void get_online_cpus(void)
 {
-	might_sleep();
+	might_sleep();	// NOP
 	if (cpu_hotplug.active_writer == current)
 		return;
 	mutex_lock(&cpu_hotplug.lock);
@@ -83,6 +86,8 @@ void get_online_cpus(void)
 }
 EXPORT_SYMBOL_GPL(get_online_cpus);
 
+// 2016-07-09
+// refcount 감소하는 기능
 void put_online_cpus(void)
 {
 	if (cpu_hotplug.active_writer == current)

@@ -23,14 +23,20 @@
  * tree depth of 4.  Each idr_layer is slightly larger than 2k on 64bit and
  * 1k on 32bit.
  */
+// 2016-07-09
 #define IDR_BITS 8
-#define IDR_SIZE (1 << IDR_BITS)
+// 2016-07-09
+#define IDR_SIZE (1 << IDR_BITS)    // 256
 #define IDR_MASK ((1 << IDR_BITS)-1)
 
+// 2016-07-09
 struct idr_layer {
 	int			prefix;	/* the ID prefix of this idr_layer */
+    // 2016-07-09
+    // key값은, bitmap에 저장되고,
+    // value는 아래의 ary[]에 저장되는 구조 아닐까? 추론해 본다.
 	DECLARE_BITMAP(bitmap, IDR_SIZE); /* A zero bit means "space here" */
-	struct idr_layer __rcu	*ary[1<<IDR_BITS];
+	struct idr_layer __rcu	*ary[1<<IDR_BITS/*256*/];
 	int			count;	/* When zero, we can release it */
 	int			layer;	/* distance from leaf */
 	struct rcu_head		rcu_head;

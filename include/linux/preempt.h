@@ -63,6 +63,7 @@ do { \
 #ifdef CONFIG_PREEMPT_COUNT // set
 
 // 2016-02-06;
+// 2016-07-09
 #define preempt_disable() \
 do { \
 	inc_preempt_count(); \

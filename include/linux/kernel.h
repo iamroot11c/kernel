@@ -164,6 +164,7 @@ struct user;
 extern int _cond_resched(void);
 # define might_resched() _cond_resched()
 #else
+// 2016-07-09
 # define might_resched() do { } while (0) // 2015-05-23
                                           // 2015-07-25;
 #endif
@@ -188,6 +189,7 @@ extern int _cond_resched(void);
 				   int preempt_offset) { }
 // 2015-05-23;
 // 2015-07-25;
+// 2016-07-09
 # define might_sleep() do { might_resched(); } while (0)
 #endif
 
@@ -760,6 +762,7 @@ static inline void ftrace_dump(enum ftrace_dump_mode oops_dump_mode) { }
 	type __min2 = (y);			\
 	__min1 < __min2 ? __min1: __min2; })
 
+// 2016-07-09
 // max_t(size_t, dyn_size, PERCPU_DYNAMIC_EARLY_SIZE)
 #define max_t(type, x, y) ({			\
 	type __max1 = (x);			\

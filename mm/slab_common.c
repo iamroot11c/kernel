@@ -25,12 +25,13 @@
 
 enum slab_state slab_state;
 // 2016-04-23
+// 2016-07-09
 LIST_HEAD(slab_caches);
 DEFINE_MUTEX(slab_mutex);
 // 2015-05-30
 struct kmem_cache *kmem_cache;
 
-#ifdef CONFIG_DEBUG_VM
+#ifdef CONFIG_DEBUG_VM	// =n
 static int kmem_cache_sanity_check(struct mem_cgroup *memcg, const char *name,
 				   size_t size)
 {
@@ -79,6 +80,7 @@ static int kmem_cache_sanity_check(struct mem_cgroup *memcg, const char *name,
 	return 0;
 }
 #else
+// 2016-07-09
 static inline int kmem_cache_sanity_check(struct mem_cgroup *memcg,
 					  const char *name, size_t size)
 {
@@ -122,6 +124,8 @@ out:
 // calculate_alignment(SLAB_HWCACHE_ALIGN/*0x00002000UL*/, ARCH_KMALLOC_MINALIGN/*64*/, sizeof(struct kmem_cache_node))
 // 2016-05-28
 // calculate_alignment(0, ARCH_KMALLOC_MINALIGN/*64*/, 64)
+// 2016-07-09
+// align = calculate_alignment(flags, align, size);
 unsigned long calculate_alignment(unsigned long flags,
 		unsigned long align, unsigned long size)
 {
@@ -171,6 +175,8 @@ unsigned long calculate_alignment(unsigned long flags,
  * as davem.
  */
 
+// 2016-07-09
+// kmem_cache_create_memcg(NULL, name, size, align, SLAB_PANIC, ctor, NULL);
 struct kmem_cache *
 kmem_cache_create_memcg(struct mem_cgroup *memcg, const char *name, size_t size,
 			size_t align, unsigned long flags, void (*ctor)(void *),
@@ -179,6 +185,7 @@ kmem_cache_create_memcg(struct mem_cgroup *memcg, const char *name, size_t size,
 	struct kmem_cache *s = NULL;
 	int err = 0;
 
+	// 2016-07-09
 	get_online_cpus();
 	mutex_lock(&slab_mutex);
 
@@ -191,12 +198,16 @@ kmem_cache_create_memcg(struct mem_cgroup *memcg, const char *name, size_t size,
 	 * case, and we'll just provide them with a sanitized version of the
 	 * passed flags.
 	 */
+	// 2016-07-09, SLAB_PANIC만 남을 것이다.
 	flags &= CACHE_CREATE_MASK;
 
+	// 2016-07-09
 	s = __kmem_cache_alias(memcg, name, size, align, flags, ctor);
 	if (s)
 		goto out_locked;
+	// 2016-07-09, 여기까지
 
+	// 2016-07-16, 여기부터
 	s = kmem_cache_zalloc(kmem_cache, GFP_KERNEL);
 	if (s) {
 		s->object_size = s->size = size;
@@ -230,6 +241,7 @@ kmem_cache_create_memcg(struct mem_cgroup *memcg, const char *name, size_t size,
 
 out_locked:
 	mutex_unlock(&slab_mutex);
+	// 2016-07-09
 	put_online_cpus();
 
 	if (err) {
@@ -249,6 +261,9 @@ out_locked:
 	return s;
 }
 
+// 2016-07-09
+// kmem_cache_create("idr_layer_cache",
+//                   sizeof(struct idr_layer), 0, SLAB_PANIC, NULL);
 struct kmem_cache *
 kmem_cache_create(const char *name, size_t size, size_t align,
 		  unsigned long flags, void (*ctor)(void *))
