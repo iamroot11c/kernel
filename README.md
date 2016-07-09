@@ -14,6 +14,7 @@
  - kernel/mm/slub.c: find_mergeable() 분석 완료
  - kernel/mm/slub.c: sysfs_slab_alias() 분석 완료
  - radix tree: http://timewizhan.tistory.com/entry/%EB%9D%BC%EB%94%95%EC%8A%A4-%ED%8A%B8%EB%A6%ACRadix-Tree
+ - 진우님 회사 사정으로 스터디를 일찍 마쳤습니다.
 
 + [102주차]() `2016.06.25`
  - [sched_init() 진행중](http://bit.ly/29aaOFd)
