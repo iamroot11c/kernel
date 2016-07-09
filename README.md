@@ -1,7 +1,7 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
-+ [103주차]() `2016.07.09`
++ [103주차](http://bit.ly/29FsV8c) `2016.07.09`
  - [idr_init_cache() 진행중]()
  - kernel/sched/core.c: sched_init() 분석 완료
  - sched_init() 모기향 리뷰
