@@ -47,6 +47,7 @@
  * The DYNTICK_TASK_EXIT_IDLE value is thus the combined value used upon
  * initial exit from idle.
  */
+// 2016-07-16
 #define DYNTICK_TASK_NEST_WIDTH 7
 #define DYNTICK_TASK_NEST_VALUE ((LLONG_MAX >> DYNTICK_TASK_NEST_WIDTH) + 1)
 #define DYNTICK_TASK_NEST_MASK  (LLONG_MAX - DYNTICK_TASK_NEST_VALUE + 1)

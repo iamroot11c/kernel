@@ -668,6 +668,7 @@ static inline int memcg_cache_id(struct mem_cgroup *memcg)
 	return -1;
 }
 
+// 2016-07-16
 static inline int
 memcg_register_cache(struct mem_cgroup *memcg, struct kmem_cache *s,
 		     struct kmem_cache *root_cache)
@@ -679,6 +680,7 @@ static inline void memcg_release_cache(struct kmem_cache *cachep)
 {
 }
 
+// 2016-07-16
 static inline void memcg_cache_list_add(struct mem_cgroup *memcg,
 					struct kmem_cache *s)
 {

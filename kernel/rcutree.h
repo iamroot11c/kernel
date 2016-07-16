@@ -36,13 +36,15 @@
  * In practice, this did work well going from three levels to four.
  * Of course, your mileage may vary.
  */
+// 2016-07-16
 #define MAX_RCU_LVLS 4
-#define RCU_FANOUT_1	      (CONFIG_RCU_FANOUT_LEAF)
-#define RCU_FANOUT_2	      (RCU_FANOUT_1 * CONFIG_RCU_FANOUT)
-#define RCU_FANOUT_3	      (RCU_FANOUT_2 * CONFIG_RCU_FANOUT)
-#define RCU_FANOUT_4	      (RCU_FANOUT_3 * CONFIG_RCU_FANOUT)
+#define RCU_FANOUT_1	      (CONFIG_RCU_FANOUT_LEAF/*16*/)
+#define RCU_FANOUT_2	      (RCU_FANOUT_1 * CONFIG_RCU_FANOUT/*32*/) // 512 = 16*32
+#define RCU_FANOUT_3	      (RCU_FANOUT_2 * CONFIG_RCU_FANOUT/*32*/) // 16384 = 512 * 32
+#define RCU_FANOUT_4	      (RCU_FANOUT_3 * CONFIG_RCU_FANOUT/*32*/) // 524288 = 16384 * 32
 
-#if NR_CPUS <= RCU_FANOUT_1
+#if NR_CPUS/*2*/ <= RCU_FANOUT_1
+// 2016-07-16
 #  define RCU_NUM_LVLS	      1
 #  define NUM_RCU_LVL_0	      1
 #  define NUM_RCU_LVL_1	      (NR_CPUS)
@@ -74,8 +76,10 @@
 # error "CONFIG_RCU_FANOUT insufficient for NR_CPUS"
 #endif /* #if (NR_CPUS) <= RCU_FANOUT_1 */
 
-#define RCU_SUM (NUM_RCU_LVL_0 + NUM_RCU_LVL_1 + NUM_RCU_LVL_2 + NUM_RCU_LVL_3 + NUM_RCU_LVL_4)
-#define NUM_RCU_NODES (RCU_SUM - NR_CPUS)
+// 2016-07-16
+#define RCU_SUM (NUM_RCU_LVL_0 + NUM_RCU_LVL_1 + NUM_RCU_LVL_2 + NUM_RCU_LVL_3 + NUM_RCU_LVL_4) // 3
+// 2016-07-16
+#define NUM_RCU_NODES (RCU_SUM - NR_CPUS) // 1
 
 extern int rcu_num_lvls;
 extern int rcu_num_nodes;
@@ -83,6 +87,7 @@ extern int rcu_num_nodes;
 /*
  * Dynticks per-CPU state.
  */
+//2016-07-16
 struct rcu_dynticks {
 	long long dynticks_nesting; /* Track irq/process nesting level. */
 				    /* Process level is worth LLONG_MAX/2. */
@@ -121,6 +126,7 @@ struct rcu_dynticks {
 /*
  * Definition for node within the RCU grace-period-detection hierarchy.
  */
+// 2016-07-16
 struct rcu_node {
 	raw_spinlock_t lock;	/* Root rcu_node's lock protects some */
 				/*  rcu_state fields as well as following. */
@@ -240,9 +246,11 @@ struct rcu_node {
 #define RCU_WAIT_TAIL		1	/* Also RCU_NEXT_READY head. */
 #define RCU_NEXT_READY_TAIL	2	/* Also RCU_NEXT head. */
 #define RCU_NEXT_TAIL		3
+// 2016-07-16
 #define RCU_NEXT_SIZE		4
 
 // 2015-08-08;
+// 2016-07-16
 /* Per-CPU data for read-copy update. */
 struct rcu_data {
 	/* 1) quiescent-state and grace-period handling : */
@@ -287,6 +295,7 @@ struct rcu_data {
 	 *	always be NULL, as this is the end of the list.
 	 */
 	struct rcu_head *nxtlist;
+    // 2016-07-16
 	struct rcu_head **nxttail[RCU_NEXT_SIZE];
 	unsigned long	nxtcompleted[RCU_NEXT_SIZE];
 					/* grace periods for sublists. */
@@ -303,6 +312,7 @@ struct rcu_data {
 	long		blimit;		/* Upper limit on a processed batch */
 
 	/* 3) dynticks interface. */
+    // 2016-07-16
 	struct rcu_dynticks *dynticks;	/* Shared per-CPU dynticks state. */
 	int dynticks_snap;		/* Per-GP tracking for dynticks. */
 
@@ -354,10 +364,12 @@ struct rcu_data {
 #define RCU_FORCE_QS		3	/* Need to force quiescent state. */
 #define RCU_SIGNAL_INIT		RCU_SAVE_DYNTICK
 
-#define RCU_JIFFIES_TILL_FORCE_QS (1 + (HZ > 250) + (HZ > 500))
+// 2016-07-16
+#define RCU_JIFFIES_TILL_FORCE_QS (1 + (HZ/*100*/ > 250) + (HZ > 500)) // 1
 					/* For jiffies_till_first_fqs and */
 					/*  and jiffies_till_next_fqs. */
 
+// 2016-07-16
 #define RCU_JIFFIES_FQS_DIV	256	/* Very large systems need more */
 					/*  delay between bouts of */
 					/*  quiescent-state forcing. */
@@ -387,6 +399,7 @@ do {									\
  * CPUs and by CONFIG_RCU_FANOUT.  Small systems will have a "hierarchy"
  * consisting of a single rcu_node.
  */
+// 2016-07-16
 struct rcu_state {
 	struct rcu_node node[NUM_RCU_NODES];	/* Hierarchy. */
 	struct rcu_node *level[RCU_NUM_LVLS];	/* Hierarchy levels. */
@@ -482,9 +495,17 @@ extern struct list_head rcu_struct_flavors;
 /*
  * RCU implementation internal declarations:
  */
+// 2016-07-16
+// rcu_init() 함수에서 rcu_init_one() 함수를 호출해서 
+// levelcnt와 levelspread 멤버를 아래와 같이 수정함
+// rcu_sched_state.levelcnt[0] = 1;
+// rcu_sched_state.levelspread[0] = 2;
 extern struct rcu_state rcu_sched_state;
+// 2016-07-16
+// struct rcu_data rcu_sched_data;
 DECLARE_PER_CPU(struct rcu_data, rcu_sched_data);
 
+// 2016-07-16
 extern struct rcu_state rcu_bh_state;
 DECLARE_PER_CPU(struct rcu_data, rcu_bh_data);
 
@@ -500,7 +521,7 @@ DECLARE_PER_CPU(unsigned int, rcu_cpu_kthread_loops);
 DECLARE_PER_CPU(char, rcu_cpu_has_work);
 #endif /* #ifdef CONFIG_RCU_BOOST */
 
-#ifndef RCU_TREE_NONCORE
+#ifndef RCU_TREE_NONCORE // not define
 
 /* Forward declarations for rcutree_plugin.h */
 static void rcu_bootup_announce(void);

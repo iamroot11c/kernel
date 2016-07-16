@@ -23,6 +23,8 @@
 
 #include "slab.h"
 
+// 2016-05-28 create_kmalloc_caches() 함수에서
+// slab_state를 UP으로 변경
 enum slab_state slab_state;
 // 2016-04-23
 // 2016-07-09
@@ -177,6 +179,7 @@ unsigned long calculate_alignment(unsigned long flags,
 
 // 2016-07-09
 // kmem_cache_create_memcg(NULL, name, size, align, SLAB_PANIC, ctor, NULL);
+// // 2016-07-16 완료
 struct kmem_cache *
 kmem_cache_create_memcg(struct mem_cgroup *memcg, const char *name, size_t size,
 			size_t align, unsigned long flags, void (*ctor)(void *),
@@ -208,12 +211,15 @@ kmem_cache_create_memcg(struct mem_cgroup *memcg, const char *name, size_t size,
 	// 2016-07-09, 여기까지
 
 	// 2016-07-16, 여기부터
+	// 2016-07-16 시작;
+	// 첫 번째 인자 kmem_cache는 전역변수이다
 	s = kmem_cache_zalloc(kmem_cache, GFP_KERNEL);
 	if (s) {
 		s->object_size = s->size = size;
 		s->align = calculate_alignment(flags, align, size);
 		s->ctor = ctor;
 
+		// memcg_register_cache() 함수는 No OP.
 		if (memcg_register_cache(memcg, s, parent_cache)) {
 			kmem_cache_free(kmem_cache, s);
 			err = -ENOMEM;
@@ -227,11 +233,13 @@ kmem_cache_create_memcg(struct mem_cgroup *memcg, const char *name, size_t size,
 			goto out_locked;
 		}
 
+		// cache를 사용하기 위해 초기화를 함
 		err = __kmem_cache_create(s, flags);
 		if (!err) {
 			s->refcount = 1;
+			// cache를 할당 받고 slab_caches 리스트에 추가
 			list_add(&s->list, &slab_caches);
-			memcg_cache_list_add(memcg, s);
+			memcg_cache_list_add(memcg, s); // No OP.
 		} else {
 			kfree(s->name);
 			kmem_cache_free(kmem_cache, s);
@@ -269,6 +277,7 @@ kmem_cache_create(const char *name, size_t size, size_t align,
 		  unsigned long flags, void (*ctor)(void *))
 {
 	return kmem_cache_create_memcg(NULL, name, size, align, flags, ctor, NULL);
+	// 2016-07-16 완료
 }
 EXPORT_SYMBOL(kmem_cache_create);
 

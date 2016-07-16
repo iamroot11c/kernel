@@ -271,9 +271,13 @@ typedef void call_rcu_func_t(struct rcu_head *head,
 			     void (*func)(struct rcu_head *head));
 void wait_rcu_gp(call_rcu_func_t crf);
 
+// 2016-07-16
+// CONFIG_TREE_RCU not define
+// CONFIG_TREE_PREEMPT_RCU defined
+// rcu_init() 함수 구현
 #if defined(CONFIG_TREE_RCU) || defined(CONFIG_TREE_PREEMPT_RCU)
 #include <linux/rcutree.h>
-#elif defined(CONFIG_TINY_RCU)
+#elif defined(CONFIG_TINY_RCU) // not define
 #include <linux/rcutiny.h>
 #else
 #error "Unknown RCU implementation specified to kernel configuration"

@@ -851,6 +851,8 @@ void *idr_replace(struct idr *idp, void *ptr, int id)
 EXPORT_SYMBOL(idr_replace);
 
 // 2016-07-09
+// 2016-07-16 완료
+// kmem_cache를 할당 후 idr_layer_cache로 별칭과 초기화 함
 void __init idr_init_cache(void)
 {
 	// cache 생성과정에 오류가 발생할 경우, panic 발생하게 된다.

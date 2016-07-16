@@ -50,41 +50,48 @@ static char __initdata nocb_buf[NR_CPUS * 5];
  * messages about anything out of the ordinary.  If you like #ifdef, you
  * will love this function.
  */
+// 2016-07-16
+// 설정 정보를 출력함
 static void __init rcu_bootup_announce_oddness(void)
 {
-#ifdef CONFIG_RCU_TRACE
+#ifdef CONFIG_RCU_TRACE // not define
 	pr_info("\tRCU debugfs-based tracing is enabled.\n");
 #endif
+// 2016-07-16 CONFIG_64BIT not defined
+//            CONFIG_RCU_FANOUT = 32
+//            CONFIG_RCU_FANOUT = 32 
 #if (defined(CONFIG_64BIT) && CONFIG_RCU_FANOUT != 64) || (!defined(CONFIG_64BIT) && CONFIG_RCU_FANOUT != 32)
 	pr_info("\tCONFIG_RCU_FANOUT set to non-default value of %d\n",
 	       CONFIG_RCU_FANOUT);
 #endif
-#ifdef CONFIG_RCU_FANOUT_EXACT
+#ifdef CONFIG_RCU_FANOUT_EXACT // not defined
 	pr_info("\tHierarchical RCU autobalancing is disabled.\n");
 #endif
-#ifdef CONFIG_RCU_FAST_NO_HZ
+#ifdef CONFIG_RCU_FAST_NO_HZ // not defined
 	pr_info("\tRCU dyntick-idle grace-period acceleration is enabled.\n");
 #endif
-#ifdef CONFIG_PROVE_RCU
+#ifdef CONFIG_PROVE_RCU // not defined
 	pr_info("\tRCU lockdep checking is enabled.\n");
 #endif
-#ifdef CONFIG_RCU_TORTURE_TEST_RUNNABLE
+#ifdef CONFIG_RCU_TORTURE_TEST_RUNNABLE // not defined
 	pr_info("\tRCU torture testing starts during boot.\n");
 #endif
+// 2016-07-16 CONFIG_TREE_PREEMPT_RCU defined
+//            CONFIG_RCU_CPU_STALL_VERBOSE not define
 #if defined(CONFIG_TREE_PREEMPT_RCU) && !defined(CONFIG_RCU_CPU_STALL_VERBOSE)
 	pr_info("\tDump stacks of tasks blocking RCU-preempt GP.\n");
 #endif
-#if defined(CONFIG_RCU_CPU_STALL_INFO)
+#if defined(CONFIG_RCU_CPU_STALL_INFO) // not define
 	pr_info("\tAdditional per-CPU info printed with stalls.\n");
 #endif
-#if NUM_RCU_LVL_4 != 0
+#if NUM_RCU_LVL_4/*0*/ != 0
 	pr_info("\tFour-level hierarchy is enabled.\n");
 #endif
-	if (rcu_fanout_leaf != CONFIG_RCU_FANOUT_LEAF)
+	if (rcu_fanout_leaf/*16*/ != CONFIG_RCU_FANOUT_LEAF)
 		pr_info("\tBoot-time adjustment of leaf fanout to %d.\n", rcu_fanout_leaf);
 	if (nr_cpu_ids != NR_CPUS)
 		pr_info("\tRCU restricting CPUs from NR_CPUS=%d to nr_cpu_ids=%d.\n", NR_CPUS, nr_cpu_ids);
-#ifdef CONFIG_RCU_NOCB_CPU
+#ifdef CONFIG_RCU_NOCB_CPU // not define
 #ifndef CONFIG_RCU_NOCB_CPU_NONE
 	if (!have_rcu_nocb_mask) {
 		zalloc_cpumask_var(&rcu_nocb_mask, GFP_KERNEL);
@@ -118,9 +125,11 @@ static int rcu_preempted_readers_exp(struct rcu_node *rnp);
 /*
  * Tell them what RCU they are running.
  */
+// 2016-07-16
 static void __init rcu_bootup_announce(void)
 {
 	pr_info("Preemptible hierarchical RCU implementation.\n");
+    // 설정 정보를 출력
 	rcu_bootup_announce_oddness();
 }
 
@@ -959,6 +968,7 @@ static struct rcu_state *rcu_state = &rcu_sched_state;
 /*
  * Tell them what RCU they are running.
  */
+// 2016-07-16
 static void __init rcu_bootup_announce(void)
 {
 	pr_info("Hierarchical RCU implementation.\n");
@@ -2006,7 +2016,7 @@ static void increment_cpu_stall_ticks(void)
 
 #endif /* #else #ifdef CONFIG_RCU_CPU_STALL_INFO */
 
-#ifdef CONFIG_RCU_NOCB_CPU
+#ifdef CONFIG_RCU_NOCB_CPU // not define
 
 /*
  * Offload callback processing from the boot-time-specified set of CPUs
@@ -2338,6 +2348,7 @@ static void rcu_nocb_gp_set(struct rcu_node *rnp, int nrq)
 {
 }
 
+// 2016-07-16
 static void rcu_init_one_nocb(struct rcu_node *rnp)
 {
 }
@@ -2354,6 +2365,7 @@ static bool __maybe_unused rcu_nocb_adopt_orphan_cbs(struct rcu_state *rsp,
 	return 0;
 }
 
+// 2016-07-16
 static void __init rcu_boot_init_nocb_percpu_data(struct rcu_data *rdp)
 {
 }
@@ -2362,6 +2374,7 @@ static void __init rcu_spawn_nocb_kthreads(struct rcu_state *rsp)
 {
 }
 
+// 2016-07-16
 static bool init_nocb_callback_list(struct rcu_data *rdp)
 {
 	return false;

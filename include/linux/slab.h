@@ -92,10 +92,12 @@
  * ZERO_SIZE_PTR can be passed to kfree though in the same way that NULL can.
  * Both make kfree a no-op.
  */
+// 2016-07-16
 #define ZERO_SIZE_PTR ((void *)16)
 
 // 2016-03-19
 // ZERO_SIZE_PTR보다 작은 값인 경우 (0x0 ~ 0x010)
+// 2016-07-16
 #define ZERO_OR_NULL_PTR(x) ((unsigned long)(x) <= \
 				(unsigned long)ZERO_SIZE_PTR)
 
@@ -616,6 +618,7 @@ static inline void *kcalloc(size_t n, size_t size, gfp_t flags)
 	(defined(CONFIG_SLAB) && defined(CONFIG_TRACING)) || \
 	(defined(CONFIG_SLOB) && defined(CONFIG_TRACING))
 extern void *__kmalloc_track_caller(size_t, gfp_t, unsigned long);
+// kmalloc_track_caller(len, GFP_KERNEL)
 #define kmalloc_track_caller(size, flags) \
 	__kmalloc_track_caller(size, flags, _RET_IP_)
 #else
@@ -658,6 +661,8 @@ extern void *__kmalloc_node_track_caller(size_t, gfp_t, int, unsigned long);
 // kmem_cache_zalloc(kmem_cache, GFP_NOWAIT);
 // 2016-05-27
 // kmem_cache_zalloc(kmem_cache, GFP_NOWAIT)
+// 2016-07-16
+// kmem_cache_zalloc(kmem_cache, GFP_KERNEL);
 static inline void *kmem_cache_zalloc(struct kmem_cache *k, gfp_t flags)
 {
 	return kmem_cache_alloc(k, flags | __GFP_ZERO);

@@ -23,6 +23,8 @@ struct irq_work {
 	void (*func)(struct irq_work *);
 };
 
+// 2016-07-16
+// init_irq_work(&rsp->wakeup_work, rsp_wakeup);
 static inline
 void init_irq_work(struct irq_work *work, void (*func)(struct irq_work *))
 {

@@ -56,6 +56,7 @@
 #include <linux/ftrace_event.h>
 #include <linux/suspend.h>
 
+// 2016-07-16
 #include "rcutree.h"
 #include <trace/events/rcu.h>
 
@@ -104,20 +105,26 @@ RCU_STATE_INITIALIZER(rcu_sched, 's', call_rcu_sched);
 RCU_STATE_INITIALIZER(rcu_bh, 'b', call_rcu_bh);
 
 static struct rcu_state *rcu_state;
+// 2016-07-16; rcu_init_one() 함수에서
+// rcu_struct_flavors 리스트에 rcu_sched_state 등 추가
 LIST_HEAD(rcu_struct_flavors);
 
 /* Increase (but not decrease) the CONFIG_RCU_FANOUT_LEAF at boot time. */
-static int rcu_fanout_leaf = CONFIG_RCU_FANOUT_LEAF;
+// 2016-07-16
+static int rcu_fanout_leaf = CONFIG_RCU_FANOUT_LEAF; // 16
 module_param(rcu_fanout_leaf, int, 0444);
-int rcu_num_lvls __read_mostly = RCU_NUM_LVLS;
+// 2016-07-16; rcu_init_geometry() 함수에서 1로 셋됨
+int rcu_num_lvls __read_mostly = RCU_NUM_LVLS; // 1
+// 2016-07-16
 static int num_rcu_lvl[] = {  /* Number of rcu_nodes at specified level. */
-	NUM_RCU_LVL_0,
-	NUM_RCU_LVL_1,
-	NUM_RCU_LVL_2,
-	NUM_RCU_LVL_3,
-	NUM_RCU_LVL_4,
+	NUM_RCU_LVL_0, // 1
+	NUM_RCU_LVL_1, // 2
+	NUM_RCU_LVL_2, // 0
+	NUM_RCU_LVL_3, // 0
+	NUM_RCU_LVL_4, // 0
 };
-int rcu_num_nodes __read_mostly = NUM_RCU_NODES; /* Total # rcu_nodes in use. */
+// 2016-07-16; rcu_init_geometry() 함수에서 1로 셋됨
+int rcu_num_nodes __read_mostly = NUM_RCU_NODES/*1*/; /* Total # rcu_nodes in use. */
 
 /*
  * The rcu_scheduler_active variable transitions from zero to one just
@@ -222,6 +229,7 @@ void rcu_note_context_switch(int cpu)
 }
 EXPORT_SYMBOL_GPL(rcu_note_context_switch);
 
+// 2016-07-16
 DEFINE_PER_CPU(struct rcu_dynticks, rcu_dynticks) = {
 	.dynticks_nesting = DYNTICK_TASK_EXIT_IDLE,
 	.dynticks = ATOMIC_INIT(1),
@@ -239,6 +247,7 @@ module_param(blimit, long, 0444);
 module_param(qhimark, long, 0444);
 module_param(qlowmark, long, 0444);
 
+// 2016-07-16
 static ulong jiffies_till_first_fqs = ULONG_MAX;
 static ulong jiffies_till_next_fqs = ULONG_MAX;
 
@@ -354,6 +363,7 @@ cpu_needs_another_gp(struct rcu_state *rsp, struct rcu_data *rdp)
 /*
  * Return the root node of the specified rcu_state structure.
  */
+// 2016-07-16;
 static struct rcu_node *rcu_get_root(struct rcu_state *rsp)
 {
 	return &rsp->node[0];
@@ -975,14 +985,16 @@ void rcu_cpu_stall_reset(void)
 /*
  * Initialize the specified rcu_data structure's callback list to empty.
  */
+// 2016-07-16
 static void init_callback_list(struct rcu_data *rdp)
 {
 	int i;
 
-	if (init_nocb_callback_list(rdp))
+	if (init_nocb_callback_list(rdp)) // No OP. 리턴은 false이다
 		return;
 	rdp->nxtlist = NULL;
-	for (i = 0; i < RCU_NEXT_SIZE; i++)
+	for (i = 0; i < RCU_NEXT_SIZE/*4*/; i++)
+		// 초기화할 때는 nxttail[n]의 포인터를 NULL로 설정
 		rdp->nxttail[i] = &rdp->nxtlist;
 }
 
@@ -1523,6 +1535,7 @@ static int __noreturn rcu_gp_kthread(void *arg)
 	}
 }
 
+// 2016-07-16; rcu_sched_state.wakeup_work.func에 등록됨
 static void rsp_wakeup(struct irq_work *work)
 {
 	struct rcu_state *rsp = container_of(work, struct rcu_state, wakeup_work);
@@ -2915,6 +2928,8 @@ EXPORT_SYMBOL_GPL(rcu_barrier_sched);
 /*
  * Do boot-time initialization of a CPU's per-CPU RCU data.
  */
+// 2016-07-16
+// rcu_boot_init_percpu_data(i, rsp);
 static void __init
 rcu_boot_init_percpu_data(int cpu, struct rcu_state *rsp)
 {
@@ -2924,6 +2939,7 @@ rcu_boot_init_percpu_data(int cpu, struct rcu_state *rsp)
 
 	/* Set up local state, ensuring consistent view of global state. */
 	raw_spin_lock_irqsave(&rnp->lock, flags);
+	// grpmask를 설정하므로서 rcu_data가 어떤 cpu에 소속된 값인지 판달 할 수 있다
 	rdp->grpmask = 1UL << (cpu - rdp->mynode->grplo);
 	init_callback_list(rdp);
 	rdp->qlen_lazy = 0;
@@ -2933,7 +2949,7 @@ rcu_boot_init_percpu_data(int cpu, struct rcu_state *rsp)
 	WARN_ON_ONCE(atomic_read(&rdp->dynticks->dynticks) != 1);
 	rdp->cpu = cpu;
 	rdp->rsp = rsp;
-	rcu_boot_init_nocb_percpu_data(rdp);
+	rcu_boot_init_nocb_percpu_data(rdp); // No OP.
 	raw_spin_unlock_irqrestore(&rnp->lock, flags);
 }
 
@@ -3110,7 +3126,7 @@ void rcu_scheduler_starting(void)
  * Compute the per-level fanout, either using the exact fanout specified
  * or balancing the tree, depending on CONFIG_RCU_FANOUT_EXACT.
  */
-#ifdef CONFIG_RCU_FANOUT_EXACT
+#ifdef CONFIG_RCU_FANOUT_EXACT // not define
 static void __init rcu_init_levelspread(struct rcu_state *rsp)
 {
 	int i;
@@ -3120,6 +3136,7 @@ static void __init rcu_init_levelspread(struct rcu_state *rsp)
 	rsp->levelspread[0] = rcu_fanout_leaf;
 }
 #else /* #ifdef CONFIG_RCU_FANOUT_EXACT */
+// 2016-07-16
 static void __init rcu_init_levelspread(struct rcu_state *rsp)
 {
 	int ccur;
@@ -3127,9 +3144,12 @@ static void __init rcu_init_levelspread(struct rcu_state *rsp)
 	int i;
 
 	cprv = nr_cpu_ids;
+	// 2016-07-16; rcu_num_lvls은 1로 셋되어 있어 for 문을 
+	// 1번만 실행
 	for (i = rcu_num_lvls - 1; i >= 0; i--) {
-		ccur = rsp->levelcnt[i];
-		rsp->levelspread[i] = (cprv + ccur - 1) / ccur;
+		ccur = rsp->levelcnt[i]; // rsp->levelcnt[0]에는 1이 저장 되어 있음
+		// rsp->levelspread[0] = 2 = (2+1-1)/1;
+		rsp->levelspread[i] = (cprv/*2*/ + ccur - 1) / ccur;
 		cprv = ccur;
 	}
 }
@@ -3138,6 +3158,8 @@ static void __init rcu_init_levelspread(struct rcu_state *rsp)
 /*
  * Helper function for rcu_init() that initializes one rcu_state structure.
  */
+// 2016-07-16
+// rcu_init_one(&rcu_sched_state, &rcu_sched_data);
 static void __init rcu_init_one(struct rcu_state *rsp,
 		struct rcu_data __percpu *rda)
 {
@@ -3154,41 +3176,56 @@ static void __init rcu_init_one(struct rcu_state *rsp,
 	int j;
 	struct rcu_node *rnp;
 
-	BUILD_BUG_ON(MAX_RCU_LVLS > ARRAY_SIZE(buf));  /* Fix buf[] init! */
+	BUILD_BUG_ON(MAX_RCU_LVLS/*4*/ > ARRAY_SIZE(buf));  /* Fix buf[] init! */
 
 	/* Silence gcc 4.8 warning about array index out of range. */
-	if (rcu_num_lvls > RCU_NUM_LVLS)
+	if (rcu_num_lvls > RCU_NUM_LVLS/*1*/)
 		panic("rcu_init_one: rcu_num_lvls overflow");
 
 	/* Initialize the level-tracking arrays. */
 
+	// 2016-07-16; rcu_num_lvls은 1로 셋되어 있음
 	for (i = 0; i < rcu_num_lvls; i++)
+		// 2016-07-16; rsp->levelcnt[0] = 1;
 		rsp->levelcnt[i] = num_rcu_lvl[i];
+	// 2016-07-16; rcu_num_lvls은 1로 셋되어있어 for 문을 실행하지 않음
 	for (i = 1; i < rcu_num_lvls; i++)
 		rsp->level[i] = rsp->level[i - 1] + rsp->levelcnt[i - 1];
 	rcu_init_levelspread(rsp);
 
 	/* Initialize the elements themselves, starting from the leaves. */
 
+	// 2016-07-16; rcu_num_lvls은 1로 셋되어 있어 for 문이
+	// 한번만 실행
 	for (i = rcu_num_lvls - 1; i >= 0; i--) {
-		cpustride *= rsp->levelspread[i];
+		// rcu_node 포인터를 구함
+
+		// 2016-07-16; rsp->levelspread[0]에는 2로 셋되어있음
+		cpustride *= rsp->levelspread[i]; // 2
+		// 2016-07-16; 위의 2번째 for 문을 실행하지 않아
+		// rsp->level[i]는 초기값으로 셋되어 있음
 		rnp = rsp->level[i];
-		for (j = 0; j < rsp->levelcnt[i]; j++, rnp++) {
+		for (j = 0; j < rsp->levelcnt[i]/*[0] == 1*/; j++, rnp++) {
+			// 바같쪽 for 문에서 구한 rcu_node를 초기화 함
+			
 			raw_spin_lock_init(&rnp->lock);
 			lockdep_set_class_and_name(&rnp->lock,
-						   &rcu_node_class[i], buf[i]);
+						   &rcu_node_class[i], buf[i]); // No OP.
 			raw_spin_lock_init(&rnp->fqslock);
 			lockdep_set_class_and_name(&rnp->fqslock,
-						   &rcu_fqs_class[i], fqs[i]);
+						   &rcu_fqs_class[i], fqs[i]); // No OP.
 			rnp->gpnum = rsp->gpnum;
 			rnp->completed = rsp->completed;
 			rnp->qsmask = 0;
 			rnp->qsmaskinit = 0;
-			rnp->grplo = j * cpustride;
-			rnp->grphi = (j + 1) * cpustride - 1;
+			rnp->grplo = j * cpustride; // 0
+			// j: 0, cpustride: 2
+			rnp->grphi = (j + 1) * cpustride - 1; // 1 = 1*2 - 1
 			if (rnp->grphi >= NR_CPUS)
 				rnp->grphi = NR_CPUS - 1;
 			if (i == 0) {
+				// 2016-07-16; rcu_num_lvls은 1로 셋되어 있어
+				// 아래와 같이 멤버를 초기화 함
 				rnp->grpnum = 0;
 				rnp->grpmask = 0;
 				rnp->parent = NULL;
@@ -3198,18 +3235,21 @@ static void __init rcu_init_one(struct rcu_state *rsp,
 				rnp->parent = rsp->level[i - 1] +
 					      j / rsp->levelspread[i - 1];
 			}
-			rnp->level = i;
+			rnp->level = i; // 2016-07-16; rcu_num_lvls은
+		                        // 1로 셋되어 있어 level은 0로 셋함
 			INIT_LIST_HEAD(&rnp->blkd_tasks);
-			rcu_init_one_nocb(rnp);
-		}
-	}
+			rcu_init_one_nocb(rnp); // No OP.
+		} // for - j
+	} // for - i
 
-	rsp->rda = rda;
+	rsp->rda = rda; // 인자로 전달된 struct rcu_data 포인터로 설정
+	// lock, task_list 멤버를 초기화
 	init_waitqueue_head(&rsp->gp_wq);
 	init_irq_work(&rsp->wakeup_work, rsp_wakeup);
 	rnp = rsp->level[rcu_num_lvls - 1];
-	for_each_possible_cpu(i) {
-		while (i > rnp->grphi)
+	// percpu의 values 설정
+	for_each_possible_cpu(i/*-1*/) {
+		while (i > rnp->grphi/*1*/)
 			rnp++;
 		per_cpu_ptr(rsp->rda, i)->mynode = rnp;
 		rcu_boot_init_percpu_data(i, rsp);
@@ -3222,13 +3262,14 @@ static void __init rcu_init_one(struct rcu_state *rsp,
  * replace the definitions in rcutree.h because those are needed to size
  * the ->node array in the rcu_state structure.
  */
+// 2016-07-16
 static void __init rcu_init_geometry(void)
 {
 	ulong d;
 	int i;
 	int j;
 	int n = nr_cpu_ids;
-	int rcu_capacity[MAX_RCU_LVLS + 1];
+	int rcu_capacity[MAX_RCU_LVLS/*4*/ + 1];
 
 	/*
 	 * Initialize any unspecified boot parameters.
@@ -3237,15 +3278,18 @@ static void __init rcu_init_geometry(void)
 	 * value, which is a function of HZ, then adding one for each
 	 * RCU_JIFFIES_FQS_DIV CPUs that might be on the system.
 	 */
-	d = RCU_JIFFIES_TILL_FORCE_QS + nr_cpu_ids / RCU_JIFFIES_FQS_DIV;
+	d = RCU_JIFFIES_TILL_FORCE_QS/*1*/ + nr_cpu_ids / RCU_JIFFIES_FQS_DIV/*256*/;
+	// = 0
 	if (jiffies_till_first_fqs == ULONG_MAX)
 		jiffies_till_first_fqs = d;
 	if (jiffies_till_next_fqs == ULONG_MAX)
 		jiffies_till_next_fqs = d;
 
 	/* If the compile-time values are accurate, just leave. */
-	if (rcu_fanout_leaf == CONFIG_RCU_FANOUT_LEAF &&
-	    nr_cpu_ids == NR_CPUS)
+	// 2016-07-16
+	// 아래의 조건에 만족해서 여기서 리턴 될 것 같다 
+	if (rcu_fanout_leaf/*16*/ == CONFIG_RCU_FANOUT_LEAF/*16*/ &&
+	    nr_cpu_ids == NR_CPUS/*2*/)
 		return;
 
 	/*
@@ -3255,8 +3299,11 @@ static void __init rcu_init_geometry(void)
 	 */
 	rcu_capacity[0] = 1;
 	rcu_capacity[1] = rcu_fanout_leaf;
+	// rcu_capacity[2] = 512 = 16 * 32;
+	// rcu_capacity[3] = 16384 = 512 * 32;
+	// rcu_capacity[4] = 524288 = 16384 * 32;
 	for (i = 2; i <= MAX_RCU_LVLS; i++)
-		rcu_capacity[i] = rcu_capacity[i - 1] * CONFIG_RCU_FANOUT;
+		rcu_capacity[i] = rcu_capacity[i - 1] * CONFIG_RCU_FANOUT/*32*/;
 
 	/*
 	 * The boot-time rcu_fanout_leaf parameter is only permitted
@@ -3267,38 +3314,60 @@ static void __init rcu_init_geometry(void)
 	 * compile-time values if these limits are exceeded.
 	 */
 	if (rcu_fanout_leaf < CONFIG_RCU_FANOUT_LEAF ||
-	    rcu_fanout_leaf > sizeof(unsigned long) * 8 ||
-	    n > rcu_capacity[MAX_RCU_LVLS]) {
+	    rcu_fanout_leaf > sizeof(unsigned long) * 8/*32*/ ||
+	    n > rcu_capacity[MAX_RCU_LVLS]/*524288*/) {
 		WARN_ON(1);
 		return;
 	}
 
 	/* Calculate the number of rcu_nodes at each level of the tree. */
+	// 2016-07-16
+	// num_rcu_lvl[0] = 1
+	// num_rcu_lvl[1] = 2
+	// num_rcu_lvl[2] = 0
+	// num_rcu_lvl[3] = 0
+	// num_rcu_lvl[4] = 0
+	// rcu_num_lvls = 1
 	for (i = 1; i <= MAX_RCU_LVLS; i++)
 		if (n <= rcu_capacity[i]) {
 			for (j = 0; j <= i; j++)
 				num_rcu_lvl[j] =
 					DIV_ROUND_UP(n, rcu_capacity[i - j]);
 			rcu_num_lvls = i;
+			// i 인덱스 다음부터 0으로 값을 수정
 			for (j = i + 1; j <= MAX_RCU_LVLS; j++)
 				num_rcu_lvl[j] = 0;
-			break;
-		}
+			
+			// if 조건에 맞을경우 num_rcu_lvl 배열을 초기화 후
+			// for 문을 빠져나옴
+			break; 
+		} // if
 
 	/* Calculate the total number of rcu_node structures. */
 	rcu_num_nodes = 0;
+	// for 문을 모두 순회하면 rcu_num_nodes는 3으로 셋됨
 	for (i = 0; i <= MAX_RCU_LVLS; i++)
 		rcu_num_nodes += num_rcu_lvl[i];
-	rcu_num_nodes -= n;
+	rcu_num_nodes -= n; // 1
 }
 
+// 2016-07-16 시작
 void __init rcu_init(void)
 {
 	int cpu;
 
-	rcu_bootup_announce();
+	// rcutree_plugin.h 파일에 rcu_bootup_announce() 함수의
+	// 구현이 있다
+	// 2016-07-16 시작;
+	rcu_bootup_announce();  
+	// 2016-07-16 완료;
+	// 2016-07-16 시작;
 	rcu_init_geometry();
+	// 2016-07-16 완료;
+	// 2016-07-16 시작;
 	rcu_init_one(&rcu_sched_state, &rcu_sched_data);
+	// 2016-07-16 완료;
+	// 2016-07-16 여기까지;
 	rcu_init_one(&rcu_bh_state, &rcu_bh_data);
 	__rcu_init_preempt();
 	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
@@ -3314,4 +3383,6 @@ void __init rcu_init(void)
 		rcu_cpu_notify(NULL, CPU_UP_PREPARE, (void *)(long)cpu);
 }
 
+
+// 2016-07-16
 #include "rcutree_plugin.h"

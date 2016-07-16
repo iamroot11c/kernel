@@ -2660,6 +2660,8 @@ redo:
                            // TID를 검색하는 동안 다른 프로세서의 의해
 			   // 선점당하지 않기 위해 비 활성화
 			   // TID: Transaction ID
+
+	// 
 	c = __this_cpu_ptr(s->cpu_slab);
 
 	/*
@@ -2733,6 +2735,8 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
 // kmem_cache_alloc(k, GFP_NOWAIT | __GFP_ZERO);
 // 2016-05-28
 // kmem_cache_alloc(kmem_cache, GFP_NOWAIT | __GFP_ZER)
+// 2016-07-26
+// kmem_cache_alloc(kmem_cache, GFP_KERNEL | __GFP_ZERO)
 void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
 {
 	void *ret = slab_alloc(s, gfpflags, _RET_IP_);
@@ -2935,7 +2939,7 @@ slab_empty:
 static __always_inline void slab_free(struct kmem_cache *s,
 			struct page *page, void *x, unsigned long addr)
 {
-	void **object = (void *)x;
+	void **object = (void *)x; // 가상주소를 void 포인터로 변환
 	struct kmem_cache_cpu *c;
 	unsigned long tid;
 
@@ -2979,7 +2983,8 @@ redo:
 			note_cmpxchg_failure("slab_free", s, tid);
 			goto redo;
 		}
-		stat(s, FREE_FASTPATH);
+		stat(s, FREE_FASTPATH); // CONFIG_SLUB_STATS 비 활성화로
+		                        // No OP.
 	} else
 		// 2016-03-26 시작;
 		__slab_free(s, page, x, addr);
@@ -2994,9 +2999,13 @@ redo:
 //
 //2016-04-23
 //kmem_cache_free(kmem_cache_node, n)
+//2016-07-16
+//kmem_cache_free(kmem_cache, s)
 void kmem_cache_free(struct kmem_cache *s, void *x)
 {
 	// 2015-08-08, s가 null임을 가정하고, return 함.
+	// cache_from_obj() 함수는 먼저 x를 page 포인터로 바꾸고
+	// page의 slab_cache 멤버가 갖고 있는 포인터 주소를 리턴한다 
 	s = cache_from_obj(s, x);
 	if (!s)
 		return;
@@ -4174,6 +4183,9 @@ __kmem_cache_alias(struct mem_cgroup *memcg, const char *name, size_t size,
 //
 // 201605-28
 // __kmem_cache_create(s, 0)
+//
+// 2016-07-16
+// __kmem_cache_create(s, SLAB_PANIC)
 int __kmem_cache_create(struct kmem_cache *s, unsigned long flags)
 {
 	int err;
@@ -4185,6 +4197,7 @@ int __kmem_cache_create(struct kmem_cache *s, unsigned long flags)
 		return err;
 
 	// 2016-04-23, 현재 우리는 PARTIAL임으로 return 할 것이다.
+	// 2016-07-16, slab_state가 UP이므로 리턴 할 것이다.
 	/* Mutex is not taken during early boot */
 	if (slab_state <= UP)
 		return 0;
@@ -4238,6 +4251,8 @@ static struct notifier_block slab_notifier = {
 
 #endif
 
+// 2016-07-16
+// __kmalloc_track_caller(len, GFP_KERNEL, _RET_IP)
 void *__kmalloc_track_caller(size_t size, gfp_t gfpflags, unsigned long caller)
 {
 	struct kmem_cache *s;

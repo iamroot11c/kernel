@@ -624,6 +624,9 @@ asmlinkage void __init start_kernel(void)
 
 	// 2016-07-09
 	idr_init_cache();
+	// 2016-07-16 완료
+	
+	// 2016-07-16 시작
 	rcu_init();
 	tick_nohz_init();
 	context_tracking_init();

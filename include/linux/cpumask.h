@@ -30,6 +30,7 @@ typedef struct cpumask { DECLARE_BITMAP(bits, NR_CPUS/*2*/)/*1*/; } cpumask_t;
 #if NR_CPUS == 1
 #define nr_cpu_ids		1
 #else
+// 2016-07-16
 extern int nr_cpu_ids; 
 #endif
 
@@ -787,7 +788,7 @@ extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
 // #define for_each_cpu(cpu, mask)             \
 //     for ((cpu) = -1;                \
 //         (cpu) = cpumask_next((cpu), (mask)),    \
-//         (cpu) < nr_cpu_ids;)
+//         (cpu) < nr_cpu_ids;/*갱신 부분이 없음*/)
 #define for_each_possible_cpu(cpu) for_each_cpu((cpu), cpu_possible_mask)
 // 2015-08-15
 #define for_each_online_cpu(cpu)   for_each_cpu((cpu), cpu_online_mask)
