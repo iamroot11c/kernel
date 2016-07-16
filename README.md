@@ -1,7 +1,7 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
-+ [104주차]() `2016.07.12`
++ [104주차](http://bit.ly/29Kux3X) `2016.07.16`
  - [idr_init_cache() 진행중]()
  - kernel/lib/idr.c: idr_init_cache() 분석 완료
  - kernel/mm/slab_common.c: kmem_cache_create() 분석 완료
