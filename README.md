@@ -1,7 +1,7 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
-+ [105주차]() `2016.07.23`
++ [105주차](http://bit.ly/2a3LzHl) `2016.07.23`
  - [early_irq_init() 진행중]()
  - kernel/rcutree.c: rcu_init() 완료
  - kernel/rcutree_plugin.h: __rcu_init_preempt() 완료
