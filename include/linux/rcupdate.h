@@ -941,6 +941,7 @@ static inline notrace void rcu_read_unlock_sched_notrace(void)
  */
 // 2015-04-04
 // rcu_assign_pointer(NULL, n);
+// 2016-07-23
 #define rcu_assign_pointer(p, v) \
 	__rcu_assign_pointer((p), (v), __rcu)
 

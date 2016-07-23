@@ -71,6 +71,7 @@ struct radix_tree_node {
  * path as height 0 holds only 1 entry.
  */
 // 2015-12-12
+// 2016-07-23
 static unsigned long height_to_maxindex[RADIX_TREE_MAX_PATH/*6*/ + 1] __read_mostly;
 // radix_tree_init_maxindex() 함수에서 초기화함
 // height_to_maxindex[0] = 0x0000_0000 (1 ~ 0x1F)
@@ -81,9 +82,20 @@ static unsigned long height_to_maxindex[RADIX_TREE_MAX_PATH/*6*/ + 1] __read_mos
 // height_to_maxindex[5] = 0x01FF_FFFF
 // height_to_maxindex[6] = 0x03FF_FFFF
 
+// 2016-07-23
+// 다시 계산해보니, 아래와 같다.
+// height_to_maxindex[0] = 0x0000_0000 
+// height_to_maxindex[1] = 0x0000_003F 
+// height_to_maxindex[2] = 0x0000_0FFF 
+// height_to_maxindex[3] = 0x0003_FFFF
+// height_to_maxindex[4] = 0x00FF_FFFF  
+// height_to_maxindex[5] = 0x3FFF_FFFF
+// height_to_maxindex[6] = 0xFFFF_FFFF
+
 /*
  * Radix tree node cache.
  */
+// 2016-07-23
 static struct kmem_cache *radix_tree_node_cachep;
 
 /*
@@ -1537,16 +1549,26 @@ int radix_tree_tagged(struct radix_tree_root *root, unsigned int tag)
 }
 EXPORT_SYMBOL(radix_tree_tagged);
 
+// 2016-07-23
 static void
 radix_tree_node_ctor(void *node)
 {
 	memset(node, 0, sizeof(struct radix_tree_node));
 }
 
+// 2016-07-21
+// radix_tree_init_maxindex() 함수에서 초기화함
+// height_to_maxindex[0] = 0x0000_0000 
+// height_to_maxindex[1] = 0x0000_003F 
+// height_to_maxindex[2] = 0x0000_0FFF 
+// height_to_maxindex[3] = 0x0003_FFFF
+// height_to_maxindex[4] = 0x00FF_FFFF
+// height_to_maxindex[5] = 0x3FFF_FFFF
+// height_to_maxindex[6] = 0xFFFF_FFFF
 static __init unsigned long __maxindex(unsigned int height)
 {
-	unsigned int width = height * RADIX_TREE_MAP_SHIFT;
-	int shift = RADIX_TREE_INDEX_BITS - width;
+	unsigned int width = height * RADIX_TREE_MAP_SHIFT/*6*/;
+	int shift = RADIX_TREE_INDEX_BITS/*32*/ - width;
 
 	if (shift < 0)
 		return ~0UL;
@@ -1555,6 +1577,7 @@ static __init unsigned long __maxindex(unsigned int height)
 	return ~0UL >> shift;
 }
 
+// 2016-07-23
 static __init void radix_tree_init_maxindex(void)
 {
 	unsigned int i;
@@ -1563,6 +1586,8 @@ static __init void radix_tree_init_maxindex(void)
 		height_to_maxindex[i] = __maxindex(i);
 }
 
+// 2016-07-23
+// hotcpu_notifier(radix_tree_callback, 0);
 static int radix_tree_callback(struct notifier_block *nfb,
                             unsigned long action,
                             void *hcpu)
@@ -1583,8 +1608,10 @@ static int radix_tree_callback(struct notifier_block *nfb,
        return NOTIFY_OK;
 }
 
+// 2016-07-23
 void __init radix_tree_init(void)
 {
+	// cache 설정
 	radix_tree_node_cachep = kmem_cache_create("radix_tree_node",
 			sizeof(struct radix_tree_node), 0,
 			SLAB_PANIC | SLAB_RECLAIM_ACCOUNT,

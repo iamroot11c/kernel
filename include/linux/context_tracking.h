@@ -64,9 +64,10 @@ static inline void context_tracking_task_switch(struct task_struct *prev,
 #endif /* !CONFIG_CONTEXT_TRACKING */
 
 
-#ifdef CONFIG_CONTEXT_TRACKING_FORCE
+#ifdef CONFIG_CONTEXT_TRACKING_FORCE    // =n
 extern void context_tracking_init(void);
 #else
+// 2016-07-23
 static inline void context_tracking_init(void) { }
 #endif /* CONFIG_CONTEXT_TRACKING_FORCE */
 

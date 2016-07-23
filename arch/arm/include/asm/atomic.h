@@ -28,7 +28,9 @@
  * atomic_set() is the clrex or dummy strex done on every exception return.
  */
 // volatile의 의미: Cache의 값을 가져오지 않고, 직접 Memory에 접근해서 가져온다.
+// 2016-07-23
 #define atomic_read(v)	(*(volatile int *)&(v)->counter)
+// 2016-07-23
 #define atomic_set(v,i)	(((v)->counter) = (i))
 
 // atomic_set 매크로가 ldrex/strex 대신 단일 str 명령으로 구현된 이유조회 수 

@@ -25,6 +25,7 @@
 #define LONG_MIN	(-LONG_MAX - 1)
 #define ULONG_MAX	(~0UL)
 // 2016-07-16
+// 0x7FFFFFFF
 #define LLONG_MAX	((long long)(~0ULL>>1))
 #define LLONG_MIN	(-LLONG_MAX - 1)
 #define ULLONG_MAX	(~0ULL)
@@ -434,6 +435,7 @@ extern int root_mountflags;
 extern bool early_boot_irqs_disabled;
 
 /* Values used for system_state */
+// 2016-07-23
 extern enum system_states {
 	SYSTEM_BOOTING,
 	SYSTEM_RUNNING,

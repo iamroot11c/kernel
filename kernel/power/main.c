@@ -20,12 +20,24 @@
 
 DEFINE_MUTEX(pm_mutex);
 
-#ifdef CONFIG_PM_SLEEP
+#ifdef CONFIG_PM_SLEEP	// =y
 
 /* Routines for PM-transition notifications */
 
+// 2016-07-23
+//  #define BLOCKING_NOTIFIER_HEAD(name)                \
+//     struct blocking_notifier_head pm_chain_head =            \
+//         { .rwsem = __RWSEM_INITIALIZER((pm_chain_head).rwsem, 
+//           .head = NULL }
+
+// #define BLOCKING_NOTIFIER_INIT(name) {              \
+//         .rwsem = __RWSEM_INITIALIZER((name).rwsem), \
+//         .head = NULL }
 static BLOCKING_NOTIFIER_HEAD(pm_chain_head);
 
+// 2016-07-23
+// register_pm_notifier(&rcu_pm_notify_nb);
+// pm notifier는 동기화를 고려하고 있다.
 int register_pm_notifier(struct notifier_block *nb)
 {
 	return blocking_notifier_chain_register(&pm_chain_head, nb);

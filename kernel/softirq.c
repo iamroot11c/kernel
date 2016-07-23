@@ -54,6 +54,7 @@ EXPORT_SYMBOL(irq_stat);
 #endif
 
 // 2016-07-09
+// 2016-07-23
 static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp;
 
 DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
@@ -414,6 +415,8 @@ void __raise_softirq_irqoff(unsigned int nr)
 }
 
 // 2016-07-01
+// 2016-07-23
+// open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
 void open_softirq(int nr, void (*action)(struct softirq_action *))
 {
 	softirq_vec[nr].action = action;

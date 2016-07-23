@@ -48,6 +48,10 @@ void cpu_maps_update_done(void)
 //     struct raw_notifier_head name =             \
 //         RAW_NOTIFIER_INIT(name)
 // 2016-05-28
+// 2016-07-23
+// #define RAW_NOTIFIER_INIT(name) {               \
+//         .head = NULL }
+// struct raw_notifier_head cpu_chain = { .head = NULL };
 static RAW_NOTIFIER_HEAD(cpu_chain);
 
 /* If set, cpu_up and cpu_down will return -EBUSY and do nothing.
@@ -179,6 +183,10 @@ void cpu_hotplug_enable(void)
 // register_cpu_notifier(&slab_notifier)
 // 2016-07-01
 // register_cpu_notifier(&fn##_nb);
+// 2016-07-23
+// register_cpu_notifier(&rcu_cpu_notify_nb); 
+// 2016-07-23
+// register_cpu_notifier(&radix_tree_callback_nb);
 int __ref register_cpu_notifier(struct notifier_block *nb)
 {
 	int ret;

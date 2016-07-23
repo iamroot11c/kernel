@@ -115,8 +115,29 @@ static void __init rcu_bootup_announce_oddness(void)
 #endif /* #ifdef CONFIG_RCU_NOCB_CPU */
 }
 
-#ifdef CONFIG_TREE_PREEMPT_RCU
+#ifdef CONFIG_TREE_PREEMPT_RCU      // =y
 
+// 2016-07-23
+/**
+ * #define RCU_STATE_INITIALIZER(sname, sabbr, cr) \
+ * static char rcu_preempt_varname[] = #sname; \
+ * static const char *tp_rcu_preempt_varname __used __tracepoint_string = rcu_preempt_varname; \
+ * struct rcu_state rcu_preempt_state = { \
+ *         .level = { &rcu_preempt_state.node[0] }, \
+ *         .call = call_rcu, \
+ *         .fqs_state = RCU_GP_IDLE, \
+ *         .gpnum = 0UL - 300UL, \
+ *         .completed = 0UL - 300UL, \
+ *         .orphan_lock = __RAW_SPIN_LOCK_UNLOCKED(&rcu_preempt_state.orphan_lock), \
+ *         .orphan_nxttail = &rcu_preempt_state.orphan_nxtlist, \
+ *         .orphan_donetail = &rcu_preempt_state.orphan_donelist, \
+ *         .barrier_mutex = __MUTEX_INITIALIZER(rcu_preempt_state.barrier_mutex), \
+ *         .onoff_mutex = __MUTEX_INITIALIZER(rcu_preempt_state.onoff_mutex), \
+ *         .name = rcu_preempt_varname, \
+ *         .abbr = 'p', \
+ *  }; \
+ * DEFINE_PER_CPU(struct rcu_data, sname##_data)
+*/
 RCU_STATE_INITIALIZER(rcu_preempt, 'p', call_rcu);
 static struct rcu_state *rcu_state = &rcu_preempt_state;
 
@@ -938,8 +959,10 @@ EXPORT_SYMBOL_GPL(rcu_barrier);
 /*
  * Initialize preemptible RCU's state structures.
  */
+// 2016-07-23
 static void __init __rcu_init_preempt(void)
 {
+    // rcutree_plugin.h에 rcu_preempt_state 정의
 	rcu_init_one(&rcu_preempt_state, &rcu_preempt_data);
 }
 
@@ -968,7 +991,6 @@ static struct rcu_state *rcu_state = &rcu_sched_state;
 /*
  * Tell them what RCU they are running.
  */
-// 2016-07-16
 static void __init rcu_bootup_announce(void)
 {
 	pr_info("Hierarchical RCU implementation.\n");
@@ -1140,7 +1162,7 @@ void exit_rcu(void)
 
 #endif /* #else #ifdef CONFIG_TREE_PREEMPT_RCU */
 
-#ifdef CONFIG_RCU_BOOST
+#ifdef CONFIG_RCU_BOOST     // =n
 
 #include "rtmutex_common.h"
 
@@ -1561,6 +1583,7 @@ static int __init rcu_scheduler_really_started(void)
 }
 early_initcall(rcu_scheduler_really_started);
 
+// 2016-07-21
 static void rcu_prepare_kthreads(int cpu)
 {
 }
@@ -2400,7 +2423,7 @@ static void rcu_kick_nohz_cpu(int cpu)
 }
 
 
-#ifdef CONFIG_NO_HZ_FULL_SYSIDLE
+#ifdef CONFIG_NO_HZ_FULL_SYSIDLE    // =n
 
 /*
  * Define RCU flavor that holds sysidle state.  This needs to be the
@@ -2815,6 +2838,7 @@ static void rcu_sysidle_report_gp(struct rcu_state *rsp, int isidle,
 {
 }
 
+// 2016-07-23
 static void rcu_sysidle_init_percpu_data(struct rcu_dynticks *rdtp)
 {
 }

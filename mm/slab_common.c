@@ -273,6 +273,11 @@ out_locked:
 // kmem_cache_create("idr_layer_cache",
 //                   sizeof(struct idr_layer), 0, SLAB_PANIC, NULL);
 struct kmem_cache *
+// 206-07-23
+// radix_tree_node_cachep = kmem_cache_create("radix_tree_node",
+//                         sizeof(struct radix_tree_node), 0,
+//                         SLAB_PANIC | SLAB_RECLAIM_ACCOUNT,
+//                         radix_tree_node_ctor);
 kmem_cache_create(const char *name, size_t size, size_t align,
 		  unsigned long flags, void (*ctor)(void *))
 {

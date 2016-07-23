@@ -401,7 +401,8 @@ do {									\
  */
 // 2016-07-16
 struct rcu_state {
-	struct rcu_node node[NUM_RCU_NODES];	/* Hierarchy. */
+    // 2016-07-23
+	struct rcu_node node[NUM_RCU_NODES/*1*/];	/* Hierarchy. */
 	struct rcu_node *level[RCU_NUM_LVLS];	/* Hierarchy levels. */
 	u32 levelcnt[MAX_RCU_LVLS + 1];		/* # nodes in each level. */
 	u8 levelspread[RCU_NUM_LVLS];		/* kids/node in each level. */
@@ -471,6 +472,7 @@ struct rcu_state {
 						/*  jiffies. */
 	const char *name;			/* Name of structure. */
 	char abbr;				/* Abbreviated name. */
+    // 2016-07-23
 	struct list_head flavors;		/* List of RCU flavors. */
 	struct irq_work wakeup_work;		/* Postponed wakeups */
 };
@@ -509,8 +511,10 @@ DECLARE_PER_CPU(struct rcu_data, rcu_sched_data);
 extern struct rcu_state rcu_bh_state;
 DECLARE_PER_CPU(struct rcu_data, rcu_bh_data);
 
-#ifdef CONFIG_TREE_PREEMPT_RCU
+// 2016-07-23
+#ifdef CONFIG_TREE_PREEMPT_RCU // =y
 extern struct rcu_state rcu_preempt_state;
+// struct rcu_data rcu_preempt_data;
 DECLARE_PER_CPU(struct rcu_data, rcu_preempt_data);
 #endif /* #ifdef CONFIG_TREE_PREEMPT_RCU */
 
@@ -556,6 +560,7 @@ static void rcu_preempt_do_callbacks(void);
 static int rcu_spawn_one_boost_kthread(struct rcu_state *rsp,
 						 struct rcu_node *rnp);
 #endif /* #ifdef CONFIG_RCU_BOOST */
+// 2016-07-23
 static void rcu_prepare_kthreads(int cpu);
 static void rcu_cleanup_after_idle(int cpu);
 static void rcu_prepare_for_idle(int cpu);
