@@ -7,8 +7,8 @@
  */
 #include <linux/irqdesc.h>
 
-#ifdef CONFIG_SPARSE_IRQ
-# define IRQ_BITMAP_BITS	(NR_IRQS + 8196)
+#ifdef CONFIG_SPARSE_IRQ // defined
+# define IRQ_BITMAP_BITS	(NR_IRQS/*16*/ + 8196) // 8212
 #else
 # define IRQ_BITMAP_BITS	NR_IRQS
 #endif

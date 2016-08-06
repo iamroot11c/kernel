@@ -241,6 +241,7 @@ struct kmem_cache {
 /* Maximum size for which we actually use a slab cache */
 // 2016-03-19  
 // 분석 타겟 기준으로 slub할당자를 사용하므로 2page(8k byte)할당 가능
+// 2016-08-06
 #define KMALLOC_MAX_CACHE_SIZE	(1UL << KMALLOC_SHIFT_HIGH)
 /* Maximum order allocatable via the slab allocagtor */
 #define KMALLOC_MAX_ORDER	(KMALLOC_SHIFT_MAX - PAGE_SHIFT)
@@ -459,11 +460,15 @@ static __always_inline int kmalloc_size(int n)
 	return 0;
 }
 
+// 2016-08-06
+// (sizeof(*desc), GFP_KERNEL|__GFP_ZERO, 0)
 static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
 {
-#ifndef CONFIG_SLOB
+#ifndef CONFIG_SLOB // not define
+    // 2016-08-06 첫 번째 인자인 `sizeof(*desc)`가 constant 아니어서
+    // __kmalloc_node() 함수 분석
 	if (__builtin_constant_p(size) &&
-		size <= KMALLOC_MAX_CACHE_SIZE && !(flags & GFP_DMA)) {
+		size <= KMALLOC_MAX_CACHE_SIZE/*2page(8k byte)*/ && !(flags & GFP_DMA)) {
 		int i = kmalloc_index(size);
 
 		if (!i)
@@ -690,6 +695,8 @@ static inline void *kzalloc(size_t size, gfp_t flags)
  * @flags: the type of memory to allocate (see kmalloc).
  * @node: memory node from which to allocate
  */
+// 2016-08-06
+// kzalloc_node(sizeof(*desc), GFP_KERNEL, 0)
 static inline void *kzalloc_node(size_t size, gfp_t flags, int node)
 {
 	return kmalloc_node(size, flags | __GFP_ZERO, node);

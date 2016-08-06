@@ -14,6 +14,7 @@
 // 2015-08-29
 // 2016-01-23;
 // 2016-05-25
+// 2016-08-06
 typedef struct cpumask { DECLARE_BITMAP(bits, NR_CPUS/*2*/)/*1*/; } cpumask_t;
 // typedef struct cpumask { unsigned long bits[BITS_TO_LONGS(NR_CPUS)]; } cpumask_t;
 
@@ -25,6 +26,7 @@ typedef struct cpumask { DECLARE_BITMAP(bits, NR_CPUS/*2*/)/*1*/; } cpumask_t;
  * a macro so it's const-correct.
  */
 // 2016-01-23;
+// 2016-08-06
 #define cpumask_bits(maskp) ((maskp)->bits)
 
 #if NR_CPUS == 1
@@ -34,7 +36,7 @@ typedef struct cpumask { DECLARE_BITMAP(bits, NR_CPUS/*2*/)/*1*/; } cpumask_t;
 extern int nr_cpu_ids; 
 #endif
 
-#ifdef CONFIG_CPUMASK_OFFSTACK
+#ifdef CONFIG_CPUMASK_OFFSTACK // not define
 /* Assuming NR_CPUS is huge, a runtime limit is more efficient.  Also,
  * not all bits may be allocated. */
 #define nr_cpumask_bits	nr_cpu_ids
@@ -345,6 +347,8 @@ static inline int cpumask_test_and_clear_cpu(int cpu, struct cpumask *cpumask)
  * cpumask_setall - set all cpus (< nr_cpu_ids) in a cpumask
  * @dstp: the cpumask pointer
  */
+// 2016-08-06
+// cpumask_setall(irq_default_affinity);
 static inline void cpumask_setall(struct cpumask *dstp)
 {
 	bitmap_fill(cpumask_bits(dstp), nr_cpumask_bits);
@@ -355,6 +359,7 @@ static inline void cpumask_setall(struct cpumask *dstp)
  * @dstp: the cpumask pointer
  */
 // 2016-07-01
+// 2016-08-06
 static inline void cpumask_clear(struct cpumask *dstp)
 {
 	bitmap_zero(cpumask_bits(dstp), nr_cpumask_bits);
@@ -734,8 +739,10 @@ void free_bootmem_cpumask_var(cpumask_var_t mask);
 #else
 // 2015-08-29
 // 2016-06-25
+// 2016-08-06
 typedef struct cpumask cpumask_var_t[1];
 
+// 2016-08-06
 static inline bool alloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
 {
 	return true;
@@ -749,12 +756,15 @@ static inline bool alloc_cpumask_var_node(cpumask_var_t *mask, gfp_t flags,
 }
 
 // 2016-07-01
+// 2016-08-06
 static inline bool zalloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
 {
 	cpumask_clear(*mask);
 	return true;
 }
 
+// 2016-08-06
+// zalloc_cpumask_var_node(&desc->irq_data.affinity, GFP_KERNEL, node)
 static inline bool zalloc_cpumask_var_node(cpumask_var_t *mask, gfp_t flags,
 					  int node)
 {

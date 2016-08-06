@@ -113,9 +113,16 @@ void set_irq_flags(unsigned int irq, unsigned int iflags)
 }
 EXPORT_SYMBOL_GPL(set_irq_flags);
 
+// 2016-08-06
 void __init init_IRQ(void)
 {
-	if (IS_ENABLED(CONFIG_OF) && !machine_desc->init_irq)
+	// 2016-08-06
+	// early_irq_init() 함수에서
+	// irq 개수만큼 struct irq_desc 생성 및 radix tree에 추가함
+
+	// 2016-08-06 exnos5420에는 init_irq 미 정의
+	// (arch/arm/mach-exynos/mach-exynos5-dt.c 참고)
+	if (IS_ENABLED(CONFIG_OF/*defined*/) && !machine_desc->init_irq)
 		irqchip_init();
 	else
 		machine_desc->init_irq();
@@ -131,10 +138,11 @@ void __init set_handle_irq(void (*handle_irq)(struct pt_regs *))
 }
 #endif
 
-#ifdef CONFIG_SPARSE_IRQ
+#ifdef CONFIG_SPARSE_IRQ // defined
+// 2016-08-06
 int __init arch_probe_nr_irqs(void)
 {
-	nr_irqs = machine_desc->nr_irqs ? machine_desc->nr_irqs : NR_IRQS;
+	nr_irqs = machine_desc->nr_irqs ? machine_desc->nr_irqs : NR_IRQS/*16*/;
 	return nr_irqs;
 }
 #endif

@@ -21,6 +21,10 @@
  * @compstr: compatible string of the irqchip driver
  * @fn: initialization function
  */
+// 2016-08-06
+// IRQCHIP_DECLARE(exynos4210_combiner, "samsung,exynos4210-combiner",
+//                 combiner_of_init);
+//
 #define IRQCHIP_DECLARE(name,compstr,fn)				\
 	static const struct of_device_id irqchip_of_match_##name	\
 	__used __section(__irqchip_of_table)				\

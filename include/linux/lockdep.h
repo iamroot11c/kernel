@@ -397,6 +397,7 @@ static inline void lockdep_on(void)
 # define lockdep_info()				do { } while (0)
 # define lockdep_init_map(lock, name, key, sub) \
 		do { (void)(name); (void)(key); } while (0)
+// 2016-08-06
 # define lockdep_set_class(lock, key)		do { (void)(key); } while (0)
 // 2016-07-16
 # define lockdep_set_class_and_name(lock, key, name) \

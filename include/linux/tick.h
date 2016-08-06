@@ -13,7 +13,7 @@
 #include <linux/context_tracking_state.h>
 #include <linux/cpumask.h>
 
-#ifdef CONFIG_GENERIC_CLOCKEVENTS
+#ifdef CONFIG_GENERIC_CLOCKEVENTS // defined
 
 enum tick_device_mode {
 	TICKDEV_MODE_PERIODIC,

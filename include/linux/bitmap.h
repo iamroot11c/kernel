@@ -186,6 +186,8 @@ static inline void bitmap_zero(unsigned long *dst, int nbits)
 	}
 }
 // 2015-03-21 확인
+// 2016-08-06
+// bitmap_fill(cpumask_bits(dstp), nr_cpumask_bits/*2*/)
 static inline void bitmap_fill(unsigned long *dst, int nbits)
 {
 	size_t nlongs = BITS_TO_LONGS(nbits);

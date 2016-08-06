@@ -29,6 +29,7 @@
 
 LIST_HEAD(aliases_lookup);
 
+// 2016-08-06
 struct device_node *of_allnodes;
 EXPORT_SYMBOL(of_allnodes);
 struct device_node *of_chosen;
@@ -40,6 +41,9 @@ DEFINE_MUTEX(of_aliases_mutex);
 /* use when traversing tree through the allnext, child, sibling,
  * or parent members of struct device_node.
  */
+// 2016-08-06
+// #define DEFINE_RAW_SPINLOCK(x)  raw_spinlock_t x = __RAW_SPIN_LOCK_UNLOCKED(x)
+// raw_spinlock_t devtree_lock = __RAW_SPIN_LOCK_UNLOCKED(devtree_lock);
 DEFINE_RAW_SPINLOCK(devtree_lock);
 
 int of_n_addr_cells(struct device_node *np)
@@ -720,6 +724,8 @@ out:
 }
 EXPORT_SYMBOL(of_find_node_with_property);
 
+// 2016-08-06
+// name, type, compatible 모두 맞는 것을 찾음
 static
 const struct of_device_id *__of_match_node(const struct of_device_id *matches,
 					   const struct device_node *node)
@@ -778,6 +784,8 @@ EXPORT_SYMBOL(of_match_node);
  *	Returns a node pointer with refcount incremented, use
  *	of_node_put() on it when done.
  */
+// 2016-08-06
+// of_find_matching_node_and_match(NULL, matches, NULL)
 struct device_node *of_find_matching_node_and_match(struct device_node *from,
 					const struct of_device_id *matches,
 					const struct of_device_id **match)
@@ -791,6 +799,11 @@ struct device_node *of_find_matching_node_and_match(struct device_node *from,
 
 	raw_spin_lock_irqsave(&devtree_lock, flags);
 	np = from ? from->allnext : of_allnodes;
+	// 2016-08-06 of_allnodes 변수는
+	// of_attach_node() 또는 of_detach_node() 함수에서
+	// 설정하는데 아직까지 두 함수가 호출되지 않음
+	//
+	// 그래서 of_allnodes는 현재 NULL 일 것 같음
 	for (; np; np = np->allnext) {
 		m = __of_match_node(matches, np);
 		if (m && of_node_get(np)) {
@@ -799,7 +812,7 @@ struct device_node *of_find_matching_node_and_match(struct device_node *from,
 			break;
 		}
 	}
-	of_node_put(from);
+	of_node_put(from); // No OP.
 	raw_spin_unlock_irqrestore(&devtree_lock, flags);
 	return np;
 }

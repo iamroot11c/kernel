@@ -1,12 +1,14 @@
 #ifndef __ASM_ARM_IRQ_H
 #define __ASM_ARM_IRQ_H
 
+// 2016-08-06
 #define NR_IRQS_LEGACY	16
 
-#ifndef CONFIG_SPARSE_IRQ
+#ifndef CONFIG_SPARSE_IRQ // defined
 #include <mach/irqs.h>
 #else
-#define NR_IRQS NR_IRQS_LEGACY
+// 2016-08-06
+#define NR_IRQS NR_IRQS_LEGACY/*16*/
 #endif
 
 #ifndef irq_canonicalize

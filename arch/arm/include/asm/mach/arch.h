@@ -25,6 +25,7 @@ struct smp_operations;
 #define smp_init_ops(ops) (bool (*)(void))NULL
 #endif
 
+// 2016-08-06
 struct machine_desc {
 	unsigned int		nr;		/* architecture number	*/
 	const char		*name;		/* architecture name	*/
@@ -65,6 +66,7 @@ struct machine_desc {
 /*
  * Current machine - only accessible during boot.
  */
+// 2016-08-06
 extern const struct machine_desc *machine_desc;
 
 /*

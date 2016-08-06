@@ -61,22 +61,24 @@ EXPORT_SYMBOL(jiffies_64);
  */
 #define TVN_BITS (CONFIG_BASE_SMALL ? 4 : 6) // 6
 #define TVR_BITS (CONFIG_BASE_SMALL ? 6 : 8) // 8
-#define TVN_SIZE (1 << TVN_BITS) // 1 << 6
-#define TVR_SIZE (1 << TVR_BITS)
+// 2016-08-06
+#define TVN_SIZE (1 << TVN_BITS) // 64 = 1 << 6
+#define TVR_SIZE (1 << TVR_BITS) // 256 = 1 << 8
 #define TVN_MASK (TVN_SIZE - 1)
 #define TVR_MASK (TVR_SIZE - 1)
 #define MAX_TVAL ((unsigned long)((1ULL << (TVR_BITS + 4*TVN_BITS)) - 1))
 
 struct tvec {
-	struct list_head vec[TVN_SIZE];
+	struct list_head vec[TVN_SIZE/*64*/];
 };
 
 struct tvec_root {
-	struct list_head vec[TVR_SIZE];
+	struct list_head vec[TVR_SIZE/*256*/];
 };
 
 // 2015-09-05;
 // 2015-09-12;
+// 2016-08-06
 struct tvec_base {
 	spinlock_t lock;
 	struct timer_list *running_timer;
@@ -90,6 +92,7 @@ struct tvec_base {
 	struct tvec tv5;
 } ____cacheline_aligned;
 
+// 2016-08-06
 struct tvec_base boot_tvec_bases;
 EXPORT_SYMBOL(boot_tvec_bases);
 static DEFINE_PER_CPU(struct tvec_base *, tvec_bases) = &boot_tvec_bases;
@@ -1558,13 +1561,21 @@ signed long __sched schedule_timeout_uninterruptible(signed long timeout)
 }
 EXPORT_SYMBOL(schedule_timeout_uninterruptible);
 
+// 2016-08-06
+// init_timers_cpu((void *)(long)smp_processor_id())
 static int init_timers_cpu(int cpu)
 {
 	int j;
 	struct tvec_base *base;
+	// tvec_base_done은 static 지역 변수
 	static char tvec_base_done[NR_CPUS];
 
+	// 2016-08-06 
+	// init_timers_cpu() 함수가 처음 호출되어
+	// 해당 cpu의 base는 초기화 설정이 되어있지 않음
+	// (해당 cpu의 base가 NULL 상태)
 	if (!tvec_base_done[cpu]) {
+		// boot_done은 static 지역 변수
 		static char boot_done;
 
 		if (boot_done) {
@@ -1591,6 +1602,9 @@ static int init_timers_cpu(int cpu)
 			 * ready yet and because the memory allocators are not
 			 * initialised either.
 			 */
+			// 2016-08-06
+			// 이 함수가 처음 호출되어 아래와 같이
+			// 설정됨
 			boot_done = 1;
 			base = &boot_tvec_bases;
 		}
@@ -1600,14 +1614,15 @@ static int init_timers_cpu(int cpu)
 		base = per_cpu(tvec_bases, cpu);
 	}
 
-
-	for (j = 0; j < TVN_SIZE; j++) {
+	// 2016-08-06 boot_tvec_bases를 초기화함
+	for (j = 0; j < TVN_SIZE/*64*/; j++) {
+		// 리스트를 초기화하는데 역순으로 함
 		INIT_LIST_HEAD(base->tv5.vec + j);
 		INIT_LIST_HEAD(base->tv4.vec + j);
 		INIT_LIST_HEAD(base->tv3.vec + j);
 		INIT_LIST_HEAD(base->tv2.vec + j);
 	}
-	for (j = 0; j < TVR_SIZE; j++)
+	for (j = 0; j < TVR_SIZE/*256*/; j++)
 		INIT_LIST_HEAD(base->tv1.vec + j);
 
 	base->timer_jiffies = jiffies;
@@ -1663,6 +1678,16 @@ static void migrate_timers(int cpu)
 }
 #endif /* CONFIG_HOTPLUG_CPU */
 
+
+// 2016-08-06
+// static struct notifier_block timers_nb = {
+//         .notifier_call  = timer_cpu_notify,
+// };
+//
+// timers_nb 전역변수에서 notifier_call 함수 포인터 멤버에 등록됨
+//
+// timer_cpu_notify(&timers_nb, (unsigned long)CPU_UP_PREPARE,
+//                     (void *)(long)smp_processor_id())
 static int timer_cpu_notify(struct notifier_block *self,
 				unsigned long action, void *hcpu)
 {
@@ -1670,9 +1695,11 @@ static int timer_cpu_notify(struct notifier_block *self,
 	int err;
 
 	switch(action) {
+	// 2016-08-06 action은 CPU_UP_PREPARE 이다
 	case CPU_UP_PREPARE:
 	case CPU_UP_PREPARE_FROZEN:
 		err = init_timers_cpu(cpu);
+		// 2016-08-06 여기까지 진행
 		if (err < 0)
 			return notifier_from_errno(err);
 		break;
@@ -1688,11 +1715,12 @@ static int timer_cpu_notify(struct notifier_block *self,
 	return NOTIFY_OK;
 }
 
+// 2016-08-06
 static struct notifier_block timers_nb = {
 	.notifier_call	= timer_cpu_notify,
 };
 
-
+// 2016-08-06 시작
 void __init init_timers(void)
 {
 	int err;
@@ -1700,6 +1728,7 @@ void __init init_timers(void)
 	/* ensure there are enough low bits for flags in timer->base pointer */
 	BUILD_BUG_ON(__alignof__(struct tvec_base) & TIMER_FLAG_MASK);
 
+        // 2016-08-06 시작
 	err = timer_cpu_notify(&timers_nb, (unsigned long)CPU_UP_PREPARE,
 			       (void *)(long)smp_processor_id());
 	init_timer_stats();

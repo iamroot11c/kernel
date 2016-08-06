@@ -1,6 +1,17 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [106주차]() `2016.08.06`
+ - [init_timers() 진행중]()
+ - kernel/timer.c:init_timers() 진행 중
+ - kernel/timer.c:timer_cpu_notify() 진행 중
+ - kernel/timer.c:init_timers_cpu() 분석 완료
+ - kernel/irq/irqdesc.c:early_irq_init() 완료
+ - arch/arm/kernel/irq.c:init_IRQ() 완료
+ - kernel/time/tick-common.c:tick_init() 완료
+
+ - 차주 early_irq_init() 진행 예정
+
 + [105주차](http://bit.ly/2a3LzHl) `2016.07.23`
  - [early_irq_init() 진행중]()
  - kernel/rcutree.c: rcu_init() 완료

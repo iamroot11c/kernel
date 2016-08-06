@@ -27,12 +27,15 @@
  * Broadcast support for broken x86 hardware, where the local apic
  * timer stops in C3 state.
  */
-
 static struct tick_device tick_broadcast_device;
+// 2016-08-06
 static cpumask_var_t tick_broadcast_mask;
+// 2016-08-06
 static cpumask_var_t tick_broadcast_on;
+// 2016-08-06
 static cpumask_var_t tmpmask;
 static DEFINE_RAW_SPINLOCK(tick_broadcast_lock);
+// 2016-08-06
 static int tick_broadcast_force;
 
 #ifdef CONFIG_TICK_ONESHOT
@@ -473,8 +476,11 @@ int tick_resume_broadcast(void)
 
 #ifdef CONFIG_TICK_ONESHOT
 
+// 2016-08-06
 static cpumask_var_t tick_broadcast_oneshot_mask;
+// 2016-08-06
 static cpumask_var_t tick_broadcast_pending_mask;
+// 2016-08-06
 static cpumask_var_t tick_broadcast_force_mask;
 
 /*
@@ -874,12 +880,14 @@ bool tick_broadcast_oneshot_available(void)
 
 #endif
 
+// 2016-08-06
+// zalloc_cpumask_var() 함수는 첫 번째 인자의 비트맵을 클리어 함
 void __init tick_broadcast_init(void)
 {
 	zalloc_cpumask_var(&tick_broadcast_mask, GFP_NOWAIT);
 	zalloc_cpumask_var(&tick_broadcast_on, GFP_NOWAIT);
 	zalloc_cpumask_var(&tmpmask, GFP_NOWAIT);
-#ifdef CONFIG_TICK_ONESHOT
+#ifdef CONFIG_TICK_ONESHOT // defined
 	zalloc_cpumask_var(&tick_broadcast_oneshot_mask, GFP_NOWAIT);
 	zalloc_cpumask_var(&tick_broadcast_pending_mask, GFP_NOWAIT);
 	zalloc_cpumask_var(&tick_broadcast_force_mask, GFP_NOWAIT);

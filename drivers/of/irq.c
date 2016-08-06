@@ -410,6 +410,8 @@ struct intc_desc {
  * This function scans the device tree for matching interrupt controller nodes,
  * and calls their initialization functions in order with parents first.
  */
+// 2016-08-06
+// of_irq_init(__irqchip_begin)
 void __init of_irq_init(const struct of_device_id *matches)
 {
 	struct device_node *np, *parent = NULL;
@@ -419,6 +421,15 @@ void __init of_irq_init(const struct of_device_id *matches)
 	INIT_LIST_HEAD(&intc_desc_list);
 	INIT_LIST_HEAD(&intc_parent_list);
 
+	//#define for_each_matching_node(dn, matches) \
+	//   for (dn = of_find_matching_node(NULL, matches); dn; \
+	//         dn = of_find_matching_node(dn, matches))
+	//
+	// for (np = of_find_matching_node(NULL, matches); np;
+	//       np = of_find_matching_node(np, matches))
+	//
+	// of_find_matching_node_and_match() 함수에서 
+	// of_allnodes 전역 변수가 NULL 이어서 아래의 for 문 실행 안됨
 	for_each_matching_node(np, matches) {
 		if (!of_find_property(np, "interrupt-controller", NULL))
 			continue;
@@ -442,6 +453,7 @@ void __init of_irq_init(const struct of_device_id *matches)
 	 * That one goes first, followed by the controllers that reference it,
 	 * followed by the ones that reference the 2nd level controllers, etc.
 	 */
+	// 2016-08-06 위 for 문이 실행되지 않아 intc_desc_list가 구성되지 않음
 	while (!list_empty(&intc_desc_list)) {
 		/*
 		 * Process all controllers with the current 'parent'.
@@ -494,6 +506,7 @@ void __init of_irq_init(const struct of_device_id *matches)
 		kfree(desc);
 	}
 
+	// 2016-08-06 intc_desc_list, intc_parent_list 구성 안됨
 	list_for_each_entry_safe(desc, temp_desc, &intc_parent_list, list) {
 		list_del(&desc->list);
 		kfree(desc);

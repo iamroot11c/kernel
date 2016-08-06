@@ -11,6 +11,7 @@ struct tvec_base;
 
 // 2015-09-05;
 // 2015-09-12;
+// 2016-08-06
 struct timer_list {
 	/*
 	 * All fields that change during normal runtime grouped to the
@@ -25,12 +26,12 @@ struct timer_list {
 
 	int slack;
 
-#ifdef CONFIG_TIMER_STATS
+#ifdef CONFIG_TIMER_STATS // not define
 	int start_pid;
 	void *start_site;
 	char start_comm[16];
 #endif
-#ifdef CONFIG_LOCKDEP
+#ifdef CONFIG_LOCKDEP // not define
 	struct lockdep_map lockdep_map;
 #endif
 };
@@ -70,6 +71,7 @@ extern struct tvec_base boot_tvec_bases;
 #define TIMER_DEFERRABLE		0x1LU
 #define TIMER_IRQSAFE			0x2LU
 
+// 2016-08-06
 #define TIMER_FLAG_MASK			0x3LU
 
 #define __TIMER_INITIALIZER(_function, _expires, _data, _flags) { \

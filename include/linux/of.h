@@ -44,6 +44,7 @@ struct of_irq_controller;
 #endif
 
 // 2015-02-07
+// 2016-08-06
 struct device_node {
 	const char *name;
 	const char *type;
@@ -61,7 +62,7 @@ struct device_node {
 	struct	kref kref;              // atomic_t refcount;
 	unsigned long _flags;
 	void	*data;
-#if defined(CONFIG_SPARC)
+#if defined(CONFIG_SPARC) // not define
 	const char *path_component_name;
 	unsigned int unique_id;
 	struct of_irq_controller *irq_trans;
@@ -75,7 +76,7 @@ struct of_phandle_args {
 	uint32_t args[MAX_PHANDLE_ARGS];
 };
 
-#ifdef CONFIG_OF_DYNAMIC
+#ifdef CONFIG_OF_DYNAMIC // not define
 extern struct device_node *of_node_get(struct device_node *node);
 extern void of_node_put(struct device_node *node);
 #else /* CONFIG_OF_DYNAMIC */
@@ -85,6 +86,7 @@ static inline struct device_node *of_node_get(struct device_node *node)
 {
 	return node;
 }
+// 2016-08-06
 static inline void of_node_put(struct device_node *node) { }
 #endif /* !CONFIG_OF_DYNAMIC */
 
@@ -188,12 +190,15 @@ extern struct device_node *of_find_matching_node_and_match(
 	struct device_node *from,
 	const struct of_device_id *matches,
 	const struct of_device_id **match);
+// 2016-08-06
+// of_find_matching_node(NULL, matches)
 static inline struct device_node *of_find_matching_node(
 	struct device_node *from,
 	const struct of_device_id *matches)
 {
 	return of_find_matching_node_and_match(from, matches, NULL);
 }
+// 2016-08-06
 #define for_each_matching_node(dn, matches) \
 	for (dn = of_find_matching_node(NULL, matches); dn; \
 	     dn = of_find_matching_node(dn, matches))

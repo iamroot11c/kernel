@@ -220,6 +220,7 @@ struct serio_device_id {
 /*
  * Struct used for matching a device
  */
+// 2016-08-06
 struct of_device_id
 {
 	char	name[32];

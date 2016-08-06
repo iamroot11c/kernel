@@ -885,6 +885,12 @@ early_initcall(spawn_ksoftirqd);
  *   GCC does not inline them incorrectly. ]
  */
 
+// 2016-08-06
+// `weak` 속성을 사용하여 아래의 
+// early_irq_init() 함수는 weak symbol이다
+//
+// 이 함수를 다른 라이브러리에서 정의를 하면
+// 이 함수 대신 새롭게 정의한 함수가 호출이 됩니다
 int __init __weak early_irq_init(void)
 {
 	return 0;
@@ -895,6 +901,7 @@ int __init __weak arch_probe_nr_irqs(void)
 	return NR_IRQS_LEGACY;
 }
 
+// 2016-08-06
 int __init __weak arch_early_irq_init(void)
 {
 	return 0;

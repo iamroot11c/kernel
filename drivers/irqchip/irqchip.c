@@ -22,8 +22,28 @@
 static const struct of_device_id
 irqchip_of_match_end __used __section(__irqchip_of_end);
 
+// 2016-08-06
+// include/asm-generic/vmlinux.lds.h에서 
+// IRQCHIP_OF_MATCH_TABLE 매크로를 통해 정의
+// __irqchip_of_table의 구성은 drivers/irqchip/exynos-combiner.c 파일 안의
+//
+// IRQCHIP_DECLARE(exynos4210_combiner, "samsung,exynos4210-combiner",
+//                 combiner_of_init);
+//
+// 과 같이 구성이 됨
+// 
+// #define IRQCHIP_DECLARE(name,compstr,fn)                \
+//      static const struct of_device_id irqchip_of_match_##name    \
+//      __used __section(__irqchip_of_table)                \
+//      = { .compatible = compstr, .data = fn }
+//
+// static const struct of_device_id irqchip_of_match_exynos4210_combiner
+//  __used __section(__irqchip_of_table)
+//   = { .compatible = "samsung,exynos4210-combiner",
+//       .data = combiner_of_init };
 extern struct of_device_id __irqchip_begin[];
 
+// 2016-08-06
 void __init irqchip_init(void)
 {
 	of_irq_init(__irqchip_begin);

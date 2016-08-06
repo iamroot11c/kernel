@@ -77,6 +77,7 @@ void synchronize_irq(unsigned int irq)
 EXPORT_SYMBOL(synchronize_irq);
 
 #ifdef CONFIG_SMP
+// 2016-08-06
 cpumask_var_t irq_default_affinity;
 
 /**

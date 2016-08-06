@@ -22,10 +22,13 @@
  */
 static struct lock_class_key irq_desc_lock_class;
 
-#if defined(CONFIG_SMP)
+#if defined(CONFIG_SMP) // defined
+// 2016-08-06
 static void __init init_irq_default_affinity(void)
 {
-	alloc_cpumask_var(&irq_default_affinity, GFP_NOWAIT);
+	alloc_cpumask_var(&irq_default_affinity, GFP_NOWAIT); // No OP.
+	
+	// irq_default_affinity 비트맵을 1로 셋함
 	cpumask_setall(irq_default_affinity);
 }
 #else
@@ -34,13 +37,15 @@ static void __init init_irq_default_affinity(void)
 }
 #endif
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
+// 2016-08-06
+// alloc_masks(desc, GFP_KERNEL, 0);
 static int alloc_masks(struct irq_desc *desc, gfp_t gfp, int node)
 {
 	if (!zalloc_cpumask_var_node(&desc->irq_data.affinity, gfp, node))
 		return -ENOMEM;
 
-#ifdef CONFIG_GENERIC_PENDING_IRQ
+#ifdef CONFIG_GENERIC_PENDING_IRQ // not define
 	if (!zalloc_cpumask_var_node(&desc->pending_mask, gfp, node)) {
 		free_cpumask_var(desc->irq_data.affinity);
 		return -ENOMEM;
@@ -49,11 +54,13 @@ static int alloc_masks(struct irq_desc *desc, gfp_t gfp, int node)
 	return 0;
 }
 
+// 2016-08-06
 static void desc_smp_init(struct irq_desc *desc, int node)
 {
 	desc->irq_data.node = node;
+	// irq_default_affinity를 irq_desc의 affinity에 복사함
 	cpumask_copy(desc->irq_data.affinity, irq_default_affinity);
-#ifdef CONFIG_GENERIC_PENDING_IRQ
+#ifdef CONFIG_GENERIC_PENDING_IRQ // not define
 	cpumask_clear(desc->pending_mask);
 #endif
 }
@@ -70,6 +77,9 @@ static inline void desc_smp_init(struct irq_desc *desc, int node) { }
 static inline int desc_node(struct irq_desc *desc) { return 0; }
 #endif
 
+// 2016-08-06 irq_desc 구조체의 디볼트 설정을 함
+// irq 인자는 0~15
+// desc_set_defaults(irq, desc, 0, NULL)
 static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
 		struct module *owner)
 {
@@ -93,16 +103,25 @@ static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
 	desc_smp_init(desc, node);
 }
 
-int nr_irqs = NR_IRQS;
+
+// 2016-08-06
+int nr_irqs = NR_IRQS/*16*/;
 EXPORT_SYMBOL_GPL(nr_irqs);
 
 static DEFINE_MUTEX(sparse_irq_lock);
+
+// 2016-08-06
+// early_irq_init() 함수에서 0~15까지 비트를 셋함
 static DECLARE_BITMAP(allocated_irqs, IRQ_BITMAP_BITS);
 
 #ifdef CONFIG_SPARSE_IRQ // defined
 
+// 2016-08-06
+// #define RADIX_TREE(name, mask) \
+//     struct radix_tree_root name = RADIX_TREE_INIT(mask)
 static RADIX_TREE(irq_desc_tree, GFP_KERNEL);
 
+// 2016-08-06
 static void irq_insert_desc(unsigned int irq, struct irq_desc *desc)
 {
 	radix_tree_insert(&irq_desc_tree, irq, desc);
@@ -131,6 +150,8 @@ static void free_masks(struct irq_desc *desc)
 static inline void free_masks(struct irq_desc *desc) { }
 #endif
 
+// 2016-08-06
+// alloc_desc(i, node/*0*/, NULL)
 static struct irq_desc *alloc_desc(int irq, int node, struct module *owner)
 {
 	struct irq_desc *desc;
@@ -140,16 +161,20 @@ static struct irq_desc *alloc_desc(int irq, int node, struct module *owner)
 	if (!desc)
 		return NULL;
 	/* allocate based on nr_cpu_ids */
+	// percpu를 이용해서 메모리 할당을 받으려면 alloc_percpu 매크로를
+	// 사용해야되며 인자로는 타입을 넘겨준다.
 	desc->kstat_irqs = alloc_percpu(unsigned int);
 	if (!desc->kstat_irqs)
 		goto err_desc;
 
+	// &desc->irq_data.affinity 비트를 nr_cpumask_bits/*2*/ 만큼 클리어 함
 	if (alloc_masks(desc, gfp, node))
 		goto err_kstat;
 
 	raw_spin_lock_init(&desc->lock);
-	lockdep_set_class(&desc->lock, &irq_desc_lock_class);
+	lockdep_set_class(&desc->lock, &irq_desc_lock_class); // No OP.
 
+	// irq_desc 구조체의 디볼트 설정을 함
 	desc_set_defaults(irq, desc, node, owner);
 
 	return desc;
@@ -210,19 +235,29 @@ static int irq_expand_nr_irqs(unsigned int nr)
 	return 0;
 }
 
+// 2016-08-06
+// kernel/softirq.c:early_irq_init() 함수가 weak symbol로 정의
+// 되어있으며 아래는 strong symbol 이다
+//
+// 빌드할 때 먼저 호출되며, 만약 이 함수가 정의가 않되어 있으면
+// kernel/softirq.c:early_irq_init() 함수가 호출됩니다.
+// 참고: http://damduc.tistory.com/338
+//       http://gcc.gnu.org/onlinedocs/gcc-3.4.4/gcc/Function-Attributes.html 
 int __init early_irq_init(void)
 {
-	//int b
 	int i, initcnt, node = first_online_node;
 	struct irq_desc *desc;
 
+	// irq_default_affinity 비트맵을 1로 셋함
 	init_irq_default_affinity();
 
 	/* Let arch update nr_irqs and return the nr of preallocated irqs */
-	initcnt = arch_probe_nr_irqs();
+	initcnt = arch_probe_nr_irqs(); 
+	// 2016-08-06 Booting_kernel_exynos5420.log
+	// [    0.000000] NR_IRQS:16 nr_irqs:16 16
 	printk(KERN_INFO "NR_IRQS:%d nr_irqs:%d %d\n", NR_IRQS, nr_irqs, initcnt);
 
-	if (WARN_ON(nr_irqs > IRQ_BITMAP_BITS))
+	if (WARN_ON(nr_irqs > IRQ_BITMAP_BITS/*8212*/))
 		nr_irqs = IRQ_BITMAP_BITS;
 
 	if (WARN_ON(initcnt > IRQ_BITMAP_BITS))
@@ -231,12 +266,13 @@ int __init early_irq_init(void)
 	if (initcnt > nr_irqs)
 		nr_irqs = initcnt;
 
-	for (i = 0; i < initcnt; i++) {
-		desc = alloc_desc(i, node, NULL);
+	for (i = 0; i < initcnt/*16*/; i++) {
+		desc = alloc_desc(i, node/*0*/, NULL);
 		set_bit(i, allocated_irqs);
+	        // desc는 raxdix tree로 관리함	
 		irq_insert_desc(i, desc);
 	}
-	return arch_early_irq_init();
+	return arch_early_irq_init(); // No OP., 항상 0을 리턴함
 }
 
 #else /* !CONFIG_SPARSE_IRQ */

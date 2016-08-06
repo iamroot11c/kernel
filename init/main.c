@@ -644,11 +644,19 @@ asmlinkage void __init start_kernel(void)
 	// 2016-07-23 end
 	// 2016-07-23, 여기까지
 	
-	// 2016-07-30, 여기부터
+	// 2016-08-06 시작
 	/* init some links before init_ISA_irqs() */
+	// 2016-08-06 시작
+	// irq 개수만큼 struct irq_desc 생성 및 radix tree에 추가
 	early_irq_init();
+	// 2016-08-06 완료
+	// 2016-08-06 시작
 	init_IRQ();
+	// 2016-08-06 완료
+	// 2016-08-06 시작
 	tick_init();
+	// 2016-08-06 완료
+	// 2016-08-06 시작
 	init_timers();
 	hrtimers_init();
 	softirq_init();

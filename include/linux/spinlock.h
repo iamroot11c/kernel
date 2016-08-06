@@ -92,6 +92,7 @@
 #ifdef CONFIG_DEBUG_SPINLOCK // set
   extern void __raw_spin_lock_init(raw_spinlock_t *lock, const char *name,
 				   struct lock_class_key *key);
+// 2016-08-06
 # define raw_spin_lock_init(lock)				\
 do {								\
 	static struct lock_class_key __key;			\

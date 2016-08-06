@@ -224,6 +224,7 @@ static int __pcpu_size_to_slot(int size)
 }
 // 2015-03-21 확인
 // 2016-03-12 확인
+// 2016-08-06
 static int pcpu_size_to_slot(int size)
 {
 	// size가 최대인 경우 제일 마지막 슬롯 번호를 리턴
@@ -790,6 +791,7 @@ static struct pcpu_chunk *pcpu_chunk_addr_search(void *addr)
  */
 // 2016-03-12 시작
 // pcup_alloc(sizeof(struct kmem_cache_cpu), 2 * sizeof(void *), false)
+// pcup_alloc(sizeof(unsigned int), __alignof__(unsigned int), false)
 static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved)
 {
 	static int warn_limit = 10;
@@ -945,6 +947,8 @@ fail_unlock_mutex:
 // 2016-03-12;
 // __alloc_percpu(sizeof(struct kmem_cache_cpu),
 //                                     2 * sizeof(void *))
+// 2016-8-06
+// __alloc_percpu(sizeof(unsigned int), __alignof__(unsigned int))
 void __percpu *__alloc_percpu(size_t size, size_t align)
 {
 	// 2016-03-12 시작;

@@ -2715,7 +2715,7 @@ redo:
 	if (unlikely(gfpflags & __GFP_ZERO) && object)
 		memset(object, 0, s->object_size);
 
-	slab_post_alloc_hook(s, gfpflags, object);
+	slab_post_alloc_hook(s, gfpflags, object); // No OP.
 
 	// c->freelist
 	return object;
@@ -3693,6 +3693,8 @@ static void *kmalloc_large_node(size_t size, gfp_t flags, int node)
 	return ptr;
 }
 
+// 2016-08-06
+// __kmalloc_node(sizeof(*desc), GFP_KERNEL|__GFP_ZERO, 0)
 void *__kmalloc_node(size_t size, gfp_t flags, int node)
 {
 	struct kmem_cache *s;

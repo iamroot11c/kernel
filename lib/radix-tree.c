@@ -464,6 +464,8 @@ out:
 // 2015-12-19;
 // adix_tree_insert(&address_space->page_tree,
 //                                      entry.val, page);
+// 2016-08-06
+// radix_tree_insert(&irq_desc_tree, irq, desc)
 int radix_tree_insert(struct radix_tree_root *root,
 			unsigned long index, void *item)
 {

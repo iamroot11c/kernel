@@ -196,6 +196,7 @@ static inline int check_wakeup_irqs(void) { return 0; }
 
 #if defined(CONFIG_SMP)
 
+// 2016-08-06
 extern cpumask_var_t irq_default_affinity;
 
 extern int irq_set_affinity(unsigned int irq, const struct cpumask *cpumask);

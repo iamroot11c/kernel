@@ -25,6 +25,7 @@ static void ack_bad(struct irq_data *data)
 /*
  * NOP functions
  */
+// 2016-08-06
 static void noop(struct irq_data *data) { }
 
 static unsigned int noop_ret(struct irq_data *data)
@@ -35,6 +36,7 @@ static unsigned int noop_ret(struct irq_data *data)
 /*
  * Generic no controller implementation
  */
+// 2016-08-06
 struct irq_chip no_irq_chip = {
 	.name		= "none",
 	.irq_startup	= noop_ret,
