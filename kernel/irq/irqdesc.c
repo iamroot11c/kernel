@@ -99,7 +99,7 @@ EXPORT_SYMBOL_GPL(nr_irqs);
 static DEFINE_MUTEX(sparse_irq_lock);
 static DECLARE_BITMAP(allocated_irqs, IRQ_BITMAP_BITS);
 
-#ifdef CONFIG_SPARSE_IRQ
+#ifdef CONFIG_SPARSE_IRQ // defined
 
 static RADIX_TREE(irq_desc_tree, GFP_KERNEL);
 
@@ -212,6 +212,7 @@ static int irq_expand_nr_irqs(unsigned int nr)
 
 int __init early_irq_init(void)
 {
+	//int b
 	int i, initcnt, node = first_online_node;
 	struct irq_desc *desc;
 

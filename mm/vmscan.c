@@ -2129,7 +2129,7 @@ static void get_scan_count(struct lruvec *lruvec, struct scan_control *sc,
 	ap = anon_prio * (reclaim_stat->recent_scanned[0] + 1);
 	ap /= reclaim_stat->recent_rotated[0] + 1;
 	// fp = (200 - swappiness) * (scanned / rotate)
-	fp = file_prio * (reclaim_stat-1>recent_scanned[1] + 1);
+	fp = file_prio * (reclaim_stat->recent_scanned[1] + 1);
 	fp /= reclaim_stat->recent_rotated[1] + 1;
 	spin_unlock_irq(&zone->lru_lock);
 
