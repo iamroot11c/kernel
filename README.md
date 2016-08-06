@@ -1,7 +1,7 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
-+ [106주차]() `2016.08.06`
++ [106주차](http://bit.ly/2b18bLS) `2016.08.06`
  - [init_timers() 진행중]()
  - kernel/timer.c:init_timers() 진행 중
  - kernel/timer.c:timer_cpu_notify() 진행 중
