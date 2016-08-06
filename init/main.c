@@ -113,6 +113,7 @@ extern void tc_init(void);
 // 2015-08-29
 bool early_boot_irqs_disabled __read_mostly;
 
+// 2016-07-23
 enum system_states system_state __read_mostly;
 EXPORT_SYMBOL(system_state);
 
@@ -628,9 +629,22 @@ asmlinkage void __init start_kernel(void)
 	
 	// 2016-07-16 시작
 	rcu_init();
-	tick_nohz_init();
-	context_tracking_init();
+	// 2016-07-23 end
+
+	// 2016-07-23 start
+	tick_nohz_init();	// NOP
+	// 2016-07-23 end
+
+	// 2016-07-23 start
+	context_tracking_init();	// NOP
+	// 2016-07-23 end
+
+	// 2016-07-23 start
 	radix_tree_init();
+	// 2016-07-23 end
+	// 2016-07-23, 여기까지
+	
+	// 2016-07-30, 여기부터
 	/* init some links before init_ISA_irqs() */
 	early_irq_init();
 	init_IRQ();

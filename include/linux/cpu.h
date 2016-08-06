@@ -79,6 +79,7 @@ enum {
 };
 
 #define CPU_ONLINE		0x0002 /* CPU (unsigned)v is up */
+// 2016-07-23
 #define CPU_UP_PREPARE		0x0003 /* CPU (unsigned)v coming up */
 #define CPU_UP_CANCELED		0x0004 /* CPU (unsigned)v NOT coming up */
 #define CPU_DOWN_PREPARE	0x0005 /* CPU (unsigned)v going down */
@@ -116,6 +117,9 @@ enum {
 #if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE)
 // hotcpu_notifier(page_alloc_cpu_notify, 0);
 // 2016-07-01
+// 2016-07-23
+// hotcpu_notifier(radix_tree_callback, 0);
+// => register_cpu_notifier(&radix_tree_callback_nb);
 #define cpu_notifier(fn, pri) {					\
 	static struct notifier_block fn##_nb =			\
 		{ .notifier_call = fn, .priority = pri };	\
@@ -126,6 +130,7 @@ enum {
 #endif /* #else #if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE) */
 #ifdef CONFIG_HOTPLUG_CPU
 // 2015-04-04
+// 2016-07-23
 extern int register_cpu_notifier(struct notifier_block *nb);
 extern void unregister_cpu_notifier(struct notifier_block *nb);
 #else
@@ -191,6 +196,8 @@ extern void cpu_hotplug_disable(void);
 extern void cpu_hotplug_enable(void);
 // 2015-04-04
 // hotcpu_notifier(page_alloc_cpu_notify, 0);
+// 2016-07-23
+// hotcpu_notifier(radix_tree_callback, 0);
 #define hotcpu_notifier(fn, pri)	cpu_notifier(fn, pri)
 #define register_hotcpu_notifier(nb)	register_cpu_notifier(nb)
 #define unregister_hotcpu_notifier(nb)	unregister_cpu_notifier(nb)

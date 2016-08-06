@@ -1,8 +1,22 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [105주차](http://bit.ly/2a3LzHl) `2016.07.23`
+ - [early_irq_init() 진행중]()
+ - kernel/rcutree.c: rcu_init() 완료
+ - kernel/rcutree_plugin.h: __rcu_init_preempt() 완료
+ - include/linux/cpu.h:cpu_notifier() 완료
+ - kernel/notifier.c: raw_notifier_chain_register() 완료
+ - kernel/notifier.c: notifier_chain_register() 완료
+ - include/linux/suspend.h: pm_notifier() 완료
+ - kernel/notifier.c: blocking_notifier_chain_register() 완료
+ - kernel/rcutree.c: rcu_cpu_notify() 완료
+ - kernel/rcutree.c: rcu_prepare_cpu() 완료
+ - lib/radix-tree.c: radix_tree_init() 완료
+ - 차주 early_irq_init() 진행 예정
+
 + [104주차](http://bit.ly/29Kux3X) `2016.07.16`
- - [idr_init_cache() 진행중]()
+ - [rcu_init() 진행중]()
  - kernel/lib/idr.c: idr_init_cache() 분석 완료
  - kernel/mm/slab_common.c: kmem_cache_create() 분석 완료
  - kernel/mm/slab_common.c: kmem_cache_create_memcg() 분석 완료

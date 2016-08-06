@@ -23,6 +23,17 @@ BLOCKING_NOTIFIER_HEAD(reboot_notifier_list);
 // 우선순위를 고려해서 순서가 결정 된다.
 // 내림차순 정렬이다.
 // 2016-05-28
+//
+// 2016-07-23
+// nh->head(nl) == slab_notifier
+// slab_notifier -> NULL
+// notifier_chain_register(&cpu_chain, &rcu_cpu_notify_nb)
+// 우선 순위가 동일한 것으로 판단되어서, 결과가 아래와 같을 것으로 예상한다.
+// slab_notifier -> rcu_cpu_notify_nb -> radix_tree_callback_nb -> NULL
+
+// 2016-07-23
+// 전달된 chain에 따라서 다르게 구성된다.
+// blocking_notifier_chain_register(&pm_chain_head, nb);
 static int notifier_chain_register(struct notifier_block **nl,
 		struct notifier_block *n)
 {
@@ -30,6 +41,12 @@ static int notifier_chain_register(struct notifier_block **nl,
 	// 우선순위 형태로 정렬
 	// 동일 우선 순위가 삽입될 때, 새로운 멤버는 가장 마지막에 추가된다.
 	// NOTE: 만약, nl이 NULL이라면, *nl은 Segmentation Fault이다.
+
+	// 2016-07-23
+	// 이전 분석에 의해서, 아래와 같은 상태이다.
+	// nh->head(nl) == slab_notifier
+	// slab_notifier -> NULL
+	// rcu_cpu_notify_nb.priority == 0
 	while ((*nl) != NULL) {
 		if (n->priority > (*nl)->priority)
 			break;
@@ -44,6 +61,12 @@ static int notifier_chain_register(struct notifier_block **nl,
 	// 2015-04-04
 	// *nl에 n을 할당하는 기능
 	// rcu_assign_pointer(NULL, n);
+	// 
+	// 2016-07-23
+	// #define __rcu_assign_pointer(p, v, space)
+	//  (p) = (typeof(*v) __force space *)(v); \
+	// 
+	// *nl = n;
 	rcu_assign_pointer(*nl, n);
 	return 0;
 }
@@ -230,6 +253,8 @@ EXPORT_SYMBOL_GPL(atomic_notifier_call_chain);
  *
  *	Currently always returns zero.
  */
+// 2016-07-23
+// 동기화를 고려한 chain register
 int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
 		struct notifier_block *n)
 {
@@ -240,6 +265,7 @@ int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
 	 * not yet working and interrupts must remain disabled.  At
 	 * such times we must not call down_write().
 	 */
+	// booting 상태라면, 동기화를 고려하지 않는다.
 	if (unlikely(system_state == SYSTEM_BOOTING))
 		return notifier_chain_register(&nh->head, n);
 
@@ -374,6 +400,9 @@ EXPORT_SYMBOL_GPL(blocking_notifier_call_chain);
 // 2015-04-04
 // 2016-05-28
 // raw_notifier_chain_register(&cpu_chain, &slab_notifier)
+// 2016-07-23
+// raw_notifier_chain_register(&cpu_chain, &rcu_cpu_notify_nb)
+// raw_notifier_chain_register(&cpu_chain, &radix_tree_callback_nb)
 int raw_notifier_chain_register(struct raw_notifier_head *nh,
 		struct notifier_block *n)
 {

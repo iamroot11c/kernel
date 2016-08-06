@@ -55,9 +55,12 @@ typedef	int (*notifier_fn_t)(struct notifier_block *nb,
 // 2015-04-04
 // 2016-01-30
 // 2016-05-28
+// 2016-07-23
 struct notifier_block {
+    // 2016-07-23
 	notifier_fn_t notifier_call;
 	struct notifier_block __rcu *next;
+    // 2016-07-23
 	int priority;
 };
 
@@ -67,6 +70,7 @@ struct atomic_notifier_head {
 };
 
 // 2016-01-30
+// 2016-07-23
 struct blocking_notifier_head {
 	struct rw_semaphore rwsem;
 	struct notifier_block __rcu *head;
@@ -105,10 +109,12 @@ extern void srcu_init_notifier_head(struct srcu_notifier_head *nh);
 		.head = NULL }
 
 // 2016-01-30
+// 2016-07-23
 #define BLOCKING_NOTIFIER_INIT(name) {				\
 		.rwsem = __RWSEM_INITIALIZER((name).rwsem),	\
 		.head = NULL }
 // 2015-04-04
+// 2016-07-23
 #define RAW_NOTIFIER_INIT(name)	{				\
 		.head = NULL }
 /* srcu_notifier_heads cannot be initialized statically */
@@ -118,6 +124,7 @@ extern void srcu_init_notifier_head(struct srcu_notifier_head *nh);
 		ATOMIC_NOTIFIER_INIT(name)
 
 // 2016-01-30
+// 2016-07-23
 #define BLOCKING_NOTIFIER_HEAD(name)				\
 	struct blocking_notifier_head name =			\
 		BLOCKING_NOTIFIER_INIT(name)
@@ -133,6 +140,7 @@ extern int atomic_notifier_chain_register(struct atomic_notifier_head *nh,
 		struct notifier_block *nb);
 extern int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
 		struct notifier_block *nb);
+// 2016-07-23
 extern int raw_notifier_chain_register(struct raw_notifier_head *nh,
 		struct notifier_block *nb);
 extern int srcu_notifier_chain_register(struct srcu_notifier_head *nh,

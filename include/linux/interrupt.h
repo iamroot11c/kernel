@@ -352,6 +352,7 @@ enum
     // 2016-07-09
 	SCHED_SOFTIRQ,
 	HRTIMER_SOFTIRQ,
+    // 2016-07-23
 	RCU_SOFTIRQ,    /* Preferable RCU should always be the last softirq */
 
 	NR_SOFTIRQS

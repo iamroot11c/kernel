@@ -82,6 +82,7 @@ static struct lock_class_key rcu_fqs_class[RCU_NUM_LVLS];
  * the tracing userspace tools to be able to decipher the string
  * address to the matching string.
  */
+// 2016-07-23
 #define RCU_STATE_INITIALIZER(sname, sabbr, cr) \
 static char sname##_varname[] = #sname; \
 static const char *tp_##sname##_varname __used __tracepoint_string = sname##_varname; \
@@ -101,7 +102,52 @@ struct rcu_state sname##_state = { \
 }; \
 DEFINE_PER_CPU(struct rcu_data, sname##_data)
 
+// 2016-07-23
+// rcu_sched_state
+/**
+ * #define RCU_STATE_INITIALIZER(sname, sabbr, cr) \
+ *  static char rcu_sched_varname[] = "rcu_sched"; \
+ *  static const char *tp_rcu_sched_varname __used __tracepoint_string = rcu_sched_varname; \
+ *  struct rcu_state rcu_sched_state = { \
+ *          .level = { &rcu_sched_state.node[0] }, \
+ *          .call = call_rcu_sched, \
+ *          .fqs_state = RCU_GP_IDLE, \
+ *          .gpnum = 0UL - 300UL, \
+ *          .completed = 0UL - 300UL, \
+ *          .orphan_lock = __RAW_SPIN_LOCK_UNLOCKED(&rcu_sched_state.orphan_lock), \
+ *          .orphan_nxttail = &rcu_sched_state.orphan_nxtlist, \
+ *          .orphan_donetail = &rcu_sched_state.orphan_donelist, \
+ *          .barrier_mutex = __MUTEX_INITIALIZER(rcu_sched_state.barrier_mutex), \
+ *          .onoff_mutex = __MUTEX_INITIALIZER(rcu_sched_state.onoff_mutex), \
+ *         .name = rcu_sched_varname, \
+ *         .abbr = 's', \
+ * }; \
+ * struct rcu_data rcu_sched_data;
+ * //DEFINE_PER_CPU(struct rcu_data, rcu_sched_data)
+**/
 RCU_STATE_INITIALIZER(rcu_sched, 's', call_rcu_sched);
+
+/**
+ * #define RCU_STATE_INITIALIZER(sname, sabbr, cr) \
+ *  static char rcu_bh_varname[] = "rcu_bh"; \
+ *  static const char *tp_rcu_bh_varname __used __tracepoint_string = rcu_bh_varname; \
+ *  struct rcu_state rcu_bh_state = { \
+ *          .level = { &rcu_bh_state.node[0] }, \
+ *          .call = call_rcu_bh, \
+ *          .fqs_state = RCU_GP_IDLE, \
+ *          .gpnum = 0UL - 300UL, \
+ *          .completed = 0UL - 300UL, \
+ *          .orphan_lock = __RAW_SPIN_LOCK_UNLOCKED(&rcu_bh_state.orphan_lock), \
+ *          .orphan_nxttail = &rcu_bh_state.orphan_nxtlist, \
+ *          .orphan_donetail = &rcu_bh_state.orphan_donelist, \
+ *          .barrier_mutex = __MUTEX_INITIALIZER(rcu_bh_state.barrier_mutex), \
+ *          .onoff_mutex = __MUTEX_INITIALIZER(rcu_bh_state.onoff_mutex), \
+ *         .name = rcu_bh_varname, \
+ *         .abbr = 'b', \
+ * }; \
+ * struct rcu_data rcu_bh_data;
+ * //DEFINE_PER_CPU(struct rcu_data, sname##_data)
+**/
 RCU_STATE_INITIALIZER(rcu_bh, 'b', call_rcu_bh);
 
 static struct rcu_state *rcu_state;
@@ -239,6 +285,7 @@ DEFINE_PER_CPU(struct rcu_dynticks, rcu_dynticks) = {
 #endif /* #ifdef CONFIG_NO_HZ_FULL_SYSIDLE */
 };
 
+// 2016-07-23
 static long blimit = 10;	/* Maximum callbacks per rcu_do_batch. */
 static long qhimark = 10000;	/* If this many pending, ignore blimit. */
 static long qlowmark = 100;	/* Once only this many pending, use blimit. */
@@ -364,6 +411,7 @@ cpu_needs_another_gp(struct rcu_state *rsp, struct rcu_data *rdp)
  * Return the root node of the specified rcu_state structure.
  */
 // 2016-07-16;
+// 2016-07-23
 static struct rcu_node *rcu_get_root(struct rcu_state *rsp)
 {
 	return &rsp->node[0];
@@ -986,6 +1034,7 @@ void rcu_cpu_stall_reset(void)
  * Initialize the specified rcu_data structure's callback list to empty.
  */
 // 2016-07-16
+// 2016-07-23
 static void init_callback_list(struct rcu_data *rdp)
 {
 	int i;
@@ -994,7 +1043,9 @@ static void init_callback_list(struct rcu_data *rdp)
 		return;
 	rdp->nxtlist = NULL;
 	for (i = 0; i < RCU_NEXT_SIZE/*4*/; i++)
-		// 초기화할 때는 nxttail[n]의 포인터를 NULL로 설정
+		// 초기화할 때는 nxttail[n]의 포인터를 NULL로 설정 (X)
+		// 2016-07-23
+		// 저장되는 값은, address of rdp->nxtlist이다.
 		rdp->nxttail[i] = &rdp->nxtlist;
 }
 
@@ -2222,6 +2273,8 @@ __rcu_process_callbacks(struct rcu_state *rsp)
 /*
  * Do RCU core processing for the current CPU.
  */
+// 2016-07-23
+// rcu_init에서 open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);를 통해서 등록 함.
 static void rcu_process_callbacks(struct softirq_action *unused)
 {
 	struct rcu_state *rsp;
@@ -2959,6 +3012,11 @@ rcu_boot_init_percpu_data(int cpu, struct rcu_state *rsp)
  * can accept some slop in the rsp->completed access due to the fact
  * that this CPU cannot possibly have any RCU callbacks in flight yet.
  */
+// 2016-07-23
+// per-CPU RCU data 초기화
+// 주의1 : 오직 하나의 online / offline 이벤트만 발생할 수 있다.
+// 주의2 : rsp->completed에 접근한 상태에서, some slop이 발생할 수 있다.
+//         왜냐하면, this CPU가 RCU callback을 가질 수 없다는 사실 때문에.
 static void
 rcu_init_percpu_data(int cpu, struct rcu_state *rsp, int preemptible)
 {
@@ -2978,8 +3036,12 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp, int preemptible)
 	rdp->n_force_qs_snap = rsp->n_force_qs;
 	rdp->blimit = blimit;
 	init_callback_list(rdp);  /* Re-enable callbacks on this CPU. */
-	rdp->dynticks->dynticks_nesting = DYNTICK_TASK_EXIT_IDLE;
-	rcu_sysidle_init_percpu_data(rdp->dynticks);
+	rdp->dynticks->dynticks_nesting = DYNTICK_TASK_EXIT_IDLE/*0x0140_0000*/;
+	rcu_sysidle_init_percpu_data(rdp->dynticks);	// NOP
+
+	// (atomic_read(&rdp->dynticks->dynticks) & ~0x1) + 1 의미
+	// 홀수인 경우 값 증가되지 않을 것이고, 짝수인 경우만 증가되는 계산식
+	// ex) 7(0b111) => 7, 3(0b11) => 3
 	atomic_set(&rdp->dynticks->dynticks,
 		   (atomic_read(&rdp->dynticks->dynticks) & ~0x1) + 1);
 	raw_spin_unlock(&rnp->lock);		/* irqs remain disabled. */
@@ -2992,6 +3054,7 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp, int preemptible)
 		raw_spin_lock(&rnp->lock);	/* irqs already disabled. */
 		rnp->qsmaskinit |= mask;
 		mask = rnp->grpmask;
+		// 최초 한 번은 실행되지 않을까?
 		if (rnp == rdp->mynode) {
 			/*
 			 * If there is a grace period in progress, we will
@@ -3012,10 +3075,16 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp, int preemptible)
 	mutex_unlock(&rsp->onoff_mutex);
 }
 
+// 2016-07-23
+// rcu data 초기화
 static void rcu_prepare_cpu(int cpu)
 {
 	struct rcu_state *rsp;
 
+	// 2016-07-23
+	// #define for_each_rcu_flavor(rsp) \
+	//    list_for_each_entry((rsp), &rcu_struct_flavors, flavors)
+	// 단위 struct rcu_state를 구하면서 순회
 	for_each_rcu_flavor(rsp)
 		rcu_init_percpu_data(cpu, rsp,
 				     strcmp(rsp->name, "rcu_preempt") == 0);
@@ -3024,6 +3093,11 @@ static void rcu_prepare_cpu(int cpu)
 /*
  * Handle CPU online/offline notification events.
  */
+// 2016-07-23
+// rcu_init()에서 호출
+// cpu_notifier(rcu_cpu_notify, 0); 콜백 등록
+// 2016-07-23
+// rcu_cpu_notify(NULL, CPU_UP_PREPARE, (void *)(long)cpu);
 static int rcu_cpu_notify(struct notifier_block *self,
 				    unsigned long action, void *hcpu)
 {
@@ -3034,10 +3108,11 @@ static int rcu_cpu_notify(struct notifier_block *self,
 
 	trace_rcu_utilization(TPS("Start CPU hotplug"));
 	switch (action) {
+	// 2016-07-23
 	case CPU_UP_PREPARE:
 	case CPU_UP_PREPARE_FROZEN:
 		rcu_prepare_cpu(cpu);
-		rcu_prepare_kthreads(cpu);
+		rcu_prepare_kthreads(cpu);	// NOP
 		break;
 	case CPU_ONLINE:
 	case CPU_DOWN_FAILED:
@@ -3065,6 +3140,9 @@ static int rcu_cpu_notify(struct notifier_block *self,
 	return NOTIFY_OK;
 }
 
+// 2016-07-23
+// rcu_init에서 등록
+// pm_notifier(rcu_pm_notify, 0); 
 static int rcu_pm_notify(struct notifier_block *self,
 			 unsigned long action, void *hcpu)
 {
@@ -3263,6 +3341,7 @@ static void __init rcu_init_one(struct rcu_state *rsp,
  * the ->node array in the rcu_state structure.
  */
 // 2016-07-16
+// rcu_node 개수 계산
 static void __init rcu_init_geometry(void)
 {
 	ulong d;
@@ -3365,11 +3444,21 @@ void __init rcu_init(void)
 	rcu_init_geometry();
 	// 2016-07-16 완료;
 	// 2016-07-16 시작;
+	// rcu_sched_state, rcu_sched_data은 RCU_STATE_INITIALIZER에 의해서 생성됨.(rcutree.c)
 	rcu_init_one(&rcu_sched_state, &rcu_sched_data);
 	// 2016-07-16 완료;
 	// 2016-07-16 여기까지;
+
+	// 2016-07-23 시작
+	// rcu_bh_state, rcu_bh_data은  RCU_STATE_INITIALIZER에 의해서 생성됨.(rcutree.c)
 	rcu_init_one(&rcu_bh_state, &rcu_bh_data);
+	
+	// 2016-07-23 start
 	__rcu_init_preempt();
+	// 2016-07-23 end
+
+	// RCU interrupt call back 등록
+	// 이 사실을 통해서, RCU는 interrupt를 이용하는 것을 추론해 볼 수 있다.
 	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
 
 	/*
@@ -3377,8 +3466,34 @@ void __init rcu_init(void)
 	 * this is called early in boot, before either interrupts
 	 * or the scheduler are operational.
 	 */
+	// 2016-07-23
+	// #define cpu_notifier(fn, pri) {                 \
+	//     static struct notifier_block fn##_nb =          \
+	//         { .notifier_call = fn, .priority = pri };   \
+	//     register_cpu_notifier(&fn##_nb);            \
+	// }
+	//
+	// static struct notifier_block rcu_cpu_notify_nb = 
+	//  { .notifier_call = rcu_cpu_notify, .priority = 0 };
+	// register_cpu_notifier(&rcu_cpu_notify_nb); 
 	cpu_notifier(rcu_cpu_notify, 0);
+	// 2016-07-23 end
+	
+	// 2016-07-23 start
+	// #define pm_notifier(fn, pri) {              \
+	//     static struct notifier_block fn##_nb =          \
+	//         { .notifier_call = fn, .priority = pri };   \
+	//      register_pm_notifier(&fn##_nb);         \
+	// }
+	//
+	//     static struct notifier_block rcu_pm_notify_nb =          \
+        //         { .notifier_call = rcu_pm_notify, .priority = 0 };   \
+        //      register_pm_notifier(&rcu_pm_notify_nb);         \
+        // }
 	pm_notifier(rcu_pm_notify, 0);
+	// 2016-07-23
+
+	// 2016-07-23
 	for_each_online_cpu(cpu)
 		rcu_cpu_notify(NULL, CPU_UP_PREPARE, (void *)(long)cpu);
 }
