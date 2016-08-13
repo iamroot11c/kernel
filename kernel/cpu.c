@@ -187,6 +187,10 @@ void cpu_hotplug_enable(void)
 // register_cpu_notifier(&rcu_cpu_notify_nb); 
 // 2016-07-23
 // register_cpu_notifier(&radix_tree_callback_nb);
+// 2016-08-13
+// register_cpu_notifier(&timers_nb);
+// register_cpu_notifier(&hrtimers_nb);
+// register_cpu_notifier(&remote_softirq_cpu_notifier);
 int __ref register_cpu_notifier(struct notifier_block *nb)
 {
 	int ret;

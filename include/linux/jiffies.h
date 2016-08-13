@@ -172,6 +172,7 @@ static inline u64 get_jiffies_64(void)
 //                                ((long)(a - jiffies) < 0) ? true : false
 
 /* time_is_after_jiffies(a) return true if a is after jiffies */
+// 2016-08-13
 #define time_is_after_jiffies(a) time_before(jiffies, a) // time_after(a, jiffies)
 //                                ((long)(jiffies - a) < 0) ? true : false
 
@@ -185,6 +186,7 @@ static inline u64 get_jiffies_64(void)
  * Have the 32 bit jiffies value wrap 5 minutes after boot
  * so jiffies wrap bugs show up earlier.
  */
+// 2016-08-13
 #define INITIAL_JIFFIES ((unsigned long)(unsigned int) (-300*HZ))
 
 /*

@@ -62,6 +62,7 @@
  * is used to convert from clockid to the proper hrtimer_base_type.
  */
 // 2016-07-01
+// 2016-08-13
 DEFINE_PER_CPU(struct hrtimer_cpu_base, hrtimer_bases) =
 {
 
@@ -653,9 +654,10 @@ static int hrtimer_reprogram(struct hrtimer *timer,
 /*
  * Initialize the high resolution related parts of cpu_base
  */
+// 2016-08-13
 static inline void hrtimer_init_hres(struct hrtimer_cpu_base *base)
 {
-	base->expires_next.tv64 = KTIME_MAX;
+	base->expires_next.tv64 = KTIME_MAX;	// 양의 값 중 최대값
 	base->hres_active = 0;
 }
 
@@ -1463,6 +1465,8 @@ void hrtimer_peek_ahead_timers(void)
 	local_irq_restore(flags);
 }
 
+// 2016-08-13
+// open_softirq(HRTIMER_SOFTIRQ, run_hrtimer_softirq);로부터 등록됨.
 static void run_hrtimer_softirq(struct softirq_action *h)
 {
 	hrtimer_peek_ahead_timers();
@@ -1684,6 +1688,7 @@ SYSCALL_DEFINE2(nanosleep, struct timespec __user *, rqtp,
 /*
  * Functions related to boot-time initialization:
  */
+// 2016-08-13
 static void init_hrtimers_cpu(int cpu)
 {
 	struct hrtimer_cpu_base *cpu_base = &per_cpu(hrtimer_bases, cpu);
@@ -1765,6 +1770,13 @@ static void migrate_hrtimers(int scpu)
 
 #endif /* CONFIG_HOTPLUG_CPU */
 
+//2016-08-13, hrtimers_nb에서 등록함.
+// static struct notifier_block hrtimers_nb = {
+//          .notifier_call = hrtimer_cpu_notify,
+//  };
+//
+//  hrtimer_cpu_notify(&hrtimers_nb, (unsigned long)CPU_UP_PREPARE,
+//                           nvoid *)(long)smp_processor_id());
 static int hrtimer_cpu_notify(struct notifier_block *self,
 					unsigned long action, void *hcpu)
 {
@@ -1772,9 +1784,12 @@ static int hrtimer_cpu_notify(struct notifier_block *self,
 
 	switch (action) {
 
+	// 2016-08-13, CPU_UP_PREPARE
 	case CPU_UP_PREPARE:
 	case CPU_UP_PREPARE_FROZEN:
+		// 2016-08-13
 		init_hrtimers_cpu(scpu);
+		// 2016-08-13
 		break;
 
 #ifdef CONFIG_HOTPLUG_CPU
@@ -1798,10 +1813,12 @@ static int hrtimer_cpu_notify(struct notifier_block *self,
 	return NOTIFY_OK;
 }
 
+// 2016-08-13
 static struct notifier_block hrtimers_nb = {
 	.notifier_call = hrtimer_cpu_notify,
 };
 
+// 2016-08-13
 void __init hrtimers_init(void)
 {
 	hrtimer_cpu_notify(&hrtimers_nb, (unsigned long)CPU_UP_PREPARE,

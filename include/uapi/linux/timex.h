@@ -134,6 +134,7 @@ struct timex {
 
 #define STA_INS		0x0010	/* insert leap (rw) */
 #define STA_DEL		0x0020	/* delete leap (rw) */
+// 2016-08-13
 #define STA_UNSYNC	0x0040	/* clock unsynchronized (rw) */
 #define STA_FREQHOLD	0x0080	/* hold frequency (rw) */
 

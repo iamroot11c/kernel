@@ -38,7 +38,7 @@ struct timer_list {
 
 extern struct tvec_base boot_tvec_bases;
 
-#ifdef CONFIG_LOCKDEP
+#ifdef CONFIG_LOCKDEP   // =n
 /*
  * NB: because we have to copy the lockdep_map, setting the lockdep_map key
  * (second argument) here is required, otherwise it could be initialised to
@@ -48,6 +48,7 @@ extern struct tvec_base boot_tvec_bases;
 #define __TIMER_LOCKDEP_MAP_INITIALIZER(_kn)				\
 	.lockdep_map = STATIC_LOCKDEP_MAP_INIT(_kn, &_kn),
 #else
+// 2016-08-13
 #define __TIMER_LOCKDEP_MAP_INITIALIZER(_kn)
 #endif
 
@@ -230,6 +231,7 @@ static inline void timer_stats_timer_clear_start_info(struct timer_list *timer)
 	timer->start_site = NULL;
 }
 #else
+// 2016-08-13
 static inline void init_timer_stats(void)
 {
 }

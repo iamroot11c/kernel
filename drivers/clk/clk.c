@@ -2098,6 +2098,7 @@ struct of_clk_provider {
 	void *data;
 };
 
+// 2016-08-13
 extern struct of_device_id __clk_of_table[];
 
 static const struct of_device_id __clk_of_table_sentinel
@@ -2227,6 +2228,8 @@ EXPORT_SYMBOL_GPL(of_clk_get_parent_name);
  * This function scans the device tree for matching clock providers and
  * calls their initialization functions
  */
+// 2016-08-13
+// of_clk_init(NULL);
 void __init of_clk_init(const struct of_device_id *matches)
 {
 	const struct of_device_id *match;
@@ -2235,6 +2238,11 @@ void __init of_clk_init(const struct of_device_id *matches)
 	if (!matches)
 		matches = __clk_of_table;
 
+//  #define for_each_matching_node_and_match(dn, matches, match) \
+//     for (dn = of_find_matching_node_and_match(NULL, matches, match); \
+//          dn; dn = of_find_matching_node_and_match(dn, matches, match))
+
+	// 2016-08-13, np가 null일 것으로 예상함.
 	for_each_matching_node_and_match(np, matches, &match) {
 		of_clk_init_cb_t clk_init_cb = match->data;
 		clk_init_cb(np);

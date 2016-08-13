@@ -28,12 +28,16 @@
 
 
 /* USER_HZ period (usecs): */
+// 2016-08-13
 unsigned long			tick_usec = TICK_USEC;
 
 /* SHIFTED_HZ period (nsecs): */
+// 2016-08-13
 unsigned long			tick_nsec;
 
+// 2016-08-13
 static u64			tick_length;
+// 2016-08-13
 static u64			tick_length_base;
 
 #define MAX_TICKADJ		500LL		/* usecs */
@@ -51,6 +55,7 @@ static u64			tick_length_base;
  */
 static int			time_state = TIME_OK;
 
+// 2016-08-13
 /* clock status bits:							*/
 static int			time_status = STA_UNSYNC;
 
@@ -60,24 +65,29 @@ static s64			time_offset;
 /* pll time constant:							*/
 static long			time_constant = 2;
 
+// 2016-08-13
 /* maximum error (usecs):						*/
 static long			time_maxerror = NTP_PHASE_LIMIT;
 
+// 2016-08-13
 /* estimated error (usecs):						*/
 static long			time_esterror = NTP_PHASE_LIMIT;
 
 /* frequency offset (scaled nsecs/secs):				*/
+// 2016-08-13
 static s64			time_freq;
 
 /* time at last adjustment (secs):					*/
 static long			time_reftime;
 
+// 2016-08-13
 static long			time_adjust;
 
 /* constant (boot-param configurable) NTP tick adjustment (upscaled)	*/
+// 2016-08-13
 static s64			ntp_tick_adj;
 
-#ifdef CONFIG_NTP_PPS
+#ifdef CONFIG_NTP_PPS	// =n, 2016-08-13
 
 /*
  * The following variables are used when a pulse-per-second (PPS) signal
@@ -205,6 +215,7 @@ static inline s64 ntp_offset_chunk(s64 offset)
 }
 
 static inline void pps_reset_freq_interval(void) {}
+// 2016-08-13
 static inline void pps_clear(void) {}
 static inline void pps_dec_valid(void) {}
 static inline void pps_set_freq(s64 freq) {}
@@ -248,6 +259,7 @@ static inline int ntp_synced(void)
  * Update (tick_length, tick_length_base, tick_nsec), based
  * on (tick_usec, ntp_tick_adj, time_freq):
  */
+// 2016-08-13
 static void ntp_update_frequency(void)
 {
 	u64 second_length;
@@ -338,6 +350,8 @@ static void ntp_update_offset(long offset)
 /**
  * ntp_clear - Clears the NTP state variables
  */
+// 2016-08-13
+// NTP : Netowrk Time Protocol
 void ntp_clear(void)
 {
 	time_adjust	= 0;		/* stop active adjtime() */
@@ -930,6 +944,7 @@ static int __init ntp_tick_adj_setup(char *str)
 
 __setup("ntp_tick_adj=", ntp_tick_adj_setup);
 
+// 2016-08-13
 void __init ntp_init(void)
 {
 	ntp_clear();

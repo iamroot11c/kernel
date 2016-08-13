@@ -124,6 +124,7 @@ timer_set_base(struct timer_list *timer, struct tvec_base *new_base)
 	timer->base = (struct tvec_base *)((unsigned long)(new_base) | flags);
 }
 
+// 2016-08-13
 static unsigned long round_jiffies_common(unsigned long j, int cpu,
 		bool force_up)
 {
@@ -234,6 +235,7 @@ EXPORT_SYMBOL_GPL(__round_jiffies_relative);
  *
  * The return value is the rounded version of the @j parameter.
  */
+// 2016-08-13
 unsigned long round_jiffies(unsigned long j)
 {
 	return round_jiffies_common(j, raw_smp_processor_id(), false);
@@ -844,6 +846,7 @@ EXPORT_SYMBOL(mod_timer_pending);
  *      bits are zeros
  */
 // 2015-09-05;
+// 2016-08-13
 static inline
 unsigned long apply_slack(struct timer_list *timer, unsigned long expires)
 {
@@ -894,6 +897,8 @@ unsigned long apply_slack(struct timer_list *timer, unsigned long expires)
  * active timer returns 1.)
  */
 // 2015-09-05;
+// 2016-08-13
+// mod_timer(&sched_clock_timer, round_jiffies(jiffies + wrap_ticks));
 int mod_timer(struct timer_list *timer, unsigned long expires)
 {
 	expires = apply_slack(timer, expires);
@@ -1412,6 +1417,9 @@ void update_process_times(int user_tick)
 /*
  * This function runs timers and the timer-tq in bottom half context.
  */
+// 2016-08-13
+// init_timers()에서, 아래로 등록
+// open_softirq(TIMER_SOFTIRQ, run_timer_softirq);
 static void run_timer_softirq(struct softirq_action *h)
 {
 	struct tvec_base *base = __this_cpu_read(tvec_bases);
@@ -1700,6 +1708,7 @@ static int timer_cpu_notify(struct notifier_block *self,
 	case CPU_UP_PREPARE_FROZEN:
 		err = init_timers_cpu(cpu);
 		// 2016-08-06 여기까지 진행
+		// 2016-08-13 시작
 		if (err < 0)
 			return notifier_from_errno(err);
 		break;
@@ -1731,7 +1740,8 @@ void __init init_timers(void)
         // 2016-08-06 시작
 	err = timer_cpu_notify(&timers_nb, (unsigned long)CPU_UP_PREPARE,
 			       (void *)(long)smp_processor_id());
-	init_timer_stats();
+
+	init_timer_stats();	// NOP
 
 	BUG_ON(err != NOTIFY_OK);
 	register_cpu_notifier(&timers_nb);

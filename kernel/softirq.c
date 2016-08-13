@@ -55,6 +55,12 @@ EXPORT_SYMBOL(irq_stat);
 
 // 2016-07-09
 // 2016-07-23
+// RCU_SOFTIRQ : rcu_process_callbacks
+// TIMER_SOFTIRQ :run_timer_softirq
+// HRTIMER_SOFTIRQ : run_hrtimer_softirq
+// TASKLET_SOFTIRQ : tasklet_action
+// HI_SOFTIRQ : tasklet_hi_action
+//
 static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp;
 
 DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
@@ -417,6 +423,13 @@ void __raise_softirq_irqoff(unsigned int nr)
 // 2016-07-01
 // 2016-07-23
 // open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
+// 2016-08-13
+//  open_softirq(TIMER_SOFTIRQ, run_timer_softirq);
+//  2016-08-13
+//  open_softirq(HRTIMER_SOFTIRQ, run_hrtimer_softirq);
+//  2016-08-13
+//  open_softirq(TASKLET_SOFTIRQ, tasklet_action);
+//  open_softirq(HI_SOFTIRQ, tasklet_hi_action);
 void open_softirq(int nr, void (*action)(struct softirq_action *))
 {
 	softirq_vec[nr].action = action;
@@ -425,13 +438,19 @@ void open_softirq(int nr, void (*action)(struct softirq_action *))
 /*
  * Tasklets
  */
+// 2016-08-13
 struct tasklet_head
 {
+	// 2016-08-13
 	struct tasklet_struct *head;
 	struct tasklet_struct **tail;
 };
 
+// 2016-08-13
+// struct tasklet_head tasklet_vec;
 static DEFINE_PER_CPU(struct tasklet_head, tasklet_vec);
+// 2016-08-13
+// struct tasklet_head tasklet_hi_vec;
 static DEFINE_PER_CPU(struct tasklet_head, tasklet_hi_vec);
 
 void __tasklet_schedule(struct tasklet_struct *t)
@@ -473,6 +492,8 @@ void __tasklet_hi_schedule_first(struct tasklet_struct *t)
 
 EXPORT_SYMBOL(__tasklet_hi_schedule_first);
 
+// 2016-08-13
+// open_softirq(TASKLET_SOFTIRQ, tasklet_action);
 static void tasklet_action(struct softirq_action *a)
 {
 	struct tasklet_struct *list;
@@ -508,6 +529,8 @@ static void tasklet_action(struct softirq_action *a)
 	}
 }
 
+// 2016-08-13
+// open_softirq(HI_SOFTIRQ, tasklet_hi_action);
 static void tasklet_hi_action(struct softirq_action *a)
 {
 	struct tasklet_struct *list;
@@ -627,6 +650,8 @@ EXPORT_SYMBOL_GPL(tasklet_hrtimer_init);
  * Remote softirq bits
  */
 
+// 2016-08-13
+// struct list_head softirq_work_list[NR_SOFTIRQS];
 DEFINE_PER_CPU(struct list_head [NR_SOFTIRQS], softirq_work_list);
 EXPORT_PER_CPU_SYMBOL(softirq_work_list);
 
@@ -713,6 +738,10 @@ void send_remote_softirq(struct call_single_data *cp, int cpu, int softirq)
 }
 EXPORT_SYMBOL(send_remote_softirq);
 
+// 2016-08-13
+// static struct notifier_block remote_softirq_cpu_notifier = {
+//          .notifier_call  = remote_softirq_cpu_notify,
+// };
 static int remote_softirq_cpu_notify(struct notifier_block *self,
 					       unsigned long action, void *hcpu)
 {
@@ -742,21 +771,31 @@ static int remote_softirq_cpu_notify(struct notifier_block *self,
 	return NOTIFY_OK;
 }
 
+// 2016-08-13
 static struct notifier_block remote_softirq_cpu_notifier = {
 	.notifier_call	= remote_softirq_cpu_notify,
 };
 
+// 2016-08-13
 void __init softirq_init(void)
 {
 	int cpu;
 
+	// per cpu value들을 초기화
+	// 1. tasklet_vec
+	// 2. tasklet_hi_vec
+	// 3. softirq_work_list[i]
 	for_each_possible_cpu(cpu) {
 		int i;
 
+		// tail이 head를 가르치도록, 환형으로 구성
+		// init tasklet_vec
 		per_cpu(tasklet_vec, cpu).tail =
 			&per_cpu(tasklet_vec, cpu).head;
+		// init tasklet_hi_vec,
 		per_cpu(tasklet_hi_vec, cpu).tail =
 			&per_cpu(tasklet_hi_vec, cpu).head;
+		// softirq_work_list[i] 초기화
 		for (i = 0; i < NR_SOFTIRQS; i++)
 			INIT_LIST_HEAD(&per_cpu(softirq_work_list[i], cpu));
 	}

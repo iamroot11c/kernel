@@ -199,6 +199,8 @@ extern void cpu_hotplug_enable(void);
 // 2016-07-23
 // hotcpu_notifier(radix_tree_callback, 0);
 #define hotcpu_notifier(fn, pri)	cpu_notifier(fn, pri)
+// 2016-08-13
+// register_hotcpu_notifier(&remote_softirq_cpu_notifier);
 #define register_hotcpu_notifier(nb)	register_cpu_notifier(nb)
 #define unregister_hotcpu_notifier(nb)	unregister_cpu_notifier(nb)
 void clear_tasks_mm_cpumask(int cpu);

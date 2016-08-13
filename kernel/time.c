@@ -355,6 +355,7 @@ EXPORT_SYMBOL(mktime);
  *	0 <= tv_nsec < NSEC_PER_SEC
  * For negative values only the tv_sec field is negative !
  */
+// 2016-08-13
 void set_normalized_timespec(struct timespec *ts, time_t sec, s64 nsec)
 {
 	while (nsec >= NSEC_PER_SEC) {
@@ -435,6 +436,7 @@ EXPORT_SYMBOL(ns_to_timeval);
  * We must also be careful about 32-bit overflows.
  */
 // 2015-09-05;
+// 2016-08-13
 unsigned long msecs_to_jiffies(const unsigned int m)
 {
 	/*

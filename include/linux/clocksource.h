@@ -19,6 +19,7 @@
 #include <asm/io.h>
 
 /* clocksource cycle base type */
+// 2016-08-13
 typedef u64 cycle_t;
 struct clocksource;
 struct module;
@@ -165,6 +166,7 @@ extern u64 timecounter_cyc2time(struct timecounter *tc,
  * @cycle_last:		most recent cycle counter value seen by ::read()
  * @owner:		module reference, must be set by clocksource in modules
  */
+// 2016-08-13
 struct clocksource {
 	/*
 	 * Hotpath data, fits in a single cache line when the
@@ -289,6 +291,7 @@ extern struct clocksource* clocksource_get_next(void);
 extern void clocksource_change_rating(struct clocksource *cs, int rating);
 extern void clocksource_suspend(void);
 extern void clocksource_resume(void);
+// 2016-08-13
 extern struct clocksource * __init __weak clocksource_default_clock(void);
 extern void clocksource_mark_unstable(struct clocksource *cs);
 

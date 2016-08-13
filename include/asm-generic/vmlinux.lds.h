@@ -159,6 +159,7 @@
 #define IRQCHIP_OF_MATCH_TABLE()
 #endif
 
+/*2016-08-13*/
 #ifdef CONFIG_COMMON_CLK
 #define CLK_OF_TABLES() . = ALIGN(8);				\
 			VMLINUX_SYMBOL(__clk_of_table) = .;	\

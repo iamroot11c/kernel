@@ -11,9 +11,11 @@ extern struct timezone sys_tz;
 /* Parameters used to convert the timespec values: */
 #define MSEC_PER_SEC	1000L  // 2015-09-05;
 #define USEC_PER_MSEC	1000L
+// 2016-08-13
 #define NSEC_PER_USEC	1000L
 #define NSEC_PER_MSEC	1000000L
 #define USEC_PER_SEC	1000000L
+// 2016-08-13, nano
 #define NSEC_PER_SEC	1000000000L
 #define FSEC_PER_SEC	1000000000000000LL
 
@@ -84,16 +86,20 @@ static inline struct timespec timespec_sub(struct timespec lhs,
 	return ts_delta;
 }
 
-#define KTIME_MAX			((s64)~((u64)1 << 63))
+// 2016-08-13
+// 양의 값중 최대값
+#define KTIME_MAX			((s64)~((u64)1 << 63))  // 최상위 부호비트를 0으로 만들고 나머지를 FF로 설정
 #if (BITS_PER_LONG == 64)
 # define KTIME_SEC_MAX			(KTIME_MAX / NSEC_PER_SEC)
 #else
+// 2016-08-13, 양의 값 중 최대값.
 # define KTIME_SEC_MAX			LONG_MAX
 #endif
 
 /*
  * Returns true if the timespec is norm, false if denorm:
  */
+// 2016-08-13
 static inline bool timespec_valid(const struct timespec *ts)
 {
 	/* Dates before 1970 are bogus */
@@ -105,6 +111,7 @@ static inline bool timespec_valid(const struct timespec *ts)
 	return true;
 }
 
+// 2016-08-13
 static inline bool timespec_valid_strict(const struct timespec *ts)
 {
 	if (!timespec_valid(ts))
@@ -122,6 +129,7 @@ static inline bool has_persistent_clock(void)
 	return persistent_clock_exist;
 }
 
+// 2016-08-13
 extern void read_persistent_clock(struct timespec *ts);
 extern void read_boot_clock(struct timespec *ts);
 extern int persistent_clock_is_local;

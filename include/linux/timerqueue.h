@@ -6,11 +6,13 @@
 
 
 // 2016-07-01
+// 2016-08-13
 struct timerqueue_node {
 	struct rb_node node;
 	ktime_t expires;
 };
 
+// 2016-08-13
 struct timerqueue_head {
 	struct rb_root head;
 	struct timerqueue_node *next;
@@ -45,6 +47,8 @@ static inline void timerqueue_init(struct timerqueue_node *node)
 	RB_CLEAR_NODE(&node->node);
 }
 
+// 2016-08-13
+//  timerqueue_init_head(&cpu_base->clock_base[i].active);
 static inline void timerqueue_init_head(struct timerqueue_head *head)
 {
 	head->head = RB_ROOT;

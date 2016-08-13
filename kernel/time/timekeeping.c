@@ -31,9 +31,13 @@
 #define TK_MIRROR		(1 << 1)
 #define TK_CLOCK_WAS_SET	(1 << 2)
 
+// 2016-08-13
 static struct timekeeper timekeeper;
+// 2016-08-13
 static DEFINE_RAW_SPINLOCK(timekeeper_lock);
+// 2016-08-13
 static seqcount_t timekeeper_seq;
+// 2016-08-13
 static struct timekeeper shadow_timekeeper;
 
 /* flag for if timekeeping is suspended */
@@ -50,6 +54,7 @@ static inline void tk_normalize_xtime(struct timekeeper *tk)
 	}
 }
 
+// 2016-08-13
 static void tk_set_xtime(struct timekeeper *tk, const struct timespec *ts)
 {
 	tk->xtime_sec = ts->tv_sec;
@@ -63,6 +68,7 @@ static void tk_xtime_add(struct timekeeper *tk, const struct timespec *ts)
 	tk_normalize_xtime(tk);
 }
 
+// 2016-08-13
 static void tk_set_wall_to_mono(struct timekeeper *tk, struct timespec wtm)
 {
 	struct timespec tmp;
@@ -80,6 +86,7 @@ static void tk_set_wall_to_mono(struct timekeeper *tk, struct timespec wtm)
 	tk->offs_tai = ktime_add(tk->offs_real, ktime_set(tk->tai_offset, 0));
 }
 
+// 2016-08-13
 static void tk_set_sleep_time(struct timekeeper *tk, struct timespec t)
 {
 	/* Verify consistency before modifying */
@@ -99,6 +106,7 @@ static void tk_set_sleep_time(struct timekeeper *tk, struct timespec t)
  *
  * Unless you're the timekeeping code, you should not be using this!
  */
+// 2016-08-13
 static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock)
 {
 	cycle_t interval;
@@ -107,11 +115,11 @@ static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock)
 
 	old_clock = tk->clock;
 	tk->clock = clock;
-	tk->cycle_last = clock->cycle_last = clock->read(clock);
+	tk->cycle_last = clock->cycle_last = clock->read(clock)/*jiffies_read(clock)*/;
 
 	/* Do the ns -> cycle conversion first, using original mult */
 	tmp = NTP_INTERVAL_LENGTH;
-	tmp <<= clock->shift;
+	tmp <<= clock->shift/*JIFFIES_SHIFT*/;
 	ntpinterval = tmp;
 	tmp += clock->mult/2;
 	do_div(tmp, clock->mult);
@@ -759,6 +767,7 @@ u64 timekeeping_max_deferment(void)
  *
  *  XXX - Do be sure to remove it once all arches implement it.
  */
+// 2016-08-13, weak
 void __attribute__((weak)) read_persistent_clock(struct timespec *ts)
 {
 	ts->tv_sec = 0;
@@ -774,6 +783,8 @@ void __attribute__((weak)) read_persistent_clock(struct timespec *ts)
  *
  *  XXX - Do be sure to remove it once all arches implement it.
  */
+// 2016-08-13
+// weak
 void __attribute__((weak)) read_boot_clock(struct timespec *ts)
 {
 	ts->tv_sec = 0;
@@ -783,6 +794,7 @@ void __attribute__((weak)) read_boot_clock(struct timespec *ts)
 /*
  * timekeeping_init - Initializes the clocksource and common timekeeping values
  */
+// 2016-08-13
 void __init timekeeping_init(void)
 {
 	struct timekeeper *tk = &timekeeper;
@@ -798,7 +810,7 @@ void __init timekeeping_init(void)
 		now.tv_sec = 0;
 		now.tv_nsec = 0;
 	} else if (now.tv_sec || now.tv_nsec)
-		persistent_clock_exist = true;
+		persistent_clock_exist = true;	// 2016-08-13, dummy fn에서 0으로 설정, 해당 없을 것 같다.
 
 	read_boot_clock(&boot);
 	if (!timespec_valid_strict(&boot)) {
@@ -809,10 +821,14 @@ void __init timekeeping_init(void)
 	}
 
 	raw_spin_lock_irqsave(&timekeeper_lock, flags);
+	// 2016-08-13
 	write_seqcount_begin(&timekeeper_seq);
+	
+	// network protocol initializes
 	ntp_init();
 
 	clock = clocksource_default_clock();
+	// 2016-08-13, enable은 설정되지 않은 것으로 보인다.
 	if (clock->enable)
 		clock->enable(clock);
 	tk_setup_internals(tk, clock);

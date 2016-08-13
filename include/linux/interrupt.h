@@ -343,16 +343,15 @@ extern bool force_irqthreads;
 
 enum
 {
-	HI_SOFTIRQ=0,
-	TIMER_SOFTIRQ,
+	HI_SOFTIRQ=0,       // 2016-08-13
+	TIMER_SOFTIRQ,      // 2016-08-13
 	NET_TX_SOFTIRQ,
 	NET_RX_SOFTIRQ,
 	BLOCK_SOFTIRQ,
 	BLOCK_IOPOLL_SOFTIRQ,
-	TASKLET_SOFTIRQ,
-    // 2016-07-09
-	SCHED_SOFTIRQ,
-	HRTIMER_SOFTIRQ,
+	TASKLET_SOFTIRQ,    // 2016-08-13
+	SCHED_SOFTIRQ,      // 2016-07-09
+	HRTIMER_SOFTIRQ,    // 2016-08-13
     // 2016-07-23
 	RCU_SOFTIRQ,    /* Preferable RCU should always be the last softirq */
 
@@ -432,6 +431,7 @@ extern void __send_remote_softirq(struct call_single_data *cp, int cpu,
      he makes it with spinlocks.
  */
 
+// 2016-08-13
 struct tasklet_struct
 {
 	struct tasklet_struct *next;

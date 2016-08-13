@@ -42,6 +42,7 @@
  * updating starting before the write_seqcountbeqin() and ending
  * after the write_seqcount_end().
  */
+// 2016-08-13
 typedef struct seqcount {
 	unsigned sequence;
 } seqcount_t;
@@ -152,12 +153,14 @@ static inline int read_seqcount_retry(const seqcount_t *s, unsigned start)
  * Sequence counter only version assumes that callers are using their
  * own mutexing.
  */
+// 2016-08-13
 static inline void write_seqcount_begin(seqcount_t *s)
 {
 	s->sequence++;
 	smp_wmb();
 }
 
+// 2016-08-13
 static inline void write_seqcount_end(seqcount_t *s)
 {
 	smp_wmb();

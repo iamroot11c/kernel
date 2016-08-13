@@ -15,6 +15,7 @@
 #include <linux/timer.h>
 #include <linux/sched_clock.h>
 
+// 2016-08-13
 struct clock_data {
 	u64 epoch_ns;
 	u32 epoch_cyc;
@@ -26,24 +27,62 @@ struct clock_data {
 };
 
 static void sched_clock_poll(unsigned long wrap_ticks);
+// 2016-08-13
+// #define DEFINE_TIMER(_name, _function, _expires, _data)     \
+//      struct timer_list _name =               \
+//          TIMER_INITIALIZER(_function, _expires, _data)
+//
+// #define __TIMER_INITIALIZER(_function, _expires, _data, _flags) { \
+//          .entry = { .prev = TIMER_ENTRY_STATIC },    \
+//          .function = (_function),            \
+//          .expires = (_expires),              \
+//          .data = (_data),                \
+//          .base = (void *)((unsigned long)&boot_tvec_bases + (_flags)), \
+//          .slack = -1,                    \
+//          __TIMER_LOCKDEP_MAP_INITIALIZER(        \
+//              __FILE__ ":" __stringify(__LINE__)) \
+//      }
+//  
+// #define TIMER_INITIALIZER(_function, _expires, _data)       \
+//     __TIMER_INITIALIZER((_function), (_expires), (_data), 0)
+
+// struct timer_list sched_clock_timer = { \
+//          .entry = { .prev = TIMER_ENTRY_STATIC },    \
+//          .function = (sched_clock_poll),            \
+//          .expires = (0),              \
+//          .data = (0),                \
+//          .base = (void *)((unsigned long)&boot_tvec_bases + (0)), \
+//          .slack = -1,                    \
+//      }
+
 static DEFINE_TIMER(sched_clock_timer, sched_clock_poll, 0, 0);
 static int irqtime = -1;
 
 core_param(irqtime, irqtime, int, 0400);
 
+// 2016-08-13
+// setup_sched_clock(jiffy_sched_clock_read, 32, HZ);
+// .rate = HZ/*100*/
 static struct clock_data cd = {
 	.mult	= NSEC_PER_SEC / HZ,
 };
 
+// 2016-08-13
 static u32 __read_mostly sched_clock_mask = 0xffffffff;
 
+// 2016-08-13
 static u32 notrace jiffy_sched_clock_read(void)
 {
-	return (u32)(jiffies - INITIAL_JIFFIES);
+	return (u32)(jiffies - INITIAL_JIFFIES/*(-300*HZ))*/);
 }
 
+// 2016-08-13
+// setup_sched_clock(jiffy_sched_clock_read, 32, HZ);
 static u32 __read_mostly (*read_sched_clock)(void) = jiffy_sched_clock_read;
 
+// 2016-08-13
+// cyc_to_ns((1ULL << bits) - 1, cd.mult, cd.shift);
+// cyc_to_ns(1ULL, cd.mult, cd.shift);
 static inline u64 notrace cyc_to_ns(u64 cyc, u32 mult, u32 shift)
 {
 	return (cyc * mult) >> shift;
@@ -80,6 +119,7 @@ static unsigned long long notrace sched_clock_32(void)
 /*
  * Atomically update the sched_clock epoch.
  */
+// 2016-08-13
 static void notrace update_sched_clock(void)
 {
 	unsigned long flags;
@@ -103,12 +143,16 @@ static void notrace update_sched_clock(void)
 	raw_local_irq_restore(flags);
 }
 
+// 2016-08-13
+// sched_clock_poll(sched_clock_timer.data)
 static void sched_clock_poll(unsigned long wrap_ticks)
 {
 	mod_timer(&sched_clock_timer, round_jiffies(jiffies + wrap_ticks));
 	update_sched_clock();
 }
 
+// 2016-08-13
+// setup_sched_clock(jiffy_sched_clock_read, 32, HZ);
 void __init setup_sched_clock(u32 (*read)(void), int bits, unsigned long rate)
 {
 	unsigned long r, w;
@@ -152,6 +196,7 @@ void __init setup_sched_clock(u32 (*read)(void), int bits, unsigned long rate)
 	 * sets the initial epoch.
 	 */
 	sched_clock_timer.data = msecs_to_jiffies(w - (w / 10));
+	// sched_clock epoch
 	update_sched_clock();
 
 	/*
@@ -173,6 +218,7 @@ unsigned long long notrace sched_clock(void)
 	return sched_clock_func();
 }
 
+// 2016-08-13
 void __init sched_clock_postinit(void)
 {
 	/*
@@ -180,8 +226,10 @@ void __init sched_clock_postinit(void)
 	 * make it the final one one.
 	 */
 	if (read_sched_clock == jiffy_sched_clock_read)
-		setup_sched_clock(jiffy_sched_clock_read, 32, HZ);
+		setup_sched_clock(jiffy_sched_clock_read, 32, HZ);	// 2016-08-13
 
+	// 2016-08-13, 여기까지
+	// 2016-08-20, 여기부터
 	sched_clock_poll(sched_clock_timer.data);
 }
 

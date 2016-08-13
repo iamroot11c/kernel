@@ -1,6 +1,21 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [107주차]() `2016.08.13`
+ - [sched_clock_postinit() 진행중]()
+ - kernel/timer.c:init_timers() 진행 완료
+ - kernel/timer.c:timer_cpu_notify() 진행 완료
+ - kernel/hrtimer.c:hrtimers_init() 진행 완료
+ - kernel/hrtimer.c:hrtimer_cpu_notify() 진행 완료
+ - kernel/hrtimer.c:init_hrtimers_cpu() 진행 완료
+ - kernel/softirq.c:softirq_init() 진행 완료
+ - time/timekeeping.c:timekeeping_init() 진행 완료
+ - arch/arm/kernel/time.c:time_init() 진행 완료
+ - arch/arm/mach-exynos/common.c:exynos_init_time() 진행 완료
+ - kernel/time/sched_clock.c:sched_clock_postinit() 진행중
+ - kernel/time/sched_clock.c:setup_sched_clock() 진행 완료
+ - kernel/time/sched_clock.c:sched_clock_poll() 진행 중
+
 + [106주차](http://bit.ly/2b18bLS) `2016.08.06`
  - [init_timers() 진행중]()
  - kernel/timer.c:init_timers() 진행 중

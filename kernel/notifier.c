@@ -29,7 +29,11 @@ BLOCKING_NOTIFIER_HEAD(reboot_notifier_list);
 // slab_notifier -> NULL
 // notifier_chain_register(&cpu_chain, &rcu_cpu_notify_nb)
 // 우선 순위가 동일한 것으로 판단되어서, 결과가 아래와 같을 것으로 예상한다.
-// slab_notifier -> rcu_cpu_notify_nb -> radix_tree_callback_nb -> NULL
+// 2016-08-13
+// slab_notifier -> rcu_cpu_notify_nb -> radix_tree_callback_nb -> timer_nb -> NULL
+// slab_notifier -> rcu_cpu_notify_nb -> radix_tree_callback_nb -> timer_nb -> hrtimers_nb -> NULL
+// slab_notifier -> rcu_cpu_notify_nb -> radix_tree_callback_nb -> timer_nb -> hrtimers_nb 
+// -> remote_softirq_cpu_notifier -> NULL
 
 // 2016-07-23
 // 전달된 chain에 따라서 다르게 구성된다.
@@ -403,6 +407,10 @@ EXPORT_SYMBOL_GPL(blocking_notifier_call_chain);
 // 2016-07-23
 // raw_notifier_chain_register(&cpu_chain, &rcu_cpu_notify_nb)
 // raw_notifier_chain_register(&cpu_chain, &radix_tree_callback_nb)
+// 2016-08-13
+// raw_notifier_chain_register(&cpu_chain, &timer_nb);
+// raw_notifier_chain_register(&cpu_chain, &hrtimers_nb);
+// raw_notifier_chain_register(&cpu_chain, &remote_softirq_cpu_notifier);
 int raw_notifier_chain_register(struct raw_notifier_head *nh,
 		struct notifier_block *n)
 {

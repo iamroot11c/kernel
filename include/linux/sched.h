@@ -1897,7 +1897,7 @@ extern void sched_clock_idle_sleep_event(void);
 extern void sched_clock_idle_wakeup_event(u64 delta_ns);
 #endif
 
-#ifdef CONFIG_IRQ_TIME_ACCOUNTING
+#ifdef CONFIG_IRQ_TIME_ACCOUNTING       // =n
 /*
  * An i/f to runtime opt-in for irq time accounting based off of sched_clock.
  * The reason for this explicit opt-in is not to have perf penalty with
@@ -1906,6 +1906,7 @@ extern void sched_clock_idle_wakeup_event(u64 delta_ns);
 extern void enable_sched_clock_irqtime(void);
 extern void disable_sched_clock_irqtime(void);
 #else
+// 2016-08-13
 static inline void enable_sched_clock_irqtime(void) {}
 static inline void disable_sched_clock_irqtime(void) {}
 #endif

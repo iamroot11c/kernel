@@ -786,6 +786,8 @@ EXPORT_SYMBOL(of_match_node);
  */
 // 2016-08-06
 // of_find_matching_node_and_match(NULL, matches, NULL)
+// 2016-08-13
+// of_find_matching_node_and_match(NULL, matches, match)
 struct device_node *of_find_matching_node_and_match(struct device_node *from,
 					const struct of_device_id *matches,
 					const struct of_device_id **match)

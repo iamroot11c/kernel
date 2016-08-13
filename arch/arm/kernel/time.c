@@ -78,22 +78,29 @@ void timer_tick(void)
 }
 #endif
 
+// 2016-08-13
 static void dummy_clock_access(struct timespec *ts)
 {
 	ts->tv_sec = 0;
 	ts->tv_nsec = 0;
 }
 
+// 2016-0813
 static clock_access_fn __read_persistent_clock = dummy_clock_access;
-static clock_access_fn __read_boot_clock = dummy_clock_access;;
+// 2016-08-13
+static clock_access_fn __read_boot_clock = dummy_clock_access;
 
+// 2016-08-13
 void read_persistent_clock(struct timespec *ts)
 {
+	//dummy_clock_access(ts);
 	__read_persistent_clock(ts);
 }
 
+// 2016-08-13
 void read_boot_clock(struct timespec *ts)
 {
+	// dummy_clock_access(ts);
 	__read_boot_clock(ts);
 }
 
@@ -114,8 +121,12 @@ int __init register_persistent_clock(clock_access_fn read_boot,
 	return -EINVAL;
 }
 
+// 2016-08-13
 void __init time_init(void)
 {
+	// mach-exynos5-dt.c
+	// .init_time      = exynos_init_time,
+	// machine_desc->init_time = 
 	if (machine_desc->init_time)
 		machine_desc->init_time();
 	else

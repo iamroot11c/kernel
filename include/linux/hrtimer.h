@@ -147,6 +147,7 @@ struct hrtimer_clock_base {
 	struct hrtimer_cpu_base	*cpu_base;
 	int			index;
 	clockid_t		clockid;
+    // 2016-08-13
 	struct timerqueue_head	active;
 	ktime_t			resolution;
 	ktime_t			(*get_time)(void);
@@ -154,6 +155,7 @@ struct hrtimer_clock_base {
 	ktime_t			offset;
 };
 
+// 2016-08-13
 enum  hrtimer_base_type {
 	HRTIMER_BASE_MONOTONIC,
 	HRTIMER_BASE_REALTIME,
@@ -179,11 +181,13 @@ enum  hrtimer_base_type {
  * @clock_base:		array of clock bases for this cpu
  */
 // 2016-07-01
+// 2016-08-13
 struct hrtimer_cpu_base {
 	raw_spinlock_t			lock;
 	unsigned int			active_bases;
 	unsigned int			clock_was_set;
 #ifdef CONFIG_HIGH_RES_TIMERS
+    // 2016-08-13
 	ktime_t				expires_next;
 	int				hres_active;
 	int				hang_detected;
@@ -192,6 +196,7 @@ struct hrtimer_cpu_base {
 	unsigned long			nr_hangs;
 	ktime_t				max_hang_time;
 #endif
+    // 2016-08-13
 	struct hrtimer_clock_base	clock_base[HRTIMER_MAX_CLOCK_BASES];
 };
 

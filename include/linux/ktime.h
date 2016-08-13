@@ -43,6 +43,7 @@
  * plain scalar nanosecond based representation can be selected by the
  * config switch CONFIG_KTIME_SCALAR.
  */
+// 2016-08-13
 union ktime {
 	s64	tv64;
 #if BITS_PER_LONG != 64 && !defined(CONFIG_KTIME_SCALAR)
@@ -144,6 +145,7 @@ static inline ktime_t timeval_to_ktime(struct timeval tv)
  */
 
 /* Set a ktime_t variable to a value in sec/nsec representation: */
+// 2016-08-13
 static inline ktime_t ktime_set(const long secs, const unsigned long nsecs)
 {
 	return (ktime_t) { .tv = { .sec = secs, .nsec = nsecs } };
@@ -168,12 +170,14 @@ static inline ktime_t ktime_sub(const ktime_t lhs, const ktime_t rhs)
 }
 
 /**
+ * 
  * ktime_add - add two ktime_t variables
  * @add1:	addend1
  * @add2:	addend2
  *
  * Return: The sum of @add1 and @add2.
  */
+// 2016-08-13
 static inline ktime_t ktime_add(const ktime_t add1, const ktime_t add2)
 {
 	ktime_t res;
@@ -217,6 +221,7 @@ extern ktime_t ktime_sub_ns(const ktime_t kt, u64 nsec);
  *
  * Return: A ktime_t variable with the converted timespec value.
  */
+// 2016-08-13
 static inline ktime_t timespec_to_ktime(const struct timespec ts)
 {
 	return (ktime_t) { .tv = { .sec = (s32)ts.tv_sec,

@@ -37,6 +37,7 @@
  * requested HZ value. It is also not recommended
  * for "tick-less" systems.
  */
+// 2016-08-13
 #define NSEC_PER_JIFFY	((NSEC_PER_SEC+HZ/2)/HZ)
 
 /* Since jiffies uses a simple NSEC_PER_JIFFY multiplier
@@ -56,14 +57,17 @@
 #elif HZ < 67
 #define JIFFIES_SHIFT	7
 #else
+// 2016-08-13
 #define JIFFIES_SHIFT	8
 #endif
 
+// 2016-08-13
 static cycle_t jiffies_read(struct clocksource *cs)
 {
 	return (cycle_t) jiffies;
 }
 
+// 2016-08-13
 static struct clocksource clocksource_jiffies = {
 	.name		= "jiffies",
 	.rating		= 1, /* lowest valid rating*/
@@ -99,6 +103,7 @@ static int __init init_jiffies_clocksource(void)
 
 core_initcall(init_jiffies_clocksource);
 
+// 2016-08-13
 struct clocksource * __init __weak clocksource_default_clock(void)
 {
 	return &clocksource_jiffies;

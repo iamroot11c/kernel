@@ -370,6 +370,7 @@ static void __init exynos5_map_io(void)
 		iotable_init(exynos5250_iodesc, ARRAY_SIZE(exynos5250_iodesc));
 }
 
+// 2016-08-13
 void __init exynos_init_time(void)
 {
 	of_clk_init(NULL);

@@ -658,11 +658,23 @@ asmlinkage void __init start_kernel(void)
 	// 2016-08-06 완료
 	// 2016-08-06 시작
 	init_timers();
+	// 2016-08-13 완료
+	// 2016-08-13 start
 	hrtimers_init();
+	// 2016-08-13 end
+	// 2016-08-13 start
 	softirq_init();
+	// 2016-08-13 end
+	// 2016-08-13 start
 	timekeeping_init();
+	// 2016-08-13 end
+	// 2016-08-13 start
+	// arch별로 init
 	time_init();
+	// 2016-08-13 end
+	// 2016-08-13 start
 	sched_clock_postinit();
+	// 2016-08-13 end
 	perf_event_init();
 	profile_init();
 	call_function_init();
