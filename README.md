@@ -1,7 +1,7 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
-+ [107주차]() `2016.08.13`
++ [107주차](http://bit.ly/2aSelOn) `2016.08.13`
  - [sched_clock_postinit() 진행중]()
  - kernel/timer.c:init_timers() 진행 완료
  - kernel/timer.c:timer_cpu_notify() 진행 완료
