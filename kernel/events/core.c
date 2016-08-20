@@ -148,7 +148,9 @@ static atomic_t nr_task_events __read_mostly;
 static atomic_t nr_freq_events __read_mostly;
 
 static LIST_HEAD(pmus);
+// 2016-08-20
 static DEFINE_MUTEX(pmus_lock);
+// 2016-08-20
 static struct srcu_struct pmus_srcu;
 
 /*
@@ -859,6 +861,8 @@ void perf_pmu_enable(struct pmu *pmu)
 		pmu->pmu_enable(pmu);
 }
 
+// 2016-08-20
+// .data..percpu struct list_head rotation_list;
 static DEFINE_PER_CPU(struct list_head, rotation_list);
 
 /*
@@ -5332,6 +5336,7 @@ int perf_event_overflow(struct perf_event *event,
  * Generic software event infrastructure
  */
 
+// 2016-08-20
 struct swevent_htable {
 	struct swevent_hlist		*swevent_hlist;
 	struct mutex			hlist_mutex;
@@ -5341,6 +5346,9 @@ struct swevent_htable {
 	int				recursion[PERF_NR_CONTEXTS];
 };
 
+// 2016-08-20 
+// swevent_htable percpu 타입 전역변수 설정
+// struct swevent_htable swevent_htable;
 static DEFINE_PER_CPU(struct swevent_htable, swevent_htable);
 
 /*
@@ -6283,6 +6291,7 @@ static void free_pmu_context(struct pmu *pmu)
 out:
 	mutex_unlock(&pmus_lock);
 }
+// 2016-08-20
 static struct idr pmu_idr;
 
 static ssize_t
@@ -6386,6 +6395,10 @@ free_dev:
 static struct lock_class_key cpuctx_mutex;
 static struct lock_class_key cpuctx_lock;
 
+// 2016-08-20
+// perf_pmu_register(&perf_swevent, "software", PERF_TYPE_SOFTWARE);
+// perf_pmu_register(&perf_cpu_clock, NULL, -1);
+// perf_pmu_register(&perf_task_clock, NULL, -1);
 int perf_pmu_register(struct pmu *pmu, const char *name, int type)
 {
 	int cpu, ret;
@@ -7748,6 +7761,7 @@ int perf_event_init_task(struct task_struct *child)
 	return 0;
 }
 
+// 2016-08-20
 static void __init perf_event_init_all_cpus(void)
 {
 	struct swevent_htable *swhash;
@@ -7872,6 +7886,7 @@ perf_cpu_notify(struct notifier_block *self, unsigned long action, void *hcpu)
 	return NOTIFY_OK;
 }
 
+// 2016-08-20
 void __init perf_event_init(void)
 {
 	int ret;
@@ -7879,7 +7894,9 @@ void __init perf_event_init(void)
 	idr_init(&pmu_idr);
 
 	perf_event_init_all_cpus();
+	// 2016-08-20 시작
 	init_srcu_struct(&pmus_srcu);
+	// 2016-08-20 완료
 	perf_pmu_register(&perf_swevent, "software", PERF_TYPE_SOFTWARE);
 	perf_pmu_register(&perf_cpu_clock, NULL, -1);
 	perf_pmu_register(&perf_task_clock, NULL, -1);

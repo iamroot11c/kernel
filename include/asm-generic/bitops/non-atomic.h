@@ -15,7 +15,9 @@
 // 2015-01-25
 // 2015-12-17;
 // 2016-04-16
+// 2016-08-20
 // __set_bit(i, populated);
+// nr 번째 비트를 1로 세팅
 static inline void __set_bit(int nr, volatile unsigned long *addr)
 {
 	unsigned long mask = BIT_MASK(nr);

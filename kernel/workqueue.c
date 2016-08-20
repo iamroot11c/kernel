@@ -229,6 +229,7 @@ struct wq_device;
  * The externally visible workqueue.  It relays the issued work items to
  * the appropriate worker_pool through its pool_workqueues.
  */
+// 2016-08-20
 struct workqueue_struct {
 	struct list_head	pwqs;		/* WR: all pwqs of this wq */
 	struct list_head	list;		/* PL: list of all workqueues */
@@ -1434,6 +1435,7 @@ bool queue_work_on(int cpu, struct workqueue_struct *wq,
 }
 EXPORT_SYMBOL(queue_work_on);
 
+// srcu.c init_srcu_struct_fields() 함수에서 콜백으로 등록
 void delayed_work_timer_fn(unsigned long __data)
 {
 	struct delayed_work *dwork = (struct delayed_work *)__data;

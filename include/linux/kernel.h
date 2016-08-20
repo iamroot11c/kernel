@@ -18,6 +18,8 @@
 #define USHRT_MAX	((u16)(~0U))
 #define SHRT_MAX	((s16)(USHRT_MAX>>1))
 #define SHRT_MIN	((s16)(-SHRT_MAX - 1))
+// 2016-08-20
+// 0x7fff_ffff
 #define INT_MAX		((int)(~0U>>1))
 #define INT_MIN		(-INT_MAX - 1)
 #define UINT_MAX	(~0U)
@@ -164,9 +166,11 @@ struct user;
 
 #ifdef CONFIG_PREEMPT_VOLUNTARY // not define
 extern int _cond_resched(void);
+
 # define might_resched() _cond_resched()
 #else
 // 2016-07-09
+// 2016-08-20
 # define might_resched() do { } while (0) // 2015-05-23
                                           // 2015-07-25;
 #endif
@@ -187,15 +191,18 @@ extern int _cond_resched(void);
 	do { __might_sleep(__FILE__, __LINE__, 0); might_resched(); } while (0)
 #else
   // 2015-07-04;
+  // 2016-08-20
   static inline void __might_sleep(const char *file, int line,
 				   int preempt_offset) { }
 // 2015-05-23;
 // 2015-07-25;
 // 2016-07-09
+// 2016-08-20
 # define might_sleep() do { might_resched(); } while (0)
 #endif
 
 // 2015-05-23;
+// 2016-08-20
 // might_sleep_if(gfp_mask & __GFP_WAIT);
 #define might_sleep_if(cond) do { if (cond) might_sleep(); } while (0)
 
@@ -760,6 +767,7 @@ static inline void ftrace_dump(enum ftrace_dump_mode oops_dump_mode) { }
  *
  * Or not use min/max/clamp at all, of course.
  */
+// 2016-08-20
 #define min_t(type, x, y) ({			\
 	type __min1 = (x);			\
 	type __min2 = (y);			\

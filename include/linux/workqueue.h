@@ -104,6 +104,7 @@ enum {
 
 // 2015-09-05;
 // 2016-05-28
+// 2016-08-20
 struct work_struct {
 	atomic_long_t data;
 	struct list_head entry;
@@ -119,6 +120,7 @@ struct work_struct {
 	ATOMIC_LONG_INIT(WORK_STRUCT_NO_POOL | WORK_STRUCT_STATIC)
 
 // 2015-09-05;
+// 2016-08-20
 struct delayed_work {
 	struct work_struct work;
 	struct timer_list timer;
@@ -270,6 +272,7 @@ static inline unsigned int work_static(struct work_struct *work) { return 0; }
 				       (_tflags) | TIMER_IRQSAFE);	\
 	} while (0)
 
+// 2016-08-20
 #define INIT_DELAYED_WORK(_work, _func)					\
 	__INIT_DELAYED_WORK(_work, _func, 0)
 

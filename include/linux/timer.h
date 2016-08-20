@@ -114,7 +114,7 @@ static inline void init_timer_on_stack_key(struct timer_list *timer,
 }
 #endif
 
-#ifdef CONFIG_LOCKDEP
+#ifdef CONFIG_LOCKDEP // not defined
 #define __init_timer(_timer, _flags)					\
 	do {								\
 		static struct lock_class_key __key;			\

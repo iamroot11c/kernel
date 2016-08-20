@@ -38,11 +38,13 @@
 #include <linux/percpu.h>
 #include <linux/hardirq.h>
 
-#define MAX_IDR_SHIFT		(sizeof(int) * 8 - 1)
-#define MAX_IDR_BIT		(1U << MAX_IDR_SHIFT)
+// 2016-08-20
+#define MAX_IDR_SHIFT		(sizeof(int) * 8 - 1) // 31
+#define MAX_IDR_BIT		(1U << MAX_IDR_SHIFT) // 2^31
 
 /* Leave the possibility of an incomplete final layer */
-#define MAX_IDR_LEVEL ((MAX_IDR_SHIFT + IDR_BITS - 1) / IDR_BITS)
+// 2016-08-20
+#define MAX_IDR_LEVEL ((MAX_IDR_SHIFT + IDR_BITS - 1) / IDR_BITS) // 4
 
 /* Number of id_layer structs to leave in free list */
 #define MAX_IDR_FREE (MAX_IDR_LEVEL * 2)
@@ -54,6 +56,7 @@ static DEFINE_PER_CPU(int, idr_preload_cnt);
 static DEFINE_SPINLOCK(simple_ida_lock);
 
 /* the maximum ID which can be allocated given idr->layers */
+// 2016-08-20
 static int idr_max(int layers)
 {
 	int bits = min_t(int, layers * IDR_BITS, MAX_IDR_SHIFT);
@@ -66,6 +69,7 @@ static int idr_max(int layers)
  * all bits except for the lower IDR_BITS.  For layer 1, 2 * IDR_BITS, and
  * so on.
  */
+// 2016-08-20
 static int idr_layer_prefix_mask(int layer)
 {
 	return ~idr_max(layer + 1);
@@ -99,6 +103,8 @@ static struct idr_layer *get_from_free_list(struct idr *idp)
  * interface - idr_pre_get() and idr_get_new*() - and will be removed
  * together with per-pool preload buffer.
  */
+// 2016-08-20
+// glance
 static struct idr_layer *idr_layer_alloc(gfp_t gfp_mask, struct idr *layer_idr)
 {
 	struct idr_layer *new;
@@ -158,6 +164,8 @@ static inline void free_layer(struct idr *idr, struct idr_layer *p)
 }
 
 /* only called when idp->lock is held */
+// 2016-08-20
+// __move_to_free_list(idp, new);
 static void __move_to_free_list(struct idr *idp, struct idr_layer *p)
 {
 	p->ary[0] = idp->id_free;
@@ -295,6 +303,8 @@ static int sub_alloc(struct idr *idp, int *starting_id, struct idr_layer **pa,
 	return id;
 }
 
+// 2016-08-20
+// idr_get_empty_slot(idr, start, pa, gfp_mask, NULL);
 static int idr_get_empty_slot(struct idr *idp, int starting_id,
 			      struct idr_layer **pa, gfp_t gfp_mask,
 			      struct idr *layer_idr)
@@ -317,6 +327,10 @@ build_up:
 	 * Add a new layer to the top of the tree if the requested
 	 * id is larger than the currently allocated space.
 	 */
+	// 2016-08-20 분석 시점에서는 idr이 초기화된 상태에서 이 함수가 
+	// 호출되었기 때문에 idr_max()함수에서는 0이 리턴될 것이다.
+	// 또한 PERF_TYPE_MAX 값으로 starting_id가 설정되었기 때문에
+	// 조건을 만족할 때까지 layers값이 증가될 것이다.
 	while (id > idr_max(layers)) {
 		layers++;
 		if (!p->count) {
@@ -351,7 +365,8 @@ build_up:
 		if (bitmap_full(p->bitmap, IDR_SIZE))
 			__set_bit(0, new->bitmap);
 		p = new;
-	}
+	} // while
+	// 2016-08-20 여기까지
 	rcu_assign_pointer(idp->top, p);
 	idp->layers = layers;
 	v = sub_alloc(idp, &id, pa, gfp_mask, layer_idr);
@@ -470,13 +485,16 @@ EXPORT_SYMBOL(idr_preload);
  * or iteration can be performed under RCU read lock provided the user
  * destroys @ptr in RCU-safe way after removal from idr.
  */
+// 2016-08-20
+// idr_alloc(&pmu_idr, pmu, PERF_TYPE_MAX, 0, GFP_KERNEL);
 int idr_alloc(struct idr *idr, void *ptr, int start, int end, gfp_t gfp_mask)
 {
 	int max = end > 0 ? end - 1 : INT_MAX;	/* inclusive upper limit */
 	struct idr_layer *pa[MAX_IDR_LEVEL + 1];
 	int id;
 
-	might_sleep_if(gfp_mask & __GFP_WAIT);
+	// gfp_mask -> GFP_KERNEL이 들어온 경우 __GFP_WAIT가 설정되어 있다.
+	might_sleep_if(gfp_mask & __GFP_WAIT); // no op
 
 	/* sanity checks */
 	if (WARN_ON_ONCE(start < 0))
@@ -485,6 +503,7 @@ int idr_alloc(struct idr *idr, void *ptr, int start, int end, gfp_t gfp_mask)
 		return -ENOSPC;
 
 	/* allocate id */
+	// 2016-08-20
 	id = idr_get_empty_slot(idr, start, pa, gfp_mask, NULL);
 	if (unlikely(id < 0))
 		return id;
@@ -867,6 +886,7 @@ void __init idr_init_cache(void)
  * This function is use to set up the handle (@idp) that you will pass
  * to the rest of the functions.
  */
+// 2016-08-20
 void idr_init(struct idr *idp)
 {
 	memset(idp, 0, sizeof(struct idr));

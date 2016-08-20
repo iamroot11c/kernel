@@ -674,7 +674,8 @@ asmlinkage void __init start_kernel(void)
 	// 2016-08-13 end
 	// 2016-08-13 start
 	sched_clock_postinit();
-	// 2016-08-13 end
+	// 2016-08-20 end
+	// 2016-08-20 start
 	perf_event_init();
 	profile_init();
 	call_function_init();

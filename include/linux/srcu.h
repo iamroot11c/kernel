@@ -33,6 +33,7 @@
 #include <linux/rcupdate.h>
 #include <linux/workqueue.h>
 
+// 2016-08-20
 struct srcu_struct_array {
 	unsigned long c[2];
 	unsigned long seq[2];
@@ -44,6 +45,7 @@ struct rcu_batch {
 
 #define RCU_BATCH_INIT(name) { NULL, &(name.head) }
 
+// 2016-08-20
 struct srcu_struct {
 	unsigned completed;
 	struct srcu_struct_array __percpu *per_cpu_ref;

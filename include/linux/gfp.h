@@ -121,6 +121,7 @@ struct vm_area_struct;
 #define GFP_ATOMIC	(__GFP_HIGH)
 #define GFP_NOIO	(__GFP_WAIT)
 #define GFP_NOFS	(__GFP_WAIT | __GFP_IO)
+// 2016-08-20
 #define GFP_KERNEL	(__GFP_WAIT | __GFP_IO | __GFP_FS) // 0xD0 = 0x10 | 0x40 | 0x80;
 #define GFP_TEMPORARY	(__GFP_WAIT | __GFP_IO | __GFP_FS | \
 			 __GFP_RECLAIMABLE)

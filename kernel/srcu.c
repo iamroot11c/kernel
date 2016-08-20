@@ -98,6 +98,7 @@ static inline void rcu_batch_move(struct rcu_batch *to, struct rcu_batch *from)
 	}
 }
 
+// 2016-08-20
 static int init_srcu_struct_fields(struct srcu_struct *sp)
 {
 	sp->completed = 0;
@@ -107,6 +108,37 @@ static int init_srcu_struct_fields(struct srcu_struct *sp)
 	rcu_batch_init(&sp->batch_check0);
 	rcu_batch_init(&sp->batch_check1);
 	rcu_batch_init(&sp->batch_done);
+
+	/*
+////////////////////////////////////////////////////////////////////////
+	 *#define INIT_DELAYED_WORK(_work, _func)			\
+     __INIT_DELAYED_WORK(_work, _func, 0)
+////////////////////////////////////////////////////////////////////////
+ #define __INIT_DELAYED_WORK(_work, _func, _tflags)			\
+     do {								\
+         INIT_WORK(&(_work)->work, (_func));				\
+         __setup_timer(&(_work)->timer, delayed_work_timer_fn,		\
+                   (unsigned long)(_work),				\
+                   (_tflags) | TIMER_IRQSAFE);				\
+     } while (0)
+
+///////////////////////////////////////////////////////////////////////
+ #define __setup_timer(_timer, _fn, _data, _flags)			\
+     do {								\
+         init_timer_key((_timer), (_flags), NULL, NULL); // timer 초기화\
+	 (_timer)->function = (_fn); // delayed_work_timer_fn		\
+         (_timer)->data = (_data); // (unsigned long)work		\
+     } while (0)
+
+/////////////////////////////////////////////////////////////////////////
+ #define INIT_WORK(_work, _func)					 \
+	do {                                				 \
+		 __init_work((_work), 0); // No OP.			 \
+		(_work)->data = (atomic_long_t)WORK_STRUCT_NO_POOL;	 \
+		 INIT_LIST_HEAD(&(_work)->entry);			 \
+		(_work)->func = (_func);				 \
+	} while (0)
+	 */
 	INIT_DELAYED_WORK(&sp->work, process_srcu);
 	sp->per_cpu_ref = alloc_percpu(struct srcu_struct_array);
 	return sp->per_cpu_ref ? 0 : -ENOMEM;
@@ -134,6 +166,7 @@ EXPORT_SYMBOL_GPL(__init_srcu_struct);
  * to any other function.  Each srcu_struct represents a separate domain
  * of SRCU protection.
  */
+// 2016-08-20
 int init_srcu_struct(struct srcu_struct *sp)
 {
 	return init_srcu_struct_fields(sp);
@@ -637,6 +670,8 @@ static void srcu_reschedule(struct srcu_struct *sp)
 /*
  * This is the work-queue function that handles SRCU grace periods.
  */
+// 2016-08-20
+// srcu.c -> init_srcu_struct_fields() 함수에서 아래 함수를 콜백으로 등록
 void process_srcu(struct work_struct *work)
 {
 	struct srcu_struct *sp;

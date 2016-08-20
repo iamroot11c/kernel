@@ -489,6 +489,7 @@ static inline void debug_hrtimer_deactivate(struct hrtimer *timer) { }
 #endif
 
 // 2016-07-01
+// 2016-08-20
 static inline void
 debug_init(struct hrtimer *timer, clockid_t clockid,
 	   enum hrtimer_mode mode)

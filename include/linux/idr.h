@@ -30,6 +30,7 @@
 #define IDR_MASK ((1 << IDR_BITS)-1)
 
 // 2016-07-09
+// radix tree 형태의 데이터 구조
 struct idr_layer {
 	int			prefix;	/* the ID prefix of this idr_layer */
     // 2016-07-09
@@ -42,6 +43,8 @@ struct idr_layer {
 	struct rcu_head		rcu_head;
 };
 
+// 2016-08-20
+// https://lwn.net/Articles/103209/
 struct idr {
 	struct idr_layer __rcu	*hint;	/* the last layer allocated from */
 	struct idr_layer __rcu	*top;

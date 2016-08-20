@@ -55,6 +55,7 @@ int __bitmap_empty(const unsigned long *bitmap, int bits)
 }
 EXPORT_SYMBOL(__bitmap_empty);
 
+// 2016-08-20
 int __bitmap_full(const unsigned long *bitmap, int bits)
 {
 	int k, lim = bits/BITS_PER_LONG;

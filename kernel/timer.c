@@ -139,8 +139,10 @@ static unsigned long round_jiffies_common(unsigned long j, int cpu,
 	 * The skew is done by adding 3*cpunr, then round, then subtract this
 	 * extra offset again.
 	 */
+	// cpu 동시 접근 이슈를 피하기 위해 전달받은 jiffies값에 일정 값을 더함
 	j += cpu * 3;
-
+	
+	// HZ로 나눈 나머지 계산
 	rem = j % HZ;
 
 	/*
@@ -150,18 +152,24 @@ static unsigned long round_jiffies_common(unsigned long j, int cpu,
 	 * as cutoff for this rounding as an extreme upper bound for this.
 	 * But never round down if @force_up is set.
 	 */
+
+	// 나머지가 HZ/4보다 작은 경우 && force_up 미설정 시 내림
 	if (rem < HZ/4 && !force_up) /* round down */
 		j = j - rem;
+	// 그 외의 경우 올림
 	else /* round up */
 		j = j - rem + HZ;
 
 	/* now that we have rounded, subtract the extra skew again */
+	// 임시로 더한 일정 값을 다시 빼줌
 	j -= cpu * 3;
 
 	/*
 	 * Make sure j is still in the future. Otherwise return the
 	 * unmodified value.
 	 */
+	// 현재 jiffies보다 작은 경우 파라미터로 전달 받은 값을
+	// 큰 경우 계산된 jiffies값을 리턴
 	return time_is_after_jiffies(j) ? j : original;
 }
 
@@ -236,6 +244,7 @@ EXPORT_SYMBOL_GPL(__round_jiffies_relative);
  * The return value is the rounded version of the @j parameter.
  */
 // 2016-08-13
+// round_jiffies(jiffies + wrap_ticks)
 unsigned long round_jiffies(unsigned long j)
 {
 	return round_jiffies_common(j, raw_smp_processor_id(), false);
@@ -348,6 +357,7 @@ void set_timer_slack(struct timer_list *timer, int slack_hz)
 EXPORT_SYMBOL_GPL(set_timer_slack);
 
 // 2015-09-12
+// 2016-08-20
 static void
 __internal_add_timer(struct tvec_base *base, struct timer_list *timer)
 {
@@ -646,20 +656,24 @@ static inline void debug_assert_init(struct timer_list *timer)
 	debug_timer_assert_init(timer);
 }
 
+// 2016-08-20
+// do_init_timer((_timer), TIMER_IRQSAFE, NULL, NULL)
 static void do_init_timer(struct timer_list *timer, unsigned int flags,
 			  const char *name, struct lock_class_key *key)
 {
+	// percpu 변수 tvec_bases에서 자신의 cpu와 일치하는 base 값을 얻어온다.
 	struct tvec_base *base = __raw_get_cpu_var(tvec_bases);
 
+	// timer 구조체 초기화
 	timer->entry.next = NULL;
 	timer->base = (void *)((unsigned long)base | flags);
 	timer->slack = -1;
-#ifdef CONFIG_TIMER_STATS
+#ifdef CONFIG_TIMER_STATS // not defined
 	timer->start_site = NULL;
 	timer->start_pid = -1;
 	memset(timer->start_comm, 0, TASK_COMM_LEN);
 #endif
-	lockdep_init_map(&timer->lockdep_map, name, key, 0);
+	lockdep_init_map(&timer->lockdep_map, name, key, 0); // no op
 }
 
 /**
@@ -673,6 +687,8 @@ static void do_init_timer(struct timer_list *timer, unsigned int flags,
  * init_timer_key() must be done to a timer prior calling *any* of the
  * other timer functions.
  */
+// 2016-08-20
+// init_timer_key((_timer), TIMER_IRQSAFE), NULL, NULL); 
 void init_timer_key(struct timer_list *timer, unsigned int flags,
 		    const char *name, struct lock_class_key *key)
 {
@@ -755,7 +771,9 @@ static struct tvec_base *lock_timer_base(struct timer_list *timer,
 }
 
 // 2015-09-05;
+// 2016-08-20
 // __mod_timer(timer, expires, false, TIMER_NOT_PINNED/*0*/);
+// exipired 값에 매칭되는 tvec_base값을 찾아 timer->entry에 추가
 static inline int
 __mod_timer(struct timer_list *timer, unsigned long expires,
 						bool pending_only, int pinned)
@@ -847,6 +865,8 @@ EXPORT_SYMBOL(mod_timer_pending);
  */
 // 2015-09-05;
 // 2016-08-13
+// 2016-08-20
+// 전달받은 expires 값 + 여유 값을 리턴한다.
 static inline
 unsigned long apply_slack(struct timer_list *timer, unsigned long expires)
 {
@@ -901,6 +921,7 @@ unsigned long apply_slack(struct timer_list *timer, unsigned long expires)
 // mod_timer(&sched_clock_timer, round_jiffies(jiffies + wrap_ticks));
 int mod_timer(struct timer_list *timer, unsigned long expires)
 {
+	// 여유 시간이 적용된 만기시간 리턴
 	expires = apply_slack(timer, expires);
 
 	/*

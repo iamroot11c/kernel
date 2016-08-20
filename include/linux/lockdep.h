@@ -395,6 +395,7 @@ static inline void lockdep_on(void)
 # define lockdep_trace_alloc(g)			do { } while (0) // 2015-05-23;
 # define lockdep_init()				do { } while (0)
 # define lockdep_info()				do { } while (0)
+// 2016-08-20
 # define lockdep_init_map(lock, name, key, sub) \
 		do { (void)(name); (void)(key); } while (0)
 // 2016-08-06

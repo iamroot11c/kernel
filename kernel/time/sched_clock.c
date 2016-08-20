@@ -61,6 +61,7 @@ static int irqtime = -1;
 core_param(irqtime, irqtime, int, 0400);
 
 // 2016-08-13
+// 2016-08-20
 // setup_sched_clock(jiffy_sched_clock_read, 32, HZ);
 // .rate = HZ/*100*/
 static struct clock_data cd = {
@@ -71,6 +72,7 @@ static struct clock_data cd = {
 static u32 __read_mostly sched_clock_mask = 0xffffffff;
 
 // 2016-08-13
+// 2016-08-20
 static u32 notrace jiffy_sched_clock_read(void)
 {
 	return (u32)(jiffies - INITIAL_JIFFIES/*(-300*HZ))*/);
@@ -120,13 +122,18 @@ static unsigned long long notrace sched_clock_32(void)
  * Atomically update the sched_clock epoch.
  */
 // 2016-08-13
+// 2016-08-20
+// 1) 현재 cycle, epoch ns 시간을 얻음
+// 2) clock data값을 설정 
 static void notrace update_sched_clock(void)
 {
 	unsigned long flags;
 	u32 cyc;
 	u64 ns;
 
+	// 현재 jiffies값을 초기값 보정을 하여 얻어옴
 	cyc = read_sched_clock();
+	// cyc -> 현재 부팅 기준 epoch 시간(유닉스 기준 시간) ns로 변환
 	ns = cd.epoch_ns +
 		cyc_to_ns((cyc - cd.epoch_cyc) & sched_clock_mask,
 			  cd.mult, cd.shift);
@@ -144,6 +151,7 @@ static void notrace update_sched_clock(void)
 }
 
 // 2016-08-13
+// 2016-08-20
 // sched_clock_poll(sched_clock_timer.data)
 static void sched_clock_poll(unsigned long wrap_ticks)
 {
@@ -195,6 +203,7 @@ void __init setup_sched_clock(u32 (*read)(void), int bits, unsigned long rate)
 	 * Start the timer to keep sched_clock() properly updated and
 	 * sets the initial epoch.
 	 */
+	// w * 9 / 10
 	sched_clock_timer.data = msecs_to_jiffies(w - (w / 10));
 	// sched_clock epoch
 	update_sched_clock();
@@ -229,8 +238,9 @@ void __init sched_clock_postinit(void)
 		setup_sched_clock(jiffy_sched_clock_read, 32, HZ);	// 2016-08-13
 
 	// 2016-08-13, 여기까지
-	// 2016-08-20, 여기부터
+	// 2016-08-20, 시작
 	sched_clock_poll(sched_clock_timer.data);
+	// 2016-08-20, 완료
 }
 
 static int sched_clock_suspend(void)
