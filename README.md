@@ -1,6 +1,17 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [108주차](http://bit.ly/2bBHh99) `2016.08.20`
+ - [sched_clock_postinit() 진행중]()
+ - kernel/time/sched_clock.c:sched_clock_postinit() 진행중
+ - kernel/time/sched_clock.c:setup_sched_clock() 진행 완료
+ - kernel/time/sched_clock.c:sched_clock_poll() 진행 완료
+ - kernel/events/core.c::pref_event_init() 진행 중
+ - kernel/lib/idr.c::idr_init() 진행 완료
+ - kernel/events/core.c::perf_event_init_all_cpus() 진행 완료
+ - kernel/kernel/srcu.c::init_srcu_struct() 진행 완료
+ - kernel/events/core.c::perf_pmu_register() 진행 
+
 + [107주차](http://bit.ly/2aSelOn) `2016.08.13`
  - [sched_clock_postinit() 진행중]()
  - kernel/timer.c:init_timers() 진행 완료
