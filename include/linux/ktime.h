@@ -58,6 +58,7 @@ union ktime {
 #endif
 };
 
+// 2016-09-10
 typedef union ktime ktime_t;		/* Kill this */
 
 /*
@@ -96,6 +97,7 @@ static inline ktime_t ktime_set(const long secs, const unsigned long nsecs)
  * res = kt + nsval:
  */
 // 2016-07-01
+// 2016-09-10
 #define ktime_add_ns(kt, nsval) \
 		({ (ktime_t){ .tv64 = (kt).tv64 + (nsval) }; })
 
@@ -380,11 +382,15 @@ extern void ktime_get_ts(struct timespec *ts);
 /* Get the real (wall-) time in timespec format: */
 #define ktime_get_real_ts(ts)	getnstimeofday(ts)
 // 2016-07-01
+// 2016-09-10
+// ns_to_ktime(NSEC_PER_MSEC * timer)
 static inline ktime_t ns_to_ktime(u64 ns)
 {
 	// ktime_zero += ns
     static const ktime_t ktime_zero = { .tv64 = 0 };
 
+    // #define ktime_add_ns(kt, nsval) \
+    //         ({ (ktime_t){ .tv64 = (kt).tv64 + (nsval) }; })
 	return ktime_add_ns(ktime_zero, ns);
 }
 

@@ -42,6 +42,7 @@ struct timerqueue_node *timerqueue_getnext(struct timerqueue_head *head)
 
 // 2016-07-01
 // timerqueue_init(&timer->node);
+// 2016-09-10
 static inline void timerqueue_init(struct timerqueue_node *node)
 {
 	RB_CLEAR_NODE(&node->node);

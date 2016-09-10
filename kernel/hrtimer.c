@@ -98,6 +98,7 @@ DEFINE_PER_CPU(struct hrtimer_cpu_base, hrtimer_bases) =
 };
 
 // 2016-07-01 
+// 2016-09-10
 static const int hrtimer_clock_to_base_table[MAX_CLOCKS] = {
 	[CLOCK_REALTIME]	= HRTIMER_BASE_REALTIME,
 	[CLOCK_MONOTONIC]	= HRTIMER_BASE_MONOTONIC,
@@ -107,6 +108,7 @@ static const int hrtimer_clock_to_base_table[MAX_CLOCKS] = {
 
 // 2016-07-01
 // hrtimer_base_type 타입 enum을 반환
+// 2016-09-10
 static inline int hrtimer_clockid_to_base(clockid_t clock_id)
 {
 	return hrtimer_clock_to_base_table[clock_id];
@@ -1188,6 +1190,9 @@ ktime_t hrtimer_get_next_event(void)
 // 2016-07-01
 //  __hrtimer_init(&rt_b->rt_period_timer,
 //                        CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+//
+// 2016-09-10
+// __hrtimer_init(hr, CLOCK_MONOTONIC, HRTIMER_MODE_REL_PINNED)
 static void __hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
 			   enum hrtimer_mode mode)
 {
@@ -1233,6 +1238,9 @@ static void __hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
 // // hrtimer_init(&rt_b->rt_period_timer,
 //                        CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 // hrtimer_init(&rq->hrtick_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+//
+// 2016-09-10
+// hrtimer_init(hr, CLOCK_MONOTONIC, HRTIMER_MODE_REL_PINNED)
 void hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
 		  enum hrtimer_mode mode)
 {

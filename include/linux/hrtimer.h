@@ -35,7 +35,7 @@ enum hrtimer_mode {
 	HRTIMER_MODE_REL = 0x1,		/* Time value is relative to now */
 	HRTIMER_MODE_PINNED = 0x02,	/* Timer is bound to CPU */
 	HRTIMER_MODE_ABS_PINNED = 0x02,
-	HRTIMER_MODE_REL_PINNED = 0x03,
+	HRTIMER_MODE_REL_PINNED = 0x03, // 2016-09-10
 };
 
 /*
@@ -156,6 +156,7 @@ struct hrtimer_clock_base {
 };
 
 // 2016-08-13
+// 2016-09-10
 enum  hrtimer_base_type {
 	HRTIMER_BASE_MONOTONIC,
 	HRTIMER_BASE_REALTIME,

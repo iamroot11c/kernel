@@ -169,6 +169,7 @@ struct perf_event;
 /**
  * struct pmu - generic performance monitoring unit
  */
+// 2016-09-10
 struct pmu {
 	struct list_head		entry;
 
@@ -449,6 +450,7 @@ enum perf_event_context_type {
  *
  * Used as a container for task events and CPU events as well:
  */
+// 2016-09-10
 struct perf_event_context {
 	struct pmu			*pmu;
 	enum perf_event_context_type	type;
@@ -504,6 +506,7 @@ struct perf_event_context {
 /**
  * struct perf_event_cpu_context - per cpu event context structure
  */
+// 2016-09-10
 struct perf_cpu_context {
 	struct perf_event_context	ctx;
 	struct perf_event_context	*task_ctx;
@@ -525,7 +528,7 @@ struct perf_output_handle {
 	int				page;
 };
 
-#ifdef CONFIG_PERF_EVENTS
+#ifdef CONFIG_PERF_EVENTS // not define
 
 extern int perf_pmu_register(struct pmu *pmu, const char *name, int type);
 extern void perf_pmu_unregister(struct pmu *pmu);

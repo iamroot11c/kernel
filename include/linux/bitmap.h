@@ -305,6 +305,9 @@ static inline int bitmap_empty(const unsigned long *src, int nbits)
 
 // 2016-08-20
 // *src 값에 0~nbits만큼이 전부 1로 세팅되어있는지 확인
+//
+// 2016-09-10
+// bitmap_full(p->bitmap, IDR_SIZE)
 static inline int bitmap_full(const unsigned long *src, int nbits)
 {
 	if (small_const_nbits(nbits))

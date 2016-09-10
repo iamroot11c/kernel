@@ -27,7 +27,7 @@
 #define IDR_BITS 8
 // 2016-07-09
 #define IDR_SIZE (1 << IDR_BITS)    // 256
-#define IDR_MASK ((1 << IDR_BITS)-1)
+#define IDR_MASK ((1 << IDR_BITS)-1) // 0xFF
 
 // 2016-07-09
 // radix tree 형태의 데이터 구조

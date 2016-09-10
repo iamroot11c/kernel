@@ -1,16 +1,26 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [109주차]() `2016.09.10`
+ - [perf_pmu_register() 진행중]()
+ - kernel/events/core.c:pref_event_init() 진행 중
+ - kernel/events/core.c:perf_pmu_register() 진행
+ - lib/idr.c:idr_alloc() 진행 완료
+ - lib/idr.c:idr_get_empty_slot() 진행 완료
+ - lib/idr.c:sub_alloc() 진행 완료
+ - kernel/events/core.c:__perf_event_init_context() 진행 완료
+ - kernel/events/core.c:__perf_cpu_hrtimer_init() 진행 완료
+
 + [108주차](http://bit.ly/2bBHh99) `2016.08.20`
  - [sched_clock_postinit() 진행중]()
  - kernel/time/sched_clock.c:sched_clock_postinit() 진행중
  - kernel/time/sched_clock.c:setup_sched_clock() 진행 완료
  - kernel/time/sched_clock.c:sched_clock_poll() 진행 완료
- - kernel/events/core.c::pref_event_init() 진행 중
- - kernel/lib/idr.c::idr_init() 진행 완료
- - kernel/events/core.c::perf_event_init_all_cpus() 진행 완료
- - kernel/kernel/srcu.c::init_srcu_struct() 진행 완료
- - kernel/events/core.c::perf_pmu_register() 진행 
+ - kernel/events/core.c:pref_event_init() 진행 중
+ - kernel/lib/idr.c:idr_init() 진행 완료
+ - kernel/events/core.c:perf_event_init_all_cpus() 진행 완료
+ - kernel/kernel/srcu.c:init_srcu_struct() 진행 완료
+ - kernel/events/core.c:perf_pmu_register() 진행 
 
 + [107주차](http://bit.ly/2aSelOn) `2016.08.13`
  - [sched_clock_postinit() 진행중]()

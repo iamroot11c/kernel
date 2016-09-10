@@ -13,6 +13,7 @@ extern struct timezone sys_tz;
 #define USEC_PER_MSEC	1000L
 // 2016-08-13
 #define NSEC_PER_USEC	1000L
+// 2016-09-10
 #define NSEC_PER_MSEC	1000000L
 #define USEC_PER_SEC	1000000L
 // 2016-08-13, nano

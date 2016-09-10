@@ -751,10 +751,14 @@ perf_cgroup_mark_enabled(struct perf_event *event,
  * set default to be dependent on timer tick just
  * like original code
  */
+// 2016-09-10
 #define PERF_CPU_HRTIMER (1000 / HZ)
 /*
  * function must be called with interrupts disbled
  */
+// 2016-09-10
+// __perf_cpu_hrtimer_init() 함수에서 hrtimer 구조체의 function 멤버의
+// 콜백함수로 등록됨
 static enum hrtimer_restart perf_cpu_hrtimer_handler(struct hrtimer *hr)
 {
 	struct perf_cpu_context *cpuctx;
@@ -806,6 +810,7 @@ void perf_cpu_hrtimer_cancel(int cpu)
 	local_irq_restore(flags);
 }
 
+// 2016-09-10
 static void __perf_cpu_hrtimer_init(struct perf_cpu_context *cpuctx, int cpu)
 {
 	struct hrtimer *hr = &cpuctx->hrtimer;
@@ -2980,6 +2985,8 @@ static u64 perf_event_read(struct perf_event *event)
 /*
  * Initialize the perf_event context in a task_struct:
  */
+// 2016-09-10
+// __perf_event_init_context(&cpuctx->ctx)
 static void __perf_event_init_context(struct perf_event_context *ctx)
 {
 	raw_spin_lock_init(&ctx->lock);
@@ -5770,6 +5777,7 @@ static int perf_swevent_event_idx(struct perf_event *event)
 	return 0;
 }
 
+// 2016-09-10
 static struct pmu perf_swevent = {
 	.task_ctx_nr	= perf_sw_context,
 
@@ -6116,6 +6124,7 @@ static int cpu_clock_event_init(struct perf_event *event)
 	return 0;
 }
 
+// 2016-09-10
 static struct pmu perf_cpu_clock = {
 	.task_ctx_nr	= perf_sw_context,
 
@@ -6196,6 +6205,7 @@ static int task_clock_event_init(struct perf_event *event)
 	return 0;
 }
 
+// 2016-09-10
 static struct pmu perf_task_clock = {
 	.task_ctx_nr	= perf_sw_context,
 
@@ -6243,6 +6253,8 @@ static int perf_event_idx_default(struct perf_event *event)
  * Ensures all contexts with the same task_ctx_nr have the same
  * pmu_cpu_context too.
  */
+// 2016-09-10
+// find_pmu_context(pmu->task_ctx_nr)
 static void *find_pmu_context(int ctxn)
 {
 	struct pmu *pmu;
@@ -6352,6 +6364,8 @@ static struct device_attribute pmu_dev_attrs[] = {
 	__ATTR_NULL,
 };
 
+// 2016-09-10
+// perf_event_sysfs_init() 함수에서 TRUR로 설정
 static int pmu_bus_running;
 static struct bus_type pmu_bus = {
 	.name		= "event_source",
@@ -6415,7 +6429,9 @@ int perf_pmu_register(struct pmu *pmu, const char *name, int type)
 	pmu->name = name;
 
 	if (type < 0) {
+		// 2016-08-20 시작
 		type = idr_alloc(&pmu_idr, pmu, PERF_TYPE_MAX, 0, GFP_KERNEL);
+		// 2016-09-10 끝
 		if (type < 0) {
 			ret = type;
 			goto free_pdc;
@@ -6423,6 +6439,8 @@ int perf_pmu_register(struct pmu *pmu, const char *name, int type)
 	}
 	pmu->type = type;
 
+	// perf_event_sysfs_init() 함수가 호출 전으로
+	// pmu_bus_running 는 false 일 것 같다
 	if (pmu_bus_running) {
 		ret = pmu_dev_alloc(pmu);
 		if (ret)
@@ -6443,9 +6461,10 @@ skip_type:
 		struct perf_cpu_context *cpuctx;
 
 		cpuctx = per_cpu_ptr(pmu->pmu_cpu_context, cpu);
+		// ctx 멤버를 초기화함
 		__perf_event_init_context(&cpuctx->ctx);
-		lockdep_set_class(&cpuctx->ctx.mutex, &cpuctx_mutex);
-		lockdep_set_class(&cpuctx->ctx.lock, &cpuctx_lock);
+		lockdep_set_class(&cpuctx->ctx.mutex, &cpuctx_mutex); // No OP.
+		lockdep_set_class(&cpuctx->ctx.lock, &cpuctx_lock);   // No OP.
 		cpuctx->ctx.type = cpu_context;
 		cpuctx->ctx.pmu = pmu;
 
@@ -6454,6 +6473,7 @@ skip_type:
 		INIT_LIST_HEAD(&cpuctx->rotation_list);
 		cpuctx->unique_pmu = pmu;
 	}
+	// 2016-09-10 여기까지
 
 got_cpu_context:
 	if (!pmu->start_txn) {
@@ -7897,6 +7917,8 @@ void __init perf_event_init(void)
 	// 2016-08-20 시작
 	init_srcu_struct(&pmus_srcu);
 	// 2016-08-20 완료
+	
+	// 2016-08-20 시작
 	perf_pmu_register(&perf_swevent, "software", PERF_TYPE_SOFTWARE);
 	perf_pmu_register(&perf_cpu_clock, NULL, -1);
 	perf_pmu_register(&perf_task_clock, NULL, -1);
