@@ -22,6 +22,7 @@
  * return the ->next pointer of a list_head in an rcu safe
  * way, we must not access it directly
  */
+// 2016-09-24
 #define list_next_rcu(list)	(*((struct list_head __rcu **)(&(list)->next)))
 
 /*
@@ -31,6 +32,8 @@
  * the prev/next entries already!
  */
 #ifndef CONFIG_DEBUG_LIST
+// 2016-09-24
+// __list_add_rcu(new, head, head->next);
 static inline void __list_add_rcu(struct list_head *new,
 		struct list_head *prev, struct list_head *next)
 {
@@ -60,6 +63,7 @@ extern void __list_add_rcu(struct list_head *new,
  * the _rcu list-traversal primitives, such as
  * list_for_each_entry_rcu().
  */
+// 2016-09-24
 static inline void list_add_rcu(struct list_head *new, struct list_head *head)
 {
 	__list_add_rcu(new, head, head->next);

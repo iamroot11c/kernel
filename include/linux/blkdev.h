@@ -1010,6 +1010,7 @@ static inline void blk_post_runtime_resume(struct request_queue *q, int err) {}
  * the plug list when the task sleeps by itself. For details, please see
  * schedule() where blk_schedule_flush_plug() is called.
  */
+// 2016-09-24
 struct blk_plug {
 	unsigned long magic; /* detect uninitialized use-cases */
 	struct list_head list; /* requests */
@@ -1041,6 +1042,7 @@ static inline void blk_flush_plug(struct task_struct *tsk)
 		blk_flush_plug_list(plug, false);
 }
 
+// 2016-09-24, glance
 static inline void blk_schedule_flush_plug(struct task_struct *tsk)
 {
 	struct blk_plug *plug = tsk->plug;
@@ -1049,6 +1051,7 @@ static inline void blk_schedule_flush_plug(struct task_struct *tsk)
 		blk_flush_plug_list(plug, true);
 }
 
+// 2016-09-24
 static inline bool blk_needs_flush_plug(struct task_struct *tsk)
 {
 	struct blk_plug *plug = tsk->plug;

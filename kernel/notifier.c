@@ -356,6 +356,9 @@ EXPORT_SYMBOL_GPL(blocking_notifier_chain_unregister);
  */
 // 2016-01-30
 // __blocking_notifier_call_chain(nh, 0, v, -1, NULL);
+// 2016-09-24
+// __blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+//                                      BUS_NOTIFY_DEL_DEVICE, dev, -1, NULL);
 int __blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 				   unsigned long val, void *v,
 				   int nr_to_call, int *nr_calls)
@@ -379,6 +382,9 @@ int __blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 EXPORT_SYMBOL_GPL(__blocking_notifier_call_chain);
 
 // 2016-01-30
+// 2016-09-24
+// blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+//                                     BUS_NOTIFY_DEL_DEVICE, dev);
 int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 		unsigned long val, void *v)
 {

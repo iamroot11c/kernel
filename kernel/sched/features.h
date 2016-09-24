@@ -1,14 +1,20 @@
+// 2016-09-24
+// #define SCHED_FEAT(name, enabled)       \
+//          (1UL << __SCHED_FEAT_##name) * enabled |
 /*
  * Only give sleepers 50% of their service deficit. This allows
  * them to run sooner, but does not allow tons of sleepers to
  * rip the spread apart.
  */
+// __SCHED_FEAT_GENTLE_FAIR_SLEEPERS,
+// (1UL << __SCHED_FEAT_GENTLE_FAIR_SLEEPERS) * true |
 SCHED_FEAT(GENTLE_FAIR_SLEEPERS, true)
 
 /*
  * Place new tasks ahead so that they do not starve already running
  * tasks
  */
+// (1UL << __SCHED_FEAT_START_DEBIT) * true |
 SCHED_FEAT(START_DEBIT, true)
 
 /*
@@ -41,6 +47,8 @@ SCHED_FEAT(WAKEUP_PREEMPTION, true)
  */
 SCHED_FEAT(ARCH_POWER, true)
 
+// 2016-09-24
+// __SCHED_FEAT_HRTICK,
 SCHED_FEAT(HRTICK, false)
 SCHED_FEAT(DOUBLE_TICK, false)
 SCHED_FEAT(LB_BIAS, true)

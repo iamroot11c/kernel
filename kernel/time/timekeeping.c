@@ -32,6 +32,7 @@
 #define TK_CLOCK_WAS_SET	(1 << 2)
 
 // 2016-08-13
+// 2016-09-24
 static struct timekeeper timekeeper;
 // 2016-08-13
 static DEFINE_RAW_SPINLOCK(timekeeper_lock);
@@ -1576,6 +1577,7 @@ struct timespec __current_kernel_time(void)
 	return tk_xtime(tk);
 }
 
+// 2016-09-24
 struct timespec current_kernel_time(void)
 {
 	struct timekeeper *tk = &timekeeper;
@@ -1586,7 +1588,7 @@ struct timespec current_kernel_time(void)
 		seq = read_seqcount_begin(&timekeeper_seq);
 
 		now = tk_xtime(tk);
-	} while (read_seqcount_retry(&timekeeper_seq, seq));
+	} while (read_seqcount_retry(&timekeeper_seq, seq));	// unlikely()
 
 	return now;
 }

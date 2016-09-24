@@ -102,6 +102,7 @@ extern void bus_remove_file(struct bus_type *, struct bus_attribute *);
  * default attributes, the bus' methods, PM operations, and the driver core's
  * private data.
  */
+// 2016-09-24
 struct bus_type {
 	const char		*name;
 	const char		*dev_name;
@@ -129,6 +130,7 @@ struct bus_type {
 
 	struct iommu_ops *iommu_ops;
 
+    // 2016-09-24
 	struct subsys_private *p;
 	struct lock_class_key lock_key;
 };
@@ -184,6 +186,7 @@ extern int bus_unregister_notifier(struct bus_type *bus,
  * with the device lock held in the core, so be careful.
  */
 #define BUS_NOTIFY_ADD_DEVICE		0x00000001 /* device added */
+// 2016-09-24
 #define BUS_NOTIFY_DEL_DEVICE		0x00000002 /* device removed */
 #define BUS_NOTIFY_BIND_DRIVER		0x00000003 /* driver about to be
 						      bound */
@@ -353,6 +356,7 @@ int subsys_virtual_register(struct bus_type *subsys,
  * to work with devices based on what they do, rather than how they are
  * connected or how they work.
  */
+// 2016-09-24
 struct class {
 	const char		*name;
 	struct module		*owner;
@@ -459,8 +463,10 @@ struct class_attribute_string {
 extern ssize_t show_class_attr_string(struct class *class, struct class_attribute *attr,
                         char *buf);
 
+// 2016-09-24
 struct class_interface {
 	struct list_head	node;
+    // 어디 정의? -> 위에 있음.
 	struct class		*class;
 
 	int (*add_dev)		(struct device *, struct class_interface *);
@@ -696,6 +702,7 @@ struct acpi_dev_node {
  * instead, that structure, like kobject structures, is usually embedded within
  * a higher-level representation of the device.
  */
+// 2016-09-24
 struct device {
 	struct device		*parent;
 

@@ -1256,6 +1256,7 @@ EXPORT_SYMBOL_GPL(put_device);
  * NOTE: this should be called manually _iff_ device_add() was
  * also called manually.
  */
+// 2016-09-24
 void device_del(struct device *dev)
 {
 	struct device *parent = dev->parent;
@@ -1264,9 +1265,11 @@ void device_del(struct device *dev)
 	/* Notify clients of device removal.  This call must come
 	 * before dpm_sysfs_remove().
 	 */
+	// 2016-09-24, glance
 	if (dev->bus)
 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
 					     BUS_NOTIFY_DEL_DEVICE, dev);
+	// 2016-09-24
 	dpm_sysfs_remove(dev);
 	if (parent)
 		klist_del(&dev->p->knode_parent);

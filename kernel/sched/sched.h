@@ -458,6 +458,7 @@ struct rq {
 	unsigned long nr_uninterruptible;
 
     // 2016-03-05, curr
+    // 2016-09-24, curr
 	struct task_struct *curr, *idle, *stop;
 	unsigned long next_balance;
 	struct mm_struct *prev_mm;
@@ -549,9 +550,12 @@ static inline int cpu_of(struct rq *rq)
 
 // 2015-06-20
 // extern 선언
+// 2016-09-24
+// extern struct rq runqueues;
 DECLARE_PER_CPU(struct rq, runqueues);
 
 // 2016-03-05
+// 2016-09-24
 #define cpu_rq(cpu)		(&per_cpu(runqueues, (cpu)))
 #define this_rq()		(&__get_cpu_var(runqueues))
 #define task_rq(p)		cpu_rq(task_cpu(p))
@@ -770,7 +774,8 @@ enum {
 
 #undef SCHED_FEAT
 
-#if defined(CONFIG_SCHED_DEBUG) && defined(HAVE_JUMP_LABEL)
+// 2016-09-24
+#if defined(CONFIG_SCHED_DEBUG/*=n*/) && defined(HAVE_JUMP_LABEL/*=n*/)
 static __always_inline bool static_branch__true(struct static_key *key)
 {
 	return static_key_true(key); /* Not out of line branch. */
@@ -794,6 +799,7 @@ static __always_inline bool static_branch_##name(struct static_key *key) \
 extern struct static_key sched_feat_keys[__SCHED_FEAT_NR];
 #define sched_feat(x) (static_branch_##x(&sched_feat_keys[__SCHED_FEAT_##x]))
 #else /* !(SCHED_DEBUG && HAVE_JUMP_LABEL) */
+// 2016-09-24
 #define sched_feat(x) (sysctl_sched_features & (1UL << __SCHED_FEAT_##x))
 #endif /* SCHED_DEBUG && HAVE_JUMP_LABEL */
 

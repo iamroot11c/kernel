@@ -146,6 +146,7 @@ void get_xtime_and_monotonic_and_sleep_offset(struct timespec *xtim,
 				struct timespec *wtom, struct timespec *sleep);
 void timekeeping_inject_sleeptime(struct timespec *delta);
 
+// 2016-09-24
 #define CURRENT_TIME		(current_kernel_time())
 #define CURRENT_TIME_SEC	((struct timespec) { get_seconds(), 0 })
 

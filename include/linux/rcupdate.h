@@ -497,6 +497,7 @@ static inline void rcu_preempt_sleep_check(void)
 #else /* #ifdef CONFIG_PROVE_RCU */
 // 2015-09-12
 #define rcu_lockdep_assert(c, s) do { } while (0)
+// 2016-09-24, NOP
 #define rcu_sleep_check() do { } while (0)
 
 #endif /* #else #ifdef CONFIG_PROVE_RCU */
@@ -561,6 +562,7 @@ static inline void rcu_preempt_sleep_check(void)
 	})
 // 2015-04-04
 // __rcu_assign_pointer(NULL, (v), __rcu)
+// 2016-09-24
 #define __rcu_assign_pointer(p, v, space) \
 	do { \
 		smp_wmb(); \
@@ -942,6 +944,8 @@ static inline notrace void rcu_read_unlock_sched_notrace(void)
 // 2015-04-04
 // rcu_assign_pointer(NULL, n);
 // 2016-07-23
+// 2016-09-24
+// rcu_assign_pointer(list_next_rcu(prev), new);
 #define rcu_assign_pointer(p, v) \
 	__rcu_assign_pointer((p), (v), __rcu)
 

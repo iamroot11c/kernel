@@ -34,6 +34,7 @@ struct subsys_private {
 	struct kset *drivers_kset;
 	struct klist klist_devices;
 	struct klist klist_drivers;
+    // 2016-09-24
 	struct blocking_notifier_head bus_notifier;
 	unsigned int drivers_autoprobe:1;
 	struct bus_type *bus;

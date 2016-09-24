@@ -54,6 +54,7 @@ static inline void pm_vt_switch_unregister(struct device *dev)
 struct device;
 
 #ifdef CONFIG_PM
+// 2016-09-24
 extern const char power_group_name[];		/* = "power" */
 #else
 #define power_group_name	NULL

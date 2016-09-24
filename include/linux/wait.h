@@ -34,6 +34,7 @@ struct wait_bit_queue {
 };
 
 // 2015-07-04;
+// 2016-09-24
 struct __wait_queue_head {
 	spinlock_t lock;
 	struct list_head task_list;
@@ -46,14 +47,17 @@ struct task_struct;
  * Macros for declaration and initialisaton of the datatypes
  */
 
+// 2016-09-24
 #define __WAITQUEUE_INITIALIZER(name, tsk) {				\
 	.private	= tsk,						\
 	.func		= default_wake_function,			\
 	.task_list	= { NULL, NULL } }
 
+// 2016-09-24
 #define DECLARE_WAITQUEUE(name, tsk)					\
 	wait_queue_t name = __WAITQUEUE_INITIALIZER(name, tsk)
 
+// 2016-09-24
 #define __WAIT_QUEUE_HEAD_INITIALIZER(name) {				\
 	.lock		= __SPIN_LOCK_UNLOCKED(name.lock),		\
 	.task_list	= { &(name).task_list, &(name).task_list } }
@@ -134,12 +138,14 @@ static inline void __add_wait_queue_exclusive(wait_queue_head_t *q,
 }
 
 // 2015-07-25;
+// 2016-09-24
 static inline void __add_wait_queue_tail(wait_queue_head_t *head,
 					 wait_queue_t *new)
 {
 	list_add_tail(&new->task_list, &head->task_list);
 }
 
+// 2016-09-24
 static inline void __add_wait_queue_tail_exclusive(wait_queue_head_t *q,
 					      wait_queue_t *wait)
 {

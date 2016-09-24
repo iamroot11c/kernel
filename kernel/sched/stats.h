@@ -1,5 +1,5 @@
 
-#ifdef CONFIG_SCHEDSTATS
+#ifdef CONFIG_SCHEDSTATS    // =n
 
 /*
  * Expects runqueue lock to be held for atomicity of update
@@ -42,6 +42,7 @@ rq_sched_info_dequeued(struct rq *rq, unsigned long long delta)
 static inline void
 rq_sched_info_depart(struct rq *rq, unsigned long long delta)
 {}
+// 2016-09-24, NOP
 # define schedstat_inc(rq, field)	do { } while (0)
 # define schedstat_add(rq, field, amt)	do { } while (0)
 # define schedstat_set(var, val)	do { } while (0)

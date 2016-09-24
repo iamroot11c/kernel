@@ -78,6 +78,7 @@ static inline void device_pm_init(struct device *dev)
 	pm_runtime_init(dev);
 }
 
+// 2016-09-24
 #ifdef CONFIG_PM
 
 /*
@@ -85,6 +86,7 @@ static inline void device_pm_init(struct device *dev)
  */
 
 extern int dpm_sysfs_add(struct device *dev);
+// 2016-09-24
 extern void dpm_sysfs_remove(struct device *dev);
 extern void rpm_sysfs_remove(struct device *dev);
 extern int wakeup_sysfs_add(struct device *dev);

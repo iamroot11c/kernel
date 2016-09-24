@@ -133,7 +133,9 @@ print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq);
  * mistake.
  */
 #define TASK_RUNNING		0 // 2016-07-01
+// 2016-09-24
 #define TASK_INTERRUPTIBLE	1
+// 2016-09-24
 #define TASK_UNINTERRUPTIBLE	2 // 2015-07-04;
 #define __TASK_STOPPED		4
 #define __TASK_TRACED		8
@@ -143,6 +145,7 @@ print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq);
 /* in tsk->state again */
 #define TASK_DEAD		64
 // 2016-03-05
+// 2016-09-24
 #define TASK_WAKEKILL		128
 #define TASK_WAKING		256
 #define TASK_PARKED		512
@@ -316,6 +319,7 @@ extern char __sched_text_start[], __sched_text_end[];
 /* Is this address in the __sched functions? */
 extern int in_sched_functions(unsigned long addr);
 
+// 2016-09-24
 #define	MAX_SCHEDULE_TIMEOUT	LONG_MAX
 extern signed long schedule_timeout(signed long timeout);
 extern signed long schedule_timeout_interruptible(signed long timeout);
@@ -2484,6 +2488,7 @@ static inline int restart_syscall(void)
 
 // 2015-06-27
 // 2016-01-30
+// 2016-09-24
 static inline int signal_pending(struct task_struct *p)
 {
     // task에 속한 thread_info(stack 멤버변수)를 얻어온 후 어떤 플래그가 세팅되어 있는지 검사 
@@ -2505,6 +2510,7 @@ static inline int fatal_signal_pending(struct task_struct *p)
 	return signal_pending(p) && __fatal_signal_pending(p);
 }
 
+// 2016-09-24
 static inline int signal_pending_state(long state, struct task_struct *p)
 {
 	if (!(state & (TASK_INTERRUPTIBLE | TASK_WAKEKILL)))

@@ -414,6 +414,7 @@ void rb_insert_color(struct rb_node *node, struct rb_root *root)
 EXPORT_SYMBOL(rb_insert_color);
 
 // 2014-11-22, 29일 다시 학습 예정
+// 2016-0924
 void rb_erase(struct rb_node *node, struct rb_root *root)
 {
 	struct rb_node *rebalance;

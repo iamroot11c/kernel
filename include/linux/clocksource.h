@@ -167,6 +167,7 @@ extern u64 timecounter_cyc2time(struct timecounter *tc,
  * @owner:		module reference, must be set by clocksource in modules
  */
 // 2016-08-13
+// 2016-09-24
 struct clocksource {
 	/*
 	 * Hotpath data, fits in a single cache line when the

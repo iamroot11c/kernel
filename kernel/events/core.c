@@ -147,6 +147,7 @@ static atomic_t nr_comm_events __read_mostly;
 static atomic_t nr_task_events __read_mostly;
 static atomic_t nr_freq_events __read_mostly;
 
+// 2016-09-24
 static LIST_HEAD(pmus);
 // 2016-08-20
 static DEFINE_MUTEX(pmus_lock);
@@ -5788,6 +5789,7 @@ static struct pmu perf_swevent = {
 	.stop		= perf_swevent_stop,
 	.read		= perf_swevent_read,
 
+	// 2016-09-24
 	.event_idx	= perf_swevent_event_idx,
 };
 
@@ -6135,6 +6137,7 @@ static struct pmu perf_cpu_clock = {
 	.stop		= cpu_clock_event_stop,
 	.read		= cpu_clock_event_read,
 
+	// 2016-09-24
 	.event_idx	= perf_swevent_event_idx,
 };
 
@@ -6216,34 +6219,41 @@ static struct pmu perf_task_clock = {
 	.stop		= task_clock_event_stop,
 	.read		= task_clock_event_read,
 
+	// 2016-09-24
 	.event_idx	= perf_swevent_event_idx,
 };
 
+// 2016-09-24
 static void perf_pmu_nop_void(struct pmu *pmu)
 {
 }
 
+// 2016-09-24
 static int perf_pmu_nop_int(struct pmu *pmu)
 {
 	return 0;
 }
 
+// 2016-09-24
 static void perf_pmu_start_txn(struct pmu *pmu)
 {
 	perf_pmu_disable(pmu);
 }
 
+// 2016-09-24
 static int perf_pmu_commit_txn(struct pmu *pmu)
 {
 	perf_pmu_enable(pmu);
 	return 0;
 }
 
+// 2016-09-24
 static void perf_pmu_cancel_txn(struct pmu *pmu)
 {
 	perf_pmu_enable(pmu);
 }
 
+// 2016-09-24
 static int perf_event_idx_default(struct perf_event *event)
 {
 	return event->hw.idx + 1;
@@ -6475,6 +6485,7 @@ skip_type:
 	}
 	// 2016-09-10 여기까지
 
+// 2016-09-24 시작
 got_cpu_context:
 	if (!pmu->start_txn) {
 		if (pmu->pmu_enable) {
@@ -6498,6 +6509,8 @@ got_cpu_context:
 		pmu->pmu_disable = perf_pmu_nop_void;
 	}
 
+	// 2016-09-24
+	// .event_idx      = perf_swevent_event_idx,
 	if (!pmu->event_idx)
 		pmu->event_idx = perf_event_idx_default;
 
@@ -6507,8 +6520,8 @@ unlock:
 	mutex_unlock(&pmus_lock);
 
 	return ret;
-
 free_dev:
+	// 2016-09-24
 	device_del(pmu->dev);
 	put_device(pmu->dev);
 

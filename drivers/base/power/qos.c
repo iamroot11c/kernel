@@ -46,7 +46,9 @@
 
 #include "power.h"
 
+// 2016-09-24
 static DEFINE_MUTEX(dev_pm_qos_mtx);
+// 2016-09-24
 static DEFINE_MUTEX(dev_pm_qos_sysfs_mtx);
 
 static BLOCKING_NOTIFIER_HEAD(dev_pm_notifiers);
@@ -211,6 +213,7 @@ static void __dev_pm_qos_hide_flags(struct device *dev);
  *
  * Called from the device PM subsystem on device removal under device_pm_lock().
  */
+// 2016-09-24
 void dev_pm_qos_constraints_destroy(struct device *dev)
 {
 	struct dev_pm_qos *qos;
@@ -224,6 +227,7 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
 	 * If the device's PM QoS resume latency limit or PM QoS flags have been
 	 * exposed to user space, they have to be hidden at this point.
 	 */
+	// 2016-09-24
 	pm_qos_sysfs_remove_latency(dev);
 	pm_qos_sysfs_remove_flags(dev);
 

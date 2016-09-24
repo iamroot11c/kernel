@@ -22,13 +22,15 @@
  * and macros DECLARE_COMPLETION(), DECLARE_COMPLETION_ONSTACK(), and
  * INIT_COMPLETION().
  */
+// 2016-09-24
 struct completion {
 	unsigned int done;
 	wait_queue_head_t wait;
 };
 
+// 2016-09-24
 #define COMPLETION_INITIALIZER(work) \
-	{ 0, __WAIT_QUEUE_HEAD_INITIALIZER((work).wait) }
+	{ 0/*done*/, __WAIT_QUEUE_HEAD_INITIALIZER((work).wait) }
 
 #define COMPLETION_INITIALIZER_ONSTACK(work) \
 	({ init_completion(&work); work; })
@@ -41,6 +43,7 @@ struct completion {
  * for static declarations. You should use the _ONSTACK variant for automatic
  * variables.
  */
+// 2016-09-24
 #define DECLARE_COMPLETION(work) \
 	struct completion work = COMPLETION_INITIALIZER(work)
 
@@ -56,10 +59,11 @@ struct completion {
  * This macro declares and initializes a completion structure on the kernel
  * stack.
  */
-#ifdef CONFIG_LOCKDEP
+#ifdef CONFIG_LOCKDEP   // =n
 # define DECLARE_COMPLETION_ONSTACK(work) \
 	struct completion work = COMPLETION_INITIALIZER_ONSTACK(work)
 #else
+// 2016-09-24
 # define DECLARE_COMPLETION_ONSTACK(work) DECLARE_COMPLETION(work)
 #endif
 

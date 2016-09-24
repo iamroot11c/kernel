@@ -140,6 +140,7 @@ int dev_pm_qos_remove_notifier(struct device *dev,
 int dev_pm_qos_add_global_notifier(struct notifier_block *notifier);
 int dev_pm_qos_remove_global_notifier(struct notifier_block *notifier);
 void dev_pm_qos_constraints_init(struct device *dev);
+// 2016-09-24
 void dev_pm_qos_constraints_destroy(struct device *dev);
 int dev_pm_qos_add_ancestor_request(struct device *dev,
 				    struct dev_pm_qos_request *req, s32 value);

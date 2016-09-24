@@ -136,6 +136,12 @@ void update_rq_clock(struct rq *rq)
 #define SCHED_FEAT(name, enabled)	\
 	(1UL << __SCHED_FEAT_##name) * enabled |
 
+// 2016-09-24
+// const_debug unsigned int sysctl_sched_features = 
+//    (1UL << __SCHED_FEAT_GENTLE_FAIR_SLEEPERS) * true |
+//    (1UL << __SCHED_FEAT_START_DEBIT) * true |
+//    ...
+//    0:
 const_debug unsigned int sysctl_sched_features =
 #include "features.h"
 	0;
@@ -2319,6 +2325,7 @@ static noinline void __schedule_bug(struct task_struct *prev)
 /*
  * Various schedule()-time debugging checks and statistics:
  */
+// 2016-09-24, NOP
 static inline void schedule_debug(struct task_struct *prev)
 {
 	/*
@@ -2326,12 +2333,15 @@ static inline void schedule_debug(struct task_struct *prev)
 	 * schedule() atomically, we ignore that path for now.
 	 * Otherwise, whine if we are scheduling when we should not be.
 	 */
+	// 2016-09-24, glance
 	if (unlikely(in_atomic_preempt_off() && !prev->exit_state))
 		__schedule_bug(prev);
-	rcu_sleep_check();
+	rcu_sleep_check();	// NOP
 
-	profile_hit(SCHED_PROFILING, __builtin_return_address(0));
+	// 2016-09-24, NOP
+	profile_hit(SCHED_PROFILING/*2*/, __builtin_return_address(0));
 
+	// 2016-09-24, NOP
 	schedstat_inc(this_rq(), sched_count);
 }
 
@@ -2412,6 +2422,7 @@ pick_next_task(struct rq *rq)
 // 프로세서의 상태(주기)를 알고 좀 더 분석 할 예정. 꼭!
 // 2015-06-20, skip
 // 2015-07-04; skip
+// 2016-09-24
 static void __sched __schedule(void)
 {
 	struct task_struct *prev, *next;
@@ -2422,14 +2433,23 @@ static void __sched __schedule(void)
 need_resched:
 	preempt_disable();
 	cpu = smp_processor_id();
+	// cpu가 가지고 있는 run queue를 가지고 온다.
 	rq = cpu_rq(cpu);
-	rcu_note_context_switch(cpu);
+
+	// 2016-09-24, at glance
+	rcu_note_context_switch(cpu);	
 	prev = rq->curr;
 
+	// 2016-09-24, almost NOP
 	schedule_debug(prev);
 
+	// 2016-09-24
+	// #define sched_feat(x) (sysctl_sched_features & (1UL << __SCHED_FEAT_##x))
+	// sysctl_sched_features & (1UL << __SCHED_FEAT_HRTICK))
+	// __SCHED_FEAT_HRTICK은 설정안되어 있는 것으로 확인됨.
 	if (sched_feat(HRTICK))
 		hrtick_clear(rq);
+	// 2016-09-24, 여기까지
 
 	/*
 	 * Make sure that signal_pending_state()->signal_pending() below
@@ -2497,6 +2517,7 @@ need_resched:
 		goto need_resched;
 }
 
+// 2016-09-24
 static inline void sched_submit_work(struct task_struct *tsk)
 {
 	if (!tsk->state || tsk_is_pi_blocked(tsk))
@@ -2510,6 +2531,7 @@ static inline void sched_submit_work(struct task_struct *tsk)
 }
 
 // 2015-08-15, glance
+// 2016-09-24
 asmlinkage void __sched schedule(void)
 {
 	struct task_struct *tsk = current;
@@ -2784,21 +2806,36 @@ void complete_all(struct completion *x)
 }
 EXPORT_SYMBOL(complete_all);
 
+// 2016-09-24
+// __wait_for_common(x, schedule_timeout, MAX_SCHEDULE_TIMEOUT, TASK_UNINTERRUPTIBLE);
 static inline long __sched
 do_wait_for_common(struct completion *x,
 		   long (*action)(long), long timeout, int state)
 {
 	if (!x->done) {
+		// 2016-09-24
+		// wait_queue_t wait = __WAITQUEUE_INITIALIZER(wait, current);
+		//
+		// #define __WAITQUEUE_INITIALIZER(name, tsk) {                \
+		//      .private    = current,                      \
+		//      .func       = default_wake_function,            \
+		//      .task_list  = { NULL, NULL } }
+		//
 		DECLARE_WAITQUEUE(wait, current);
 
 		__add_wait_queue_tail_exclusive(&x->wait, &wait);
 		do {
+			// 0 return을 예상
 			if (signal_pending_state(state, current)) {
 				timeout = -ERESTARTSYS;
 				break;
 			}
+			// 2016-09-24, TASK_UNINTERRUPTIBLE로 설정
 			__set_current_state(state);
 			spin_unlock_irq(&x->wait.lock);
+
+			// 2016-09-24, schedule_timeout 진행중
+			// schedule_timeout(MAX_SCHEDULE_TIMEOUT);
 			timeout = action(timeout);
 			spin_lock_irq(&x->wait.lock);
 		} while (!x->done && timeout);
@@ -2810,21 +2847,26 @@ do_wait_for_common(struct completion *x,
 	return timeout ?: 1;
 }
 
+// 2016-09-24
 static inline long __sched
 __wait_for_common(struct completion *x,
 		  long (*action)(long), long timeout, int state)
 {
-	might_sleep();
+	might_sleep(); // NOP
 
 	spin_lock_irq(&x->wait.lock);
+	// 2016-09-24, start
 	timeout = do_wait_for_common(x, action, timeout, state);
 	spin_unlock_irq(&x->wait.lock);
 	return timeout;
 }
 
+// 2016-09-24
+// wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_UNINTERRUPTIBLE);
 static long __sched
 wait_for_common(struct completion *x, long timeout, int state)
 {
+	// 2016-09-24, start
 	return __wait_for_common(x, schedule_timeout, timeout, state);
 }
 
@@ -2844,8 +2886,13 @@ wait_for_common_io(struct completion *x, long timeout, int state)
  * See also similar routines (i.e. wait_for_completion_timeout()) with timeout
  * and interrupt capability. Also see complete().
  */
+// 2016-09-24
+// 주석에 의하면
+// 1. signaled에 의해서 깨어난다.
+// 2. interruptible 하지 않습니다.
 void __sched wait_for_completion(struct completion *x)
 {
+	// 2016-09-24, start
 	wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_UNINTERRUPTIBLE);
 }
 EXPORT_SYMBOL(wait_for_completion);

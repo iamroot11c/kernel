@@ -9,6 +9,7 @@
 #include <asm/errno.h>
 
 #define CPU_PROFILING	1
+// 2016-09-24
 #define SCHED_PROFILING	2
 #define SLEEP_PROFILING	3
 #define KVM_PROFILING	4
@@ -36,7 +37,7 @@ enum profile_type {
 	PROFILE_MUNMAP
 };
 
-#ifdef CONFIG_PROFILING
+#ifdef CONFIG_PROFILING     // =n
 
 extern int prof_on __read_mostly;
 
@@ -103,6 +104,7 @@ static inline void profile_hits(int type, void *ip, unsigned int nr_hits)
 	return;
 }
 
+// 2016-09-24
 static inline void profile_hit(int type, void *ip)
 {
 	return;

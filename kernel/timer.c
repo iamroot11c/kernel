@@ -1508,6 +1508,7 @@ static void process_timeout(unsigned long __data)
 // 2016-01-30
 // glance
 // 2016-03-05, glance
+// 2016-09-24
 signed long __sched schedule_timeout(signed long timeout)
 {
 	struct timer_list timer;
@@ -1515,6 +1516,7 @@ signed long __sched schedule_timeout(signed long timeout)
 
 	switch (timeout)
 	{
+	// 2016-09-24, MAX_SCHEDULE_TIMEOUT
 	case MAX_SCHEDULE_TIMEOUT:
 		/*
 		 * These two special cases are useful to be comfortable
@@ -1523,6 +1525,7 @@ signed long __sched schedule_timeout(signed long timeout)
 		 * but I' d like to return a valid offset (>=0) to allow
 		 * the caller to do everything it want with the retval.
 		 */
+		// 2016-09-24, start
 		schedule();
 		goto out;
         // 2016-03-05, 1

@@ -16,11 +16,14 @@
 struct sysfs_open_dirent;
 
 /* type-specific structures for sysfs_dirent->s_* union members */
+// 2016-09-24
 struct sysfs_elem_dir {
 	struct kobject		*kobj;
 
+    // 2016-09-24
 	unsigned long		subdirs;
 	/* children rbtree starts here and goes through sd->s_rb */
+    // 2016-09-24
 	struct rb_root		children;
 };
 
@@ -38,6 +41,7 @@ struct sysfs_elem_bin_attr {
 	struct hlist_head	buffers;
 };
 
+// 2016-09-24
 struct sysfs_inode_attrs {
 	struct iattr	ia_iattr;
 	void		*ia_secdata;
@@ -52,6 +56,7 @@ struct sysfs_inode_attrs {
  * accessible.  Dereferencing s_elem or any other outer entity
  * requires s_active reference.
  */
+// 2016-09-24
 struct sysfs_dirent {
 	atomic_t		s_count;
 	atomic_t		s_active;
@@ -80,12 +85,16 @@ struct sysfs_dirent {
 	unsigned short		s_flags;
 	umode_t			s_mode;
 	unsigned int		s_ino;
+    // 2016-09-24
 	struct sysfs_inode_attrs *s_iattr;
 };
 
+// 2016-09-24
 #define SD_DEACTIVATED_BIAS		INT_MIN
 
+// 2016-09-24
 #define SYSFS_TYPE_MASK			0x00ff
+// 2016-09-24
 #define SYSFS_DIR			0x0001
 #define SYSFS_KOBJ_ATTR			0x0002
 #define SYSFS_KOBJ_BIN_ATTR		0x0004
@@ -94,12 +103,15 @@ struct sysfs_dirent {
 #define SYSFS_ACTIVE_REF		(SYSFS_KOBJ_ATTR | SYSFS_KOBJ_BIN_ATTR)
 
 /* identify any namespace tag on sysfs_dirents */
+// 2016-09-24
 #define SYSFS_NS_TYPE_MASK		0xf00
+// 2016-09-24
 #define SYSFS_NS_TYPE_SHIFT		8
 
 #define SYSFS_FLAG_MASK			~(SYSFS_NS_TYPE_MASK|SYSFS_TYPE_MASK)
 #define SYSFS_FLAG_REMOVED		0x02000
 
+// 2016-09-24
 static inline unsigned int sysfs_type(struct sysfs_dirent *sd)
 {
 	return sd->s_flags & SYSFS_TYPE_MASK;
@@ -109,6 +121,7 @@ static inline unsigned int sysfs_type(struct sysfs_dirent *sd)
  * Return any namespace tags on this dirent.
  * enum kobj_ns_type is defined in linux/kobject.h
  */
+// 2016-09-24
 static inline enum kobj_ns_type sysfs_ns_type(struct sysfs_dirent *sd)
 {
 	return (sd->s_flags & SYSFS_NS_TYPE_MASK) >> SYSFS_NS_TYPE_SHIFT;
@@ -131,6 +144,7 @@ do {								\
 /*
  * Context structure to be used while adding/removing nodes.
  */
+// 2016-09-24
 struct sysfs_addrm_cxt {
 	struct sysfs_dirent	*parent_sd;
 	struct sysfs_dirent	*removed;

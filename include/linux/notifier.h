@@ -164,6 +164,7 @@ extern int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 		unsigned long val, void *v);
 extern int __atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 	unsigned long val, void *v, int nr_to_call, int *nr_calls);
+// 2016-09-24
 extern int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 		unsigned long val, void *v);
 extern int __blocking_notifier_call_chain(struct blocking_notifier_head *nh,

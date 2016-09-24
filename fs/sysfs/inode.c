@@ -314,6 +314,8 @@ void sysfs_evict_inode(struct inode *inode)
 	sysfs_put(sd);
 }
 
+// 2016-09-24
+// sysfs_hash_and_remove(dir_sd, NULL, (*attr)->name);
 int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const void *ns,
 			  const char *name)
 {
@@ -332,6 +334,7 @@ int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const void *ns,
 	if (sd)
 		sysfs_remove_one(&acxt, sd);
 
+	// 2016-09-24, start
 	sysfs_addrm_finish(&acxt);
 
 	if (sd)

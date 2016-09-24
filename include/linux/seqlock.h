@@ -43,6 +43,7 @@
  * after the write_seqcount_end().
  */
 // 2016-08-13
+// 2016-09-24
 typedef struct seqcount {
 	unsigned sequence;
 } seqcount_t;
@@ -63,6 +64,7 @@ typedef struct seqcount {
  * Use carefully, only in critical code, and comment how the barrier is
  * provided.
  */
+// 2016-09-24
 static inline unsigned __read_seqcount_begin(const seqcount_t *s)
 {
 	unsigned ret;
@@ -85,6 +87,7 @@ repeat:
  * Validity of the critical section is tested by checking read_seqcount_retry
  * function.
  */
+// 2016-09-24
 static inline unsigned read_seqcount_begin(const seqcount_t *s)
 {
 	unsigned ret = __read_seqcount_begin(s);
@@ -127,6 +130,7 @@ static inline unsigned raw_seqcount_begin(const seqcount_t *s)
  * Use carefully, only in critical code, and comment how the barrier is
  * provided.
  */
+// 2016-09-24
 static inline int __read_seqcount_retry(const seqcount_t *s, unsigned start)
 {
 	return unlikely(s->sequence != start);
@@ -142,6 +146,7 @@ static inline int __read_seqcount_retry(const seqcount_t *s, unsigned start)
  * If the critical section was invalid, it must be ignored (and typically
  * retried).
  */
+// 2016-09-24
 static inline int read_seqcount_retry(const seqcount_t *s, unsigned start)
 {
 	smp_rmb();

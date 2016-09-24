@@ -21,9 +21,11 @@
 // 2016-08-20
 // 0x7fff_ffff
 #define INT_MAX		((int)(~0U>>1))
-#define INT_MIN		(-INT_MAX - 1)
+// 2016-09-24
+#define INT_MIN		(-INT_MAX - 1) /* 0x8000_0000 */
 #define UINT_MAX	(~0U)
-#define LONG_MAX	((long)(~0UL>>1))
+// 2016-09-24
+#define LONG_MAX	((long)(~0UL>>1))   /* 0x7FFF_FFFF*/
 #define LONG_MIN	(-LONG_MAX - 1)
 #define ULONG_MAX	(~0UL)
 // 2016-07-16
@@ -171,6 +173,7 @@ extern int _cond_resched(void);
 #else
 // 2016-07-09
 // 2016-08-20
+// 2016-09-24, NOP
 # define might_resched() do { } while (0) // 2015-05-23
                                           // 2015-07-25;
 #endif
@@ -198,6 +201,7 @@ extern int _cond_resched(void);
 // 2015-07-25;
 // 2016-07-09
 // 2016-08-20
+// 2016-09-24, NOP
 # define might_sleep() do { might_resched(); } while (0)
 #endif
 

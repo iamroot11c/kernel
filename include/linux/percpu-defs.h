@@ -105,6 +105,7 @@
  * ordinary per-CPU variables.
  */
 // 2015-06-20
+// 2016-09-24
 #define DECLARE_PER_CPU(type, name)					\
 	DECLARE_PER_CPU_SECTION(type, name, "")
 

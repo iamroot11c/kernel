@@ -56,6 +56,7 @@ struct rb_root {
 // rb_entry(parent, struct vmap_area, rb_node)
 // 2016-06-25
 // rb_entry(tmp, struct vmap_area, rb_node) // struct rb_node *tmp;
+// rb_entry((node), struct sysfs_dirent, s_rb);
 #define	rb_entry(ptr, type, member) container_of(ptr, type, member)
 
 #define RB_EMPTY_ROOT(root)  ((root)->rb_node == NULL)

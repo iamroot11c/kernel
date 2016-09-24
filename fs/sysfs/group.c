@@ -282,6 +282,7 @@ EXPORT_SYMBOL_GPL(sysfs_merge_group);
  * @kobj:	The kobject containing the group.
  * @grp:	The files to remove and the attribute group they belong to.
  */
+// 2016-09-24
 void sysfs_unmerge_group(struct kobject *kobj,
 		       const struct attribute_group *grp)
 {
@@ -290,6 +291,7 @@ void sysfs_unmerge_group(struct kobject *kobj,
 
 	dir_sd = sysfs_get_dirent(kobj->sd, NULL, grp->name);
 	if (dir_sd) {
+		// 2016-09-24
 		for (attr = grp->attrs; *attr; ++attr)
 			sysfs_hash_and_remove(dir_sd, NULL, (*attr)->name);
 		sysfs_put(dir_sd);

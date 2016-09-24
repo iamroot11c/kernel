@@ -187,6 +187,8 @@ struct pmu {
 	 * Fully disable/enable this PMU, can be used to protect from the PMI
 	 * as well as for lazy/batch writing of the MSRs.
 	 */
+    // MSRs: the model-specific registers (MSRs)
+    // 2016-09-24
 	void (*pmu_enable)		(struct pmu *pmu); /* optional */
 	void (*pmu_disable)		(struct pmu *pmu); /* optional */
 
@@ -228,6 +230,7 @@ struct pmu {
 	 * Start the transaction, after this ->add() doesn't need to
 	 * do schedulability tests.
 	 */
+    // 2016-09-24
 	void (*start_txn)		(struct pmu *pmu); /* optional */
 	/*
 	 * If ->start_txn() disabled the ->add() schedulability test
@@ -235,11 +238,13 @@ struct pmu {
 	 * the transaction is closed. On error the transaction is kept
 	 * open until ->cancel_txn() is called.
 	 */
+    // 2016-09-24
 	int  (*commit_txn)		(struct pmu *pmu); /* optional */
 	/*
 	 * Will cancel the transaction, assumes ->del() is called
 	 * for each successful ->add() during the transaction.
 	 */
+    // 2016-09-24
 	void (*cancel_txn)		(struct pmu *pmu); /* optional */
 
 	/*

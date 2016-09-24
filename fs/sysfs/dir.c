@@ -25,9 +25,11 @@
 #include <linux/hash.h>
 #include "sysfs.h"
 
+// 2016-09-24
 DEFINE_MUTEX(sysfs_mutex);
 DEFINE_SPINLOCK(sysfs_assoc_lock);
 
+// 2016-09-24
 #define to_sysfs_dirent(X) rb_entry((X), struct sysfs_dirent, s_rb);
 
 static DEFINE_SPINLOCK(sysfs_ino_lock);
@@ -40,6 +42,7 @@ static DEFINE_IDA(sysfs_ino_ida);
  *
  *	Returns 31 bit hash of ns + name (so it fits in an off_t )
  */
+// 2016-09-24
 static unsigned int sysfs_name_hash(const void *ns, const char *name)
 {
 	unsigned long hash = init_name_hash();
@@ -56,6 +59,11 @@ static unsigned int sysfs_name_hash(const void *ns, const char *name)
 	return hash;
 }
 
+// 2016-09-24
+// 1. compare hash
+// 2. compare namespace
+// 3. compare name
+// conclusion: same with hash, namespace, name
 static int sysfs_name_compare(unsigned int hash, const void *ns,
 	const char *name, const struct sysfs_dirent *sd)
 {
@@ -124,11 +132,13 @@ static int sysfs_link_sibling(struct sysfs_dirent *sd)
  *	Locking:
  *	mutex_lock(sysfs_mutex)
  */
+// 2016-09-24
 static void sysfs_unlink_sibling(struct sysfs_dirent *sd)
 {
 	if (sysfs_type(sd) == SYSFS_DIR)
 		sd->s_parent->s_dir.subdirs--;
 
+	// 삭제
 	rb_erase(&sd->s_rb, &sd->s_parent->s_dir.children);
 }
 
@@ -205,8 +215,11 @@ void sysfs_put_active(struct sysfs_dirent *sd)
  *
  *	Deny new active references and drain existing ones.
  */
+// 2016-09-24
 static void sysfs_deactivate(struct sysfs_dirent *sd)
 {
+	// 2016-09-24
+	// struct completion work = COMPLETION_INITIALIZER(work)
 	DECLARE_COMPLETION_ONSTACK(wait);
 	int v;
 
@@ -217,14 +230,16 @@ static void sysfs_deactivate(struct sysfs_dirent *sd)
 
 	sd->u.completion = (void *)&wait;
 
-	rwsem_acquire(&sd->dep_map, 0, 0, _RET_IP_);
+	// 2016-09-24
+	rwsem_acquire(&sd->dep_map, 0, 0, _RET_IP_);	// NOP
 	/* atomic_add_return() is a mb(), put_active() will always see
 	 * the updated sd->u.completion.
 	 */
 	v = atomic_add_return(SD_DEACTIVATED_BIAS, &sd->s_active);
 
-	if (v != SD_DEACTIVATED_BIAS) {
-		lock_contended(&sd->dep_map, _RET_IP_);
+	if (v != SD_DEACTIVATED_BIAS/*0x8000_0000*/) {
+		lock_contended(&sd->dep_map, _RET_IP_);		// NOP
+		// 2016-09-24
 		wait_for_completion(&wait);
 	}
 
@@ -411,6 +426,7 @@ struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type)
  *	Kernel thread context (may sleep).  sysfs_mutex is locked on
  *	return.
  */
+// 2016-09-24
 void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
 		       struct sysfs_dirent *parent_sd)
 {
@@ -545,12 +561,15 @@ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
  *	LOCKING:
  *	Determined by sysfs_addrm_start().
  */
+// 2016-09-24
 void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
 {
 	struct sysfs_inode_attrs *ps_iattr;
 
 	BUG_ON(sd->s_flags & SYSFS_FLAG_REMOVED);
 
+	// 실제 삭제
+	// unlink
 	sysfs_unlink_sibling(sd);
 
 	/* Update timestamps on the parent */
@@ -560,7 +579,9 @@ void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
 		ps_iattrs->ia_ctime = ps_iattrs->ia_mtime = CURRENT_TIME;
 	}
 
+	// 이제 flag 설정
 	sd->s_flags |= SYSFS_FLAG_REMOVED;
+	// 2016-09-24, 현재는 쓰레기값 or NULL 예상
 	sd->u.removed_list = acxt->removed;
 	acxt->removed = sd;
 }
@@ -576,6 +597,7 @@ void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
  *	LOCKING:
  *	sysfs_mutex is released.
  */
+// 2016-09-24, glance
 void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt)
 {
 	/* release resources acquired by sysfs_addrm_start() */
@@ -585,8 +607,10 @@ void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt)
 	while (acxt->removed) {
 		struct sysfs_dirent *sd = acxt->removed;
 
+		// 2016-09-24, 예상하기에 NULL
 		acxt->removed = sd->u.removed_list;
 
+		// 2016-09-24, start
 		sysfs_deactivate(sd);
 		unmap_bin_file(sd);
 		sysfs_put(sd);
@@ -606,6 +630,8 @@ void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt)
  *	RETURNS:
  *	Pointer to sysfs_dirent if found, NULL if not.
  */
+// 2016-09-24
+// sysfs_find_dirent(parent_sd, ns, name);
 struct sysfs_dirent *sysfs_find_dirent(struct sysfs_dirent *parent_sd,
 				       const void *ns,
 				       const unsigned char *name)
@@ -620,11 +646,13 @@ struct sysfs_dirent *sysfs_find_dirent(struct sysfs_dirent *parent_sd,
 		return NULL;
 	}
 
+	// 2016-09-24
 	hash = sysfs_name_hash(ns, name);
 	while (node) {
 		struct sysfs_dirent *sd;
 		int result;
 
+		// rb_entry((node), struct sysfs_dirent, s_rb);
 		sd = to_sysfs_dirent(node);
 		result = sysfs_name_compare(hash, ns, name, sd);
 		if (result < 0)
@@ -651,6 +679,7 @@ struct sysfs_dirent *sysfs_find_dirent(struct sysfs_dirent *parent_sd,
  *	RETURNS:
  *	Pointer to sysfs_dirent if found, NULL if not.
  */
+// 2016-09-24
 struct sysfs_dirent *sysfs_get_dirent(struct sysfs_dirent *parent_sd,
 				      const void *ns,
 				      const unsigned char *name)

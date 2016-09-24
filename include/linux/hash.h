@@ -71,6 +71,7 @@ static inline u32 hash_32(u32 val, unsigned int bits)
 // 2015-01-24
 // bits = 7
 // 주소에대해 hash 값을 구하여 상위 bits 수 만큼만 취함 
+// 2016-09-24
 static inline unsigned long hash_ptr(const void *ptr, unsigned int bits)
 {
 	return hash_long((unsigned long)ptr, bits);

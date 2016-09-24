@@ -449,6 +449,7 @@ do {								\
 
 #else /* CONFIG_LOCK_STAT */
 
+// 2016-09-24
 #define lock_contended(lockdep_map, ip) do {} while (0)
 #define lock_acquired(lockdep_map, ip) do {} while (0)
 
@@ -531,6 +532,7 @@ static inline void print_irqtrace_events(struct task_struct *curr)
 #define mutex_release(l, n, i)			lock_release(l, n, i)
 
 // 2015-08-08;
+// 2016-09-24
 #define rwsem_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
 #define rwsem_acquire_nest(l, s, t, n, i)	lock_acquire_exclusive(l, s, t, n, i)
 // 2015-08-15

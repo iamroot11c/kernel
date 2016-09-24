@@ -12,6 +12,7 @@
 
 /* Structure holding internal timekeeping values. */
 // 2016-08-13
+// 2016-09-24
 struct timekeeper {
 	/* Current clocksource used for timekeeping. */
 	struct clocksource	*clock;
@@ -73,6 +74,7 @@ struct timekeeper {
 };
 
 // 2016-08-13
+// 2016-09-24
 static inline struct timespec tk_xtime(struct timekeeper *tk)
 {
 	struct timespec ts;

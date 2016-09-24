@@ -95,6 +95,7 @@
 static const char enabled[] = "enabled";
 static const char disabled[] = "disabled";
 
+// 2016-09-24
 const char power_group_name[] = "power";
 EXPORT_SYMBOL_GPL(power_group_name);
 
@@ -618,14 +619,17 @@ static struct attribute_group pm_runtime_attr_group = {
 	.attrs	= runtime_attrs,
 };
 
+// 2016-09-24
 static struct attribute *pm_qos_latency_attrs[] = {
-#ifdef CONFIG_PM_RUNTIME
+#ifdef CONFIG_PM_RUNTIME	// =n
 	&dev_attr_pm_qos_resume_latency_us.attr,
 #endif /* CONFIG_PM_RUNTIME */
 	NULL,
 };
+
+// 2016-09-24
 static struct attribute_group pm_qos_latency_attr_group = {
-	.name	= power_group_name,
+	.name	= power_group_name/* "power" */,
 	.attrs	= pm_qos_latency_attrs,
 };
 
@@ -686,8 +690,10 @@ int pm_qos_sysfs_add_latency(struct device *dev)
 	return sysfs_merge_group(&dev->kobj, &pm_qos_latency_attr_group);
 }
 
+// 2016-09-24
 void pm_qos_sysfs_remove_latency(struct device *dev)
 {
+	// 2016-09-24
 	sysfs_unmerge_group(&dev->kobj, &pm_qos_latency_attr_group);
 }
 
@@ -706,8 +712,10 @@ void rpm_sysfs_remove(struct device *dev)
 	sysfs_unmerge_group(&dev->kobj, &pm_runtime_attr_group);
 }
 
+// 2016-09-24
 void dpm_sysfs_remove(struct device *dev)
 {
+	// 2016-09-24
 	dev_pm_qos_constraints_destroy(dev);
 	rpm_sysfs_remove(dev);
 	sysfs_unmerge_group(&dev->kobj, &pm_wakeup_attr_group);
