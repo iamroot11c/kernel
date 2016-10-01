@@ -23,6 +23,7 @@
  * INIT_COMPLETION().
  */
 // 2016-09-24
+// 2016-10-01
 struct completion {
 	unsigned int done;
 	wait_queue_head_t wait;

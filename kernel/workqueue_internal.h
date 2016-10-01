@@ -19,6 +19,7 @@ struct worker_pool;
  *
  * Only to be used in workqueue and async.
  */
+// 2016-10-01
 struct worker {
 	/* on idle list while idle, on busy hash table while busy */
 	union {

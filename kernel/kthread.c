@@ -38,10 +38,11 @@ struct kthread_create_info
 	struct list_head list;
 };
 
+// 2016-10-01
 struct kthread {
 	unsigned long flags;
 	unsigned int cpu;
-	void *data;
+	void *data; // 이 데이터는 workqueue.c:wq_worker_sleeping에서 struct worker* 타입으로 캐스팅되어 사용됨
 	struct completion parked;
 	struct completion exited;
 };
@@ -53,9 +54,12 @@ enum KTHREAD_BITS {
 	KTHREAD_IS_PARKED,
 };
 
+// 2016-10-01
 #define __to_kthread(vfork)	\
 	container_of(vfork, struct kthread, exited)
 
+// 2016-10-01
+// k->vfork_done를 포함하는 kthread 구조체를 얻어온다.
 static inline struct kthread *to_kthread(struct task_struct *k)
 {
 	return __to_kthread(k->vfork_done);
@@ -131,6 +135,7 @@ EXPORT_SYMBOL_GPL(kthread_freezable_should_stop);
  * The caller is responsible for ensuring the validity of @task when
  * calling this function.
  */
+// 2016-10-01
 void *kthread_data(struct task_struct *task)
 {
 	return to_kthread(task)->data;

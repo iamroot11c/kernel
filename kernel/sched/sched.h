@@ -480,7 +480,7 @@ struct rq {
 	int active_balance;
 	int push_cpu;
 	struct cpu_stop_work active_balance_work;
-	/* cpu of this runqueue: */
+	/* cpu of this runqueue: , cpu id 저장*/
 	int cpu;
 	int online;
 
@@ -539,6 +539,7 @@ struct rq {
 	struct sched_avg avg;
 };
 
+// 2016-10-01
 static inline int cpu_of(struct rq *rq)
 {
 #ifdef CONFIG_SMP
@@ -557,7 +558,9 @@ DECLARE_PER_CPU(struct rq, runqueues);
 // 2016-03-05
 // 2016-09-24
 #define cpu_rq(cpu)		(&per_cpu(runqueues, (cpu)))
+// 2016-10-01
 #define this_rq()		(&__get_cpu_var(runqueues))
+// 2016-10-01
 #define task_rq(p)		cpu_rq(task_cpu(p))
 // 2016-03-05
 // rq->curr
@@ -997,6 +1000,7 @@ static const u32 prio_to_wmult[40] = {
 #define DEQUEUE_SLEEP		1
 
 // 2016-07-01
+// 2016-10-01
 struct sched_class {
 	const struct sched_class *next;
 

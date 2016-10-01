@@ -184,6 +184,7 @@ static inline void __smp_call_function_single(int cpuid,
  * the warning message, as your code might not work under PREEMPT.
  */
 // 2014-11-29; CONFIG_DEBUG_PREEMPT 활성화
+// 2016-10-01
 #ifdef CONFIG_DEBUG_PREEMPT
   extern unsigned int debug_smp_processor_id(void);
 # define smp_processor_id() debug_smp_processor_id()

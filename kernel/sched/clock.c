@@ -72,7 +72,9 @@
  * This is default implementation.
  * Architectures and sub-architectures can override this.
  */
+// 현재 시간을 nsec단위로 리턴
 // 2016-07-01
+// 2016-10-01
 unsigned long long __attribute__((weak)) sched_clock(void)
 {
 	return (unsigned long long)(jiffies - INITIAL_JIFFIES)
@@ -82,7 +84,7 @@ EXPORT_SYMBOL_GPL(sched_clock);
 
 __read_mostly int sched_clock_running;
 
-#ifdef CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
+#ifdef CONFIG_HAVE_UNSTABLE_SCHED_CLOCK // not defined
 __read_mostly int sched_clock_stable;
 
 struct sched_clock_data {
@@ -353,8 +355,12 @@ void sched_clock_init(void)
 	sched_clock_running = 1;
 }
 
+// 2016-10-01
+// CONFIG_HAVE_UNSTABLE_SCHED_CLOCK 이 not defined이기 때문에 이 함수가 호출된다.
 u64 sched_clock_cpu(int cpu)
 {
+	// sched_clock_running은 sched_clock_init() 함수를 호출해야 세팅되지만,
+	// 현재 분석 시점에서는 해당 init함수가 불리지 않았기 때문에 0이다.
 	if (unlikely(!sched_clock_running))
 		return 0;
 

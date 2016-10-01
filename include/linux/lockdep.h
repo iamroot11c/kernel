@@ -427,6 +427,7 @@ struct lock_class_key { };
 
 #define lockdep_depth(tsk)	(0)
 
+// 2016-10-01 NOP
 #define lockdep_assert_held(l)			do { (void)(l); } while (0)
 
 #define lockdep_recursing(tsk)			(0)
@@ -457,6 +458,7 @@ do {								\
 // 2015-11-07
 // 2016-02-06;
 // LOCK_CONTENDED(lock, do_raw_read_trylock, do_raw_read_lock);
+// LOCK_CONTENDED(lock, do_raw_spin_trylock, do_raw_spin_lock);
 #define LOCK_CONTENDED(_lock, try, lock) \
 	lock(_lock)
 

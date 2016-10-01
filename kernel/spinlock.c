@@ -129,7 +129,8 @@ BUILD_LOCK_OPS(write, rwlock);
 
 #endif
 
-#ifndef CONFIG_INLINE_SPIN_TRYLOCK
+#ifndef CONFIG_INLINE_SPIN_TRYLOCK // not defined
+// 2016-10-01
 int __lockfunc _raw_spin_trylock(raw_spinlock_t *lock)
 {
 	return __raw_spin_trylock(lock);
@@ -146,6 +147,7 @@ EXPORT_SYMBOL(_raw_spin_trylock_bh);
 #endif
 
 #ifndef CONFIG_INLINE_SPIN_LOCK
+// 2016-10-01
 void __lockfunc _raw_spin_lock(raw_spinlock_t *lock)
 {
 	__raw_spin_lock(lock);

@@ -153,7 +153,7 @@ struct taskstats {
 	__u64	cancelled_write_bytes;	/* bytes of cancelled write I/O */
 
 	__u64  nvcsw;			/* voluntary_ctxt_switches */
-	__u64  nivcsw;			/* nonvoluntary_ctxt_switches */
+	__u64  nivcsw;			/* nonvoluntary_ctxt_switches */ // 2016-10-01
 
 	/* time accounting for SMT machines */
 	__u64	ac_utimescaled;		/* utime scaled on frequency etc */

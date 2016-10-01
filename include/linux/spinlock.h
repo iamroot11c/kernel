@@ -129,6 +129,7 @@ do {								\
  * serialize it with another STORE done by spin_lock().
  */
 #ifndef smp_mb__before_spinlock
+// 2016-10-01
 #define smp_mb__before_spinlock()	smp_wmb()
 #endif
 
@@ -178,6 +179,7 @@ static inline void do_raw_spin_unlock(raw_spinlock_t *lock) __releases(lock)
  */
 #define raw_spin_trylock(lock)	__cond_lock(lock, _raw_spin_trylock(lock))
 
+// 2016-10-01
 #define raw_spin_lock(lock)	_raw_spin_lock(lock)
 
 #ifdef CONFIG_DEBUG_LOCK_ALLOC

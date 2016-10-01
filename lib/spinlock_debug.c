@@ -105,6 +105,7 @@ static inline void debug_spin_unlock(raw_spinlock_t *lock)
 }
 
 // 2015-11-07
+// 2016-10-01
 static void __spin_lock_debug(raw_spinlock_t *lock)
 {
 	u64 i;
@@ -136,6 +137,11 @@ static void __spin_lock_debug(raw_spinlock_t *lock)
 	// 2015-11-07 여기까지
 }
 // 2015-11-07
+// 2016-10-01
+// 동작 : 1) 스핀 락 시도 
+//	 - 실패 시 : (__spin_lock_debug 내부 구현)
+//		1) 실패 시 약 40만번 재시도 
+//		2) 1) 실패 시 무기한 스핀락 걸음
 void do_raw_spin_lock(raw_spinlock_t *lock)
 {
 	debug_spin_lock_before(lock);

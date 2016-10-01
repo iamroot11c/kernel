@@ -140,6 +140,7 @@ enum {
 
 /* struct worker is defined in workqueue_internal.h */
 
+// 2016-10-01
 struct worker_pool {
 	spinlock_t		lock;		/* the pool lock */
 	int			cpu;		/* I: the associated cpu */
@@ -779,11 +780,13 @@ static bool too_many_workers(struct worker_pool *pool)
  */
 
 /* Return the first worker.  Safe with preemption disabled */
+// 2016-10-01
 static struct worker *first_worker(struct worker_pool *pool)
 {
 	if (unlikely(list_empty(&pool->idle_list)))
 		return NULL;
 
+	// idle_list항목의 가장 처음 리스트의 worker타입을 리턴
 	return list_first_entry(&pool->idle_list, struct worker, entry);
 }
 
@@ -815,6 +818,8 @@ static void wake_up_worker(struct worker_pool *pool)
  * CONTEXT:
  * spin_lock_irq(rq->lock)
  */
+// 2016-10-01
+// WORKER_NOT_RUNNING 이 설정되지 않으면 nr_running 하나 증가
 void wq_worker_waking_up(struct task_struct *task, int cpu)
 {
 	struct worker *worker = kthread_data(task);
@@ -840,6 +845,8 @@ void wq_worker_waking_up(struct task_struct *task, int cpu)
  * Return:
  * Worker task on @cpu to wake up, %NULL if none.
  */
+// 2016-10-01
+// wq_worker_sleeping(prev, cpu);
 struct task_struct *wq_worker_sleeping(struct task_struct *task, int cpu)
 {
 	struct worker *worker = kthread_data(task), *to_wakeup = NULL;
@@ -870,6 +877,13 @@ struct task_struct *wq_worker_sleeping(struct task_struct *task, int cpu)
 	 * manipulating idle_list, so dereferencing idle_list without pool
 	 * lock is safe.
 	 */
+	// NOT_RUNNING상태가 아니기 때문에
+	// (NOT_RUNNING상태인 경우 함수를 빠져나오기 때문에 NOT_RUNNING is clear 구문을 위와 같이 해석)
+	// 1) 로컬 CPU에 의해 바운드 또는 수행 중이고
+	// 2) RUN QUEUE LOCK이 잡혀있고
+	// 3) 선점 상태가 아니다.
+	// 따라서 idle_list가 변경되지 않은 것이 보장되기 때문에
+	// lock없이 idle_list 역참조가 가능하다.
 	if (atomic_dec_and_test(&pool->nr_running) &&
 	    !list_empty(&pool->worklist))
 		to_wakeup = first_worker(pool);

@@ -64,6 +64,7 @@ do { \
 
 // 2016-02-06;
 // 2016-07-09
+// 2016-10-01
 #define preempt_disable() \
 do { \
 	inc_preempt_count(); \

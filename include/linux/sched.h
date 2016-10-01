@@ -175,6 +175,8 @@ extern char ___assert_task_state[1 - 2*!!(
 #define task_is_dead(task)	((task)->exit_state != 0)
 #define task_is_stopped_or_traced(task)	\
 			((task->state & (__TASK_STOPPED | __TASK_TRACED)) != 0)
+// 2016-10-01
+// TASK_UNINTERRUPTIBLE 상태이면서 PF_FROZEN 플래그가 세팅되지 않았는지 체크
 #define task_contributes_to_load(task)	\
 				((task->state & TASK_UNINTERRUPTIBLE) != 0 && \
 				 (task->flags & PF_FROZEN) == 0)
@@ -1072,10 +1074,12 @@ struct task_struct {
 	unsigned long wakee_flips;
 	unsigned long wakee_flip_decay_ts;
 #endif
+    // 2016-10-01
 	int on_rq;
 
 	int prio, static_prio, normal_prio;
 	unsigned int rt_priority;
+    // 2016-10-01
 	const struct sched_class *sched_class;
     // 2016-07-01
 	struct sched_entity se;
@@ -1668,6 +1672,7 @@ extern void thread_group_cputime_adjusted(struct task_struct *p, cputime_t *ut, 
 #define PF_EXITING	0x00000004	/* getting shut down */
 #define PF_EXITPIDONE	0x00000008	/* pi exit done on shut down */
 #define PF_VCPU		0x00000010	/* I'm a virtual CPU */
+// 2016-10-01
 #define PF_WQ_WORKER	0x00000020	/* I'm a workqueue worker */
 #define PF_FORKNOEXEC	0x00000040	/* forked but didn't exec */
 #define PF_MCE_PROCESS  0x00000080      /* process policy on mce errors */
@@ -2495,6 +2500,7 @@ static inline int signal_pending(struct task_struct *p)
 	return unlikely(test_tsk_thread_flag(p,TIF_SIGPENDING));
 }
 // 2015-06-27
+// 2016-10-01
 static inline int __fatal_signal_pending(struct task_struct *p)
 {
 	return unlikely(sigismember(&p->pending.signal, SIGKILL));
@@ -2681,6 +2687,7 @@ static inline bool __must_check current_clr_polling_and_test(void)
 }
 
 #else
+// 2016-10-01
 static inline int tsk_is_polling(struct task_struct *p) { return 0; }
 static inline void __current_set_polling(void) { }
 static inline void __current_clr_polling(void) { }

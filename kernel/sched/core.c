@@ -117,6 +117,7 @@ DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 
 static void update_rq_clock_task(struct rq *rq, s64 delta);
 
+// 2016-10-01
 void update_rq_clock(struct rq *rq)
 {
 	s64 delta;
@@ -124,8 +125,10 @@ void update_rq_clock(struct rq *rq)
 	if (rq->skip_clock_update > 0)
 		return;
 
+	// rq->clock을 현재 시간으로 보정
 	delta = sched_clock_cpu(cpu_of(rq)) - rq->clock;
 	rq->clock += delta;
+	// 주어진 delta 값으로 clock_tassk값을 보정
 	update_rq_clock_task(rq, delta);
 }
 
@@ -528,10 +531,13 @@ static inline void init_hrtick(void)
  * the target CPU.
  */
 #ifdef CONFIG_SMP
+// 2016-10-01
+// resched_task(rq->curr);
 void resched_task(struct task_struct *p)
 {
 	int cpu;
 
+	// &task_rq(p)->lock이 걸려있지 않으면 버그 메시지 출력
 	assert_raw_spin_locked(&task_rq(p)->lock);
 
 	if (test_tsk_need_resched(p))
@@ -543,9 +549,14 @@ void resched_task(struct task_struct *p)
 	if (cpu == smp_processor_id())
 		return;
 
+	// TIF_NEED_RESCHED플래그가 새로 설정되었으며
+	// 수행할 태스크의 cpu id와 현재 수행중인 cpu id가 다르다.
+	//
 	/* NEED_RESCHED must be visible before we test polling */
 	smp_mb();
+	// 현재 분석 환경 상 무조건 0 리턴
 	if (!tsk_is_polling(p))
+		// 미리 정의된 함수 포인터 호출
 		smp_send_reschedule(cpu);
 }
 
@@ -787,6 +798,9 @@ static void set_load_weight(struct task_struct *p)
 	load->inv_weight = prio_to_wmult[prio];
 }
 
+// 2016-10-01
+// enqueue_task(rq, p, flags);
+// runqueue의 시간 갱신 및 미리 지정된 task_struct 내 sched_class의  enqueue_task함수를 수행
 static void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 {
 	update_rq_clock(rq);
@@ -794,13 +808,22 @@ static void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 	p->sched_class->enqueue_task(rq, p, flags);
 }
 
+// 2016-10-01
+// dequeue_task(rq, p, flags);
+// runqueue의 시간 갱신 및 미리 지정된 task_struct 내 sched_class의  deque_task함수를 수행
 static void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 {
+	// 2016-10-01
+	// rq 내 clock, clock_task 값 갱신
 	update_rq_clock(rq);
+	// NOP
 	sched_info_dequeued(p);
+	// 미리 정의한 함수 포인터 실행
+	// 추상화되었기 때문에, 분석 시점에서는 어떤 함수를 실제로 실행하는지 알기 힘듬
 	p->sched_class->dequeue_task(rq, p, flags);
 }
 
+// 2016-10-01
 void activate_task(struct rq *rq, struct task_struct *p, int flags)
 {
 	if (task_contributes_to_load(p))
@@ -809,24 +832,28 @@ void activate_task(struct rq *rq, struct task_struct *p, int flags)
 	enqueue_task(rq, p, flags);
 }
 
+// 2016-10-01
+// deactivate_task(rq, prev, DEQUEUE_SLEEP);
 void deactivate_task(struct rq *rq, struct task_struct *p, int flags)
 {
 	if (task_contributes_to_load(p))
 		rq->nr_uninterruptible++;
 
+	// 2016-10-01
 	dequeue_task(rq, p, flags);
 }
 
+// 2016-10-01
 static void update_rq_clock_task(struct rq *rq, s64 delta)
 {
 /*
  * In theory, the compile should just see 0 here, and optimize out the call
  * to sched_rt_avg_update. But I don't trust it...
  */
-#if defined(CONFIG_IRQ_TIME_ACCOUNTING) || defined(CONFIG_PARAVIRT_TIME_ACCOUNTING)
+#if defined(CONFIG_IRQ_TIME_ACCOUNTING) || defined(CONFIG_PARAVIRT_TIME_ACCOUNTING) // 둘 다 not defined
 	s64 steal = 0, irq_delta = 0;
 #endif
-#ifdef CONFIG_IRQ_TIME_ACCOUNTING
+#ifdef CONFIG_IRQ_TIME_ACCOUNTING // not defined
 	irq_delta = irq_time_read(cpu_of(rq)) - rq->prev_irq_time;
 
 	/*
@@ -850,7 +877,7 @@ static void update_rq_clock_task(struct rq *rq, s64 delta)
 	rq->prev_irq_time += irq_delta;
 	delta -= irq_delta;
 #endif
-#ifdef CONFIG_PARAVIRT_TIME_ACCOUNTING
+#ifdef CONFIG_PARAVIRT_TIME_ACCOUNTING // not defined
 	if (static_key_false((&paravirt_steal_rq_enabled))) {
 		u64 st;
 
@@ -869,9 +896,10 @@ static void update_rq_clock_task(struct rq *rq, s64 delta)
 	}
 #endif
 
+	// 현재 분석 환경에서는 이 코드만 실행
 	rq->clock_task += delta;
 
-#if defined(CONFIG_IRQ_TIME_ACCOUNTING) || defined(CONFIG_PARAVIRT_TIME_ACCOUNTING)
+#if defined(CONFIG_IRQ_TIME_ACCOUNTING) || defined(CONFIG_PARAVIRT_TIME_ACCOUNTING) // 둘 다 not defined
 	if ((irq_delta + steal) && sched_feat(NONTASK_POWER))
 		sched_rt_avg_update(rq, irq_delta + steal);
 #endif
@@ -977,6 +1005,7 @@ static inline void check_class_changed(struct rq *rq, struct task_struct *p,
 		p->sched_class->prio_changed(rq, p, oldprio);
 }
 
+// 2016-10-01
 void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 {
 	const struct sched_class *class;
@@ -984,10 +1013,13 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 	if (p->sched_class == rq->curr->sched_class) {
 		rq->curr->sched_class->check_preempt_curr(rq, p, flags);
 	} else {
+		// #define for_each_class(class) \
+		// for (class = sched_class_highest; class; class = class->next)
 		for_each_class(class) {
 			if (class == rq->curr->sched_class)
 				break;
 			if (class == p->sched_class) {
+				// 2016-10-01
 				resched_task(rq->curr);
 				break;
 			}
@@ -1330,6 +1362,8 @@ ttwu_stat(struct task_struct *p, int cpu, int wake_flags)
 #endif /* CONFIG_SCHEDSTATS */
 }
 
+// 2016-10-01
+// ttwu_activate(rq, p, ENQUEUE_WAKEUP);
 static void ttwu_activate(struct rq *rq, struct task_struct *p, int en_flags)
 {
 	activate_task(rq, p, en_flags);
@@ -1343,10 +1377,14 @@ static void ttwu_activate(struct rq *rq, struct task_struct *p, int en_flags)
 /*
  * Mark the task runnable and perform wakeup-preemption.
  */
+// 2016-10-01
+// ttwu_do_wakeup(rq, p, 0);
 static void
 ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags)
 {
 	check_preempt_curr(rq, p, wake_flags);
+	// 2016-10-01
+	// 여기까지
 	trace_sched_wakeup(p, true);
 
 	p->state = TASK_RUNNING;
@@ -1568,6 +1606,15 @@ out:
  * ensure that this_rq() is locked, @p is bound to this_rq() and not
  * the current task.
  */
+
+// 동작 : run queue 락이 잡혀있는 태스크를 깨우려 시도한다.
+//	- 현재 runqueue에 p가 없으면 추가. 
+// 제한 조건 : 
+//	1) 현재 cpu의 runqueue에 lock이 걸려있어야 한다. 
+//	2) p는 현재 cpu의 runqueue에 속해야 한다.
+//	3) p는 현재 수행 중인 태스크가 아니다.
+// 2016-10-01
+// try_to_wake_up_local(to_wakeup)
 static void try_to_wake_up_local(struct task_struct *p)
 {
 	struct rq *rq = task_rq(p);
@@ -1578,6 +1625,7 @@ static void try_to_wake_up_local(struct task_struct *p)
 
 	lockdep_assert_held(&rq->lock);
 
+	// 2016-10-01 
 	if (!raw_spin_trylock(&p->pi_lock)) {
 		raw_spin_unlock(&rq->lock);
 		raw_spin_lock(&p->pi_lock);
@@ -1587,9 +1635,13 @@ static void try_to_wake_up_local(struct task_struct *p)
 	if (!(p->state & TASK_NORMAL))
 		goto out;
 
+	// __schedule() 함수에서 pending signal이 없다면 p->on_rq를 0으로 세팅했다. 
 	if (!p->on_rq)
 		ttwu_activate(rq, p, ENQUEUE_WAKEUP);
 
+	// ttwu_activate() 호출 시 p->on_rq를 무조건 1로 세팅하기 때문에
+	// 이곳까지 왔으면 p->on_rq는 무조건 0이 아니다.
+	// 2016-10-01
 	ttwu_do_wakeup(rq, p, 0);
 	ttwu_stat(p, smp_processor_id(), 0);
 out:
@@ -2450,7 +2502,7 @@ need_resched:
 	if (sched_feat(HRTICK))
 		hrtick_clear(rq);
 	// 2016-09-24, 여기까지
-
+	// 2016-10-01
 	/*
 	 * Make sure that signal_pending_state()->signal_pending() below
 	 * can't be reordered with __set_current_state(TASK_INTERRUPTIBLE)
@@ -2461,10 +2513,16 @@ need_resched:
 
 	switch_count = &prev->nivcsw;
 	if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
+		// 2016-10-01
+		// 지연된 시그널이 있는지를 검사
+		//	-> y : 해당 프로세스의 상태를 task_running으로 변경
+		//	-> n : 프로세스를 비활성화시킨다.
 		if (unlikely(signal_pending_state(prev->state, prev))) {
 			prev->state = TASK_RUNNING;
 		} else {
+			// 2016-10-01
 			deactivate_task(rq, prev, DEQUEUE_SLEEP);
+			// 2016-10-01 식사 전
 			prev->on_rq = 0;
 
 			/*
@@ -2537,6 +2595,7 @@ asmlinkage void __sched schedule(void)
 	struct task_struct *tsk = current;
 
 	sched_submit_work(tsk);
+	// 2016-09-24
 	__schedule();
 }
 EXPORT_SYMBOL(schedule);

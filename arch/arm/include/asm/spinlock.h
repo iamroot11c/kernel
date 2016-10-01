@@ -94,6 +94,7 @@ static inline void dsb_sev(void)
 #define arch_spin_lock_flags(lock, flags) arch_spin_lock(lock)
 
 // 2015-11-07
+// lock을 얻을 때까지 무한루프를 돈다.
 static inline void arch_spin_lock(arch_spinlock_t *lock)
 {
 	unsigned long tmp;
@@ -118,7 +119,7 @@ static inline void arch_spin_lock(arch_spinlock_t *lock)
 	: "cc");
 
 	while (lockval.tickets.next != lockval.tickets.owner) {
-		wfe();
+		wfe(); // 다른 프로세서에게 시그널 전송
 		lockval.tickets.owner = ACCESS_ONCE(lock->tickets.owner);
 	}
 
@@ -128,6 +129,8 @@ static inline void arch_spin_lock(arch_spinlock_t *lock)
 // 2015-11-07
 // lock의 owner와 next가 같은 경우 참. lock의 16번 비트에 1을 설정하여 락 플래그를 갱신
 // lock의 owner와 next가 다른 경우 거짓. 그냥 빠져나온다.
+// 2016-10-01
+// 간단히 말해서 lock이 걸려있으면 즉시! 빠져나오고 안걸려있으면 락을 건다.
 static inline int arch_spin_trylock(arch_spinlock_t *lock)
 {
 	unsigned long contended, res;
@@ -162,6 +165,7 @@ static inline int arch_spin_trylock(arch_spinlock_t *lock)
     }
     */
 
+    // (TICKET_SHIFT) 번째 비트 설정 여부로 락이 걸렸는지 여부를 확인하고 있다.
 	do {
 		__asm__ __volatile__(
 		"	ldrex	%0, [%3]\n"

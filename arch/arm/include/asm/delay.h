@@ -20,6 +20,7 @@ struct delay_timer {
 	unsigned long freq;
 };
 
+// 2016-10-01
 extern struct arm_delay_ops {
 	void (*delay)(unsigned long);
 	void (*const_udelay)(unsigned long);

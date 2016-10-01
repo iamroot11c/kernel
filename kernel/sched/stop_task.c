@@ -103,6 +103,7 @@ get_rr_interval_stop(struct rq *rq, struct task_struct *task)
  * Simple, special scheduling class for the per-CPU stop tasks:
  */
 // 2016-07-01
+// 2016-10-01
 const struct sched_class stop_sched_class = {
 	.next			= &rt_sched_class,
 

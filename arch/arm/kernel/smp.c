@@ -598,6 +598,7 @@ void handle_IPI(int ipinr, struct pt_regs *regs)
 }
 
 // 2016-03-05
+// 2016-10-01
 void smp_send_reschedule(int cpu)
 {
 	smp_cross_call(cpumask_of(cpu), IPI_RESCHEDULE);

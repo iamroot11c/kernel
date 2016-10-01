@@ -1,6 +1,36 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [111주차](http://bit.ly/2cYYJaN) `2016.09.24`
+ - drive : 홍진우님
+ - [perf_pmu_register() 진행중]()
+ - kernel/events/core.c:pref_event_init() 진행 중
+ - kernel/events/core.c:perf_pmu_register() 진행 중
+ - drivers/base/core.c:device_del() 진행 중
+ - drivers/base/power/sysfs.c:dpm_sysfs_remove() 진행 중
+ - drivers/base/power/qos.c:dev_pm_qos_constraints_destroy() 진행 중
+ - drivers/base/power/sysfs.c:pm_qos_sysfs_remove_latency() 진행 중
+ - fs/sysfs/group.c:sysfs_unmerge_group() 진행 중
+ - fs/sysfs/inode.c:sysfs_hash_and_remove() 진행 중
+ - fs/sysfs/dir.c:sysfs_addrm_start() 완료
+ - fs/sysfs/dir.c:sysfs_find_dirent() 완료
+ - fs/sysfs/dir.c:sysfs_remove_one() 완료
+ - fs/sysfs/dir.c:sysfs_addrm_finish() 진행 중
+ - fs/sysfs/dir.c:sysfs_deactivate() 진행 중
+ - sched/core.c:wait_for_completion() 진행중,  action(timeout);
+ - kernel/timer.c:schedule_timeout() 진행중
+ - sched/core.c:__schedule() 진행 중
+ - sched/core.c:deactivate_task() 진행 완료
+ - sched/core.c:dequeue_task() 진행 완료
+ - sched/core.c:wq_worker_sleeping() 진행 완료
+ - sched/core.c:deactivate() 진행 완료
+ - sched/core.c:try_to_wake_up_local() 진행 중
+ - sched/core.c:ttwu_activate() 진행 완료
+ - sched/core.c:activte_task() 진행 완료
+ - kernel/workqueue.c:wq_worker_walking_up() 진행 완료
+ - sched/core.c:ttwu_do_wakeup() 진행 중
+
+
 + [110주차](http://bit.ly/2cYYJaN) `2016.09.24`
  - drive : 보름달님
  - [perf_pmu_register() 진행중]()
