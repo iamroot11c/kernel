@@ -21,6 +21,8 @@
 // isb, 명령어 동기화, 프로세스의 파이프라인을 비운다.
 #define isb(option) __asm__ __volatile__ ("isb " #option : : : "memory")
 // dsb, 이 명령이 수행되기전에, 명령어의 수행이 모두 완료 된다.
+// 2016-10-08
+// dsb(ishst)
 #define dsb(option) __asm__ __volatile__ ("dsb " #option : : : "memory")
 // dmb, Data Access에 대한 모든 명령어가 끝나고 나서, dmb 명령 이후, Data Access가
 // 발생하는 것을 보장한다.

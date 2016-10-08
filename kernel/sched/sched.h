@@ -280,6 +280,7 @@ struct cfs_rq {
 	 * This allows for the description of both thread and group usage (in
 	 * the FAIR_GROUP_SCHED case).
 	 */
+    // 2016-10-08
 	unsigned long runnable_load_avg, blocked_load_avg;
 	atomic64_t decay_counter;
 	u64 last_decay;
@@ -420,6 +421,7 @@ struct rq {
 	unsigned int nr_running;
     
     // 2016-06-25
+    // 2016-10-08
 	#define CPU_LOAD_IDX_MAX 5
 	unsigned long cpu_load[CPU_LOAD_IDX_MAX];
 	unsigned long last_load_update_tick;
@@ -514,7 +516,7 @@ struct rq {
 	struct hrtimer hrtick_timer;
 #endif
 
-#ifdef CONFIG_SCHEDSTATS
+#ifdef CONFIG_SCHEDSTATS // not define
 	/* latency stats */
 	struct sched_info rq_sched_info;
 	unsigned long long rq_cpu_time;
@@ -529,10 +531,11 @@ struct rq {
 
 	/* try_to_wake_up() stats */
 	unsigned int ttwu_count;
+    // 2016-10-08
 	unsigned int ttwu_local;
 #endif
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
 	struct llist_head wake_list;
 #endif
 
@@ -567,6 +570,7 @@ DECLARE_PER_CPU(struct rq, runqueues);
 #define cpu_curr(cpu)		(cpu_rq(cpu)->curr)
 #define raw_rq()		(&__raw_get_cpu_var(runqueues))
 
+// 2016-10-08
 static inline u64 rq_clock(struct rq *rq)
 {
 	return rq->clock;
@@ -584,6 +588,9 @@ static inline u64 rq_clock_task(struct rq *rq)
 // lockdep_is_held(&sched_domains_mutex) 함수에서 참조하는 mutex내 dep값은 존재하지 않는다.
 // 일단 다른 종류의 함수가 호출되고 있다는 전제하에 코드 분석을 진행한다.
 // (아직 호출되는 함수는 찾지 못함)
+// 
+// 2016-10-08
+// #define lockdep_is_held(lock)   lock_is_held(&(lock)->dep_map)
 #define rcu_dereference_check_sched_domain(p) \
 	rcu_dereference_check((p), \
 			      lockdep_is_held(&sched_domains_mutex))
@@ -629,6 +636,7 @@ DECLARE_PER_CPU(int, sd_llc_id);
 DECLARE_PER_CPU(struct sched_domain *, sd_busy);
 DECLARE_PER_CPU(struct sched_domain *, sd_asym);
 
+// 2016-10-08
 struct sched_group_power {
 	atomic_t ref;
 	/*
@@ -645,6 +653,7 @@ struct sched_group_power {
 	unsigned long cpumask[0]; /* iteration mask */
 };
 
+// 2016-10-08
 struct sched_group {
 	struct sched_group *next;	/* Must be a circular list */
 	atomic_t ref;
@@ -662,6 +671,7 @@ struct sched_group {
 	unsigned long cpumask[0];
 };
 
+// 2016-10-08
 static inline struct cpumask *sched_group_cpus(struct sched_group *sg)
 {
 	return to_cpumask(sg->cpumask);
@@ -767,6 +777,7 @@ static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
 
 extern const_debug unsigned int sysctl_sched_features;
 
+// 2016-10-08
 #define SCHED_FEAT(name, enabled)	\
 	__SCHED_FEAT_##name ,
 
@@ -789,6 +800,7 @@ static __always_inline bool static_branch__false(struct static_key *key)
 	return static_key_false(key); /* Out of line branch. */
 }
 
+// 2016-10-08
 #define SCHED_FEAT(name, enabled)					\
 static __always_inline bool static_branch_##name(struct static_key *key) \
 {									\
@@ -799,10 +811,13 @@ static __always_inline bool static_branch_##name(struct static_key *key) \
 
 #undef SCHED_FEAT
 
+// 2016-10-08
 extern struct static_key sched_feat_keys[__SCHED_FEAT_NR];
 #define sched_feat(x) (static_branch_##x(&sched_feat_keys[__SCHED_FEAT_##x]))
 #else /* !(SCHED_DEBUG && HAVE_JUMP_LABEL) */
 // 2016-09-24
+// 2016-10-08
+// sched_feat(LB_BIAS)) 
 #define sched_feat(x) (sysctl_sched_features & (1UL << __SCHED_FEAT_##x))
 #endif /* SCHED_DEBUG && HAVE_JUMP_LABEL */
 

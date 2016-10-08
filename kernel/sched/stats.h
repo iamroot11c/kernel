@@ -43,7 +43,9 @@ static inline void
 rq_sched_info_depart(struct rq *rq, unsigned long long delta)
 {}
 // 2016-09-24, NOP
+// 2016-10-08
 # define schedstat_inc(rq, field)	do { } while (0)
+// 2016-10-08
 # define schedstat_add(rq, field, amt)	do { } while (0)
 # define schedstat_set(var, val)	do { } while (0)
 #endif

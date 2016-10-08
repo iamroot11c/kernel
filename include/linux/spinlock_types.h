@@ -34,6 +34,7 @@ typedef struct raw_spinlock {
 
 #define SPINLOCK_MAGIC		0xdead4ead
 
+// 2016-10-08
 #define SPINLOCK_OWNER_INIT	((void *)-1L)
 
 #ifdef CONFIG_DEBUG_LOCK_ALLOC

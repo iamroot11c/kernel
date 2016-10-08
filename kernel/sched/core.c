@@ -1315,6 +1315,8 @@ int select_task_rq(struct task_struct *p, int sd_flags, int wake_flags)
 	return cpu;
 }
 
+// 2016-10-08
+// update_avg(&rq->avg_idle, delta);
 static void update_avg(u64 *avg, u64 sample)
 {
 	s64 diff = sample - *avg;
@@ -1322,17 +1324,20 @@ static void update_avg(u64 *avg, u64 sample)
 }
 #endif
 
+// 2016-10-08
+// ttwu_stat(p, smp_processor_id(), 0)
+// CONFIG_SCHEDSTATS 미 정의로 No OP.
 static void
 ttwu_stat(struct task_struct *p, int cpu, int wake_flags)
 {
-#ifdef CONFIG_SCHEDSTATS
+#ifdef CONFIG_SCHEDSTATS // not define
 	struct rq *rq = this_rq();
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
 	int this_cpu = smp_processor_id();
 
 	if (cpu == this_cpu) {
-		schedstat_inc(rq, ttwu_local);
+		schedstat_inc(rq, ttwu_local); // No OP.
 		schedstat_inc(p, se.statistics.nr_wakeups_local);
 	} else {
 		struct sched_domain *sd;
@@ -1387,14 +1392,16 @@ ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags)
 	// 여기까지
 	trace_sched_wakeup(p, true);
 
+	// 2016-10-08 시작
 	p->state = TASK_RUNNING;
 #ifdef CONFIG_SMP
+	// const struct sched_class fair_sched_class에 등록되어 있지 않음
 	if (p->sched_class->task_woken)
 		p->sched_class->task_woken(rq, p);
 
 	if (rq->idle_stamp) {
 		u64 delta = rq_clock(rq) - rq->idle_stamp;
-		u64 max = 2*sysctl_sched_migration_cost;
+		u64 max = 2*sysctl_sched_migration_cost/*500000UL*/;
 
 		if (delta > max)
 			rq->avg_idle = max;
@@ -1641,8 +1648,12 @@ static void try_to_wake_up_local(struct task_struct *p)
 
 	// ttwu_activate() 호출 시 p->on_rq를 무조건 1로 세팅하기 때문에
 	// 이곳까지 왔으면 p->on_rq는 무조건 0이 아니다.
-	// 2016-10-01
+	// 2016-10-01 시작
+	// task_struct의 state 멤버를 TASK_RUNNING으로 변경
 	ttwu_do_wakeup(rq, p, 0);
+	// 2016-10-08 완료
+
+	// CONFIG_SCHEDSTATS 미 정의로 No OP.
 	ttwu_stat(p, smp_processor_id(), 0);
 out:
 	raw_spin_unlock(&p->pi_lock);
@@ -1992,8 +2003,10 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
 #ifdef CONFIG_SMP
 
 /* assumes rq->lock is held */
+// 2016-10-08
 static inline void pre_schedule(struct rq *rq, struct task_struct *prev)
 {
+	// const struct sched_class fair_sched_class에 pre_schedule 미 등록
 	if (prev->sched_class->pre_schedule)
 		prev->sched_class->pre_schedule(rq, prev);
 }
@@ -2535,15 +2548,19 @@ need_resched:
 
 				to_wakeup = wq_worker_sleeping(prev, cpu);
 				if (to_wakeup)
+					// 2016-10-01 시작
 					try_to_wake_up_local(to_wakeup);
+					// 2016-10-08 완료
 			}
 		}
 		switch_count = &prev->nvcsw;
 	}
 
+	// 2016-10-08
 	pre_schedule(rq, prev);
 
 	if (unlikely(!rq->nr_running))
+		// 2016-10-08
 		idle_balance(cpu, rq);
 
 	put_prev_task(rq, prev);
@@ -3379,6 +3396,7 @@ EXPORT_SYMBOL(task_nice);
  * Return: 1 if the CPU is currently idle. 0 otherwise.
  */
 // 2015-09-12
+// 2016-10-08
 int idle_cpu(int cpu)
 {
 	struct rq *rq = cpu_rq(cpu);

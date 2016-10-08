@@ -3624,6 +3624,7 @@ void lock_release(struct lockdep_map *lock, int nested,
 EXPORT_SYMBOL_GPL(lock_release);
 
 // 2015-09-12
+// 2016-10-08 glance
 int lock_is_held(struct lockdep_map *lock)
 {
 	unsigned long flags;

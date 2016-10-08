@@ -257,6 +257,7 @@ int cpumask_any_but(const struct cpumask *mask, unsigned int cpu);
  *
  * After the loop, cpu is >= nr_cpu_ids.
  */
+// 2016-10-08
 #define for_each_cpu_and(cpu, mask, and)				\
 	for ((cpu) = -1;						\
 		(cpu) = cpumask_next_and((cpu), (mask), (and)),		\
@@ -312,6 +313,7 @@ static inline void cpumask_clear_cpu(int cpu, struct cpumask *dstp)
  * No static inline type checking - see Subtlety (1) above.
  */
 // 2015-08-29
+// 2016-10-08
 #define cpumask_test_cpu(cpu, cpumask) \
 	test_bit(cpumask_check(cpu), cpumask_bits((cpumask)))
 
@@ -551,6 +553,8 @@ static inline void cpumask_shift_left(struct cpumask *dstp,
 // 2016-01-23
 // cpumask_copy(cfd->cpumask_ipi, cfd->cpumask);
 // *dstp = *srcp;
+// 2016-10-08
+// cpumask_copy(cpus, cpu_active_mask);
 static inline void cpumask_copy(struct cpumask *dstp,
 				const struct cpumask *srcp)
 {

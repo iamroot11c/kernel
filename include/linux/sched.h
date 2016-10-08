@@ -802,6 +802,7 @@ enum cpu_idle_type {
 #define SD_SHARE_PKG_RESOURCES	0x0200	/* Domain members share cpu pkg resources */
 #define SD_SERIALIZE		0x0400	/* Only a single load balancing instance */
 #define SD_ASYM_PACKING		0x0800  /* Place busy groups earlier in the domain */
+// 2016-10-08
 #define SD_PREFER_SIBLING	0x1000	/* Prefer to place tasks in a sibling domain */
 #define SD_OVERLAP		0x2000	/* sched_domains of this level overlap */
 
@@ -832,6 +833,7 @@ struct sched_domain {
 	unsigned int cache_nice_tries;	/* Leave cache hot tasks for # tries */
 	unsigned int busy_idx;
 	unsigned int idle_idx;
+    // 2016-10-08
 	unsigned int newidle_idx;
 	unsigned int wake_idx;
 	unsigned int forkexec_idx;

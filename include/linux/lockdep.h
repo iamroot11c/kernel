@@ -519,6 +519,8 @@ static inline void print_irqtrace_events(struct task_struct *curr)
 #define spin_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
 #define spin_acquire_nest(l, s, t, n, i)	lock_acquire_exclusive(l, s, t, n, i)
 // 2015-11-07
+// 2016-10-08
+// spin_release(&lock->dep_map, 1, _RET_IP_)
 #define spin_release(l, n, i)			lock_release(l, n, i)
 
 #define rwlock_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)

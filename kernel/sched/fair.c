@@ -90,6 +90,7 @@ unsigned int sysctl_sched_child_runs_first __read_mostly;
 unsigned int sysctl_sched_wakeup_granularity = 1000000UL;
 unsigned int normalized_sysctl_sched_wakeup_granularity = 1000000UL;
 
+// 2016-10-08
 const_debug unsigned int sysctl_sched_migration_cost = 500000UL;
 
 /*
@@ -2989,6 +2990,7 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
 #ifdef CONFIG_SMP
 /* Used instead of source_load when we know the type == 0 */
+// 2016-10-08
 static unsigned long weighted_cpuload(const int cpu)
 {
 	return cpu_rq(cpu)->cfs.runnable_load_avg;
@@ -3001,12 +3003,13 @@ static unsigned long weighted_cpuload(const int cpu)
  * We want to under-estimate the load of migration sources, to
  * balance conservatively.
  */
+// 2016-10-08
 static unsigned long source_load(int cpu, int type)
 {
 	struct rq *rq = cpu_rq(cpu);
 	unsigned long total = weighted_cpuload(cpu);
 
-	if (type == 0 || !sched_feat(LB_BIAS))
+	if (type == 0 || !sched_feat(LB_BIAS/*true*/))
 		return total;
 
 	return min(rq->cpu_load[type-1], total);
@@ -3016,12 +3019,16 @@ static unsigned long source_load(int cpu, int type)
  * Return a high guess at the load of a migration-target cpu weighted
  * according to the scheduling class and "nice" value.
  */
+// 2016-10-08
+// target_load(i, load_idx)
 static unsigned long target_load(int cpu, int type)
 {
 	struct rq *rq = cpu_rq(cpu);
 	unsigned long total = weighted_cpuload(cpu);
 
-	if (type == 0 || !sched_feat(LB_BIAS))
+	// #define sched_feat(x) (sysctl_sched_features & (1UL << __SCHED_FEAT_##x))
+	// sysctl_sched_features & (1UL << __SCHED_FEAT_LB_BIAS)
+	if (type == 0 || !sched_feat(LB_BIAS/*true*/))
 		return total;
 
 	return max(rq->cpu_load[type-1], total);
@@ -3934,6 +3941,7 @@ static unsigned long __read_mostly max_load_balance_interval = HZ/10;
 #define LBF_NEED_BREAK	0x02
 #define LBF_SOME_PINNED 0x04
 
+// 2016-10-08
 struct lb_env {
 	struct sched_domain	*sd;
 
@@ -4105,6 +4113,7 @@ static int move_one_task(struct lb_env *env)
 
 static unsigned long task_h_load(struct task_struct *p);
 
+// 2016-10-08
 static const unsigned int sched_nr_migrate_break = 32;
 
 /*
@@ -4186,7 +4195,7 @@ next:
 	return pulled;
 }
 
-#ifdef CONFIG_FAIR_GROUP_SCHED
+#ifdef CONFIG_FAIR_GROUP_SCHED // not define
 /*
  * update tg->load_weight by folding this cpu's load_avg
  */
@@ -4291,6 +4300,8 @@ static unsigned long task_h_load(struct task_struct *p)
 			cfs_rq->runnable_load_avg + 1);
 }
 #else
+// 2016-10-08
+// update_blocked_averages(this_cpu);
 static inline void update_blocked_averages(int cpu)
 {
 }
@@ -4305,6 +4316,7 @@ static unsigned long task_h_load(struct task_struct *p)
 /*
  * sg_lb_stats - stats of a sched_group required for load_balancing
  */
+// 2016-10-08
 struct sg_lb_stats {
 	unsigned long avg_load; /*Avg load across the CPUs of the group */
 	unsigned long group_load; /* Total load over the CPUs of the group */
@@ -4323,6 +4335,7 @@ struct sg_lb_stats {
  * sd_lb_stats - Structure to store the statistics of a sched_domain
  *		 during load balancing.
  */
+// 2016-10-08
 struct sd_lb_stats {
 	struct sched_group *busiest;	/* Busiest group in this sd */
 	struct sched_group *local;	/* Local group in this sd */
@@ -4334,6 +4347,7 @@ struct sd_lb_stats {
 	struct sg_lb_stats local_stat;	/* Statistics of the local group */
 };
 
+// 2016-10-08
 static inline void init_sd_lb_stats(struct sd_lb_stats *sds)
 {
 	/*
@@ -4360,6 +4374,8 @@ static inline void init_sd_lb_stats(struct sd_lb_stats *sds)
  *
  * Return: The load index.
  */
+// 2016-10-08
+// get_sd_load_idx(env->sd, env->idle)
 static inline int get_sd_load_idx(struct sched_domain *sd,
 					enum cpu_idle_type idle)
 {
@@ -4371,6 +4387,7 @@ static inline int get_sd_load_idx(struct sched_domain *sd,
 		break;
 
 	case CPU_NEWLY_IDLE:
+		// 2016-10-08
 		load_idx = sd->newidle_idx;
 		break;
 	default:
@@ -4565,7 +4582,7 @@ fix_small_capacity(struct sched_domain *sd, struct sched_group *group)
  * group imbalance and decide the groups need to be balanced again. A most
  * subtle and fragile situation.
  */
-
+// 2016-10-08
 struct sg_imb_stats {
 	unsigned long max_nr_running, min_nr_running;
 	unsigned long max_cpu_load, min_cpu_load;
@@ -4577,6 +4594,8 @@ static inline void init_sg_imb_stats(struct sg_imb_stats *sgi)
 	sgi->min_cpu_load = sgi->min_nr_running = ~0UL;
 }
 
+// 2016-10-08
+// update_sg_imb_stats(&sgi, load, nr_running)
 static inline void
 update_sg_imb_stats(struct sg_imb_stats *sgi,
 		    unsigned long load, unsigned long nr_running)
@@ -4619,6 +4638,8 @@ sg_imbalanced(struct sg_lb_stats *sgs, struct sg_imb_stats *sgi)
  * @local_group: Does group contain this_cpu.
  * @sgs: variable to hold the statistics for this group.
  */
+// 2016-10-08
+// update_sg_lb_stats(env, sg, load_idx, local_group, sgs)
 static inline void update_sg_lb_stats(struct lb_env *env,
 			struct sched_group *group, int load_idx,
 			int local_group, struct sg_lb_stats *sgs)
@@ -4630,6 +4651,14 @@ static inline void update_sg_lb_stats(struct lb_env *env,
 
 	init_sg_imb_stats(&sgi);
 
+	// #define for_each_cpu_and(cpu, mask, and)                \
+	//  for ((cpu) = -1;                        \
+	//       (cpu) = cpumask_next_and((cpu), (mask), (and)),     \
+	//       (cpu) < nr_cpu_ids;)
+	//
+	// for (i = -1; 
+	//      i = cpumask_next_and(i, sched_group_cpus(group), env->cpus, i < nr_cpu_ids);
+	//      )
 	for_each_cpu_and(i, sched_group_cpus(group), env->cpus) {
 		struct rq *rq = cpu_rq(i);
 
@@ -4637,9 +4666,11 @@ static inline void update_sg_lb_stats(struct lb_env *env,
 
 		/* Bias balancing toward cpus of our domain */
 		if (local_group) {
-			load = target_load(i, load_idx);
+			// 2016-10-08
+			load = target_load(i, load_idx); // max
 		} else {
-			load = source_load(i, load_idx);
+			// 2016-10-08
+			load = source_load(i, load_idx); // min
 			update_sg_imb_stats(&sgi, load, nr_running);
 		}
 
@@ -4649,6 +4680,7 @@ static inline void update_sg_lb_stats(struct lb_env *env,
 		if (idle_cpu(i))
 			sgs->idle_cpus++;
 	}
+	// 2016-10-08 여기까지;
 
 	if (local_group && (env->idle != CPU_NEWLY_IDLE ||
 			time_after_eq(jiffies, group->sgp->next_update)))
@@ -4725,6 +4757,8 @@ static bool update_sd_pick_busiest(struct lb_env *env,
  * @balance: Should we balance.
  * @sds: variable to hold the statistics for this sched_domain.
  */
+// 2016-10-08
+// update_sd_lb_stats(env, &sds);
 static inline void update_sd_lb_stats(struct lb_env *env,
 					struct sd_lb_stats *sds)
 {
@@ -4749,6 +4783,7 @@ static inline void update_sd_lb_stats(struct lb_env *env,
 		}
 
 		memset(sgs, 0, sizeof(*sgs));
+		// 2016-10-08 시작
 		update_sg_lb_stats(env, sg, load_idx, local_group, sgs);
 
 		/*
@@ -4986,6 +5021,8 @@ static inline void calculate_imbalance(struct lb_env *env, struct sd_lb_stats *s
  *		   return the least loaded group whose CPUs can be
  *		   put to idle by rebalancing its tasks onto our group.
  */
+// 2016-10-08
+// find_busiest_group(&env)
 static struct sched_group *find_busiest_group(struct lb_env *env)
 {
 	struct sg_lb_stats *local, *busiest;
@@ -4997,6 +5034,7 @@ static struct sched_group *find_busiest_group(struct lb_env *env)
 	 * Compute the various statistics relavent for load balancing at
 	 * this level.
 	 */
+	// 2016-10-08 시작
 	update_sd_lb_stats(env, &sds);
 	local = &sds.local_stat;
 	busiest = &sds.busiest_stat;
@@ -5125,6 +5163,7 @@ static struct rq *find_busiest_queue(struct lb_env *env,
 #define MAX_PINNED_INTERVAL	512
 
 /* Working cpumask for load_balance and load_balance_newidle. */
+// 2016-10-08
 DEFINE_PER_CPU(cpumask_var_t, load_balance_mask);
 
 static int need_active_balance(struct lb_env *env)
@@ -5147,6 +5186,8 @@ static int need_active_balance(struct lb_env *env)
 
 static int active_load_balance_cpu_stop(void *data);
 
+// 2016-10-08
+// should_we_balance(&env)
 static int should_we_balance(struct lb_env *env)
 {
 	struct sched_group *sg = env->sd->groups;
@@ -5157,6 +5198,8 @@ static int should_we_balance(struct lb_env *env)
 	 * In the newly idle case, we will allow all the cpu's
 	 * to do the newly idle load balance.
 	 */
+	// 2016-10-08
+	// lb_env의 idle 멤버의 값이 CPU_NEWLY_IDLE 이므로 1을 리턴
 	if (env->idle == CPU_NEWLY_IDLE)
 		return 1;
 
@@ -5185,6 +5228,10 @@ static int should_we_balance(struct lb_env *env)
  * Check this_cpu to ensure it is balanced within domain. Attempt to move
  * tasks if there is an imbalance.
  */
+// 2016-10-08
+// pulled_task = load_balance(this_cpu, this_rq,
+//                            sd, CPU_NEWLY_IDLE,
+//                            &continue_balancing);
 static int load_balance(int this_cpu, struct rq *this_rq,
 			struct sched_domain *sd, enum cpu_idle_type idle,
 			int *continue_balancing)
@@ -5200,8 +5247,9 @@ static int load_balance(int this_cpu, struct rq *this_rq,
 		.dst_cpu	= this_cpu,
 		.dst_rq		= this_rq,
 		.dst_grpmask    = sched_group_cpus(sd->groups),
+		// 2016-10-08 .idle = CPU_NEWLY_IDLE,
 		.idle		= idle,
-		.loop_break	= sched_nr_migrate_break,
+		.loop_break	= sched_nr_migrate_break/*32*/,
 		.cpus		= cpus,
 	};
 
@@ -5209,19 +5257,24 @@ static int load_balance(int this_cpu, struct rq *this_rq,
 	 * For NEWLY_IDLE load_balancing, we don't need to consider
 	 * other cpus in our group
 	 */
+	// 2016-10-08 idle이 CPU_NEWLY_IDLE로 전달됨
 	if (idle == CPU_NEWLY_IDLE)
 		env.dst_grpmask = NULL;
 
+	// cpus에 cpu_active_mask 값을 복사함
 	cpumask_copy(cpus, cpu_active_mask);
 
-	schedstat_inc(sd, lb_count[idle]);
+	schedstat_inc(sd, lb_count[idle]); // No OP.
 
 redo:
+	// 2016-10-08 
+	// lb_env의 idle 멤버의 값이 CPU_NEWLY_IDLE 이어서 1을 리턴됨
 	if (!should_we_balance(&env)) {
 		*continue_balancing = 0;
 		goto out_balanced;
 	}
 
+	// 2016-10-08 시작
 	group = find_busiest_group(&env);
 	if (!group) {
 		schedstat_inc(sd, lb_nobusyg[idle]);
@@ -5414,6 +5467,8 @@ out:
  * idle_balance is called by schedule() if this_cpu is about to become
  * idle. Attempts to pull tasks from other CPUs.
  */
+// 2016-10-08
+// idle_balance(cpu, rq);
 void idle_balance(int this_cpu, struct rq *this_rq)
 {
 	struct sched_domain *sd;
@@ -5422,16 +5477,24 @@ void idle_balance(int this_cpu, struct rq *this_rq)
 
 	this_rq->idle_stamp = rq_clock(this_rq);
 
-	if (this_rq->avg_idle < sysctl_sched_migration_cost)
+	if (this_rq->avg_idle < sysctl_sched_migration_cost/*500000UL*/)
 		return;
 
 	/*
 	 * Drop the rq->lock, but keep IRQ/preempt disabled.
 	 */
-	raw_spin_unlock(&this_rq->lock);
+	raw_spin_unlock(&this_rq->lock); 
 
-	update_blocked_averages(this_cpu);
+	update_blocked_averages(this_cpu); // No OP.
 	rcu_read_lock();
+	// #define for_each_domain(cpu, __sd) \
+	//   for (__sd = rcu_dereference_check_sched_domain(cpu_rq(cpu)->sd); \
+	//           __sd; __sd = __sd->parent)
+	// 
+	// for (sd = rcu_dereference_check_sched_domain(cpu_rq(cpu)->sd);
+	//      sd;
+	//      sd = sd->parent)
+	// sched_domain은 트리 구조로 구성되어 있다
 	for_each_domain(this_cpu, sd) {
 		unsigned long interval;
 		int continue_balancing = 1;
@@ -5441,6 +5504,7 @@ void idle_balance(int this_cpu, struct rq *this_rq)
 
 		if (sd->flags & SD_BALANCE_NEWIDLE) {
 			/* If we've pulled tasks over stop searching: */
+			// 2016-10-08 시작
 			pulled_task = load_balance(this_cpu, this_rq,
 						   sd, CPU_NEWLY_IDLE,
 						   &continue_balancing);
@@ -5451,6 +5515,9 @@ void idle_balance(int this_cpu, struct rq *this_rq)
 			next_balance = sd->last_balance + interval;
 		if (pulled_task) {
 			this_rq->idle_stamp = 0;
+
+			// load_balance() 함수를 호출해서 가져온(이동된)
+			// task가 1개 이상이면 for 문을 탈출
 			break;
 		}
 	}

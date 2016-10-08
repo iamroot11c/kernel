@@ -55,7 +55,8 @@
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.faqs/ka15473.html
 // SEV causes an event to be signaled to all cores within a multiprocessor system.
 // If SEV is implemented, WFE must also be implemented.
-// SEV - Set Event 
+// SEV - Set Event
+// 2016-10-08 
 #define SEV		ALT_SMP("sev", "nop")
 // 2016-02-06
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0489f/CIHEGBBF.html
@@ -74,6 +75,7 @@
 #endif
 
 // 2015-11-07
+// 2016-10-08
 static inline void dsb_sev(void)
 {
 	dsb(ishst);
@@ -186,6 +188,8 @@ static inline int arch_spin_trylock(arch_spinlock_t *lock)
 	}
 }
 // 2015-11-07
+// 2016-10-08
+// arch_spin_unlock(&lock->raw_lock)
 static inline void arch_spin_unlock(arch_spinlock_t *lock)
 {
 	smp_mb();

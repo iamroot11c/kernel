@@ -93,6 +93,7 @@ static inline void debug_spin_lock_after(raw_spinlock_t *lock)
 	lock->owner = current;
 }
 // 2015-11-07
+// 2016-10-08
 static inline void debug_spin_unlock(raw_spinlock_t *lock)
 {
 	SPIN_BUG_ON(lock->magic != SPINLOCK_MAGIC, lock, "bad magic");
@@ -166,6 +167,7 @@ int do_raw_spin_trylock(raw_spinlock_t *lock)
 	return ret;
 }
 // 2015-11-07
+// 2016-10-08
 void do_raw_spin_unlock(raw_spinlock_t *lock)
 {
 	debug_spin_unlock(lock);
