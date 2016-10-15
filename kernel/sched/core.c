@@ -284,6 +284,7 @@ late_initcall(sched_init_debug);
  * Number of tasks to iterate in a single balance run.
  * Limited because this is done with IRQs disabled.
  */
+// 2016-10-15
 const_debug unsigned int sysctl_sched_nr_migrate = 32;
 
 /*
@@ -292,6 +293,7 @@ const_debug unsigned int sysctl_sched_nr_migrate = 32;
  *
  * default: 1s
  */
+// 2016-10-15
 const_debug unsigned int sysctl_sched_time_avg = MSEC_PER_SEC;
 
 /*

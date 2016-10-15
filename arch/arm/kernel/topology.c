@@ -40,8 +40,12 @@
  * rebalance_domains for all idle cores and the cpu_power can be updated
  * during this sequence.
  */
+// 2016-10-15
 static DEFINE_PER_CPU(unsigned long, cpu_scale);
 
+// 2016-10-15
+// weak라서 이것이 호출될 것이라고 예상한다.
+// 컴파일 되는 것은 확인했다.
 unsigned long arch_scale_freq_power(struct sched_domain *sd, int cpu)
 {
 	return per_cpu(cpu_scale, cpu);
@@ -52,7 +56,7 @@ static void set_power_scale(unsigned int cpu, unsigned long power)
 	per_cpu(cpu_scale, cpu) = power;
 }
 
-#ifdef CONFIG_OF
+#ifdef CONFIG_OF	// =y
 struct cpu_efficiency {
 	const char *compatible;
 	unsigned long efficiency;

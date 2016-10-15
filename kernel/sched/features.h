@@ -35,6 +35,7 @@ SCHED_FEAT(LAST_BUDDY, true)
  * Consider buddies to be cache hot, decreases the likelyness of a
  * cache buddy being migrated away, increases cache locality.
  */
+// 2016-10-15
 SCHED_FEAT(CACHE_HOT_BUDDY, true)
 
 /*
@@ -45,6 +46,7 @@ SCHED_FEAT(WAKEUP_PREEMPTION, true)
 /*
  * Use arch dependent cpu power functions
  */
+// 2016-10-15
 SCHED_FEAT(ARCH_POWER, true)
 
 // 2016-09-24
@@ -67,6 +69,7 @@ SCHED_FEAT(TTWU_QUEUE, true)
 
 SCHED_FEAT(FORCE_SD_OVERLAP, false)
 SCHED_FEAT(RT_RUNTIME_SHARE, true)
+// 2016-10-15
 SCHED_FEAT(LB_MIN, false)
 
 /*

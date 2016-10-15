@@ -270,6 +270,7 @@ static inline struct cfs_rq *task_cfs_rq(struct task_struct *p)
 }
 
 /* runqueue on which this entity is (to be) queued */
+// 2016-10-15
 static inline struct cfs_rq *cfs_rq_of(struct sched_entity *se)
 {
 	return se->cfs_rq;
@@ -2798,6 +2799,7 @@ static inline int throttled_hierarchy(struct cfs_rq *cfs_rq)
 	return 0;
 }
 
+// 2016-10-15
 static inline int throttled_lb_pair(struct task_group *tg,
 				    int src_cpu, int dest_cpu)
 {
@@ -3034,11 +3036,13 @@ static unsigned long target_load(int cpu, int type)
 	return max(rq->cpu_load[type-1], total);
 }
 
+// 2016-10-15
 static unsigned long power_of(int cpu)
 {
 	return cpu_rq(cpu)->cpu_power;
 }
 
+// 2016-10-15
 static unsigned long cpu_avg_load_per_task(int cpu)
 {
 	struct rq *rq = cpu_rq(cpu);
@@ -3935,6 +3939,7 @@ static bool yield_to_task_fair(struct rq *rq, struct task_struct *p, bool preemp
  *      rewrite all of this once again.]
  */ 
 
+// 2016-10-15, if HZ is 100, max_load_balance_interval is 10. 
 static unsigned long __read_mostly max_load_balance_interval = HZ/10;
 
 #define LBF_ALL_PINNED	0x01
@@ -3952,6 +3957,7 @@ struct lb_env {
 	struct rq		*dst_rq;
 
 	struct cpumask		*dst_grpmask;
+	// 2016-10-15
 	int			new_dst_cpu;
 	enum cpu_idle_type	idle;
 	long			imbalance;
@@ -3980,6 +3986,7 @@ static void move_task(struct task_struct *p, struct lb_env *env)
 /*
  * Is this task likely cache-hot:
  */
+// 2016-10-15
 static int
 task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
 {
@@ -3994,7 +4001,8 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
 	/*
 	 * Buddy candidates are cache hot:
 	 */
-	if (sched_feat(CACHE_HOT_BUDDY) && this_rq()->nr_running &&
+	// 2016-10-15
+	if (sched_feat(CACHE_HOT_BUDDY)/*true*/ && this_rq()->nr_running &&
 			(&p->se == cfs_rq_of(&p->se)->next ||
 			 &p->se == cfs_rq_of(&p->se)->last))
 		return 1;
@@ -4012,6 +4020,7 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
 /*
  * can_migrate_task - may task p from runqueue rq be migrated to this_cpu?
  */
+// 2016-10-15
 static
 int can_migrate_task(struct task_struct *p, struct lb_env *env)
 {
@@ -4023,12 +4032,15 @@ int can_migrate_task(struct task_struct *p, struct lb_env *env)
 	 * 3) running (obviously), or
 	 * 4) are cache-hot on their current CPU.
 	 */
+	// throttled_lb_pair, NOP
 	if (throttled_lb_pair(task_group(p), env->src_cpu, env->dst_cpu))
 		return 0;
 
+	// allowed가 설정되어 있지 않다면, migrated 할 수 없다.
 	if (!cpumask_test_cpu(env->dst_cpu, tsk_cpus_allowed(p))) {
 		int cpu;
 
+		// NOP
 		schedstat_inc(p, se.statistics.nr_failed_migrations_affine);
 
 		/*
@@ -4055,9 +4067,12 @@ int can_migrate_task(struct task_struct *p, struct lb_env *env)
 	}
 
 	/* Record that we found atleast one task that could run on dst_cpu */
+	// LBF_ALL_PINNED clear
 	env->flags &= ~LBF_ALL_PINNED;
 
+	// 2nd condition
 	if (task_running(env->src_rq, p)) {
+		// NOP
 		schedstat_inc(p, se.statistics.nr_failed_migrations_running);
 		return 0;
 	}
@@ -4068,11 +4083,13 @@ int can_migrate_task(struct task_struct *p, struct lb_env *env)
 	 * 2) too many balance attempts have failed.
 	 */
 
+	// 3rd condition
 	tsk_cache_hot = task_hot(p, rq_clock_task(env->src_rq), env->sd);
 	if (!tsk_cache_hot ||
 		env->sd->nr_balance_failed > env->sd->cache_nice_tries) {
 
 		if (tsk_cache_hot) {
+			// NOPs
 			schedstat_inc(env->sd, lb_hot_gained[env->idle]);
 			schedstat_inc(p, se.statistics.nr_forced_migrations);
 		}
@@ -4080,6 +4097,7 @@ int can_migrate_task(struct task_struct *p, struct lb_env *env)
 		return 1;
 	}
 
+	// 2016-10-15
 	schedstat_inc(p, se.statistics.nr_failed_migrations_hot);
 	return 0;
 }
@@ -4123,6 +4141,7 @@ static const unsigned int sched_nr_migrate_break = 32;
  *
  * Called with both runqueues locked.
  */
+// 2016-10-15
 static int move_tasks(struct lb_env *env)
 {
 	struct list_head *tasks = &env->src_rq->cfs_tasks;
@@ -4133,6 +4152,7 @@ static int move_tasks(struct lb_env *env)
 	if (env->imbalance <= 0)
 		return 0;
 
+	// 대상: &env->src_rq->cfs_tasks
 	while (!list_empty(tasks)) {
 		p = list_first_entry(tasks, struct task_struct, se.group_node);
 
@@ -4148,17 +4168,21 @@ static int move_tasks(struct lb_env *env)
 			break;
 		}
 
+		// 2016-10-15
 		if (!can_migrate_task(p, env))
 			goto next;
 
+		// 2016-10-15
 		load = task_h_load(p);
 
-		if (sched_feat(LB_MIN) && load < 16 && !env->sd->nr_balance_failed)
+		if (sched_feat(LB_MIN)/*false*/ && load < 16 && !env->sd->nr_balance_failed)
 			goto next;
 
 		if ((load / 2) > env->imbalance)
 			goto next;
 
+		// 2016-10-15, 여기까지
+		// 차주에는, fair_sched_class 기준으로 분석
 		move_task(p, env);
 		pulled++;
 		env->imbalance -= load;
@@ -4190,7 +4214,7 @@ next:
 	 * so we can safely collect move_task() stats here rather than
 	 * inside move_task().
 	 */
-	schedstat_add(env->sd, lb_gained[env->idle], pulled);
+	schedstat_add(env->sd, lb_gained[env->idle], pulled);	// NOP
 
 	return pulled;
 }
@@ -4306,6 +4330,7 @@ static inline void update_blocked_averages(int cpu)
 {
 }
 
+// 2016-10-15
 static unsigned long task_h_load(struct task_struct *p)
 {
 	return p->se.avg.load_avg_contrib;
@@ -4408,21 +4433,28 @@ unsigned long __weak arch_scale_freq_power(struct sched_domain *sd, int cpu)
 	return default_scale_freq_power(sd, cpu);
 }
 
+// 2016-10-15
 static unsigned long default_scale_smt_power(struct sched_domain *sd, int cpu)
 {
 	unsigned long weight = sd->span_weight;
 	unsigned long smt_gain = sd->smt_gain;
 
+	// assume:
+	// weight=2
+	// smt_gain=10
+	// return 10/2; // 5
 	smt_gain /= weight;
 
 	return smt_gain;
 }
 
+// 2016-10-15
 unsigned long __weak arch_scale_smt_power(struct sched_domain *sd, int cpu)
 {
 	return default_scale_smt_power(sd, cpu);
 }
 
+// 2016-10-15
 static unsigned long scale_rt_power(int cpu)
 {
 	struct rq *rq = cpu_rq(cpu);
@@ -4435,7 +4467,7 @@ static unsigned long scale_rt_power(int cpu)
 	age_stamp = ACCESS_ONCE(rq->age_stamp);
 	avg = ACCESS_ONCE(rq->rt_avg);
 
-	total = sched_avg_period() + (rq_clock(rq) - age_stamp);
+	total = sched_avg_period()/* 500ms in ns */ + (rq_clock(rq) - age_stamp);
 
 	if (unlikely(total < avg)) {
 		/* Ensures that power won't end up being negative */
@@ -4445,47 +4477,69 @@ static unsigned long scale_rt_power(int cpu)
 	}
 
 	if (unlikely((s64)total < SCHED_POWER_SCALE))
-		total = SCHED_POWER_SCALE;
+		total = SCHED_POWER_SCALE/*1024*/;
 
+	// divide by 1024
 	total >>= SCHED_POWER_SHIFT;
 
 	return div_u64(available, total);
 }
 
+// 2016-10-15
+// arch/arm/kernel/topology.c에 동일한 이름으로 정의되어 있으나,
+// 동일 파일 내에서는 아래가 호출되는 것이 맞다.
 static void update_cpu_power(struct sched_domain *sd, int cpu)
 {
 	unsigned long weight = sd->span_weight;
-	unsigned long power = SCHED_POWER_SCALE;
+	unsigned long power = SCHED_POWER_SCALE/*1024*/;
 	struct sched_group *sdg = sd->groups;
 
 	if ((sd->flags & SD_SHARE_CPUPOWER) && weight > 1) {
-		if (sched_feat(ARCH_POWER))
-			power *= arch_scale_smt_power(sd, cpu);
+		// 2016-10-15
+		if (sched_feat(ARCH_POWER))	// true
+			// 리턴 5로 가정, arch_scale_smt_power
+			power *= arch_scale_smt_power(sd, cpu); // 1024 * 5
 		else
 			power *= default_scale_smt_power(sd, cpu);
 
+		// 5120
+		// 5120 << 10 == 5
+		// 1024로 나누는 것이다.
 		power >>= SCHED_POWER_SHIFT;
 	}
 
-	sdg->sgp->power_orig = power;
+	//2016-10-15
+	sdg->sgp->power_orig = power;	// 5
 
 	if (sched_feat(ARCH_POWER))
-		power *= arch_scale_freq_power(sd, cpu);
+		power *= arch_scale_freq_power(sd, cpu);	// 0으로 가정
 	else
 		power *= default_scale_freq_power(sd, cpu);
 
+	// divide by 1024
 	power >>= SCHED_POWER_SHIFT;
 
 	power *= scale_rt_power(cpu);
+	// divide by 1024
 	power >>= SCHED_POWER_SHIFT;
 
+	// 최소 1은 보장
 	if (!power)
 		power = 1;
 
+	// 아래에 저장
+	// rq, sdg->sgp에 저장
 	cpu_rq(cpu)->cpu_power = power;
 	sdg->sgp->power = power;
 }
 
+// 2016-10-15
+// child가 있는 경우와 없는 경우로 나눈다.
+// 기본적으로,
+// sdg->sgp->power_orig, sdg->sgp->power의 값을 업데이트 하고,
+//
+// Child가 없는 경우, 
+// cpu_rq(cpu)->cpu_power에도 값을 업데이트 한다.
 void update_group_power(struct sched_domain *sd, int cpu)
 {
 	struct sched_domain *child = sd->child;
@@ -4494,11 +4548,26 @@ void update_group_power(struct sched_domain *sd, int cpu)
 	unsigned long interval;
 
 	interval = msecs_to_jiffies(sd->balance_interval);
-	interval = clamp(interval, 1UL, max_load_balance_interval);
+	// 2016-10-15
+        // 중간에 포인터 체크는 타입 체크를 위해서 하는 것이다.
+	// type이 맞지 않는다면, warning: comparison of distinct pointer types lacks a cast 발생
+	//
+	// 761 #define clamp(val, min, max) ({         \
+     	// typeof(val) __val = (val);      \
+     	// typeof(min) __min = (min);      \
+     	// typeof(max) __max = (max);      \
+     	// (void) (&__val == &__min);      \
+     	// (void) (&__val == &__max);      \
+     	// __val = __val < __min ? __min: __val;   \
+     	// __val > __max ? __max: __val; })
+	interval = clamp(interval, 1UL, max_load_balance_interval/*10*/);   // clamping
 	sdg->sgp->next_update = jiffies + interval;
 
 	if (!child) {
+		// 2016-10-15 start
+		// rq, sdg->sgp에 저장
 		update_cpu_power(sd, cpu);
+		// 2016-10-15 end
 		return;
 	}
 
@@ -4509,7 +4578,7 @@ void update_group_power(struct sched_domain *sd, int cpu)
 		 * SD_OVERLAP domains cannot assume that child groups
 		 * span the current group.
 		 */
-
+		// span : 겹치다
 		for_each_cpu(cpu, sched_group_cpus(sdg))
 			power += power_of(cpu);
 	} else  {
@@ -4522,6 +4591,7 @@ void update_group_power(struct sched_domain *sd, int cpu)
 		do {
 			power += group->sgp->power;
 			group = group->next;
+			// 탈출 조건을 봤을 때, 환영 리스트로 보임
 		} while (group != child->groups);
 	}
 
@@ -4535,6 +4605,7 @@ void update_group_power(struct sched_domain *sd, int cpu)
  *
  * See update_sd_pick_busiest() and check_asym_packing().
  */
+// 2016-10-15
 static inline int
 fix_small_capacity(struct sched_domain *sd, struct sched_group *group)
 {
@@ -4611,6 +4682,7 @@ update_sg_imb_stats(struct sg_imb_stats *sgi,
 		sgi->min_nr_running = nr_running;
 }
 
+// 2016-10-15
 static inline int
 sg_imbalanced(struct sg_lb_stats *sgs, struct sg_imb_stats *sgi)
 {
@@ -4623,6 +4695,7 @@ sg_imbalanced(struct sg_lb_stats *sgs, struct sg_imb_stats *sgi)
 	 *      normalized nr_running number somewhere that negates
 	 *      the hierarchy?
 	 */
+	// 판단 조건
 	if ((sgi->max_cpu_load - sgi->min_cpu_load) >= sgs->load_per_task &&
 	    (sgi->max_nr_running - sgi->min_nr_running) > 1)
 		return 1;
@@ -4682,12 +4755,14 @@ static inline void update_sg_lb_stats(struct lb_env *env,
 	}
 	// 2016-10-08 여기까지;
 
+	// 2016-10-15 start
 	if (local_group && (env->idle != CPU_NEWLY_IDLE ||
 			time_after_eq(jiffies, group->sgp->next_update)))
 		update_group_power(env->sd, env->dst_cpu);
 
 	/* Adjust by relative CPU power of the group */
 	sgs->group_power = group->sgp->power;
+	// 예상하기에, avg_load는 1024, 2048... 이런식이 될 것 같음
 	sgs->avg_load = (sgs->group_load*SCHED_POWER_SCALE) / sgs->group_power;
 
 	if (sgs->sum_nr_running)
@@ -4720,6 +4795,7 @@ static inline void update_sg_lb_stats(struct lb_env *env,
  * Return: %true if @sg is a busier group than the previously selected
  * busiest group. %false otherwise.
  */
+// 2016-10-15
 static bool update_sd_pick_busiest(struct lb_env *env,
 				   struct sd_lb_stats *sds,
 				   struct sched_group *sg,
@@ -4757,7 +4833,7 @@ static bool update_sd_pick_busiest(struct lb_env *env,
  * @balance: Should we balance.
  * @sds: variable to hold the statistics for this sched_domain.
  */
-// 2016-10-08
+// 2016-10-08, sched_domaind의 값을 업데이트
 // update_sd_lb_stats(env, &sds);
 static inline void update_sd_lb_stats(struct lb_env *env,
 					struct sd_lb_stats *sds)
@@ -4785,6 +4861,7 @@ static inline void update_sd_lb_stats(struct lb_env *env,
 		memset(sgs, 0, sizeof(*sgs));
 		// 2016-10-08 시작
 		update_sg_lb_stats(env, sg, load_idx, local_group, sgs);
+		// 2016-10-15 end
 
 		/*
 		 * In case the child domain prefers tasks go to siblings
@@ -4798,12 +4875,17 @@ static inline void update_sd_lb_stats(struct lb_env *env,
 		 */
 		if (prefer_sibling && !local_group &&
 				sds->local && sds->local_stat.group_has_capacity)
-			sgs->group_capacity = min(sgs->group_capacity, 1U);
+			sgs->group_capacity = min(sgs->group_capacity, 1U);	// 0 or 1
 
+		// 2016-10-15
+		// 아래를 업데이트 하기 위해, sg을 순회하면서 statistics 값을 생성
+		// 이 값을 이용해서 업데이트
 		/* Now, start updating sd_lb_stats */
 		sds->total_load += sgs->group_load;
 		sds->total_pwr += sgs->group_power;
 
+		// 2016-10-15
+		// update busiest
 		if (!local_group && update_sd_pick_busiest(env, sds, sg, sgs)) {
 			sds->busiest = sg;
 			sds->busiest_stat = *sgs;
@@ -4836,6 +4918,7 @@ static inline void update_sd_lb_stats(struct lb_env *env,
  * @env: The load balancing environment.
  * @sds: Statistics of the sched_domain which is to be packed
  */
+// 2016-10-15
 static int check_asym_packing(struct lb_env *env, struct sd_lb_stats *sds)
 {
 	int busiest_cpu;
@@ -4864,6 +4947,7 @@ static int check_asym_packing(struct lb_env *env, struct sd_lb_stats *sds)
  * @env: The load balancing environment.
  * @sds: Statistics of the sched_domain whose imbalance is to be calculated.
  */
+// 2016-10-15
 static inline
 void fix_small_imbalance(struct lb_env *env, struct sd_lb_stats *sds)
 {
@@ -4935,6 +5019,7 @@ void fix_small_imbalance(struct lb_env *env, struct sd_lb_stats *sds)
  * @env: load balance environment
  * @sds: statistics of the sched_domain whose imbalance is to be calculated.
  */
+// 2016-10-15
 static inline void calculate_imbalance(struct lb_env *env, struct sd_lb_stats *sds)
 {
 	unsigned long max_pull, load_above_capacity = ~0UL;
@@ -5036,9 +5121,11 @@ static struct sched_group *find_busiest_group(struct lb_env *env)
 	 */
 	// 2016-10-08 시작
 	update_sd_lb_stats(env, &sds);
+	// 2016-10-15 end
 	local = &sds.local_stat;
 	busiest = &sds.busiest_stat;
 
+	// 2016-10-15, CPU_NEWLY_IDLE
 	if ((env->idle == CPU_IDLE || env->idle == CPU_NEWLY_IDLE) &&
 	    check_asym_packing(env, &sds))
 		return sds.busiest;
@@ -5087,6 +5174,8 @@ static struct sched_group *find_busiest_group(struct lb_env *env)
 		    busiest->sum_nr_running <= busiest->group_weight)
 			goto out_balanced;
 	} else {
+		// 2016-10-15
+		// CPU_NEWLY_IDLE
 		/*
 		 * In the CPU_NEWLY_IDLE, CPU_NOT_IDLE cases, use
 		 * imbalance_pct to be conservative.
@@ -5109,6 +5198,7 @@ out_balanced:
 /*
  * find_busiest_queue - find the busiest runqueue among the cpus in group.
  */
+// 2016-10-15
 static struct rq *find_busiest_queue(struct lb_env *env,
 				     struct sched_group *group)
 {
@@ -5276,8 +5366,9 @@ redo:
 
 	// 2016-10-08 시작
 	group = find_busiest_group(&env);
+	// 2016-10-15
 	if (!group) {
-		schedstat_inc(sd, lb_nobusyg[idle]);
+		schedstat_inc(sd, lb_nobusyg[idle]);	// NOP
 		goto out_balanced;
 	}
 
@@ -5289,7 +5380,7 @@ redo:
 
 	BUG_ON(busiest == env.dst_rq);
 
-	schedstat_add(sd, lb_imbalance[idle], env.imbalance);
+	schedstat_add(sd, lb_imbalance[idle], env.imbalance);   // NOP
 
 	ld_moved = 0;
 	if (busiest->nr_running > 1) {
@@ -5306,12 +5397,15 @@ redo:
 
 more_balance:
 		local_irq_save(flags);
+		// 2016-10-15
 		double_rq_lock(env.dst_rq, busiest);
+		// 2016-10-15
 
 		/*
 		 * cur_ld_moved - load moved in current iteration
 		 * ld_moved     - cumulative load moved across iterations
 		 */
+		// 2016-10-15
 		cur_ld_moved = move_tasks(&env);
 		ld_moved += cur_ld_moved;
 		double_rq_unlock(env.dst_rq, busiest);
@@ -6394,6 +6488,7 @@ static unsigned int get_rr_interval_fair(struct rq *rq, struct task_struct *task
 const struct sched_class fair_sched_class = {
 	.next			= &idle_sched_class,
 	.enqueue_task		= enqueue_task_fair,
+	// 2016-10-15, glance
 	.dequeue_task		= dequeue_task_fair,
 	.yield_task		= yield_task_fair,
 	.yield_to_task		= yield_to_task_fair,

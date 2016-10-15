@@ -101,6 +101,15 @@
  * to closest integer. Result is undefined for negative divisors and
  * for negative dividends if the divisor variable type is unsigned.
  */
+// 2016-10-15
+// DIV_ROUND_CLOSEST(x, divisor)
+// divisor에 가장 가까운 값을 x를 기준으로 찾는다.
+// 주석에도 나와 있듯이, divisor가 음일 경우 보장 못 한다.
+//
+// DIV_ROUND_CLOSEST(sgs->group_power, SCHED_POWER_SCALE);
+// basic : if unsigned case 1, otherwise case 2
+// ex) (3, 1024) unsigned, (3 + (2 / 2)) / 2 = 2
+// ex) (-3, 1024) signed, (-3 - (2 / 2)) / 2 = -2
 #define DIV_ROUND_CLOSEST(x, divisor)(			\
 {							\
 	typeof(x) __x = x;				\
@@ -756,6 +765,8 @@ static inline void ftrace_dump(enum ftrace_dump_mode oops_dump_mode) { }
  * This macro does strict typechecking of min/max to make sure they are of the
  * same type as val.  See the unnecessary pointer comparisons.
  */
+// 2016-10-15
+// typechecking strict
 #define clamp(val, min, max) ({			\
 	typeof(val) __val = (val);		\
 	typeof(min) __min = (min);		\

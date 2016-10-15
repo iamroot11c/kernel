@@ -61,6 +61,7 @@ static inline s64 div64_s64(s64 dividend, s64 divisor)
 #define div64_ul(x, y)   div_u64((x), (y))
 
 #ifndef div_u64_rem
+// 2016-10-15
 static inline u64 div_u64_rem(u64 dividend, u32 divisor, u32 *remainder)
 {
 	*remainder = do_div(dividend, divisor);
@@ -94,6 +95,7 @@ extern s64 div64_s64(s64 dividend, s64 divisor);
  * divide.
  */
 #ifndef div_u64
+// 2016-10-15
 static inline u64 div_u64(u64 dividend, u32 divisor)
 {
 	u32 remainder;

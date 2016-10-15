@@ -144,7 +144,7 @@ struct cfs_bandwidth {
 struct task_group {
 	struct cgroup_subsys_state css;
 
-#ifdef CONFIG_FAIR_GROUP_SCHED
+#ifdef CONFIG_FAIR_GROUP_SCHED  // not set
 	/* schedulable entities of this group on each cpu */
 	struct sched_entity **se;
 	/* runqueue "owned" by this group on each cpu */
@@ -267,6 +267,7 @@ struct cfs_rq {
 	 * 'curr' points to currently running entity on this cfs_rq.
 	 * It is set to NULL otherwise (i.e when none are currently running).
 	 */
+    // 2016-10-15, next, last
 	struct sched_entity *curr, *next, *last, *skip;
 
 #ifdef	CONFIG_SCHED_DEBUG
@@ -466,6 +467,7 @@ struct rq {
 	struct mm_struct *prev_mm;
 
 	u64 clock;
+    // 2016-10-15
 	u64 clock_task;
 
 	atomic_t nr_iowait;
@@ -474,6 +476,7 @@ struct rq {
 	struct root_domain *rd; // 루트 도메인의 약자
 	struct sched_domain *sd;
 
+    // 2016-10-15
 	unsigned long cpu_power;
 
 	unsigned char idle_balance;
@@ -488,7 +491,9 @@ struct rq {
 
 	struct list_head cfs_tasks;
 
+    // 2016-10-15
 	u64 rt_avg;
+    // 2016-10-15
 	u64 age_stamp;
 	u64 idle_stamp;
 	u64 avg_idle;
@@ -576,6 +581,7 @@ static inline u64 rq_clock(struct rq *rq)
 	return rq->clock;
 }
 
+// 2016-10-15
 static inline u64 rq_clock_task(struct rq *rq)
 {
 	return rq->clock_task;
@@ -659,6 +665,7 @@ struct sched_group {
 	atomic_t ref;
 
 	unsigned int group_weight;
+    // 2016-10-15
 	struct sched_group_power *sgp;
 
 	/*
@@ -690,6 +697,7 @@ static inline struct cpumask *sched_group_mask(struct sched_group *sg)
  * group_first_cpu - Returns the first cpu in the cpumask of a sched_group.
  * @group: The group whose first cpu is to be returned.
  */
+// 2016-10-15
 static inline unsigned int group_first_cpu(struct sched_group *group)
 {
 	return cpumask_first(sched_group_cpus(group));
@@ -743,6 +751,7 @@ static inline void set_task_rq(struct task_struct *p, unsigned int cpu)
 #else /* CONFIG_CGROUP_SCHED */
 
 static inline void set_task_rq(struct task_struct *p, unsigned int cpu) { }
+// 2016-10-15
 static inline struct task_group *task_group(struct task_struct *p)
 {
 	return NULL;
@@ -857,6 +866,7 @@ static inline int task_current(struct rq *rq, struct task_struct *p)
 	return rq->curr == p;
 }
 
+// 2016-10-15
 static inline int task_running(struct rq *rq, struct task_struct *p)
 {
 #ifdef CONFIG_SMP
@@ -1160,9 +1170,11 @@ extern const_debug unsigned int sysctl_sched_time_avg;
 extern const_debug unsigned int sysctl_sched_nr_migrate;
 extern const_debug unsigned int sysctl_sched_migration_cost;
 
+// 2016-10-15
+// 500ms에 대한 ns 표현
 static inline u64 sched_avg_period(void)
 {
-	return (u64)sysctl_sched_time_avg * NSEC_PER_MSEC / 2;
+	return (u64)sysctl_sched_time_avg/*1000*/ * NSEC_PER_MSEC/*1000000L*/ / 2;
 }
 
 #ifdef CONFIG_SCHED_HRTICK
@@ -1288,6 +1300,7 @@ static inline void double_unlock_balance(struct rq *this_rq, struct rq *busiest)
  * Note this does not disable interrupts like task_rq_lock,
  * you need to do so manually before calling.
  */
+// 2016-10-15
 static inline void double_rq_lock(struct rq *rq1, struct rq *rq2)
 	__acquires(rq1->lock)
 	__acquires(rq2->lock)
@@ -1297,6 +1310,7 @@ static inline void double_rq_lock(struct rq *rq1, struct rq *rq2)
 		raw_spin_lock(&rq1->lock);
 		__acquire(rq2->lock);	/* Fake it out ;) */
 	} else {
+        // 둘 중에, 작은 것을 먼저 lock 한다
 		if (rq1 < rq2) {
 			raw_spin_lock(&rq1->lock);
 			raw_spin_lock_nested(&rq2->lock, SINGLE_DEPTH_NESTING);

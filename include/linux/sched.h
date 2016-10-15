@@ -776,6 +776,7 @@ static inline int sched_info_on(void)
 }
 
 enum cpu_idle_type {
+    // 2016-10-15
 	CPU_IDLE,
 	CPU_NOT_IDLE,
 	CPU_NEWLY_IDLE,
@@ -785,8 +786,10 @@ enum cpu_idle_type {
 /*
  * Increase resolution of cpu_power calculations
  */
+// 2016-10-15
 #define SCHED_POWER_SHIFT	10
-#define SCHED_POWER_SCALE	(1L << SCHED_POWER_SHIFT)
+// 2016-10-15
+#define SCHED_POWER_SCALE	(1L << SCHED_POWER_SHIFT/*10*/) /*1024 == 0x0000_0400*/
 
 /*
  * sched-domains (multiprocessor balancing) declarations:
@@ -798,6 +801,7 @@ enum cpu_idle_type {
 #define SD_BALANCE_FORK		0x0008	/* Balance on fork, clone */
 #define SD_BALANCE_WAKE		0x0010  /* Balance on wakeup */
 #define SD_WAKE_AFFINE		0x0020	/* Wake task to waking CPU */
+// 2016-10-15
 #define SD_SHARE_CPUPOWER	0x0080	/* Domain members share cpu power */
 #define SD_SHARE_PKG_RESOURCES	0x0200	/* Domain members share cpu pkg resources */
 #define SD_SERIALIZE		0x0400	/* Only a single load balancing instance */
@@ -837,6 +841,7 @@ struct sched_domain {
 	unsigned int newidle_idx;
 	unsigned int wake_idx;
 	unsigned int forkexec_idx;
+    // 2016-10-15
 	unsigned int smt_gain;
 
 	int nohz_idle;			/* NOHZ IDLE status */
@@ -889,6 +894,7 @@ struct sched_domain {
 		struct rcu_head rcu;	/* used during destruction */
 	};
 
+    // 2016-10-15
 	unsigned int span_weight;
 	/*
 	 * Span of all CPUs in this domain.
@@ -1006,9 +1012,11 @@ struct sched_statistics {
 struct sched_entity {
 	struct load_weight	load;		/* for load-balancing */
 	struct rb_node		run_node;
+    // 2016-10-15
 	struct list_head	group_node;
 	unsigned int		on_rq;
 
+    // 2016-10-15
 	u64			exec_start;
 	u64			sum_exec_runtime;
 	u64			vruntime;
@@ -1071,6 +1079,7 @@ struct task_struct {
 
 #ifdef CONFIG_SMP
 	struct llist_node wake_entry;
+    // 2016-10-15
 	int on_cpu;
 	struct task_struct *last_wakee;
 	unsigned long wakee_flips;
@@ -1110,6 +1119,7 @@ struct task_struct {
 
 	unsigned int policy;
 	int nr_cpus_allowed;
+    // 2016-10-15
 	cpumask_t cpus_allowed;
 
 #ifdef CONFIG_PREEMPT_RCU
@@ -1465,6 +1475,7 @@ struct task_struct {
 };
 
 /* Future-safe accessor for struct task_struct's cpus_allowed. */
+// 2016-10-15
 #define tsk_cpus_allowed(tsk) (&(tsk)->cpus_allowed)
 
 #ifdef CONFIG_NUMA_BALANCING
