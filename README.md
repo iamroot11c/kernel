@@ -1,6 +1,38 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [114주차]() `2016.10.22`
+ - drive: 양만철님
+ - [perf_pmu_register() 진행중]()
+ - kernel/events/core.c:pref_event_init() 진행 중
+ - kernel/events/core.c:perf_pmu_register() 진행 중
+ - drivers/base/core.c:device_del() 진행 중
+ - drivers/base/power/sysfs.c:dpm_sysfs_remove() 진행 중
+ - drivers/base/power/qos.c:dev_pm_qos_constraints_destroy() 진행 중
+ - drivers/base/power/sysfs.c:pm_qos_sysfs_remove_latency() 진행 중
+ - fs/sysfs/group.c:sysfs_unmerge_group() 진행 중
+ - fs/sysfs/inode.c:sysfs_hash_and_remove() 진행 중
+ - fs/sysfs/dir.c:sysfs_addrm_finish() 진행 중
+ - fs/sysfs/dir.c:sysfs_deactivate() 진행 중
+ - sched/core.c:wait_for_completion() 진행중,  action(timeout);
+ - kernel/timer.c:schedule_timeout() 진행중
+ - sched/core.c:__schedule() 진행 중
+ - kernel/sched/fair.c:idle_balance() 진행 중
+ - kernel/sched/fair.c:load_balance() 진행 중
+ - kernel/sched/fair.c:move_tasks() 진행 중
+ - kernel/sched/fair.c:move_task() 진행 중
+ - kernel/sched/core.c:deactivate_task() 진행 중
+ - kernel/sched/core.c:dequeue_task() 진행 중
+ - kernel/sched/dequeue_task_fair() 진행 중 *fair_sched_class 기준으로 분석
+ - kernel/sched/dequeue_entity() 진행 중
+ - kernel/sched/update_curr() 분석완료
+ - kernel/sched/dequeue_entity_load_avg() 진행 중
+ - kernel/sched/update_entity_load_avg() 분석완료
+ - kernel/sched/__update_entity_runnable_avg() 분석완료
+ - kernel/sched/decay_load() 분석완료
+ - kernel/sched/__compute_runnable_contrib() 분석완료
+ - kernel/sched/update_cfs_rq_blocked_load() 진행 중
+
 + [113주차](http://bit.ly/2e9v904) `2016.10.15`
  - drive: 보름달님
  - [perf_pmu_register() 진행중]()

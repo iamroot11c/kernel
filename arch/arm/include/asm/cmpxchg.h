@@ -25,6 +25,7 @@
 
 // 2015-12-05;
 // ptr 변수에 새로운값 x를 저장하며, ptr의 이전값을 리턴
+// 2016-10-22
 static inline unsigned long __xchg(unsigned long x, volatile void *ptr, int size)
 {
 	extern void __bad_xchg(volatile void *, int);
@@ -102,6 +103,7 @@ static inline unsigned long __xchg(unsigned long x, volatile void *ptr, int size
 	return ret;
 }
 
+// 2016-10-22
 #define xchg(ptr,x) \
 	((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
 

@@ -180,6 +180,7 @@ void sched_init_granularity(void)
 }
 
 #if BITS_PER_LONG == 32
+// 2016-10-22
 # define WMULT_CONST	(~0UL)
 #else
 # define WMULT_CONST	(1UL << 32)
@@ -190,11 +191,20 @@ void sched_init_granularity(void)
 /*
  * Shift right and round:
  */
+// 2016-10-22
+// x를 2^y 나눈값을 반올림을 함
+//
+// x = 7, y = 2
+//
+// (7 + (1UL << (2 - 1))) >> 2
+// 2 = 9 >> 2
 #define SRR(x, y) (((x) + (1UL << ((y) - 1))) >> (y))
 
 /*
  * delta *= weight / lw
  */
+// 2016-10-22
+// calc_delta_mine(delta, NICE_0_LOAD, &se->load)
 static unsigned long
 calc_delta_mine(unsigned long delta_exec, unsigned long weight,
 		struct load_weight *lw)
@@ -206,15 +216,15 @@ calc_delta_mine(unsigned long delta_exec, unsigned long weight,
 	 * entities since MIN_SHARES = 2. Treat weight as 1 if less than
 	 * 2^SCHED_LOAD_RESOLUTION.
 	 */
-	if (likely(weight > (1UL << SCHED_LOAD_RESOLUTION)))
-		tmp = (u64)delta_exec * scale_load_down(weight);
+	if (likely(weight > (1UL << SCHED_LOAD_RESOLUTION/*0*/)))
+		tmp = (u64)delta_exec * scale_load_down(weight)/*weight*/;
 	else
 		tmp = (u64)delta_exec;
 
 	if (!lw->inv_weight) {
 		unsigned long w = scale_load_down(lw->weight);
 
-		if (BITS_PER_LONG > 32 && unlikely(w >= WMULT_CONST))
+		if (BITS_PER_LONG > 32 && unlikely(w >= WMULT_CONST/*~0UL*/))
 			lw->inv_weight = 1;
 		else if (unlikely(!w))
 			lw->inv_weight = WMULT_CONST;
@@ -241,7 +251,7 @@ const struct sched_class fair_sched_class;
  * CFS operations on generic schedulable entities:
  */
 
-#ifdef CONFIG_FAIR_GROUP_SCHED
+#ifdef CONFIG_FAIR_GROUP_SCHED // not define
 
 /* cpu runqueue to which this cfs_rq is attached */
 static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
@@ -271,6 +281,7 @@ static inline struct cfs_rq *task_cfs_rq(struct task_struct *p)
 
 /* runqueue on which this entity is (to be) queued */
 // 2016-10-15
+// 2016-10-22
 static inline struct cfs_rq *cfs_rq_of(struct sched_entity *se)
 {
 	return se->cfs_rq;
@@ -381,18 +392,23 @@ find_matching_se(struct sched_entity **se, struct sched_entity **pse)
 
 #else	/* !CONFIG_FAIR_GROUP_SCHED */
 
+// 2016-10-22
+// task_of(curr)
 static inline struct task_struct *task_of(struct sched_entity *se)
 {
 	return container_of(se, struct task_struct, se);
 }
 
+// 2016-10-22
 static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
 {
 	return container_of(cfs_rq, struct rq, cfs);
 }
 
+// 2016-10-22
 #define entity_is_task(se)	1
 
+// 2016-10-22
 #define for_each_sched_entity(se) \
 		for (; se; se = NULL)
 
@@ -451,6 +467,8 @@ void account_cfs_rq_runtime(struct cfs_rq *cfs_rq, unsigned long delta_exec);
  * Scheduling class tree data structure manipulation methods:
  */
 
+// 2016-10-22
+// max_vruntime(cfs_rq->min_vruntime, vruntime)
 static inline u64 max_vruntime(u64 max_vruntime, u64 vruntime)
 {
 	s64 delta = (s64)(vruntime - max_vruntime);
@@ -460,6 +478,8 @@ static inline u64 max_vruntime(u64 max_vruntime, u64 vruntime)
 	return max_vruntime;
 }
 
+// 2016-10-22
+// min_vruntime(vruntime, se->vruntime)
 static inline u64 min_vruntime(u64 min_vruntime, u64 vruntime)
 {
 	s64 delta = (s64)(vruntime - min_vruntime);
@@ -475,6 +495,8 @@ static inline int entity_before(struct sched_entity *a,
 	return (s64)(a->vruntime - b->vruntime) < 0;
 }
 
+// 2016-10-22
+// min_vruntime 값보다 vruntime이 클 때 값을 갱신
 static void update_min_vruntime(struct cfs_rq *cfs_rq)
 {
 	u64 vruntime = cfs_rq->min_vruntime;
@@ -490,12 +512,14 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
 		if (!cfs_rq->curr)
 			vruntime = se->vruntime;
 		else
+			// 작은값을 선택
 			vruntime = min_vruntime(vruntime, se->vruntime);
 	}
 
 	/* ensure we never gain time by being placed backwards. */
+	// min_vruntime 값보다 vruntime이 클 때 값을 갱신
 	cfs_rq->min_vruntime = max_vruntime(cfs_rq->min_vruntime, vruntime);
-#ifndef CONFIG_64BIT
+#ifndef CONFIG_64BIT // not define
 	smp_wmb();
 	cfs_rq->min_vruntime_copy = cfs_rq->min_vruntime;
 #endif
@@ -614,10 +638,12 @@ int sched_proc_update_handler(struct ctl_table *table, int write,
 /*
  * delta /= w
  */
+// 2016-10-22
+// calc_delta_fair(delta_exec, curr)
 static inline unsigned long
 calc_delta_fair(unsigned long delta, struct sched_entity *se)
 {
-	if (unlikely(se->load.weight != NICE_0_LOAD))
+	if (unlikely(se->load.weight != NICE_0_LOAD/*0x400, 1KB*/))
 		delta = calc_delta_mine(delta, NICE_0_LOAD, &se->load);
 
 	return delta;
@@ -706,6 +732,8 @@ void init_task_runnable_average(struct task_struct *p)
  * Update the current task's runtime statistics. Skip current tasks that
  * are not in our scheduling class.
  */
+// 2016-10-22
+// __update_curr(cfs_rq, curr, delta_exec)
 static inline void
 __update_curr(struct cfs_rq *cfs_rq, struct sched_entity *curr,
 	      unsigned long delta_exec)
@@ -713,16 +741,17 @@ __update_curr(struct cfs_rq *cfs_rq, struct sched_entity *curr,
 	unsigned long delta_exec_weighted;
 
 	schedstat_set(curr->statistics.exec_max,
-		      max((u64)delta_exec, curr->statistics.exec_max));
+		      max((u64)delta_exec, curr->statistics.exec_max)); // NO OP.
 
 	curr->sum_exec_runtime += delta_exec;
-	schedstat_add(cfs_rq, exec_clock, delta_exec);
+	schedstat_add(cfs_rq, exec_clock, delta_exec); // No OP.
 	delta_exec_weighted = calc_delta_fair(delta_exec, curr);
 
 	curr->vruntime += delta_exec_weighted;
 	update_min_vruntime(cfs_rq);
 }
 
+// 2016-10-22
 static void update_curr(struct cfs_rq *cfs_rq)
 {
 	struct sched_entity *curr = cfs_rq->curr;
@@ -741,18 +770,21 @@ static void update_curr(struct cfs_rq *cfs_rq)
 	if (!delta_exec)
 		return;
 
+	// 2016-10-22
 	__update_curr(cfs_rq, curr, delta_exec);
 	curr->exec_start = now;
 
+	// CONFIG_FAIR_GROUP_SCHED 미 정의로 entity_is_task() 함수는
+	// 항상 TRUE를 리턴
 	if (entity_is_task(curr)) {
 		struct task_struct *curtask = task_of(curr);
 
 		trace_sched_stat_runtime(curtask, delta_exec, curr->vruntime);
-		cpuacct_charge(curtask, delta_exec);
+		cpuacct_charge(curtask, delta_exec); // NO OP.
 		account_group_exec_runtime(curtask, delta_exec);
 	}
 
-	account_cfs_rq_runtime(cfs_rq, delta_exec);
+	account_cfs_rq_runtime(cfs_rq, delta_exec); // No OP.
 }
 
 static inline void
@@ -1157,16 +1189,18 @@ static inline void update_cfs_shares(struct cfs_rq *cfs_rq)
 }
 #endif /* CONFIG_FAIR_GROUP_SCHED */
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
 /*
  * We choose a half-life close to 1 scheduling period.
  * Note: The tables below are dependent on this value.
  */
+// 2016-10-22
 #define LOAD_AVG_PERIOD 32
 #define LOAD_AVG_MAX 47742 /* maximum possible load avg */
 #define LOAD_AVG_MAX_N 345 /* number of full periods to produce LOAD_MAX_AVG */
 
 /* Precomputed fixed inverse multiplies for multiplication by y^n */
+// 2016-10-22
 static const u32 runnable_avg_yN_inv[] = {
 	0xffffffff, 0xfa83b2da, 0xf5257d14, 0xefe4b99a, 0xeac0c6e6, 0xe5b906e6,
 	0xe0ccdeeb, 0xdbfbb796, 0xd744fcc9, 0xd2a81d91, 0xce248c14, 0xc9b9bd85,
@@ -1180,6 +1214,7 @@ static const u32 runnable_avg_yN_inv[] = {
  * Precomputed \Sum y^k { 1<=k<=n }.  These are floor(true_value) to prevent
  * over-estimates when re-combining.
  */
+// 2016-10-22
 static const u32 runnable_avg_yN_sum[] = {
 	    0, 1002, 1982, 2941, 3880, 4798, 5697, 6576, 7437, 8279, 9103,
 	 9909,10698,11470,12226,12966,13690,14398,15091,15769,16433,17082,
@@ -1190,13 +1225,14 @@ static const u32 runnable_avg_yN_sum[] = {
  * Approximate:
  *   val * y^n,    where y^32 ~= 0.5 (~1 scheduling period)
  */
+// 2016-10-22
 static __always_inline u64 decay_load(u64 val, u64 n)
 {
 	unsigned int local_n;
 
 	if (!n)
 		return val;
-	else if (unlikely(n > LOAD_AVG_PERIOD * 63))
+	else if (unlikely(n > LOAD_AVG_PERIOD/*32*/ * 63))
 		return 0;
 
 	/* after bounds checking we can collapse to 32-bit */
@@ -1209,11 +1245,15 @@ static __always_inline u64 decay_load(u64 val, u64 n)
 	 *
 	 * To achieve constant time decay_load.
 	 */
+	// LOAD_AVG_PERIOD 주기를 맞추기 위해 local_n을 계산
+	// local_n이 6 일 때: 6 = 6 % 32
+	//           33 일 때: 1 = 6 % 32
 	if (unlikely(local_n >= LOAD_AVG_PERIOD)) {
 		val >>= local_n / LOAD_AVG_PERIOD;
 		local_n %= LOAD_AVG_PERIOD;
 	}
 
+	// 미리 계산된 값에 val을 곱함
 	val *= runnable_avg_yN_inv[local_n];
 	/* We don't use SRR here since we always want to round down. */
 	return val >> 32;
@@ -1226,20 +1266,23 @@ static __always_inline u64 decay_load(u64 val, u64 n)
  * We can compute this reasonably efficiently by combining:
  *   y^PERIOD = 1/2 with precomputed \Sum 1024*y^n {for  n <PERIOD}
  */
+// 2016-10-22
 static u32 __compute_runnable_contrib(u64 n)
 {
 	u32 contrib = 0;
 
-	if (likely(n <= LOAD_AVG_PERIOD))
+	if (likely(n <= LOAD_AVG_PERIOD/*32*/))
 		return runnable_avg_yN_sum[n];
-	else if (unlikely(n >= LOAD_AVG_MAX_N))
-		return LOAD_AVG_MAX;
+	else if (unlikely(n >= LOAD_AVG_MAX_N/*345*/))
+		return LOAD_AVG_MAX/*47742*/;
 
+	// LOAD_AVG_PERIOD/*32*/ < n < LOAD_AVG_MAX_N/*345*/
 	/* Compute \Sum k^n combining precomputed values for k^i, \Sum k^j */
 	do {
 		contrib /= 2; /* y^LOAD_AVG_PERIOD = 1/2 */
 		contrib += runnable_avg_yN_sum[LOAD_AVG_PERIOD];
 
+		// LOAD_AVG_PERIOD 주기로 하기 위해 뺌
 		n -= LOAD_AVG_PERIOD;
 	} while (n > LOAD_AVG_PERIOD);
 
@@ -1275,6 +1318,9 @@ static u32 __compute_runnable_contrib(u64 n)
  *   load_avg = u_0` + y*(u_0 + u_1*y + u_2*y^2 + ... )
  *            = u_0 + u_1*y + u_2*y^2 + ... [re-labeling u_i --> u_{i+1}]
  */
+// 2016-10-22
+// 참고: http://egloos.zum.com/nzcv/v/6036793
+// __update_entity_runnable_avg(now, &se->avg, se->on_rq)
 static __always_inline int __update_entity_runnable_avg(u64 now,
 							struct sched_avg *sa,
 							int runnable)
@@ -1360,7 +1406,7 @@ static inline u64 __synchronize_entity_decay(struct sched_entity *se)
 	return decays;
 }
 
-#ifdef CONFIG_FAIR_GROUP_SCHED
+#ifdef CONFIG_FAIR_GROUP_SCHED // not define
 static inline void __update_cfs_rq_tg_load_contrib(struct cfs_rq *cfs_rq,
 						 int force_update)
 {
@@ -1439,6 +1485,7 @@ static inline void __update_group_entity_contrib(struct sched_entity *se)
 	}
 }
 #else
+// 2016-10-22
 static inline void __update_cfs_rq_tg_load_contrib(struct cfs_rq *cfs_rq,
 						 int force_update) {}
 static inline void __update_tg_runnable_avg(struct sched_avg *sa,
@@ -1446,21 +1493,30 @@ static inline void __update_tg_runnable_avg(struct sched_avg *sa,
 static inline void __update_group_entity_contrib(struct sched_entity *se) {}
 #endif
 
+// 2016-10-22
 static inline void __update_task_entity_contrib(struct sched_entity *se)
 {
 	u32 contrib;
 
+	// 가중치(weight)가 높고, runnable_avg_period가 작으면
+	// 계산된 contrib 값은 크게 나오며
+	// 반대로 가중치가 작고 runnable_avg_period가 크면 작은 값이 나옴
+
 	/* avoid overflowing a 32-bit type w/ SCHED_LOAD_SCALE */
+	// contrib = se->avg.runnable_avg_sum * se->load.weight;
 	contrib = se->avg.runnable_avg_sum * scale_load_down(se->load.weight);
 	contrib /= (se->avg.runnable_avg_period + 1);
 	se->avg.load_avg_contrib = scale_load(contrib);
 }
 
 /* Compute the current contribution to load_avg by se, return any delta */
+// 2016-10-22
 static long __update_entity_load_avg_contrib(struct sched_entity *se)
 {
 	long old_contrib = se->avg.load_avg_contrib;
 
+	// 2016-10-22 CONFIG_FAIR_GROUP_SCHED 미 정의로 entity_is_task() 함수는
+	// 항상 true를 리턴
 	if (entity_is_task(se)) {
 		__update_task_entity_contrib(se);
 	} else {
@@ -1468,9 +1524,12 @@ static long __update_entity_load_avg_contrib(struct sched_entity *se)
 		__update_group_entity_contrib(se);
 	}
 
+	// 음수가 나올 수 있음
 	return se->avg.load_avg_contrib - old_contrib;
 }
 
+// 2016-10-22
+// subtract_blocked_load_contrib(cfs_rq, -contrib_delta/*부호반전*/)
 static inline void subtract_blocked_load_contrib(struct cfs_rq *cfs_rq,
 						 long load_contrib)
 {
@@ -1483,6 +1542,8 @@ static inline void subtract_blocked_load_contrib(struct cfs_rq *cfs_rq,
 static inline u64 cfs_rq_clock_task(struct cfs_rq *cfs_rq);
 
 /* Update a sched_entity's runnable average */
+// 2016-10-22
+// update_entity_load_avg(se, 1);
 static inline void update_entity_load_avg(struct sched_entity *se,
 					  int update_cfs_rq)
 {
@@ -1494,29 +1555,37 @@ static inline void update_entity_load_avg(struct sched_entity *se,
 	 * For a group entity we need to use their owned cfs_rq_clock_task() in
 	 * case they are the parent of a throttled hierarchy.
 	 */
+	// 2016-10-22
+	// CONFIG_FAIR_GROUP_SCHED 미 정의로 entity_is_task() 함수는
+	// 항상 true을 리턴
 	if (entity_is_task(se))
 		now = cfs_rq_clock_task(cfs_rq);
 	else
 		now = cfs_rq_clock_task(group_cfs_rq(se));
 
+	// 2016-10-22
 	if (!__update_entity_runnable_avg(now, &se->avg, se->on_rq))
 		return;
 
 	contrib_delta = __update_entity_load_avg_contrib(se);
 
+	// 2016-10-22 update_cfs_rq는 1로 전담됨
 	if (!update_cfs_rq)
 		return;
 
 	if (se->on_rq)
 		cfs_rq->runnable_load_avg += contrib_delta;
 	else
-		subtract_blocked_load_contrib(cfs_rq, -contrib_delta);
+		// 2016-10-22
+		subtract_blocked_load_contrib(cfs_rq, -contrib_delta/*부호반전*/);
 }
 
 /*
  * Decay the load contributed by all blocked children and account this so that
  * their contribution may appropriately discounted when they wake up.
  */
+// 2016-10-22
+// update_cfs_rq_blocked_load(cfs_rq, !sleep)
 static void update_cfs_rq_blocked_load(struct cfs_rq *cfs_rq, int force_update)
 {
 	u64 now = cfs_rq_clock_task(cfs_rq) >> 20;
@@ -1539,7 +1608,7 @@ static void update_cfs_rq_blocked_load(struct cfs_rq *cfs_rq, int force_update)
 		cfs_rq->last_decay = now;
 	}
 
-	__update_cfs_rq_tg_load_contrib(cfs_rq, force_update);
+	__update_cfs_rq_tg_load_contrib(cfs_rq, force_update);// No OP.
 }
 
 static inline void update_rq_runnable_avg(struct rq *rq, int runnable)
@@ -1606,13 +1675,18 @@ static inline void enqueue_entity_load_avg(struct cfs_rq *cfs_rq,
  * transitioning to a blocked state we track its projected decay using
  * blocked_load_avg.
  */
+// 2016-10-22 시작
+// dequeue_entity_load_avg(cfs_rq, se, flags & DEQUEUE_SLEEP)
 static inline void dequeue_entity_load_avg(struct cfs_rq *cfs_rq,
 						  struct sched_entity *se,
 						  int sleep)
 {
+	// 2016-10-22
 	update_entity_load_avg(se, 1);
 	/* we force update consideration on load-balancer moves */
+	// 2016-10-22
 	update_cfs_rq_blocked_load(cfs_rq, !sleep);
+	// 2016-10-22 여기까지
 
 	cfs_rq->runnable_load_avg -= se->avg.load_avg_contrib;
 	if (sleep) {
@@ -1846,6 +1920,8 @@ static void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)
 
 static __always_inline void return_cfs_rq_runtime(struct cfs_rq *cfs_rq);
 
+// 2016-10-22
+// dequeue_entity(cfs_rq, se, 0)
 static void
 dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 {
@@ -1853,11 +1929,12 @@ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 	 * Update run-time statistics of the 'current'.
 	 */
 	update_curr(cfs_rq);
+	// 2016-10-22 시작
 	dequeue_entity_load_avg(cfs_rq, se, flags & DEQUEUE_SLEEP);
 
 	update_stats_dequeue(cfs_rq, se);
 	if (flags & DEQUEUE_SLEEP) {
-#ifdef CONFIG_SCHEDSTATS
+#ifdef CONFIG_SCHEDSTATS // not define
 		if (entity_is_task(se)) {
 			struct task_struct *tsk = task_of(se);
 
@@ -2069,7 +2146,7 @@ entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued)
  * CFS bandwidth control machinery
  */
 
-#ifdef CONFIG_CFS_BANDWIDTH
+#ifdef CONFIG_CFS_BANDWIDTH // not define
 
 #ifdef HAVE_JUMP_LABEL
 static struct static_key __cfs_bandwidth_used;
@@ -2137,11 +2214,13 @@ static inline struct cfs_bandwidth *tg_cfs_bandwidth(struct task_group *tg)
 }
 
 /* rq->task_clock normalized against any time this cfs_rq has spent throttled */
+// 2016-10-22
 static inline u64 cfs_rq_clock_task(struct cfs_rq *cfs_rq)
 {
 	if (unlikely(cfs_rq->throttle_count))
 		return cfs_rq->throttled_clock_task;
 
+	// container_of(cfs_rq, struct rq, cfs) - cfs_rq->throttled_clock_task_time
 	return rq_clock_task(rq_of(cfs_rq)) - cfs_rq->throttled_clock_task_time;
 }
 
@@ -2783,6 +2862,7 @@ static inline u64 cfs_rq_clock_task(struct cfs_rq *cfs_rq)
 	return rq_clock_task(rq_of(cfs_rq));
 }
 
+// 2016-10-22
 static void account_cfs_rq_runtime(struct cfs_rq *cfs_rq,
 				     unsigned long delta_exec) {}
 static void check_cfs_rq_runtime(struct cfs_rq *cfs_rq) {}
@@ -2936,12 +3016,17 @@ static void set_next_buddy(struct sched_entity *se);
  * decreased. We remove the task from the rbtree and
  * update the fair scheduling stats:
  */
+// 2016-10-22 시작
+// dequeue_task_fair(rq, p, 0)
 static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;
 	int task_sleep = flags & DEQUEUE_SLEEP;
 
+	//  #define for_each_sched_entity(se) \
+	//                  for (; se; se = NULL)
+	// se가 NULL이 아니면 한 번 실행
 	for_each_sched_entity(se) {
 		cfs_rq = cfs_rq_of(se);
 		dequeue_entity(cfs_rq, se, flags);
@@ -3975,8 +4060,10 @@ struct lb_env {
  * move_task - move a task from one runqueue to another runqueue.
  * Both runqueues must be locked.
  */
+// 2016-10-22
 static void move_task(struct task_struct *p, struct lb_env *env)
 {
+	// 2016-10-22 시작
 	deactivate_task(env->src_rq, p, 0);
 	set_task_cpu(p, env->dst_cpu);
 	activate_task(env->dst_rq, p, 0);
@@ -4183,6 +4270,8 @@ static int move_tasks(struct lb_env *env)
 
 		// 2016-10-15, 여기까지
 		// 차주에는, fair_sched_class 기준으로 분석
+		//
+		// 2016-10-22 시작
 		move_task(p, env);
 		pulled++;
 		env->imbalance -= load;
@@ -5405,7 +5494,7 @@ more_balance:
 		 * cur_ld_moved - load moved in current iteration
 		 * ld_moved     - cumulative load moved across iterations
 		 */
-		// 2016-10-15
+		// 2016-10-15 시작
 		cur_ld_moved = move_tasks(&env);
 		ld_moved += cur_ld_moved;
 		double_rq_unlock(env.dst_rq, busiest);
@@ -6489,6 +6578,7 @@ const struct sched_class fair_sched_class = {
 	.next			= &idle_sched_class,
 	.enqueue_task		= enqueue_task_fair,
 	// 2016-10-15, glance
+	// 2016-10-22 분석 시작
 	.dequeue_task		= dequeue_task_fair,
 	.yield_task		= yield_task_fair,
 	.yield_to_task		= yield_to_task_fair,

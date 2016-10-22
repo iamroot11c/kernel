@@ -813,6 +813,8 @@ static void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 // 2016-10-01
 // dequeue_task(rq, p, flags);
 // runqueue의 시간 갱신 및 미리 지정된 task_struct 내 sched_class의  deque_task함수를 수행
+// 2016-10-22
+// dequeue_task(rq, p, 0)
 static void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 {
 	// 2016-10-01
@@ -822,6 +824,10 @@ static void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 	sched_info_dequeued(p);
 	// 미리 정의한 함수 포인터 실행
 	// 추상화되었기 때문에, 분석 시점에서는 어떤 함수를 실제로 실행하는지 알기 힘듬
+	//
+	// 2016-10-22
+	// fair_sched_class 기준으로 분석하고 있어 dequeue_task 멤버에 등록된 
+	// dequeue_task_fair() 함수 분석을 시작
 	p->sched_class->dequeue_task(rq, p, flags);
 }
 
@@ -836,12 +842,14 @@ void activate_task(struct rq *rq, struct task_struct *p, int flags)
 
 // 2016-10-01
 // deactivate_task(rq, prev, DEQUEUE_SLEEP);
+// 2016-10-22
+// deactivate_task(env->src_rq, p, 0);
 void deactivate_task(struct rq *rq, struct task_struct *p, int flags)
 {
 	if (task_contributes_to_load(p))
 		rq->nr_uninterruptible++;
 
-	// 2016-10-01
+	// 2016-10-22 시작
 	dequeue_task(rq, p, flags);
 }
 
@@ -1036,7 +1044,7 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 		rq->skip_clock_update = 1;
 }
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
 void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
 {
 #ifdef CONFIG_SCHED_DEBUG

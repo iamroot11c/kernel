@@ -47,6 +47,7 @@ rq_sched_info_depart(struct rq *rq, unsigned long long delta)
 # define schedstat_inc(rq, field)	do { } while (0)
 // 2016-10-08
 # define schedstat_add(rq, field, amt)	do { } while (0)
+// 2016-10-22
 # define schedstat_set(var, val)	do { } while (0)
 #endif
 
@@ -171,6 +172,7 @@ sched_info_switch(struct task_struct *prev, struct task_struct *next)
  *
  * @tsk:	Pointer to target task.
  */
+// 2016-10-22
 static inline bool cputimer_running(struct task_struct *tsk)
 
 {
@@ -255,6 +257,8 @@ static inline void account_group_system_time(struct task_struct *tsk,
  * If thread group time is being maintained, get the structure for the
  * running CPU and update the sum_exec_runtime field there.
  */
+// 2016-10-22
+// account_group_exec_runtime(curtask, delta_exec)
 static inline void account_group_exec_runtime(struct task_struct *tsk,
 					      unsigned long long ns)
 {

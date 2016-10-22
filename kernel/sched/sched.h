@@ -60,15 +60,15 @@ extern void update_cpu_load_active(struct rq *this_rq);
 # define scale_load(w)		((w) << SCHED_LOAD_RESOLUTION)
 # define scale_load_down(w)	((w) >> SCHED_LOAD_RESOLUTION)
 #else
-# define SCHED_LOAD_RESOLUTION	0
+# define SCHED_LOAD_RESOLUTION	0 // 2016-10-22
 # define scale_load(w)		(w) // 2016-07-01
-# define scale_load_down(w)	(w)
+# define scale_load_down(w)	(w) // 2016-10-22
 #endif
 
-#define SCHED_LOAD_SHIFT	(10 + SCHED_LOAD_RESOLUTION)
-#define SCHED_LOAD_SCALE	(1L << SCHED_LOAD_SHIFT)
+#define SCHED_LOAD_SHIFT	(10 + SCHED_LOAD_RESOLUTION/*0*/)
+#define SCHED_LOAD_SCALE	(1L << SCHED_LOAD_SHIFT/*10*/)
 
-#define NICE_0_LOAD		SCHED_LOAD_SCALE
+#define NICE_0_LOAD		SCHED_LOAD_SCALE // 0x400, 1KB
 #define NICE_0_SHIFT		SCHED_LOAD_SHIFT
 
 /*
@@ -250,13 +250,14 @@ struct cfs_bandwidth { };
 
 /* CFS-related fields in a runqueue */
 // completely fair scheduler의 약자
+// 2016-10-22
 struct cfs_rq {
 	struct load_weight load;
 	unsigned int nr_running, h_nr_running;
 
 	u64 exec_clock;
 	u64 min_vruntime;
-#ifndef CONFIG_64BIT
+#ifndef CONFIG_64BIT // not define 
 	u64 min_vruntime_copy;
 #endif
 
@@ -270,11 +271,11 @@ struct cfs_rq {
     // 2016-10-15, next, last
 	struct sched_entity *curr, *next, *last, *skip;
 
-#ifdef	CONFIG_SCHED_DEBUG
+#ifdef	CONFIG_SCHED_DEBUG // defined 
 	unsigned int nr_spread_over;
 #endif
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
 	/*
 	 * CFS Load tracking
 	 * Under CFS, load is tracked on a per-entity basis and aggregated up.
@@ -284,10 +285,11 @@ struct cfs_rq {
     // 2016-10-08
 	unsigned long runnable_load_avg, blocked_load_avg;
 	atomic64_t decay_counter;
+    // 2016-10-22
 	u64 last_decay;
 	atomic_long_t removed_load;
 
-#ifdef CONFIG_FAIR_GROUP_SCHED
+#ifdef CONFIG_FAIR_GROUP_SCHED // not define
 	/* Required to track per-cpu representation of a task_group */
 	u32 tg_runnable_contrib;
 	unsigned long tg_load_contrib;
@@ -304,7 +306,7 @@ struct cfs_rq {
 #endif /* CONFIG_FAIR_GROUP_SCHED */
 #endif /* CONFIG_SMP */
 
-#ifdef CONFIG_FAIR_GROUP_SCHED
+#ifdef CONFIG_FAIR_GROUP_SCHED // not define
 	struct rq *rq;	/* cpu runqueue to which this cfs_rq is attached */
 
 	/*
@@ -319,7 +321,7 @@ struct cfs_rq {
 	struct list_head leaf_cfs_rq_list;
 	struct task_group *tg;	/* group that "owns" this runqueue */
 
-#ifdef CONFIG_CFS_BANDWIDTH
+#ifdef CONFIG_CFS_BANDWIDTH // not define
 	int runtime_enabled;
 	u64 runtime_expires;
 	s64 runtime_remaining;
@@ -582,6 +584,7 @@ static inline u64 rq_clock(struct rq *rq)
 }
 
 // 2016-10-15
+// 2016-10-22
 static inline u64 rq_clock_task(struct rq *rq)
 {
 	return rq->clock_task;

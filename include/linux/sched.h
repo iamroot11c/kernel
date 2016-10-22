@@ -443,6 +443,7 @@ struct cputime {
  * CPU time want to group these counts together and treat all three
  * of them in parallel.
  */
+// 2016-10-22
 struct task_cputime {
 	cputime_t utime;
 	cputime_t stime;
@@ -479,6 +480,7 @@ struct task_cputime {
  * This structure contains the version of task_cputime, above, that is
  * used for thread group CPU timer calculations.
  */
+// 2016-10-22
 struct thread_group_cputimer {
 	struct task_cputime cputime;
 	int running;
@@ -954,6 +956,7 @@ struct mempolicy;
 struct pipe_inode_info;
 struct uts_namespace;
 
+// 2016-10-22
 struct load_weight {
     // http://egloos.zum.com/studyfoss/v/5326671
     // weight는 load 즉, 우선순위에 대한 가중치이고 inv_weight는 이의 역수(1/weight)에 해당하는 값이다.
@@ -1014,11 +1017,13 @@ struct sched_entity {
 	struct rb_node		run_node;
     // 2016-10-15
 	struct list_head	group_node;
+    // 2016-10-22
 	unsigned int		on_rq;
 
     // 2016-10-15
 	u64			exec_start;
 	u64			sum_exec_runtime;
+    // 2016-10-22
 	u64			vruntime;
 	u64			prev_sum_exec_runtime;
 
@@ -1264,6 +1269,7 @@ struct task_struct {
 /* signal handlers */
 	struct signal_struct *signal;
     // 2016-03-05
+    // 2016-10-22
 	struct sighand_struct *sighand;
 
     // 2016-03-05
