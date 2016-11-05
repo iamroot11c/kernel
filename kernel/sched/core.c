@@ -118,6 +118,7 @@ DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 static void update_rq_clock_task(struct rq *rq, s64 delta);
 
 // 2016-10-01
+// 2016-11-05
 void update_rq_clock(struct rq *rq)
 {
 	s64 delta;
@@ -128,7 +129,8 @@ void update_rq_clock(struct rq *rq)
 	// rq->clock을 현재 시간으로 보정
 	delta = sched_clock_cpu(cpu_of(rq)) - rq->clock;
 	rq->clock += delta;
-	// 주어진 delta 값으로 clock_tassk값을 보정
+	// 주어진 delta 값으로 clock_task값을 보정
+	// rq->clock_task += delta;
 	update_rq_clock_task(rq, delta);
 }
 
@@ -801,12 +803,17 @@ static void set_load_weight(struct task_struct *p)
 }
 
 // 2016-10-01
+// 2016-11-05
 // enqueue_task(rq, p, flags);
+// enqueue_task(env->dst_rq, p, 0);
 // runqueue의 시간 갱신 및 미리 지정된 task_struct 내 sched_class의  enqueue_task함수를 수행
 static void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 {
+	// 2016-11-05
 	update_rq_clock(rq);
 	sched_info_queued(p);
+	// 2016-11-05
+	// fair_sched_class기준 분석
 	p->sched_class->enqueue_task(rq, p, flags);
 }
 
@@ -832,11 +839,14 @@ static void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 }
 
 // 2016-10-01
+// 2016-11-05
+// activate_task(env->dst_rq, p, 0);
 void activate_task(struct rq *rq, struct task_struct *p, int flags)
 {
 	if (task_contributes_to_load(p))
 		rq->nr_uninterruptible--;
 
+	// 2016-11-05
 	enqueue_task(rq, p, flags);
 }
 
@@ -851,9 +861,11 @@ void deactivate_task(struct rq *rq, struct task_struct *p, int flags)
 
 	// 2016-10-22 시작
 	dequeue_task(rq, p, flags);
+	// 2016-11-05
 }
 
 // 2016-10-01
+// 2016-11-05
 static void update_rq_clock_task(struct rq *rq, s64 delta)
 {
 /*
@@ -1045,9 +1057,11 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 }
 
 #ifdef CONFIG_SMP // defined
+// 2016-11-05
+// set_task_cpu(p, env->dst_cpu); /*env->dst_cpu는 현재 수행 중인 cpu로 세팅*/
 void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
 {
-#ifdef CONFIG_SCHED_DEBUG
+#ifdef CONFIG_SCHED_DEBUG // defined
 	/*
 	 * We should never call set_task_cpu() on a blocked task,
 	 * ttwu() will sort out the placement.
@@ -1055,7 +1069,7 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
 	WARN_ON_ONCE(p->state != TASK_RUNNING && p->state != TASK_WAKING &&
 			!(task_thread_info(p)->preempt_count & PREEMPT_ACTIVE));
 
-#ifdef CONFIG_LOCKDEP
+#ifdef CONFIG_LOCKDEP // not defined 
 	/*
 	 * The caller should hold either p->pi_lock or rq->lock, when changing
 	 * a task's CPU. ->pi_lock for waking tasks, rq->lock for runnable tasks.
@@ -1073,10 +1087,14 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
 
 	trace_sched_migrate_task(p, new_cpu);
 
+	// 검사할 태스크의 cpu아이디가 new_cpu와 다르다.
+	// 즉 다른 cpu에 해당하는 런큐로 이동하는 경우
 	if (task_cpu(p) != new_cpu) {
 		if (p->sched_class->migrate_task_rq)
+			// fair_sched_class 기준으로 분석
 			p->sched_class->migrate_task_rq(p, new_cpu);
 		p->se.nr_migrations++;
+		// no op
 		perf_sw_event(PERF_COUNT_SW_CPU_MIGRATIONS, 1, NULL, 0);
 	}
 

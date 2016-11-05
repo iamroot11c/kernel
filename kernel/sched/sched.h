@@ -69,7 +69,7 @@ extern void update_cpu_load_active(struct rq *this_rq);
 #define SCHED_LOAD_SCALE	(1L << SCHED_LOAD_SHIFT/*10*/)
 
 #define NICE_0_LOAD		SCHED_LOAD_SCALE // 0x400, 1KB
-#define NICE_0_SHIFT		SCHED_LOAD_SHIFT
+#define NICE_0_SHIFT		SCHED_LOAD_SHIFT // 10
 
 /*
  * These are the 'tuning knobs' of the scheduler:
@@ -261,7 +261,9 @@ struct cfs_rq {
 	u64 min_vruntime_copy;
 #endif
 
+    // sched_entity의 run_node 정보가 저장
 	struct rb_root tasks_timeline;
+    // task_timeline 중 가장 가중치가 낮은 노드
 	struct rb_node *rb_leftmost;
 
 	/*
@@ -442,6 +444,7 @@ struct rq {
 	unsigned long nr_load_updates;
 	u64 nr_switches;
 
+    // 2016-11-05
 	struct cfs_rq cfs;
 	struct rt_rq rt;
 
@@ -763,6 +766,8 @@ static inline struct task_group *task_group(struct task_struct *p)
 #endif /* CONFIG_CGROUP_SCHED */
 
 // 2016-07-01
+// 2016-11-05
+// 태스크 p의 cpu를 새로운 cpu 아이디로 변경
 static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
 {
 	set_task_rq(p, cpu); // NO OP
@@ -1180,15 +1185,17 @@ static inline u64 sched_avg_period(void)
 	return (u64)sysctl_sched_time_avg/*1000*/ * NSEC_PER_MSEC/*1000000L*/ / 2;
 }
 
-#ifdef CONFIG_SCHED_HRTICK
+#ifdef CONFIG_SCHED_HRTICK // define
 
 /*
  * Use hrtick when:
  *  - enabled by features
  *  - hrtimer is actually high res
  */
+// 2016-11-05
 static inline int hrtick_enabled(struct rq *rq)
 {
+    // features.h에서 false로 지정됨
 	if (!sched_feat(HRTICK))
 		return 0;
 	if (!cpu_active(cpu_of(rq)))

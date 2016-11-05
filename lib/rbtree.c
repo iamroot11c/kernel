@@ -469,6 +469,8 @@ struct rb_node *rb_last(const struct rb_root *root)
 }
 EXPORT_SYMBOL(rb_last);
 
+// 2016-11-05
+// rb_next(&se->run_node);
 struct rb_node *rb_next(const struct rb_node *node)
 {
 	struct rb_node *parent;
@@ -480,6 +482,17 @@ struct rb_node *rb_next(const struct rb_node *node)
 	 * If we have a right-hand child, go down and then left as far
 	 * as we can.
 	 */
+	// 특정 노드가 오른 쪽 자식이 있는 경우,
+	// 특정 노드의 다음 가중치를 가지는 노드는
+	// 오른 쪽 자식의 가장 왼 쪽 자식 노드이다.
+	//
+	//       0
+	//      / \
+	//     0'  0
+	//    / \
+	//   0   0
+	//      /
+	//     0'' 
 	if (node->rb_right) {
 		node = node->rb_right; 
 		while (node->rb_left)
@@ -494,6 +507,18 @@ struct rb_node *rb_next(const struct rb_node *node)
 	 * parent, keep going up. First time it's a left-hand child of its
 	 * parent, said parent is our 'next' node.
 	 */
+        //
+        //       0
+        //      / \
+        //     0   0''
+        //    / \
+        //   0   0
+        //        \
+        //         0' 
+
+	// 탈출 조건 : 
+	// 1) 부모노드가 있으면서, 내가 왼 쪽 자식인 경우 
+	// 2) 부모 노드가 없는 경우 (이 경우 null 리턴)
 	while ((parent = rb_parent(node)) && node == parent->rb_right)
 		node = parent;
 

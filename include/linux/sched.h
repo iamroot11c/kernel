@@ -957,6 +957,7 @@ struct pipe_inode_info;
 struct uts_namespace;
 
 // 2016-10-22
+// 2016-11-05
 struct load_weight {
     // http://egloos.zum.com/studyfoss/v/5326671
     // weight는 load 즉, 우선순위에 대한 가중치이고 inv_weight는 이의 역수(1/weight)에 해당하는 값이다.
@@ -1014,7 +1015,8 @@ struct sched_statistics {
 
 struct sched_entity {
 	struct load_weight	load;		/* for load-balancing */
-	struct rb_node		run_node;
+	// 2016-11-05, runqueue에서 해당 노드를 순회할 수 있다.
+    struct rb_node		run_node;
     // 2016-10-15
 	struct list_head	group_node;
     // 2016-10-22
@@ -2760,6 +2762,8 @@ static inline void ptrace_signal_wake_up(struct task_struct *t, bool resume)
 #ifdef CONFIG_SMP
 
 // 2016-03-05
+// 2016-11-05
+// 검사할 태스크의 cpu 번호를 얻음
 static inline unsigned int task_cpu(const struct task_struct *p)
 {
 	return task_thread_info(p)->cpu;

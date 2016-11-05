@@ -791,6 +791,7 @@ static inline int perf_event_refresh(struct perf_event *event, int refresh)
 	return -EINVAL;
 }
 
+// 2016-11-05
 static inline void
 perf_sw_event(u32 event_id, u64 nr, struct pt_regs *regs, u64 addr)	{ }
 static inline void
