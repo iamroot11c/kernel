@@ -1567,6 +1567,8 @@ static long __update_entity_load_avg_contrib(struct sched_entity *se)
 // 2016-11-05
 // subtract_blocked_load_contrib(cfs_rq, -contrib_delta/*부호반전*/)
 // subtract_blocked_load_contrib(cfs_rq, cfs_rq->removed_load)
+// 2016-11-12
+// subtract_blocked_load_contrib(cfs_rq, se->avg.load_avg_contrib);
 static inline void subtract_blocked_load_contrib(struct cfs_rq *cfs_rq,
 						 long load_contrib)
 {
@@ -1581,6 +1583,8 @@ static inline u64 cfs_rq_clock_task(struct cfs_rq *cfs_rq);
 /* Update a sched_entity's runnable average */
 // 2016-10-22
 // update_entity_load_avg(se, 1);
+// 2016-11-12
+// update_entity_load_avg(se, 0);
 static inline void update_entity_load_avg(struct sched_entity *se,
 					  int update_cfs_rq)
 {
@@ -1607,6 +1611,7 @@ static inline void update_entity_load_avg(struct sched_entity *se,
 	contrib_delta = __update_entity_load_avg_contrib(se);
 
 	// 2016-10-22 update_cfs_rq는 1로 전담됨
+	// 2016-11-12, 0임으로 리턴
 	if (!update_cfs_rq)
 		return;
 
@@ -1623,6 +1628,8 @@ static inline void update_entity_load_avg(struct sched_entity *se,
  */
 // 2016-10-22
 // update_cfs_rq_blocked_load(cfs_rq, !sleep)
+// 2016-11-12
+// update_cfs_rq_blocked_load(cfs_rq, !wakeup);
 static void update_cfs_rq_blocked_load(struct cfs_rq *cfs_rq, int force_update)
 {
 	// ms 단위로 시간 변경하기 위해 >>20을 처리한 것으로 추정
@@ -1707,6 +1714,7 @@ static inline void enqueue_entity_load_avg(struct cfs_rq *cfs_rq,
 	}
 
 	// 2016-11-05 여기까지
+	// 2016-11-12 시작
 	/* migrated tasks did not contribute to our blocked load */
 	if (wakeup) {
 		subtract_blocked_load_contrib(cfs_rq, se->avg.load_avg_contrib);
@@ -1907,6 +1915,8 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 	update_curr(cfs_rq);
 	// 2016-11-05 진행 중
 	enqueue_entity_load_avg(cfs_rq, se, flags & ENQUEUE_WAKEUP);
+	// 2016-11-12, end
+	// 잠시 이론 공부
 	account_entity_enqueue(cfs_rq, se);
 	update_cfs_shares(cfs_rq);
 
