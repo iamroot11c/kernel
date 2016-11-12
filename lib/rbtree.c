@@ -73,6 +73,7 @@ __rb_rotate_set_parents(struct rb_node *old, struct rb_node *new,
 
 // 2016-05-28
 // __rb_insert(&va->rb_node, &vmap_area_root, dummy_rotate/*No OP.*/)
+// 트리 밸런싱
 static __always_inline void
 __rb_insert(struct rb_node *node, struct rb_root *root,
 	    void (*augment_rotate)(struct rb_node *old, struct rb_node *new))
@@ -407,6 +408,8 @@ static const struct rb_augment_callbacks dummy_callbacks = {
 
 // 2016-05-28
 // rb_insert_color(&va->rb_node, &vmap_area_root)
+// 2016-11-12
+// rb_insert_color(&se->run_node, &cfs_rq->tasks_timeline);
 void rb_insert_color(struct rb_node *node, struct rb_root *root)
 {
 	__rb_insert(node, root, dummy_rotate);

@@ -114,9 +114,13 @@ unsigned int __read_mostly sysctl_sched_shares_window = 10000000UL;
 unsigned int sysctl_sched_cfs_bandwidth_slice = 5000UL;
 #endif
 
+// 2016-11-12
+// update_load_add(&cfs_rq->load, se->load.weight);
+// update_load_add(&rq_of(cfs_rq)->load, se->load.weight)
 static inline void update_load_add(struct load_weight *lw, unsigned long inc)
 {
 	lw->weight += inc;
+	// 0으로 변경하는 이유는 무엇일까??
 	lw->inv_weight = 0;
 }
 
@@ -437,6 +441,7 @@ static inline struct cfs_rq *group_cfs_rq(struct sched_entity *grp)
 	return NULL;
 }
 
+// 2016-11-12
 static inline void list_add_leaf_cfs_rq(struct cfs_rq *cfs_rq)
 {
 }
@@ -455,11 +460,13 @@ is_same_group(struct sched_entity *se, struct sched_entity *pse)
 }
 
 // 2016-11-05
+// 2016-11-12
 static inline struct sched_entity *parent_entity(struct sched_entity *se)
 {
 	return NULL;
 }
 
+// 2016-11-12
 static inline void
 find_matching_se(struct sched_entity **se, struct sched_entity **pse)
 {
@@ -496,6 +503,7 @@ static inline u64 min_vruntime(u64 min_vruntime, u64 vruntime)
 	return min_vruntime;
 }
 
+// 2016-11-12
 static inline int entity_before(struct sched_entity *a,
 				struct sched_entity *b)
 {
@@ -536,6 +544,7 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
 /*
  * Enqueue an entity into the rb-tree:
  */
+// 2016-11-12
 static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 	struct rb_node **link = &cfs_rq->tasks_timeline.rb_node;
@@ -561,13 +570,18 @@ static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 		}
 	}
 
+	// 여기까지 왔을 때 *link == null, link는 삽입할 위치, parent는 삽입할 노드의 부모 노드가 될 것이다.
+	// 또한 link = &parent->rb_right 를 타지 않은 경우
+	// 삽입할 값이 전체 노드 내 값 보다 작은 것이 보장된다. (vruntime이 가장 작음)
 	/*
 	 * Maintain a cache of leftmost tree entries (it is frequently
 	 * used):
 	 */
 	if (leftmost)
+		// se->run_node를 즉시 수행 가능한 노드로 설정
 		cfs_rq->rb_leftmost = &se->run_node;
 
+	// rb_tree에 연결 및 트리 밸런싱 
 	rb_link_node(&se->run_node, parent, link);
 	rb_insert_color(&se->run_node, &cfs_rq->tasks_timeline);
 }
@@ -812,6 +826,8 @@ update_stats_wait_start(struct cfs_rq *cfs_rq, struct sched_entity *se)
 /*
  * Task is being enqueued - update stats:
  */
+// 2016-11-12
+// update_stats_enqueue(cfs_rq, se);
 static void update_stats_enqueue(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 	/*
@@ -1102,6 +1118,11 @@ static void task_tick_numa(struct rq *rq, struct task_struct *curr)
 }
 #endif /* CONFIG_NUMA_BALANCING */
 
+// 2016-11-12
+// account_entity_enqueue(cfs_rq, se);
+// cfs_rq의 가중치에 se->load.weight 추가
+// rq->cfs_tasks에 se->group_node 추가
+// cfs_rq의 현재 수행 중인 태스크 개수 증가
 static void
 account_entity_enqueue(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
@@ -1212,6 +1233,7 @@ static void update_cfs_shares(struct cfs_rq *cfs_rq)
 }
 #else /* CONFIG_FAIR_GROUP_SCHED */
 // 2016-11-05
+// 2016-11-12
 // no op
 static inline void update_cfs_shares(struct cfs_rq *cfs_rq)
 {
@@ -1352,6 +1374,7 @@ static u32 __compute_runnable_contrib(u64 n)
 // 2016-10-22
 // 참고: http://egloos.zum.com/nzcv/v/6036793
 // __update_entity_runnable_avg(now, &se->avg, se->on_rq)
+// sa->runnable_avg_sum, sa->runnable_avg_period 값 변경
 static __always_inline int __update_entity_runnable_avg(u64 now,
 							struct sched_avg *sa,
 							int runnable)
@@ -1425,6 +1448,8 @@ static __always_inline int __update_entity_runnable_avg(u64 now,
 // 2016-11-05
 static inline u64 __synchronize_entity_decay(struct sched_entity *se)
 {
+	// 현재 cpu의 decay_counter와 다른 경우 
+	// 동기를 맞추기 위해 차이만큼 load_avg_contrib값을 업데이트
 	struct cfs_rq *cfs_rq = cfs_rq_of(se);
 	u64 decays = atomic64_read(&cfs_rq->decay_counter);
 
@@ -1545,6 +1570,13 @@ static inline void __update_task_entity_contrib(struct sched_entity *se)
 }
 
 /* Compute the current contribution to load_avg by se, return any delta */
+// 이전에 비해 contrib가 얼마나 변경되었는지를 리턴한다.
+// 이 값이 
+//   0보다 작은 경우 : 우선 순위가 이전보다 높아진 케이스다.
+//   0보다 큰 경우 : 우선 순위가 이전보다 낮아진 케이스다.
+// 참고.
+// contrib 값은 수행시간에 반비례,  se->weight값에 비례한다. 
+//
 // 2016-10-22
 static long __update_entity_load_avg_contrib(struct sched_entity *se)
 {
@@ -1608,6 +1640,8 @@ static inline void update_entity_load_avg(struct sched_entity *se,
 	if (!__update_entity_runnable_avg(now, &se->avg, se->on_rq))
 		return;
 
+	// 이 값에 따라 우선 순위가 어떻게 변경되었는지 확인 가능하다.
+	// 자세한 내용은 __update_entity_load_avg_contrib 주석 참고
 	contrib_delta = __update_entity_load_avg_contrib(se);
 
 	// 2016-10-22 update_cfs_rq는 1로 전담됨
@@ -1615,10 +1649,14 @@ static inline void update_entity_load_avg(struct sched_entity *se,
 	if (!update_cfs_rq)
 		return;
 
+	// http://egloos.zum.com/studyfoss/v/5326671 항목을 참고해 볼 때
+	// se->on_rq == 0인 경우만 현재 cpu에서 수행 중이다.
 	if (se->on_rq)
+		// 현재 수행 중이지 않기 때문에 수행 시간 변경이 가능한 것으로 추정
 		cfs_rq->runnable_load_avg += contrib_delta;
 	else
 		// 2016-10-22
+		// 현재 수행 중이기 때문에 블록 시간 변경이 가능한 것으로 추정
 		subtract_blocked_load_contrib(cfs_rq, -contrib_delta/*부호반전*/);
 }
 
@@ -1681,13 +1719,20 @@ static inline void enqueue_entity_load_avg(struct cfs_rq *cfs_rq,
 	 * migration we use a negative decay count to track the remote decays
 	 * accumulated while sleeping.
 	 *
+	 *(decay_count < 0인 것을 이용하여 migration을 추적할 수 있다.
+	 * wake-up migration 중에 
+	 * sleep되는 동안 축적된 remote decays를 추적하기 위해 decay_count < 0인 decay_count를 사용한다.)
+	 *
 	 * Newly forked tasks are enqueued with se->avg.decay_count == 0, they
 	 * are seen by enqueue_entity_load_avg() as a migration with an already
 	 * constructed load_avg_contrib.
 	 */
 	if (unlikely(se->avg.decay_count <= 0)) {
 		se->avg.last_runnable_update = rq_clock_task(rq_of(cfs_rq));
+		// avg.decay_count == 0 -> 다른 CPU에서 변경된 시간 정보가 싱크되었음을 의미
 		if (se->avg.decay_count) {
+			// decay_count가 0이 아닌 경우
+			// 시간 싱크를 맞춘 후 싱크가 완료됨을 표시 (decay_count에 0을 세팅)
 			/*
 			 * In a wake-up migration we have to approximate the
 			 * time sleeping.  This is because we can't synchronize
@@ -1696,6 +1741,11 @@ static inline void enqueue_entity_load_avg(struct cfs_rq *cfs_rq,
 			 * approximate this using our carried decays, which are
 			 * explicitly atomically readable.
 			 */
+			/* wake-up migration중에 블록된 시간 값을 어림잡아야 한다.
+			 * 두 cpu간 clock_task 동기를 맞출 수 없고, read-safe를 보장하지 않기 때문이다.
+			 * 대신에 명시적으로 자동으로 읽을 수 있는 전달된 decays값을 통해
+			 * 이 값을 어림잡을 수 있다.
+			 * */
 			se->avg.last_runnable_update -= (-se->avg.decay_count)
 							<< 20;
 			update_entity_load_avg(se, 0);
@@ -1718,6 +1768,8 @@ static inline void enqueue_entity_load_avg(struct cfs_rq *cfs_rq,
 	/* migrated tasks did not contribute to our blocked load */
 	if (wakeup) {
 		subtract_blocked_load_contrib(cfs_rq, se->avg.load_avg_contrib);
+		// 두 번째 파라미터가 0으로 전달되었기 때문에
+		// runnable_load_avg 값은 변경되지 않음
 		update_entity_load_avg(se, 0);
 	}
 
@@ -1850,6 +1902,8 @@ static void enqueue_sleeper(struct cfs_rq *cfs_rq, struct sched_entity *se)
 #endif
 }
 
+// 2016-11-12
+// check_spread(cfs_rq, se);
 static void check_spread(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 #ifdef CONFIG_SCHED_DEBUG
@@ -1918,20 +1972,27 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 	// 2016-11-12, end
 	// 잠시 이론 공부
 	account_entity_enqueue(cfs_rq, se);
+	// no op
 	update_cfs_shares(cfs_rq);
 
+	// flag는 0으로 전달되었기 때문에 아래 함수는 분석하지 않음
 	if (flags & ENQUEUE_WAKEUP) {
 		place_entity(cfs_rq, se, 0);
 		enqueue_sleeper(cfs_rq, se);
 	}
 
+	// no op
 	update_stats_enqueue(cfs_rq, se);
 	check_spread(cfs_rq, se);
 	if (se != cfs_rq->curr)
+		// 현재 수행 중이지 않은 sched_entity인 경우
+		// cfs_rq의 수행 리스트에 추가
 		__enqueue_entity(cfs_rq, se);
+	// 수행 중이지 않은 태스크임을 표시
 	se->on_rq = 1;
 
 	if (cfs_rq->nr_running == 1) {
+		// no op
 		list_add_leaf_cfs_rq(cfs_rq);
 		check_enqueue_throttle(cfs_rq);
 	}
@@ -2234,7 +2295,7 @@ entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued)
 
 #ifdef CONFIG_CFS_BANDWIDTH // not define
 
-#ifdef HAVE_JUMP_LABEL
+#ifdef HAVE_JUMP_LABEL // not set
 static struct static_key __cfs_bandwidth_used;
 
 static inline bool cfs_bandwidth_used(void)
@@ -2952,16 +3013,18 @@ static inline u64 cfs_rq_clock_task(struct cfs_rq *cfs_rq)
 static void account_cfs_rq_runtime(struct cfs_rq *cfs_rq,
 				     unsigned long delta_exec) {}
 static void check_cfs_rq_runtime(struct cfs_rq *cfs_rq) {}
+// 2016-11-12
 static void check_enqueue_throttle(struct cfs_rq *cfs_rq) {}
 // 2016-11-05
 static __always_inline void return_cfs_rq_runtime(struct cfs_rq *cfs_rq) {}
 
 // 2016-11-05
+// 2016-11-12
 static inline int cfs_rq_throttled(struct cfs_rq *cfs_rq)
 {
 	return 0;
 }
-
+// 2016-11-12
 static inline int throttled_hierarchy(struct cfs_rq *cfs_rq)
 {
 	return 0;
@@ -3029,6 +3092,7 @@ static void hrtick_start_fair(struct rq *rq, struct task_struct *p)
  * to matter.
  */
 // 2016-11-05
+// 2016-11-12
 static void hrtick_update(struct rq *rq)
 {
 	struct task_struct *curr = rq->curr;
@@ -3071,6 +3135,7 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		cfs_rq = cfs_rq_of(se);
 		// 2016-11-05
 		enqueue_entity(cfs_rq, se, flags);
+		// 2016-11-12
 
 		/*
 		 * end evaluation on encountering a throttled cfs_rq
@@ -3085,6 +3150,9 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		flags = ENQUEUE_WAKEUP;
 	}
 
+	// 2016-11-12
+	// 위의 for_each_sched_entity에서 break로 빠져나온 경우
+	// 아래 for_each_sched_entity구문을 탈 것이다.
 	for_each_sched_entity(se) {
 		cfs_rq = cfs_rq_of(se);
 		cfs_rq->h_nr_running++;
@@ -3096,10 +3164,13 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		update_entity_load_avg(se, 1);
 	}
 
+	// 현재 분석 환경에서는 cfs_rq_throttled가 무조건 실패하기 때문에
+	// 아래 구문을 타지 않는다.
 	if (!se) {
 		update_rq_runnable_avg(rq, rq->nr_running);
 		inc_nr_running(rq);
 	}
+	// 2016-11-12
 	hrtick_update(rq);
 }
 
@@ -3799,6 +3870,8 @@ wakeup_gran(struct sched_entity *curr, struct sched_entity *se)
  *  w(c, s3) =  1
  *
  */
+// 2016-11-12
+// glance
 static int
 wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se)
 {
@@ -3841,6 +3914,7 @@ static void set_skip_buddy(struct sched_entity *se)
 /*
  * Preempt the current task with a newly woken task if needed:
  */
+// 2016-11-12
 static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_flags)
 {
 	struct task_struct *curr = rq->curr;
@@ -3849,6 +3923,7 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
 	int scale = cfs_rq->nr_running >= sched_nr_latency;
 	int next_buddy_marked = 0;
 
+	// 선점할 태스크와 현재 수행중인 태스크가 같은 경우
 	if (unlikely(se == pse))
 		return;
 
@@ -3858,9 +3933,13 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
 	 * lead to a throttle).  This both saves work and prevents false
 	 * next-buddy nomination below.
 	 */
+	// 2016-11-12
+	// 0 리턴
 	if (unlikely(throttled_hierarchy(cfs_rq_of(pse))))
 		return;
 
+	// NEXT_BUDDY는 설정이 되어 있지 않기 때문에
+	// 아래 코드는 무시
 	if (sched_feat(NEXT_BUDDY) && scale && !(wake_flags & WF_FORK)) {
 		set_next_buddy(pse);
 		next_buddy_marked = 1;
@@ -3876,6 +3955,9 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
 	 * prevents us from potentially nominating it as a false LAST_BUDDY
 	 * below.
 	 */
+
+	// edge-case란? : 일정 범위를 넘어서는 상황에서만 발생하는 케이스다.
+	// http://bakyeono.net/post/2015-05-02-edge-case-corner-case.html 참조
 	if (test_tsk_need_resched(curr))
 		return;
 
@@ -3891,9 +3973,11 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
 	if (unlikely(p->policy != SCHED_NORMAL) || !sched_feat(WAKEUP_PREEMPTION))
 		return;
 
+	// no op
 	find_matching_se(&se, &pse);
 	update_curr(cfs_rq_of(se));
 	BUG_ON(!pse);
+	// 2016-11-12 여기까지. wakeup_preempt_entity 분석 전
 	if (wakeup_preempt_entity(se, pse) == 1) {
 		/*
 		 * Bias pick_next to pick the sched entity that is
@@ -6693,6 +6777,7 @@ const struct sched_class fair_sched_class = {
 	.yield_task		= yield_task_fair,
 	.yield_to_task		= yield_to_task_fair,
 
+	// 2016-11-12
 	.check_preempt_curr	= check_preempt_wakeup,
 
 	.pick_next_task		= pick_next_task_fair,

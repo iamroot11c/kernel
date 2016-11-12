@@ -1,5 +1,38 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [116주차](goo.gl/lQAAEO) `2016.11.12`
+ - drive: 홍진우님
+ - [perf_pmu_register() 진행중]()
+ - kernel/events/core.c:pref_event_init() 진행 중
+ - kernel/events/core.c:perf_pmu_register() 진행 중
+ - drivers/base/core.c:device_del() 진행 중
+ - drivers/base/power/sysfs.c:dpm_sysfs_remove() 진행 중
+ - drivers/base/power/qos.c:dev_pm_qos_constraints_destroy() 진행 중
+ - drivers/base/power/sysfs.c:pm_qos_sysfs_remove_latency() 진행 중
+ - fs/sysfs/group.c:sysfs_unmerge_group() 진행 중
+ - fs/sysfs/inode.c:sysfs_hash_and_remove() 진행 중
+ - fs/sysfs/dir.c:sysfs_addrm_finish() 진행 중
+ - fs/sysfs/dir.c:sysfs_deactivate() 진행 중
+ - sched/core.c:wait_for_completion() 진행중,  action(timeout);
+ - kernel/timer.c:schedule_timeout() 진행중
+ - sched/core.c:__schedule() 진행 중
+ - kernel/sched/fair.c:idle_balance() 진행 중
+ - kernel/sched/fair.c:load_balance() 진행 중
+ - kernel/sched/fair.c:move_tasks() 진행 중
+ - kernel/sched/fair.c:move_task() 진행 중
+ - kernel/sched/core.c:deactivate_task() 진행 완료
+ - kernel/sched/core.c:set_task_cpu() 진행 완료
+ - kernel/sched/fair.c:migrate_task_rq_fair() 진행 완료
+ - kernel/sched/sched.h:__set_task_cpu() 진행 완료
+ - kernel/sched/core.c:activate_task() 진행 완료
+ - kernel/sched/fair.c:update_curr() 진행 완료
+ - kernel/sched/fair.c:enqueue_task_fair() 진행 완료
+ - kernel/sched/fair.c:enqueue_entity_load_avg() 진행 완료
+ - kernel/sched/fair.c:update_entity_load_avg() 진행 완료 
+- kernel/sched/core.c:check_preempt_curr() 진행 중
+ - kernel/sched/fair.c:check_preempt_wakeup() 진행 중
+ - kernel/sched/fair.c:wakeup_preempt_entity() 진행 예정
+ 
 + [115주차](goo.gl/lQAAEO) `2016.11.05`
  - drive: 홍진우님
  - [perf_pmu_register() 진행중]()

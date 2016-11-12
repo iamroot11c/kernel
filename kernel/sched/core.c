@@ -537,6 +537,8 @@ static inline void init_hrtick(void)
 #ifdef CONFIG_SMP
 // 2016-10-01
 // resched_task(rq->curr);
+// 인자로 넘어온 태스크 p가 리스케줄링할지 여부가 설정되지 않은 경우
+// 플래그 설정
 void resched_task(struct task_struct *p)
 {
 	int cpu;
@@ -847,7 +849,9 @@ void activate_task(struct rq *rq, struct task_struct *p, int flags)
 		rq->nr_uninterruptible--;
 
 	// 2016-11-05
+	// fair_sched_class 기준 분석
 	enqueue_task(rq, p, flags);
+	// 2016-11-12 끝
 }
 
 // 2016-10-01
@@ -1032,6 +1036,7 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 {
 	const struct sched_class *class;
 
+	// fair_sched_class 기준 분석
 	if (p->sched_class == rq->curr->sched_class) {
 		rq->curr->sched_class->check_preempt_curr(rq, p, flags);
 	} else {

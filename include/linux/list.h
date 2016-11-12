@@ -62,6 +62,7 @@ extern void __list_add(struct list_head *new,
 // 2015-03-21 확인
 // 2015-04-11 확인
 // head와 head->next사이에 new를 삽입하는 동작
+// (struct list_head *new -> src, struct list_head *head -> dst`)
 static inline void list_add(struct list_head *new, struct list_head *head)
 {
 	__list_add(new, head, head->next);
