@@ -30,6 +30,7 @@ SCHED_FEAT(NEXT_BUDDY, false)
  * wake-preempt) as that likely will touch the same data, increases
  * cache locality.
  */
+// 2016-11-19
 SCHED_FEAT(LAST_BUDDY, true)
 
 /*

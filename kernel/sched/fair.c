@@ -87,7 +87,8 @@ unsigned int sysctl_sched_child_runs_first __read_mostly;
  * and reduces their over-scheduling. Synchronous workloads will still
  * have immediate wakeup/sleep latencies.
  */
-unsigned int sysctl_sched_wakeup_granularity = 1000000UL;
+// 2017-11-19
+unsigned int sysctl_sched_wakeup_granularity = 1000000UL/*1ms as ns*/;
 unsigned int normalized_sysctl_sched_wakeup_granularity = 1000000UL;
 
 // 2016-10-08
@@ -667,6 +668,8 @@ int sched_proc_update_handler(struct ctl_table *table, int write,
  */
 // 2016-10-22
 // calc_delta_fair(delta_exec, curr)
+// 2016-11-19
+// calc_delta_fair(gran, se);
 static inline unsigned long
 calc_delta_fair(unsigned long delta, struct sched_entity *se)
 {
@@ -3313,6 +3316,13 @@ static unsigned long cpu_avg_load_per_task(int cpu)
 	return 0;
 }
 
+// 2016-11-19
+// task = cpu_stopper_task
+// worker가 fn=active_load_balance_cpu_stop, arg=busiest로 셋된 상태
+//
+// 이전에 체크한 시간에서, HZ 만큼 시간이 지난 경우,
+// 이전에 wakee된 task 수와, 마지막 주기 시간을 변경
+// 그럼으로, HZ(100ms)안의 값만 유효하다.
 static void record_wakee(struct task_struct *p)
 {
 	/*
@@ -3325,19 +3335,24 @@ static void record_wakee(struct task_struct *p)
 		current->wakee_flip_decay_ts = jiffies;
 	}
 
+	// last_wakee와 전달인자가 다르면, 
+	// 전달인자로 전달된 task로 replace 된다.
 	if (current->last_wakee != p) {
 		current->last_wakee = p;
 		current->wakee_flips++;
 	}
 }
 
+// 2016-11-19
+// task = cpu_stopper_task
+// worker가 fn=active_load_balance_cpu_stop, arg=busiest로 셋된 상태
 static void task_waking_fair(struct task_struct *p)
 {
 	struct sched_entity *se = &p->se;
 	struct cfs_rq *cfs_rq = cfs_rq_of(se);
 	u64 min_vruntime;
 
-#ifndef CONFIG_64BIT
+#ifndef CONFIG_64BIT	// not define
 	u64 min_vruntime_copy;
 
 	do {
@@ -3835,10 +3850,11 @@ migrate_task_rq_fair(struct task_struct *p, int next_cpu)
 }
 #endif /* CONFIG_SMP */
 
+// 2016-11-19
 static unsigned long
 wakeup_gran(struct sched_entity *curr, struct sched_entity *se)
 {
-	unsigned long gran = sysctl_sched_wakeup_granularity;
+	unsigned long gran = sysctl_sched_wakeup_granularity/*1000000UL, 1ms as ns*/;
 
 	/*
 	 * Since its curr running now, convert the gran from real-time
@@ -3872,35 +3888,46 @@ wakeup_gran(struct sched_entity *curr, struct sched_entity *se)
  */
 // 2016-11-12
 // glance
+// 2016-11-19
 static int
 wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se)
 {
 	s64 gran, vdiff = curr->vruntime - se->vruntime;
 
+	// 선점을 시도하려는 task의 수행시간이 더 길다면 -1리턴 
 	if (vdiff <= 0)
 		return -1;
 
+	// 1ms of ns will return
+	// gran은 최소 수행 시간범위로 생각된다.
 	gran = wakeup_gran(curr, se);
+	// vdiff가 최소 수행 시간 보다 더 크다면, 선점을 시도한다.
 	if (vdiff > gran)
 		return 1;
 
 	return 0;
 }
 
+// 2016-11-19
 static void set_last_buddy(struct sched_entity *se)
 {
 	if (entity_is_task(se) && unlikely(task_of(se)->policy == SCHED_IDLE))
 		return;
 
+	//  #define for_each_sched_entity(se) \
+	//                  for (; se; se = NULL)
 	for_each_sched_entity(se)
 		cfs_rq_of(se)->last = se;
 }
 
+// 2016-11-19
 static void set_next_buddy(struct sched_entity *se)
 {
 	if (entity_is_task(se) && unlikely(task_of(se)->policy == SCHED_IDLE))
 		return;
 
+	//  #define for_each_sched_entity(se) \
+	//                   for (; se; se = NULL)
 	for_each_sched_entity(se)
 		cfs_rq_of(se)->next = se;
 }
@@ -3978,6 +4005,7 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
 	update_curr(cfs_rq_of(se));
 	BUG_ON(!pse);
 	// 2016-11-12 여기까지. wakeup_preempt_entity 분석 전
+	// 2016-11-19 start
 	if (wakeup_preempt_entity(se, pse) == 1) {
 		/*
 		 * Bias pick_next to pick the sched entity that is
@@ -3991,6 +4019,7 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
 	return;
 
 preempt:
+	// 2016-11-19
 	resched_task(curr);
 	/*
 	 * Only set the backward buddy when the current task is still
@@ -4004,6 +4033,7 @@ preempt:
 	if (unlikely(!se->on_rq || curr == rq->idle))
 		return;
 
+	// LAST_BUDDY true
 	if (sched_feat(LAST_BUDDY) && scale && entity_is_task(se))
 		set_last_buddy(se);
 }
@@ -4218,6 +4248,7 @@ static bool yield_to_task_fair(struct rq *rq, struct task_struct *p, bool preemp
 // 2016-10-15, if HZ is 100, max_load_balance_interval is 10. 
 static unsigned long __read_mostly max_load_balance_interval = HZ/10;
 
+// 2016-11-19
 #define LBF_ALL_PINNED	0x01
 #define LBF_NEED_BREAK	0x02
 #define LBF_SOME_PINNED 0x04
@@ -4252,6 +4283,11 @@ struct lb_env {
  * Both runqueues must be locked.
  */
 // 2016-10-22
+// 2016-11-19
+// 1. src_rq에서 p를 제거
+// 2. p에 대해서, 설정값 정리해서 dst_cpu 설정
+// 3. dest_cpu에 p를 enqueue시킨다.
+// 4. preemption이 필요한지 점검 해서, 필요한 경우, smp_send_reschedule()을 수행한다.
 static void move_task(struct task_struct *p, struct lb_env *env)
 {
 	// 2016-10-22 시작
@@ -4260,7 +4296,10 @@ static void move_task(struct task_struct *p, struct lb_env *env)
 	set_task_cpu(p, env->dst_cpu);
 	// 2016-11-05
 	activate_task(env->dst_rq, p, 0);
+	// 2016-11-12 end
+	// 2016-11-12 start
 	check_preempt_curr(env->dst_rq, p, 0);
+	// 2016-11-19 end
 }
 
 /*
@@ -4466,7 +4505,8 @@ static int move_tasks(struct lb_env *env)
 		//
 		// 2016-10-22 시작
 		move_task(p, env);
-		pulled++;
+		// 2016-11-19 end
+		pulled++;	// task가 moved되었다?
 		env->imbalance -= load;
 
 #ifdef CONFIG_PREEMPT
@@ -4475,6 +4515,7 @@ static int move_tasks(struct lb_env *env)
 		 * kernels will stop after the first task is pulled to minimize
 		 * the critical section.
 		 */
+		// 2016-11-19, 우리는 CPU_NEWLY_IDLE이다.
 		if (env->idle == CPU_NEWLY_IDLE)
 			break;
 #endif
@@ -5538,10 +5579,12 @@ static struct rq *find_busiest_queue(struct lb_env *env,
 // 2016-10-08
 DEFINE_PER_CPU(cpumask_var_t, load_balance_mask);
 
+// 2016-11-19
 static int need_active_balance(struct lb_env *env)
 {
 	struct sched_domain *sd = env->sd;
 
+	// 2016-11-19, CPU_NEWLY_IDLE
 	if (env->idle == CPU_NEWLY_IDLE) {
 
 		/*
@@ -5549,6 +5592,10 @@ static int need_active_balance(struct lb_env *env)
 		 * higher numbered CPUs in order to pack all tasks in the
 		 * lowest numbered CPUs.
 		 */
+		// 2016-11-19
+		// ASYM_PACKING은 가장 낮은 수의 CPU의 all tasks을 높은 수의 CPU(바쁘더라도)로 
+		// 강제로 migrations하는게 필요함
+		// NOTE: env->src_cpu는 most busiest
 		if ((sd->flags & SD_ASYM_PACKING) && env->src_cpu > env->dst_cpu)
 			return 1;
 	}
@@ -5608,6 +5655,7 @@ static int load_balance(int this_cpu, struct rq *this_rq,
 			struct sched_domain *sd, enum cpu_idle_type idle,
 			int *continue_balancing)
 {
+	// ld_moved : total 값 성격
 	int ld_moved, cur_ld_moved, active_balance = 0;
 	struct sched_group *group;
 	struct rq *busiest;
@@ -5689,13 +5737,16 @@ more_balance:
 		 */
 		// 2016-10-15 시작
 		cur_ld_moved = move_tasks(&env);
+		// add total
 		ld_moved += cur_ld_moved;
 		double_rq_unlock(env.dst_rq, busiest);
+		// 수작업으로 interrupts 복원
 		local_irq_restore(flags);
 
 		/*
 		 * some other cpu did the load balance for us.
 		 */
+		// 2016-11-19
 		if (cur_ld_moved && env.dst_cpu != smp_processor_id())
 			resched_cpu(env.dst_cpu);
 
@@ -5729,7 +5780,7 @@ more_balance:
 			env.dst_cpu	 = env.new_dst_cpu;
 			env.flags	&= ~LBF_SOME_PINNED;
 			env.loop	 = 0;
-			env.loop_break	 = sched_nr_migrate_break;
+			env.loop_break	 = sched_nr_migrate_break/*32*/;
 
 			/* Prevent to re-select dst_cpu via env's cpus */
 			cpumask_clear_cpu(env.dst_cpu, env.cpus);
@@ -5742,6 +5793,7 @@ more_balance:
 		}
 
 		/* All tasks on this runqueue were pinned by CPU affinity */
+		// 2016-11-15, LBF_ALL_PINNED로 가정
 		if (unlikely(env.flags & LBF_ALL_PINNED)) {
 			cpumask_clear_cpu(cpu_of(busiest), cpus);
 			if (!cpumask_empty(cpus)) {
@@ -5754,16 +5806,18 @@ more_balance:
 	}
 
 	if (!ld_moved) {
-		schedstat_inc(sd, lb_failed[idle]);
+		schedstat_inc(sd, lb_failed[idle]);	// NOP
 		/*
 		 * Increment the failure counter only on periodic balance.
 		 * We do not want newidle balance, which can be very
 		 * frequent, pollute the failure counter causing
 		 * excessive cache_hot migrations and active balances.
 		 */
+		// 2016-11-19, 우리는 CPU_NEWLY_IDLE임.
 		if (idle != CPU_NEWLY_IDLE)
 			sd->nr_balance_failed++;
 
+		// 2016-11-19
 		if (need_active_balance(&env)) {
 			raw_spin_lock_irqsave(&busiest->lock, flags);
 
@@ -5792,6 +5846,7 @@ more_balance:
 			raw_spin_unlock_irqrestore(&busiest->lock, flags);
 
 			if (active_balance) {
+				// 2016-11-19, ing
 				stop_one_cpu_nowait(cpu_of(busiest),
 					active_load_balance_cpu_stop, busiest,
 					&busiest->active_balance_work);
@@ -6779,6 +6834,7 @@ const struct sched_class fair_sched_class = {
 
 	// 2016-11-12
 	.check_preempt_curr	= check_preempt_wakeup,
+	// 2016-11-19
 
 	.pick_next_task		= pick_next_task_fair,
 	.put_prev_task		= put_prev_task_fair,
@@ -6791,6 +6847,7 @@ const struct sched_class fair_sched_class = {
 	.rq_online		= rq_online_fair,
 	.rq_offline		= rq_offline_fair,
 
+	// 2016-11-19
 	.task_waking		= task_waking_fair,
 #endif
 

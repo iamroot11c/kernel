@@ -1337,6 +1337,9 @@ static inline void double_rq_lock(struct rq *rq1, struct rq *rq2)
  * Note this does not restore interrupts like task_rq_unlock,
  * you need to do so manually after calling.
  */
+// 2016-11-19
+// interrupts 복구하는 기능이 없기때문에,
+// 수작업으로 복구해야만 한다.
 static inline void double_rq_unlock(struct rq *rq1, struct rq *rq2)
 	__releases(rq1->lock)
 	__releases(rq2->lock)

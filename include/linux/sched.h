@@ -132,6 +132,9 @@ print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq);
  * modifying one set can't modify the other one by
  * mistake.
  */
+// 2016-11-19
+// TASK_RUNNING ~ EXIT_DEAD은 공식적인 state로 보인다.
+// http://izreal.egloos.com/v/36669 그림 참고
 #define TASK_RUNNING		0 // 2016-07-01
 // 2016-09-24
 #define TASK_INTERRUPTIBLE	1
@@ -142,11 +145,17 @@ print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq);
 /* in tsk->exit_state */
 #define EXIT_ZOMBIE		16
 #define EXIT_DEAD		32
+
+// 2016-11-19
+// 아래는 커널 내부적으로 다루는 상태로 보인다.
+// OOP의 private 값으로 개념 잡는다.
 /* in tsk->state again */
 #define TASK_DEAD		64
 // 2016-03-05
 // 2016-09-24
 #define TASK_WAKEKILL		128
+// 2016-11-19
+// https://lkml.org/lkml/2009/9/16/152
 #define TASK_WAKING		256
 #define TASK_PARKED		512
 #define TASK_STATE_MAX		1024
@@ -781,6 +790,7 @@ enum cpu_idle_type {
     // 2016-10-15
 	CPU_IDLE,
 	CPU_NOT_IDLE,
+    // 2016-11-19
 	CPU_NEWLY_IDLE,
 	CPU_MAX_IDLE_TYPES
 };
@@ -1088,6 +1098,7 @@ struct task_struct {
 	struct llist_node wake_entry;
     // 2016-10-15
 	int on_cpu;
+    // 2016-11-19
 	struct task_struct *last_wakee;
 	unsigned long wakee_flips;
 	unsigned long wakee_flip_decay_ts;
@@ -2501,6 +2512,7 @@ static inline void clear_tsk_need_resched(struct task_struct *tsk)
 	clear_tsk_thread_flag(tsk,TIF_NEED_RESCHED);
 }
 
+// 2016-11-19
 static inline int test_tsk_need_resched(struct task_struct *tsk)
 {
 	return unlikely(test_tsk_thread_flag(tsk,TIF_NEED_RESCHED));

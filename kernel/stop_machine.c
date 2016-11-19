@@ -25,21 +25,26 @@
  * Structure to determine completion condition and record errors.  May
  * be shared by works on different cpus.
  */
+// 2016-11-19
 struct cpu_stop_done {
 	atomic_t		nr_todo;	/* nr left to execute */
 	bool			executed;	/* actually executed? */
 	int			ret;		/* collected return value */
+	// 2016-11-19
 	struct completion	completion;	/* fired if nr_todo reaches 0 */
 };
 
 /* the actual stopper, one per every possible cpu, enabled on online cpus */
+// 2016-11-19
 struct cpu_stopper {
 	spinlock_t		lock;
 	bool			enabled;	/* is this stopper enabled? */
 	struct list_head	works;		/* list of pending works */
 };
 
+// 2016-11-19
 static DEFINE_PER_CPU(struct cpu_stopper, cpu_stopper);
+// 2016-11-19
 static DEFINE_PER_CPU(struct task_struct *, cpu_stopper_task);
 static bool stop_machine_initialized = false;
 
@@ -51,17 +56,26 @@ static void cpu_stop_init_done(struct cpu_stop_done *done, unsigned int nr_todo)
 }
 
 /* signal completion unless @done is NULL */
+// 2016-11-19
+// cpu_stop_signal_done(work->done, false);
 static void cpu_stop_signal_done(struct cpu_stop_done *done, bool executed)
 {
+	// 2016-11-19
+	// stop_one_cpu_nowait에서 fn, arg 필드만 설정되었기 때문에,
+	// 아래는 실행되지 않을 것이다.
+	// stop_one_cpu()에서는 done 필드가 셋팅된다.
 	if (done) {
 		if (executed)
 			done->executed = true;
+		// 값이 0, 할게 더 이상 없다면, complete 수행
 		if (atomic_dec_and_test(&done->nr_todo))
 			complete(&done->completion);
 	}
 }
 
 /* queue @work to @stopper.  if offline, @work is completed immediately */
+// 2016-11-19
+// fn=active_load_balance_cpu_stop, arg=busiest
 static void cpu_stop_queue_work(unsigned int cpu, struct cpu_stop_work *work)
 {
 	struct cpu_stopper *stopper = &per_cpu(cpu_stopper, cpu);
@@ -73,8 +87,11 @@ static void cpu_stop_queue_work(unsigned int cpu, struct cpu_stop_work *work)
 
 	if (stopper->enabled) {
 		list_add_tail(&work->list, &stopper->works);
+		// 2016-11-19, start
 		wake_up_process(p);
 	} else
+		// 2016-11-19 기준으로 실제 하는 것은 없다.
+		// work->done == NULL 일 것임으로
 		cpu_stop_signal_done(work->done, false);
 
 	spin_unlock_irqrestore(&stopper->lock, flags);
@@ -128,9 +145,14 @@ int stop_one_cpu(unsigned int cpu, cpu_stop_fn_t fn, void *arg)
  * CONTEXT:
  * Don't care.
  */
+// 2016-11-19
+// stop_one_cpu_nowait(cpu_of(busiest),
+//                     active_load_balance_cpu_stop, busiest,
+//                     &busiest->active_balance_work);
 void stop_one_cpu_nowait(unsigned int cpu, cpu_stop_fn_t fn, void *arg,
 			struct cpu_stop_work *work_buf)
 {
+	// fn=active_load_balance_cpu_stop, arg=busiest
 	*work_buf = (struct cpu_stop_work){ .fn = fn, .arg = arg, };
 	cpu_stop_queue_work(cpu, work_buf);
 }

@@ -24,6 +24,7 @@
  */
 // 2016-09-24
 // 2016-10-01
+// 2016-11-19
 struct completion {
 	unsigned int done;
 	wait_queue_head_t wait;

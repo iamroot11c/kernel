@@ -539,6 +539,12 @@ static inline void init_hrtick(void)
 // resched_task(rq->curr);
 // 인자로 넘어온 태스크 p가 리스케줄링할지 여부가 설정되지 않은 경우
 // 플래그 설정
+// 2016-11-19
+// TIF_NEED_RESCHED flag가 설정되지 않은 task에 대해서
+// TIF_NEED_RESCHED를 설정하고
+// 다른 cpu에서 실행될 조건일 때,  smp_send_reschedule() 수행
+// 2016-11-19
+// resched_task(cpu_curr(cpu));
 void resched_task(struct task_struct *p)
 {
 	int cpu;
@@ -566,13 +572,18 @@ void resched_task(struct task_struct *p)
 		smp_send_reschedule(cpu);
 }
 
+// 2016-11-19
+// resched_cpu(env.dst_cpu);
 void resched_cpu(int cpu)
 {
 	struct rq *rq = cpu_rq(cpu);
 	unsigned long flags;
 
+	// cpu를 잡기 위해 시도해 보고,
+	// 잡을 수 없으면, resched_task 포기한다.
 	if (!raw_spin_trylock_irqsave(&rq->lock, flags))
 		return;
+	// 2016-11-19
 	resched_task(cpu_curr(cpu));
 	raw_spin_unlock_irqrestore(&rq->lock, flags);
 }
@@ -1581,6 +1592,9 @@ static void ttwu_queue(struct task_struct *p, int cpu)
 // 2015-10-17 glance;
 // 2016-03-05 glance
 // try_to_wake_up(p, 1, 0)
+// 2016-11-19 glance more
+// try_to_wake_up(p, TASK_NORMAL, 0);
+// worker가 fn=active_load_balance_cpu_stop, arg=busiest로 셋된 상태
 static int
 try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 {
@@ -1609,6 +1623,9 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	 * If the owning (remote) cpu is still in the middle of schedule() with
 	 * this task as prev, wait until its done referencing the task.
 	 */
+	// 2016-11-19,
+	// 전달 인자가 cpu_stopper_task였다.
+	// 이 것이, 현재 on_cpu라면 cpu_relax 호출 해서, on_cpu 상태 탈출을 기대함.
 	while (p->on_cpu)
 		cpu_relax();
 	/*
@@ -1617,10 +1634,16 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	smp_rmb();
 
 	p->sched_contributes_to_load = !!task_contributes_to_load(p);
+	// 2016-11-19
+	// https://lkml.org/lkml/2009/9/16/152
 	p->state = TASK_WAKING;
 
+	// 2016-11-19, fair_sched_class 기준으로 분석
+	// current->last_wakee가 p로 설정
+	// 현재는 cpu_stopper_task이다.
 	if (p->sched_class->task_waking)
 		p->sched_class->task_waking(p);
+	// 2016-11-19, 여기까지
 
 	cpu = select_task_rq(p, SD_BALANCE_WAKE, wake_flags);
 	if (task_cpu(p) != cpu) {
@@ -1706,6 +1729,9 @@ out:
  */
 // 2015-08-08 glance;
 // 2015-10-17
+// 2016-11-19
+// task = cpu_stopper_task
+// worker가 fn=active_load_balance_cpu_stop, arg=busiest로 셋된 상태
 int wake_up_process(struct task_struct *p)
 {
 	WARN_ON(task_is_stopped_or_traced(p));
@@ -2767,6 +2793,8 @@ EXPORT_SYMBOL(default_wake_function);
 // 2015-01-31
 // nr_exclusive가 0이라면, 대기큐의 모든 것을 깨운다.
 // __wake_up_common(q, TASK_NORMAL, 1, 0, NULL);
+// 2016-11-19
+// __wake_up_common(&x->wait, TASK_NORMAL, 1, 0, NULL);
 static void __wake_up_common(wait_queue_head_t *q, unsigned int mode,
 			int nr_exclusive, int wake_flags, void *key)
 {
@@ -2884,6 +2912,7 @@ EXPORT_SYMBOL_GPL(__wake_up_sync);	/* For internal use only */
  * It may be assumed that this function implies a write memory barrier before
  * changing the task state if and only if any tasks are woken up.
  */
+// 2016-11-19
 void complete(struct completion *x)
 {
 	unsigned long flags;

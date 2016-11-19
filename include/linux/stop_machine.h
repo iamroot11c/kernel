@@ -22,8 +22,11 @@ typedef int (*cpu_stop_fn_t)(void *arg);
 
 struct cpu_stop_work {
 	struct list_head	list;		/* cpu_stopper->works */
+    // 2016-11-19
+    // fn=active_load_balance_cpu_stop, arg=busiest
 	cpu_stop_fn_t		fn;
 	void			*arg;
+    // 2016-11-19
 	struct cpu_stop_done	*done;
 };
 
