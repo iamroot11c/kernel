@@ -36,6 +36,7 @@
  *
  * Return whether list is empty before adding.
  */
+// 2016-11-26
 bool llist_add_batch(struct llist_node *new_first, struct llist_node *new_last,
 		     struct llist_head *head)
 {

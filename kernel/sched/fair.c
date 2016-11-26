@@ -3298,12 +3298,14 @@ static unsigned long target_load(int cpu, int type)
 }
 
 // 2016-10-15
+// 2016-11-26
 static unsigned long power_of(int cpu)
 {
 	return cpu_rq(cpu)->cpu_power;
 }
 
 // 2016-10-15
+// 2016-11-26
 static unsigned long cpu_avg_load_per_task(int cpu)
 {
 	struct rq *rq = cpu_rq(cpu);
@@ -3368,7 +3370,7 @@ static void task_waking_fair(struct task_struct *p)
 	record_wakee(p);
 }
 
-#ifdef CONFIG_FAIR_GROUP_SCHED
+#ifdef CONFIG_FAIR_GROUP_SCHED // not define
 /*
  * effective_load() calculates the load change as seen from the root_task_group
  *
@@ -3476,6 +3478,8 @@ static long effective_load(struct task_group *tg, int cpu, long wl, long wg)
 }
 #else
 
+// 2016-11-26
+// effective_load(tg, this_cpu, -weight, -weight)
 static inline unsigned long effective_load(struct task_group *tg, int cpu,
 		unsigned long wl, unsigned long wg)
 {
@@ -3484,6 +3488,8 @@ static inline unsigned long effective_load(struct task_group *tg, int cpu,
 
 #endif
 
+
+// 2016-11-26
 static int wake_wide(struct task_struct *p)
 {
 	int factor = this_cpu_read(sd_llc_size);
@@ -3499,6 +3505,10 @@ static int wake_wide(struct task_struct *p)
 		 * resource, so if waker is far more hot, prefer to leave
 		 * it alone.
 		 */
+		// 현재 task가 인자로 전달된 task의 wakee_flips와 factor를
+		// 곱하것보다 크다는 것은 현재 task가 매우 바뿐것으로 보여짐
+		// wakee
+		// waker
 		if (current->wakee_flips > (factor * p->wakee_flips))
 			return 1;
 	}
@@ -3506,6 +3516,8 @@ static int wake_wide(struct task_struct *p)
 	return 0;
 }
 
+// 2016-11-26
+// wake_affine(affine_sd, p, 0 & WF_SYNC)
 static int wake_affine(struct sched_domain *sd, struct task_struct *p, int sync)
 {
 	s64 this_load, load;
@@ -3537,6 +3549,9 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p, int sync)
 		tg = task_group(current);
 		weight = current->se.load.weight;
 
+		// CONFIG_FAIR_GROUP_SCHED 미 정의로 
+		// this_load += (-weight);
+		// load += 0; 
 		this_load += effective_load(tg, this_cpu, -weight, -weight);
 		load += effective_load(tg, prev_cpu, 0, -weight);
 	}
@@ -3577,7 +3592,7 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p, int sync)
 	if (sync && balanced)
 		return 1;
 
-	schedstat_inc(p, se.statistics.nr_wakeups_affine_attempts);
+	schedstat_inc(p, se.statistics.nr_wakeups_affine_attempts); // No OP.
 	tl_per_task = cpu_avg_load_per_task(this_cpu);
 
 	if (balanced ||
@@ -3600,6 +3615,8 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p, int sync)
  * find_idlest_group finds and returns the least busy CPU group within the
  * domain.
  */
+// 2016-11-26
+// find_idlest_group(sd, p, cpu, load_idx)
 static struct sched_group *
 find_idlest_group(struct sched_domain *sd, struct task_struct *p,
 		  int this_cpu, int load_idx)
@@ -3635,7 +3652,7 @@ find_idlest_group(struct sched_domain *sd, struct task_struct *p,
 		}
 
 		/* Adjust by relative CPU power of the group */
-		avg_load = (avg_load * SCHED_POWER_SCALE) / group->sgp->power;
+		avg_load = (avg_load * SCHED_POWER_SCALE/*1024*/) / group->sgp->power;
 
 		if (local_group) {
 			this_load = avg_load;
@@ -3646,6 +3663,8 @@ find_idlest_group(struct sched_domain *sd, struct task_struct *p,
 	} while (group = group->next, group != sd->groups);
 
 	if (!idlest || 100*this_load < imbalance*min_load)
+		// 가장 바쁘지않은 그룹을 찾았어도 임계값(평균값) 보다
+		// 크면 바쁜상태이므로 NULL을 리턴
 		return NULL;
 	return idlest;
 }
@@ -3653,6 +3672,8 @@ find_idlest_group(struct sched_domain *sd, struct task_struct *p,
 /*
  * find_idlest_cpu - find the idlest cpu among the cpus in group.
  */
+// 2016-11-26
+// find_idlest_cpu(group, p, cpu)
 static int
 find_idlest_cpu(struct sched_group *group, struct task_struct *p, int this_cpu)
 {
@@ -3661,9 +3682,14 @@ find_idlest_cpu(struct sched_group *group, struct task_struct *p, int this_cpu)
 	int i;
 
 	/* Traverse only the allowed CPUs */
+	// #define for_each_cpu_and(cpu, mask, and)                \
+	// for ((cpu) = -1;                        \
+        //     (cpu) = cpumask_next_and((cpu), (mask), (and)),     \
+        //     (cpu) < nr_cpu_ids;)
 	for_each_cpu_and(i, sched_group_cpus(group), tsk_cpus_allowed(p)) {
 		load = weighted_cpuload(i);
 
+		// load 값이 작은 것을 찾되 만약 load 값이 같은 경우 현재 CPU(this_cpu)를 우선함
 		if (load < min_load || (load == min_load && i == this_cpu)) {
 			min_load = load;
 			idlest = i;
@@ -3676,6 +3702,7 @@ find_idlest_cpu(struct sched_group *group, struct task_struct *p, int this_cpu)
 /*
  * Try and locate an idle CPU in the sched_domain.
  */
+// 2016-11-26
 static int select_idle_sibling(struct task_struct *p, int target)
 {
 	struct sched_domain *sd;
@@ -3695,9 +3722,12 @@ static int select_idle_sibling(struct task_struct *p, int target)
 	 * Otherwise, iterate the domains and find an elegible idle cpu.
 	 */
 	sd = rcu_dereference(per_cpu(sd_llc, target));
+	// #define for_each_lower_domain(sd) for (; sd; sd = sd->child)
+	// for (; sd; sd = sd->child)
 	for_each_lower_domain(sd) {
 		sg = sd->groups;
 		do {
+			// 비트맵에 겹치는 것이 있는지 확인
 			if (!cpumask_intersects(sched_group_cpus(sg),
 						tsk_cpus_allowed(p)))
 				goto next;
@@ -3729,6 +3759,8 @@ done:
  *
  * preempt must be disabled.
  */
+// 2016-11-26
+// select_task_rq_fair(p, SD_BALANCE_WAKE, wake_flags/*0*/);
 static int
 select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flags)
 {
@@ -3743,12 +3775,19 @@ select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flags)
 		return prev_cpu;
 
 	if (sd_flag & SD_BALANCE_WAKE) {
+		// 현재 CPU가 인자로 전달된 task에 허락된 CPU인지 확인 
 		if (cpumask_test_cpu(cpu, tsk_cpus_allowed(p)))
 			want_affine = 1;
 		new_cpu = prev_cpu;
 	}
 
 	rcu_read_lock();
+	// #define for_each_domain(cpu, __sd) \
+	//     for (__sd = rcu_dereference_check_sched_domain(cpu_rq(cpu)->sd); \
+	//             __sd; __sd = __sd->parent)
+	// for (tmp = rcu_dereference_check_sched_domain(cpu_rq(cpu)->sd);
+	//      tmp;
+	//      tmp = tmp->parent)
 	for_each_domain(cpu, tmp) {
 		if (!(tmp->flags & SD_LOAD_BALANCE))
 			continue;
@@ -3768,9 +3807,11 @@ select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flags)
 	}
 
 	if (affine_sd) {
+		// 2016-11-26
 		if (cpu != prev_cpu && wake_affine(affine_sd, p, sync))
 			prev_cpu = cpu;
 
+		// 2016-11-26
 		new_cpu = select_idle_sibling(p, prev_cpu);
 		goto unlock;
 	}
@@ -3788,15 +3829,18 @@ select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flags)
 		if (sd_flag & SD_BALANCE_WAKE)
 			load_idx = sd->wake_idx;
 
+		// 가장 여유로운 그룹을 찾음
 		group = find_idlest_group(sd, p, cpu, load_idx);
 		if (!group) {
 			sd = sd->child;
 			continue;
 		}
 
+		// 가장 여유로운 CPU를 찾음
 		new_cpu = find_idlest_cpu(group, p, cpu);
 		if (new_cpu == -1 || new_cpu == cpu) {
 			/* Now try balancing at a lower domain level of cpu */
+			// new_cpu는 현재 cpu와 같으면 자식을 검사
 			sd = sd->child;
 			continue;
 		}
@@ -5850,6 +5894,9 @@ more_balance:
 				stop_one_cpu_nowait(cpu_of(busiest),
 					active_load_balance_cpu_stop, busiest,
 					&busiest->active_balance_work);
+				// 2016-11-26 분석완료
+				//
+				// 2016-11-26 여기까지 진행;
 			}
 
 			/*
@@ -6840,6 +6887,7 @@ const struct sched_class fair_sched_class = {
 	.put_prev_task		= put_prev_task_fair,
 
 #ifdef CONFIG_SMP
+	// 2016-11-26
 	.select_task_rq		= select_task_rq_fair,
 	// 2016-11-05
 	.migrate_task_rq	= migrate_task_rq_fair,

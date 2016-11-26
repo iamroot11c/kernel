@@ -134,6 +134,7 @@ __printf(1, 2) __cold int printk_sched(const char *fmt, ...);
  * printk_ratelimited() or plain old __ratelimit().
  */
 extern int __printk_ratelimit(const char *func);
+// 2016-11-26
 #define printk_ratelimit() __printk_ratelimit(__func__)
 extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
 				   unsigned int interval_msec);

@@ -277,11 +277,14 @@ static inline int bitmap_equal(const unsigned long *src1,
 		return __bitmap_equal(src1, src2, nbits);
 }
 
+// 2016-11-26;
+// bitmap_intersects(cpumask_bits(src1p), cpumask_bits(src2p),
+//                                             nr_cpumask_bits/*2*/)
 static inline int bitmap_intersects(const unsigned long *src1,
 			const unsigned long *src2, int nbits)
 {
 	if (small_const_nbits(nbits))
-		return ((*src1 & *src2) & BITMAP_LAST_WORD_MASK(nbits)) != 0;
+		return ((*src1 & *src2) & BITMAP_LAST_WORD_MASK(nbits)/*3*/) != 0;
 	else
 		return __bitmap_intersects(src1, src2, nbits);
 }

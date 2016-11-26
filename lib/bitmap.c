@@ -232,6 +232,8 @@ int __bitmap_andnot(unsigned long *dst, const unsigned long *bitmap1,
 }
 EXPORT_SYMBOL(__bitmap_andnot);
 
+// 2016-11-26
+// __bitmap_intersects(src1, src2, nbits/*2*/)
 int __bitmap_intersects(const unsigned long *bitmap1,
 				const unsigned long *bitmap2, int bits)
 {
@@ -241,7 +243,7 @@ int __bitmap_intersects(const unsigned long *bitmap1,
 			return 1;
 
 	if (bits % BITS_PER_LONG)
-		if ((bitmap1[k] & bitmap2[k]) & BITMAP_LAST_WORD_MASK(bits))
+		if ((bitmap1[k] & bitmap2[k]) & BITMAP_LAST_WORD_MASK(bits)/*3*/)
 			return 1;
 	return 0;
 }

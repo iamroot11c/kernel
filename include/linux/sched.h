@@ -812,6 +812,7 @@ enum cpu_idle_type {
 #define SD_BALANCE_EXEC		0x0004	/* Balance on exec */
 #define SD_BALANCE_FORK		0x0008	/* Balance on fork, clone */
 #define SD_BALANCE_WAKE		0x0010  /* Balance on wakeup */
+// 2016-11-26
 #define SD_WAKE_AFFINE		0x0020	/* Wake task to waking CPU */
 // 2016-10-15
 #define SD_SHARE_CPUPOWER	0x0080	/* Domain members share cpu power */
@@ -841,10 +842,12 @@ struct sched_domain {
 	/* These fields must be setup */
 	struct sched_domain *parent;	/* top domain must be null terminated */
 	struct sched_domain *child;	/* bottom domain must be null terminated */
+    // 2016-11-26
 	struct sched_group *groups;	/* the balancing groups of the domain */
 	unsigned long min_interval;	/* Minimum balance interval ms */
 	unsigned long max_interval;	/* Maximum balance interval ms */
 	unsigned int busy_factor;	/* less balancing by factor if busy */
+    // 2016-11-26
 	unsigned int imbalance_pct;	/* No balance until over watermark */
 	unsigned int cache_nice_tries;	/* Leave cache hot tasks for # tries */
 	unsigned int busy_idx;
@@ -1136,6 +1139,7 @@ struct task_struct {
 #endif
 
 	unsigned int policy;
+    // 2016-11-26
 	int nr_cpus_allowed;
     // 2016-10-15
 	cpumask_t cpus_allowed;
@@ -1187,6 +1191,7 @@ struct task_struct {
 
 	/* Revert to default priority/policy when forking */
 	unsigned sched_reset_on_fork:1;
+    // 2016-11-26
 	unsigned sched_contributes_to_load:1;
 
 	pid_t pid;

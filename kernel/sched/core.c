@@ -854,6 +854,8 @@ static void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 // 2016-10-01
 // 2016-11-05
 // activate_task(env->dst_rq, p, 0);
+// 2016-11-26
+// activate_task(rq, p, ENQUEUE_WAKEUP | ENQUEUE_WAKING);
 void activate_task(struct rq *rq, struct task_struct *p, int flags)
 {
 	if (task_contributes_to_load(p))
@@ -1264,6 +1266,8 @@ EXPORT_SYMBOL_GPL(kick_process);
 /*
  * ->cpus_allowed is protected by both rq->lock and p->pi_lock
  */
+// 2016-11-26(glance)
+// select_fallback_rq(task_cpu(p), p)
 static int select_fallback_rq(int cpu, struct task_struct *p)
 {
 	int nid = cpu_to_node(cpu);
@@ -1337,9 +1341,12 @@ out:
 /*
  * The caller (fork, wakeup) owns p->pi_lock, ->cpus_allowed is stable.
  */
+// 2016-11-26 
+// select_task_rq(p, SD_BALANCE_WAKE, wake_flags/*0*/)
 static inline
 int select_task_rq(struct task_struct *p, int sd_flags, int wake_flags)
 {
+	// select_task_rq_fair(p, sd_flags, wake_flags);
 	int cpu = p->sched_class->select_task_rq(p, sd_flags, wake_flags);
 
 	/*
@@ -1354,6 +1361,7 @@ int select_task_rq(struct task_struct *p, int sd_flags, int wake_flags)
 	 */
 	if (unlikely(!cpumask_test_cpu(cpu, tsk_cpus_allowed(p)) ||
 		     !cpu_online(cpu)))
+		// 2016-11-26 
 		cpu = select_fallback_rq(task_cpu(p), p);
 
 	return cpu;
@@ -1413,6 +1421,8 @@ ttwu_stat(struct task_struct *p, int cpu, int wake_flags)
 
 // 2016-10-01
 // ttwu_activate(rq, p, ENQUEUE_WAKEUP);
+// 2016-11-26
+// ttwu_activate(rq, p, ENQUEUE_WAKEUP/*1*/ | ENQUEUE_WAKING/*4*/);
 static void ttwu_activate(struct rq *rq, struct task_struct *p, int en_flags)
 {
 	activate_task(rq, p, en_flags);
@@ -1428,6 +1438,8 @@ static void ttwu_activate(struct rq *rq, struct task_struct *p, int en_flags)
  */
 // 2016-10-01
 // ttwu_do_wakeup(rq, p, 0);
+// 2016-11-26
+// ttwu_do_wakeup(rq, p, 0); 
 static void
 ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags)
 {
@@ -1437,7 +1449,7 @@ ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags)
 	trace_sched_wakeup(p, true);
 
 	// 2016-10-08 시작
-	p->state = TASK_RUNNING;
+	p->state = TASK_RUNNING; // 실행 상태로 변경(실행 준비가 됨) 
 #ifdef CONFIG_SMP
 	// const struct sched_class fair_sched_class에 등록되어 있지 않음
 	if (p->sched_class->task_woken)
@@ -1456,10 +1468,12 @@ ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags)
 #endif
 }
 
+// 2016-11-26
+// ttwu_do_activate(rq, p, 0);
 static void
 ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags)
 {
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
 	if (p->sched_contributes_to_load)
 		rq->nr_uninterruptible--;
 #endif
@@ -1543,24 +1557,32 @@ void scheduler_ipi(void)
 	irq_exit();
 }
 
+// 2016-11-26
 static void ttwu_queue_remote(struct task_struct *p, int cpu)
 {
 	if (llist_add(&p->wake_entry, &cpu_rq(cpu)->wake_list))
+		// CPU의 wake_list에 task의 wake_entry를 추가 전
+		// 비워져있을 때
 		smp_send_reschedule(cpu);
 }
 
+// 2016-11-26
+// cpus_share_cache(i, target)
 bool cpus_share_cache(int this_cpu, int that_cpu)
 {
+	// this_cpu하고 that_cpu하고 같을 때 참을 리턴
 	return per_cpu(sd_llc_id, this_cpu) == per_cpu(sd_llc_id, that_cpu);
 }
 #endif /* CONFIG_SMP */
 
+// 2016-11-26
 static void ttwu_queue(struct task_struct *p, int cpu)
 {
 	struct rq *rq = cpu_rq(cpu);
 
-#if defined(CONFIG_SMP)
-	if (sched_feat(TTWU_QUEUE) && !cpus_share_cache(smp_processor_id(), cpu)) {
+#if defined(CONFIG_SMP) // defined
+	if (sched_feat(TTWU_QUEUE)/*defined*/ && !cpus_share_cache(smp_processor_id(), cpu)) {
+		// 현재 CPU와 인자로 전달된 CPU가 같지않음
 		sched_clock_cpu(cpu); /* sync clocks x-cpu */
 		ttwu_queue_remote(p, cpu);
 		return;
@@ -1568,6 +1590,7 @@ static void ttwu_queue(struct task_struct *p, int cpu)
 #endif
 
 	raw_spin_lock(&rq->lock);
+	// 2016-11-26
 	ttwu_do_activate(rq, p, 0);
 	raw_spin_unlock(&rq->lock);
 }
@@ -1642,9 +1665,11 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	// current->last_wakee가 p로 설정
 	// 현재는 cpu_stopper_task이다.
 	if (p->sched_class->task_waking)
-		p->sched_class->task_waking(p);
+		p->sched_class->task_waking(p); // task_waking_fair
 	// 2016-11-19, 여기까지
 
+	// 2016-11-26 시작
+	// 2016-11-26 
 	cpu = select_task_rq(p, SD_BALANCE_WAKE, wake_flags);
 	if (task_cpu(p) != cpu) {
 		wake_flags |= WF_MIGRATED;
@@ -1652,9 +1677,13 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	}
 #endif /* CONFIG_SMP */
 
+	// 2016-11-26 
 	ttwu_queue(p, cpu);
+
+	//ttwu_queue() 함수 실행이 끝나면
+	//task의 상태가 TASK_RUNNING으로 바뀔것 이다
 stat:
-	ttwu_stat(p, cpu, wake_flags);
+	ttwu_stat(p, cpu, wake_flags); // CONFIG_SCHEDSTATS 미 정의로 No OP.
 out:
 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
 
@@ -5394,8 +5423,11 @@ static void destroy_sched_domains(struct sched_domain *sd, int cpu)
  * the cpumask of the domain), this allows us to quickly tell if
  * two cpus are in the same cache domain, see cpus_share_cache().
  */
+// 2016-11-26
 DEFINE_PER_CPU(struct sched_domain *, sd_llc);
+// 2016-11-26
 DEFINE_PER_CPU(int, sd_llc_size);
+// 2016-11-26
 DEFINE_PER_CPU(int, sd_llc_id);
 DEFINE_PER_CPU(struct sched_domain *, sd_busy);
 DEFINE_PER_CPU(struct sched_domain *, sd_asym);

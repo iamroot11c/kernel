@@ -89,6 +89,7 @@ static void cpu_stop_queue_work(unsigned int cpu, struct cpu_stop_work *work)
 		list_add_tail(&work->list, &stopper->works);
 		// 2016-11-19, start
 		wake_up_process(p);
+		// 2016-11-26 분석완료
 	} else
 		// 2016-11-19 기준으로 실제 하는 것은 없다.
 		// work->done == NULL 일 것임으로

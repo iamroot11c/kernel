@@ -176,6 +176,8 @@ extern bool llist_add_batch(struct llist_node *new_first,
  *
  * Returns true if the list was empty prior to adding this entry.
  */
+// 2016-11-26
+// llist_add(&p->wake_entry, &cpu_rq(cpu)->wake_list)
 static inline bool llist_add(struct llist_node *new, struct llist_head *head)
 {
 	return llist_add_batch(new, new, head);

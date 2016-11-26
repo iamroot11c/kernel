@@ -463,6 +463,8 @@ static inline bool cpumask_equal(const struct cpumask *src1p,
  * @src1p: the first input
  * @src2p: the second input
  */
+// 2016-11-26
+// cpumask_intersects(sched_group_cpus(sg), tsk_cpus_allowed(p)))
 static inline bool cpumask_intersects(const struct cpumask *src1p,
 				     const struct cpumask *src2p)
 {

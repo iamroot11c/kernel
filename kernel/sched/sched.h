@@ -614,10 +614,12 @@ static inline u64 rq_clock_task(struct rq *rq)
  * The domain tree of any CPU may only be accessed from within
  * preempt-disabled sections.
  */
+// 2016-11-26
 #define for_each_domain(cpu, __sd) \
 	for (__sd = rcu_dereference_check_sched_domain(cpu_rq(cpu)->sd); \
 			__sd; __sd = __sd->parent)
 
+// 2016-11-26
 #define for_each_lower_domain(sd) for (; sd; sd = sd->child)
 
 /**
@@ -1024,7 +1026,7 @@ static const u32 prio_to_wmult[40] = {
 
 #define ENQUEUE_WAKEUP		1
 #define ENQUEUE_HEAD		2
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
 #define ENQUEUE_WAKING		4	/* sched_class::task_waking was called */
 #else
 #define ENQUEUE_WAKING		0
