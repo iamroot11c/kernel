@@ -49,6 +49,7 @@ rq_sched_info_depart(struct rq *rq, unsigned long long delta)
 # define schedstat_add(rq, field, amt)	do { } while (0)
 // 2016-10-22
 // 2016-11-12
+// 2016-12-03
 # define schedstat_set(var, val)	do { } while (0)
 #endif
 

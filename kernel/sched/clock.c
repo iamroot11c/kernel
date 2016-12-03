@@ -357,6 +357,7 @@ void sched_clock_init(void)
 
 // 2016-10-01
 // 2016-11-05
+// 2016-12-03
 // CONFIG_HAVE_UNSTABLE_SCHED_CLOCK 이 not defined이기 때문에 이 함수가 호출된다.
 u64 sched_clock_cpu(int cpu)
 {

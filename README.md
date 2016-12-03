@@ -1,5 +1,30 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [119주차](http://bit.ly/2ehUev0) `2016.12.03`
+ - drive: 홍진우님
+ - [perf_pmu_register() 진행중]()
+ - kernel/events/core.c:pref_event_init() 진행 중
+ - kernel/events/core.c:perf_pmu_register() 진행 중
+ - drivers/base/core.c:device_del() 진행 중
+ - drivers/base/power/sysfs.c:dpm_sysfs_remove() 진행 중
+ - drivers/base/power/qos.c:dev_pm_qos_constraints_destroy() 진행 중
+ - drivers/base/power/sysfs.c:pm_qos_sysfs_remove_latency() 진행 중
+ - fs/sysfs/group.c:sysfs_unmerge_group() 진행 중
+ - fs/sysfs/inode.c:sysfs_hash_and_remove() 진행 중
+ - fs/sysfs/dir.c:sysfs_addrm_finish() 진행 중
+ - fs/sysfs/dir.c:sysfs_deactivate() 진행 중
+ - sched/core.c:wait_for_completion() 진행중,  action(timeout);
+ - kernel/timer.c:schedule_timeout() 진행중
+ - sched/core.c:__schedule() 진행 중
+ - kernel/sched/fair.c:idle_balance() 진행 완료
+ - sched/core.c:put_prev_task() 진행 완료
+ - kernel/sched/fair.c:put_prev_task_fair() 진행 완료
+ - kernel/sched/fair.c:put_prev_entity() 진행 완료
+ - sched/core.c:pick_next_task() 진행 완료
+ - kernel/sched/fair.c:pick_next_task_fair() 진행 완료
+ - sched/core.c:context_switch() 진행 중
+ - sched/core.c:prepare_task_switch() 진행 완료
+
 + [118주차](http://bit.ly/2ehUev0) `2016.11.26`
  - drive: 양만철님
  - [perf_pmu_register() 진행중]()

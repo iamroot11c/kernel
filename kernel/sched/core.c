@@ -2020,16 +2020,18 @@ fire_sched_out_preempt_notifiers(struct task_struct *curr,
  * prepare_task_switch sets up locking and calls architecture specific
  * hooks.
  */
+// 2016-12-03
 static inline void
 prepare_task_switch(struct rq *rq, struct task_struct *prev,
 		    struct task_struct *next)
 {
-	trace_sched_switch(prev, next);
-	sched_info_switch(prev, next);
-	perf_event_task_sched_out(prev, next);
-	fire_sched_out_preempt_notifiers(prev, next);
+	trace_sched_switch(prev, next); // no op
+	sched_info_switch(prev, next); // no op
+	perf_event_task_sched_out(prev, next); // no op
+	fire_sched_out_preempt_notifiers(prev, next); // no op
+	// next->on_cpu = 1
 	prepare_lock_switch(rq, next);
-	prepare_arch_switch(next);
+	prepare_arch_switch(next); // no op
 }
 
 /**
@@ -2155,6 +2157,9 @@ asmlinkage void schedule_tail(struct task_struct *prev)
  * context_switch - switch to the new MM and the new
  * thread's register state.
  */
+// 2016-12-03
+// context_switch(rq, prev, next);
+// glance
 static inline void
 context_switch(struct rq *rq, struct task_struct *prev,
 	       struct task_struct *next)
@@ -2170,8 +2175,9 @@ context_switch(struct rq *rq, struct task_struct *prev,
 	 * combine the page table reload and the switch backend into
 	 * one hypercall.
 	 */
-	arch_start_context_switch(prev);
+	arch_start_context_switch(prev); // no op
 
+	// 2016-12-03 여기까지
 	if (!mm) {
 		next->active_mm = oldmm;
 		atomic_inc(&oldmm->mm_count);
@@ -2498,16 +2504,22 @@ static inline void schedule_debug(struct task_struct *prev)
 	schedstat_inc(this_rq(), sched_count);
 }
 
+// 2016-12-03
+// put_prev_task(rq, prev); 
+// prev의 sched_entity -> cfs_rq에 삽입 및 시간 업데이트
+// 현재 수행 중인 cfs_rq의 curr값 널 초기화
 static void put_prev_task(struct rq *rq, struct task_struct *prev)
 {
 	if (prev->on_rq || rq->skip_clock_update < 0)
 		update_rq_clock(rq);
+	// fair_sched_class기준으로 put_prev_task_fair가 호출
 	prev->sched_class->put_prev_task(rq, prev);
 }
 
 /*
  * Pick up the highest-prio task:
  */
+// 2016-12-03
 static inline struct task_struct *
 pick_next_task(struct rq *rq)
 {
@@ -2519,11 +2531,14 @@ pick_next_task(struct rq *rq)
 	 * the fair class we can call that function directly:
 	 */
 	if (likely(rq->nr_running == rq->cfs.h_nr_running)) {
+		// pick_next_task_fair 호출
 		p = fair_sched_class.pick_next_task(rq);
 		if (likely(p))
 			return p;
 	}
 
+	//  #define for_each_class(class) \
+	//	for (class = sched_class_highest; class; class = class->next)
 	for_each_class(class) {
 		p = class->pick_next_task(rq);
 		if (p)
@@ -2650,8 +2665,10 @@ need_resched:
 	if (unlikely(!rq->nr_running))
 		// 2016-10-08
 		idle_balance(cpu, rq);
-
+		// 2016-12-03 끝 식사 전.
 	put_prev_task(rq, prev);
+	// 2016-12-03
+	// 다음 우선순위로 이동가능한 태스크를 얻어온다.
 	next = pick_next_task(rq);
 	clear_tsk_need_resched(prev);
 	rq->skip_clock_update = 0;
@@ -2661,6 +2678,7 @@ need_resched:
 		rq->curr = next;
 		++*switch_count;
 
+		// 2016-12-03 진행 중
 		context_switch(rq, prev, next); /* unlocks the rq */
 		/*
 		 * The context switch have flipped the stack from under us

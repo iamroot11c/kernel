@@ -271,6 +271,7 @@ static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
 /* An entity is a task if it doesn't "own" a runqueue */
 #define entity_is_task(se)	(!se->my_q)
 
+// 2016-12-03
 static inline struct task_struct *task_of(struct sched_entity *se)
 {
 #ifdef CONFIG_SCHED_DEBUG
@@ -420,6 +421,7 @@ static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
 #define entity_is_task(se)	1
 
 // 2016-10-22
+// 2016-12-03
 #define for_each_sched_entity(se) \
 		for (; se; se = NULL)
 
@@ -437,6 +439,7 @@ static inline struct cfs_rq *cfs_rq_of(struct sched_entity *se)
 }
 
 /* runqueue "owned" by this group */
+// 2016-12-03
 static inline struct cfs_rq *group_cfs_rq(struct sched_entity *grp)
 {
 	return NULL;
@@ -546,6 +549,7 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
  * Enqueue an entity into the rb-tree:
  */
 // 2016-11-12
+// 2016-12-03
 static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 	struct rb_node **link = &cfs_rq->tasks_timeline.rb_node;
@@ -592,7 +596,7 @@ static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 static void __dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 	// 검사할 sched_entity가 cfs_rq의 가장 왼 쪽 자식인 경우(가중치가 제일 낮은 경우)
-	// cfs_rq의 leftmost를 변경
+	// cfs_rq의 leftmost를 다음 우선순위의 노드로 변경
 	if (cfs_rq->rb_leftmost == &se->run_node) {
 		struct rb_node *next_node;
 
@@ -604,6 +608,9 @@ static void __dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	rb_erase(&se->run_node, &cfs_rq->tasks_timeline);
 }
 
+// 2016-12-03
+// __pick_first_entity(cfs_rq);
+// 가장 먼저 수행할 노드를 얻어옴
 struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq)
 {
 	struct rb_node *left = cfs_rq->rb_leftmost;
@@ -613,7 +620,9 @@ struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq)
 
 	return rb_entry(left, struct sched_entity, run_node);
 }
-
+// 2016-12-03
+// __pick_next_entity(se);
+// se->run_node 다음에 수행할 노드를 얻어옴
 static struct sched_entity *__pick_next_entity(struct sched_entity *se)
 {
 	struct rb_node *next = rb_next(&se->run_node);
@@ -877,12 +886,14 @@ update_stats_dequeue(struct cfs_rq *cfs_rq, struct sched_entity *se)
 /*
  * We are picking a new current task - update its stats:
  */
+// 2016-12-03
 static inline void
 update_stats_curr_start(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 	/*
 	 * We are starting a new run period:
 	 */
+	// se->exec_start = rq->clock_task
 	se->exec_start = rq_clock_task(rq_of(cfs_rq));
 }
 
@@ -1620,6 +1631,8 @@ static inline u64 cfs_rq_clock_task(struct cfs_rq *cfs_rq);
 // update_entity_load_avg(se, 1);
 // 2016-11-12
 // update_entity_load_avg(se, 0);
+// 2016-12-03
+// update_entity_load_avg(prev, 1);
 static inline void update_entity_load_avg(struct sched_entity *se,
 					  int update_cfs_rq)
 {
@@ -1907,6 +1920,8 @@ static void enqueue_sleeper(struct cfs_rq *cfs_rq, struct sched_entity *se)
 
 // 2016-11-12
 // check_spread(cfs_rq, se);
+// 2016-12-03
+// check_spread(cfs_rq, prev);
 static void check_spread(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 #ifdef CONFIG_SCHED_DEBUG
@@ -1915,7 +1930,7 @@ static void check_spread(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	if (d < 0)
 		d = -d;
 
-	if (d > 3*sysctl_sched_latency)
+	if (d > 3*sysctl_sched_latency/*6000000ULL;*/)
 		schedstat_inc(cfs_rq, nr_spread_over);
 #endif
 }
@@ -2158,6 +2173,7 @@ check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 		resched_task(rq_of(cfs_rq)->curr);
 }
 
+// 2016-12-03
 static void
 set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
@@ -2168,13 +2184,15 @@ set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 		 * a CPU. So account for the time it spent waiting on the
 		 * runqueue.
 		 */
-		update_stats_wait_end(cfs_rq, se);
+		update_stats_wait_end(cfs_rq, se); // NO OP
 		__dequeue_entity(cfs_rq, se);
 	}
 
+	// se->exec_start 변경
 	update_stats_curr_start(cfs_rq, se);
+	// 현재 수행하는 노드를 교체
 	cfs_rq->curr = se;
-#ifdef CONFIG_SCHEDSTATS
+#ifdef CONFIG_SCHEDSTATS // not defined
 	/*
 	 * Track our maximum slice length, if the CPU's load is at
 	 * least twice that of our own weight (i.e. dont track it
@@ -2185,6 +2203,7 @@ set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 			se->sum_exec_runtime - se->prev_sum_exec_runtime);
 	}
 #endif
+	// 수행 대상이 변경되었기 때문에 이전 수행 시간을 현재 수행시간으로 변경
 	se->prev_sum_exec_runtime = se->sum_exec_runtime;
 }
 
@@ -2198,6 +2217,8 @@ wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se);
  * 3) pick the "last" process, for cache locality
  * 4) do not run the "skip" process, if something else is available
  */
+// 수행 가능한 다음 sched_entity를 리턴
+// 2016-12-03
 static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq)
 {
 	struct sched_entity *se = __pick_first_entity(cfs_rq);
@@ -2207,6 +2228,10 @@ static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq)
 	 * Avoid running the skip buddy, if running something else can
 	 * be done without getting too unfair.
 	 */
+
+	// wakeup_preempt_entity(something, left) < 1)
+	//	-> something이 수행 가능하다. 조건으로 추측
+	//	(이유 : left가 something을 선점할 수 없기 때문)
 	if (cfs_rq->skip == se) {
 		struct sched_entity *second = __pick_next_entity(se);
 		if (second && wakeup_preempt_entity(second, left) < 1)
@@ -2225,6 +2250,7 @@ static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq)
 	if (cfs_rq->next && wakeup_preempt_entity(cfs_rq->next, left) < 1)
 		se = cfs_rq->next;
 
+	// se가 설정된 경우 교체한 cfs_rq 내 노드를 null로 세팅
 	clear_buddies(cfs_rq, se);
 
 	return se;
@@ -2232,6 +2258,10 @@ static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq)
 
 static void check_cfs_rq_runtime(struct cfs_rq *cfs_rq);
 
+// 2016-12-03
+// put_prev_entity(cfs_rq, se);
+// prev가 현재 수행 중이면 cfs_rq에 삽입 및 prev의 우선순위 변경
+// 현재 수행 중인 cfs_rq의 노드 초기화 
 static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
 {
 	/*
@@ -2242,12 +2272,13 @@ static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
 		update_curr(cfs_rq);
 
 	/* throttle cfs_rqs exceeding runtime */
-	check_cfs_rq_runtime(cfs_rq);
+	check_cfs_rq_runtime(cfs_rq); // NO OP
 
-	check_spread(cfs_rq, prev);
+	check_spread(cfs_rq, prev); // 디버깅 용 함수
 	if (prev->on_rq) {
-		update_stats_wait_start(cfs_rq, prev);
+		update_stats_wait_start(cfs_rq, prev); // 디버깅 용 함수
 		/* Put 'current' back into the tree. */
+		// prev노드를 cfs_rq의 rb-tree에 삽입
 		__enqueue_entity(cfs_rq, prev);
 		/* in !on_rq case, update occurred at dequeue */
 		update_entity_load_avg(prev, 1);
@@ -3015,6 +3046,7 @@ static inline u64 cfs_rq_clock_task(struct cfs_rq *cfs_rq)
 // 2016-10-22
 static void account_cfs_rq_runtime(struct cfs_rq *cfs_rq,
 				     unsigned long delta_exec) {}
+// 2016-12-03
 static void check_cfs_rq_runtime(struct cfs_rq *cfs_rq) {}
 // 2016-11-12
 static void check_enqueue_throttle(struct cfs_rq *cfs_rq) {}
@@ -3933,6 +3965,10 @@ wakeup_gran(struct sched_entity *curr, struct sched_entity *se)
 // 2016-11-12
 // glance
 // 2016-11-19
+// 2016-12-03
+// se가 curr를 선점할 수 있는지 여부를 수행 시간 차이로 결정
+// (curr의 수행 시간 - se의 수행시간 > 최소 수행시간)
+//	-> 1 리턴
 static int
 wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se)
 {
@@ -4082,6 +4118,8 @@ preempt:
 		set_last_buddy(se);
 }
 
+// 2016-12-03
+// 다음 수행 가능한 태스크를 얻어온다.
 static struct task_struct *pick_next_task_fair(struct rq *rq)
 {
 	struct task_struct *p;
@@ -4107,10 +4145,14 @@ static struct task_struct *pick_next_task_fair(struct rq *rq)
 /*
  * Account for a descheduled task:
  */
+// 2016-12-03
 static void put_prev_task_fair(struct rq *rq, struct task_struct *prev)
 {
 	struct sched_entity *se = &prev->se;
 	struct cfs_rq *cfs_rq;
+
+	// #define for_each_sched_entity(se) \
+	//	for (; se; se = NULL)
 
 	for_each_sched_entity(se) {
 		cfs_rq = cfs_rq_of(se);
@@ -5617,6 +5659,7 @@ static struct rq *find_busiest_queue(struct lb_env *env,
  * Max backoff if we encounter pinned tasks. Pretty arbitrary value, but
  * so long as it is large enough.
  */
+// 2016-12-03
 #define MAX_PINNED_INTERVAL	512
 
 /* Working cpumask for load_balance and load_balance_newidle. */
@@ -5691,6 +5734,8 @@ static int should_we_balance(struct lb_env *env)
  * Check this_cpu to ensure it is balanced within domain. Attempt to move
  * tasks if there is an imbalance.
  */
+// this_cpu <- busiest_cpu의 런큐로 태스크 이동. 
+//	-> 실패한 경우 busiest_cpu의 중단된 task를 재시작 및 active_balance_work를 큐로 이동
 // 2016-10-08
 // pulled_task = load_balance(this_cpu, this_rq,
 //                            sd, CPU_NEWLY_IDLE,
@@ -5850,6 +5895,7 @@ more_balance:
 	}
 
 	if (!ld_moved) {
+		// move_task가 실패한 경우. 단 1개도 태스크 이동이 되지 않았다.
 		schedstat_inc(sd, lb_failed[idle]);	// NOP
 		/*
 		 * Increment the failure counter only on periodic balance.
@@ -5885,12 +5931,16 @@ more_balance:
 			if (!busiest->active_balance) {
 				busiest->active_balance = 1;
 				busiest->push_cpu = this_cpu;
+				// active_balance는 여기에서만 설정된다.
 				active_balance = 1;
 			}
 			raw_spin_unlock_irqrestore(&busiest->lock, flags);
 
 			if (active_balance) {
 				// 2016-11-19, ing
+				// active_balance가 필요한 경우
+				// 1) busiest의 cpu에서 수행되었던 태스크 재시작
+				// 2) active_balance_work 항목을 수행할 큐에 삽입
 				stop_one_cpu_nowait(cpu_of(busiest),
 					active_load_balance_cpu_stop, busiest,
 					&busiest->active_balance_work);
@@ -5903,13 +5953,16 @@ more_balance:
 			 * We've kicked active balancing, reset the failure
 			 * counter.
 			 */
+			// 2016-12-03 시작!
 			sd->nr_balance_failed = sd->cache_nice_tries+1;
 		}
 	} else
+		// move_task가 1개 이상 성공했다.
 		sd->nr_balance_failed = 0;
 
 	if (likely(!active_balance)) {
 		/* We were unbalanced, so reset the balancing interval */
+		// 밸런스 주기 초기화
 		sd->balance_interval = sd->min_interval;
 	} else {
 		/*
@@ -5918,6 +5971,8 @@ more_balance:
 		 * is only 1 task on the busy runqueue (because we don't call
 		 * move_tasks).
 		 */
+		// active_balance상태이고 sd의 밸런스 주기가 최대 값보다 작으면
+		// sd의 밸런스 주기를 2배로 늘린다.
 		if (sd->balance_interval < sd->max_interval)
 			sd->balance_interval *= 2;
 	}
@@ -5925,6 +5980,7 @@ more_balance:
 	goto out;
 
 out_balanced:
+	// 현재 balance를 할 수 없을 때에 대한 조건으로 추정
 	schedstat_inc(sd, lb_balanced[idle]);
 
 	sd->nr_balance_failed = 0;
@@ -5986,6 +6042,7 @@ void idle_balance(int this_cpu, struct rq *this_rq)
 			pulled_task = load_balance(this_cpu, this_rq,
 						   sd, CPU_NEWLY_IDLE,
 						   &continue_balancing);
+			// 2016-12-03 종료
 		}
 
 		interval = msecs_to_jiffies(sd->balance_interval);
@@ -6882,8 +6939,8 @@ const struct sched_class fair_sched_class = {
 	// 2016-11-12
 	.check_preempt_curr	= check_preempt_wakeup,
 	// 2016-11-19
-
 	.pick_next_task		= pick_next_task_fair,
+	// 2016-12-03
 	.put_prev_task		= put_prev_task_fair,
 
 #ifdef CONFIG_SMP

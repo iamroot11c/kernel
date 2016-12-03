@@ -888,6 +888,7 @@ static inline int task_running(struct rq *rq, struct task_struct *p)
 
 
 #ifndef prepare_arch_switch
+// 2016-12-03
 # define prepare_arch_switch(next)	do { } while (0)
 #endif
 #ifndef finish_arch_switch
@@ -898,6 +899,7 @@ static inline int task_running(struct rq *rq, struct task_struct *p)
 #endif
 
 #ifndef __ARCH_WANT_UNLOCKED_CTXSW
+// 2016-12-03
 static inline void prepare_lock_switch(struct rq *rq, struct task_struct *next)
 {
 #ifdef CONFIG_SMP
@@ -1195,6 +1197,7 @@ static inline u64 sched_avg_period(void)
  *  - hrtimer is actually high res
  */
 // 2016-11-05
+// 2016-12-03
 static inline int hrtick_enabled(struct rq *rq)
 {
     // features.h에서 false로 지정됨
