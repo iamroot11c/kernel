@@ -2178,11 +2178,13 @@ context_switch(struct rq *rq, struct task_struct *prev,
 	arch_start_context_switch(prev); // no op
 
 	// 2016-12-03 여기까지
+	// 2016-12-10, 여기부터
 	if (!mm) {
 		next->active_mm = oldmm;
 		atomic_inc(&oldmm->mm_count);
-		enter_lazy_tlb(oldmm, next);
+		enter_lazy_tlb(oldmm, next);	// NOP
 	} else
+		// 2016-12-10, start
 		switch_mm(oldmm, mm, next);
 
 	if (!prev->mm) {

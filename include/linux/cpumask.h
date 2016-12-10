@@ -326,6 +326,7 @@ static inline void cpumask_clear_cpu(int cpu, struct cpumask *dstp)
  *
  * test_and_set_bit wrapper for cpumasks.
  */
+// 2016-12-10
 static inline int cpumask_test_and_set_cpu(int cpu, struct cpumask *cpumask)
 {
 	return test_and_set_bit(cpumask_check(cpu), cpumask_bits(cpumask));

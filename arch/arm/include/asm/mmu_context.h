@@ -25,6 +25,7 @@ void __check_vmalloc_seq(struct mm_struct *mm);
 
 #ifdef CONFIG_CPU_HAS_ASID
 
+// 2016-12-10
 void check_and_switch_context(struct mm_struct *mm, struct task_struct *tsk);
 #define init_new_context(tsk,mm)	({ atomic64_set(&mm->context.id, 0); 0; })
 
@@ -113,6 +114,7 @@ enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
  * calling the CPU specific function when the mm hasn't
  * actually changed.
  */
+// 2016-12-10
 static inline void
 switch_mm(struct mm_struct *prev, struct mm_struct *next,
 	  struct task_struct *tsk)
@@ -125,13 +127,16 @@ switch_mm(struct mm_struct *prev, struct mm_struct *next,
 	 * so check for possible thread migration and invalidate the I-cache
 	 * if we're new to this CPU.
 	 */
+    // 2016-12-10, cache_ops_need_broadcast() == 0임으로 아래 조건은 수행X
 	if (cache_ops_need_broadcast() &&
 	    !cpumask_empty(mm_cpumask(next)) &&
 	    !cpumask_test_cpu(cpu, mm_cpumask(next)))
 		__flush_icache_all();
 
 	if (!cpumask_test_and_set_cpu(cpu, mm_cpumask(next)) || prev != next) {
+        // 2016-12-10, start
 		check_and_switch_context(next, tsk);
+        // 2016-12-10, 우리는 VIPT이다.
 		if (cache_is_vivt())
 			cpumask_clear_cpu(cpu, mm_cpumask(prev));
 	}

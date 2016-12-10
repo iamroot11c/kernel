@@ -12,6 +12,7 @@
 #ifndef _ASM_GENERIC_ATOMIC64_H
 #define _ASM_GENERIC_ATOMIC64_H
 
+// 2016-12-10
 typedef struct {
 	long long counter;
 } atomic64_t;

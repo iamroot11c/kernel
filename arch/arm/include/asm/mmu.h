@@ -4,6 +4,7 @@
 #ifdef CONFIG_MMU   // y
 
 // 2015-08-22
+// 2016-12-10
 typedef struct {
 #ifdef CONFIG_CPU_HAS_ASID  // y
 	atomic64_t	id;
@@ -15,8 +16,10 @@ typedef struct {
 } mm_context_t;
 
 #ifdef CONFIG_CPU_HAS_ASID  // y
+// 2016-12-10
 #define ASID_BITS	8
 // 2015-08-22
+// 2016-12-10
 #define ASID_MASK	((~0ULL) << ASID_BITS)  // 0xFFFF_FF00
 // 2015-08-22
 // counter를 얻어올때는 하위 8비트(1byte)값만 취한다.

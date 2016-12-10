@@ -355,6 +355,7 @@ struct mm_struct {
 	unsigned long highest_vm_end;		/* highest vma end address */
 	pgd_t * pgd;
 	atomic_t mm_users;			/* How many users with user space? */
+    // 2016-12-10
 	atomic_t mm_count;			/* How many references to "struct mm_struct" (users count as 1) */
 	int map_count;				/* number of VMAs */
 
@@ -395,6 +396,7 @@ struct mm_struct {
 	cpumask_var_t cpu_vm_mask_var;
 
 	/* Architecture-specific MM context */
+    // 2016-12-10
 	mm_context_t context;
 
 	unsigned long flags; /* Must use atomic bitops to access the bits */
@@ -475,6 +477,7 @@ static inline void mm_init_cpumask(struct mm_struct *mm)
 }
 
 /* Future-safe accessor for struct mm_struct's cpu_vm_mask. */
+// 2016-12-10
 static inline cpumask_t *mm_cpumask(struct mm_struct *mm)
 {
 	return mm->cpu_vm_mask_var;

@@ -1,5 +1,61 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [120주차]() `2016.12.10`
+ - drive: 홍진우님
+ - 사설 스터디 룸 이용으로 4시간만 진행
+ - [perf_pmu_register() 진행중]()
+ - kernel/events/core.c:pref_event_init() 진행 중
+ - kernel/events/core.c:perf_pmu_register() 진행 중
+ - drivers/base/core.c:device_del() 진행 중
+ - drivers/base/power/sysfs.c:dpm_sysfs_remove() 진행 중
+ - drivers/base/power/qos.c:dev_pm_qos_constraints_destroy() 진행 중
+ - drivers/base/power/sysfs.c:pm_qos_sysfs_remove_latency() 진행 중
+ - fs/sysfs/group.c:sysfs_unmerge_group() 진행 중
+ - fs/sysfs/inode.c:sysfs_hash_and_remove() 진행 중
+ - fs/sysfs/dir.c:sysfs_addrm_finish() 진행 중
+ - fs/sysfs/dir.c:sysfs_deactivate() 진행 중
+ - sched/core.c:wait_for_completion() 진행중,  action(timeout);
+ - kernel/timer.c:schedule_timeout() 진행중
+ - sched/core.c:__schedule() 진행 중
+ - kernel/sched/fair.c:idle_balance() 진행 완료
+ - sched/core.c:put_prev_task() 진행 완료
+ - kernel/sched/fair.c:put_prev_task_fair() 진행 완료
+ - kernel/sched/fair.c:put_prev_entity() 진행 완료
+ - sched/core.c:pick_next_task() 진행 완료
+ - kernel/sched/fair.c:pick_next_task_fair() 진행 완료
+ - sched/core.c:context_switch() 진행 중
+ - arch/arm/include/asm/mmu_context.h:switch_mm() 진행 중
+ - arch/arm/mm/context.c:check_and_switch_context() 진행 중
+
+```
+        /*
+         * 31                         7          0
+         * +-------------------------+-----------+
+         * |      process ID         |   ASID    |
+         * +-------------------------+-----------+
+         * |              context ID             |
+         * +-------------------------------------+
+         */
+
+Fluch
+   - dirty bit -> 0
+   - Memory X
+Clean
+   - search dirty bit 1
+   - Memory O
+Drain
+   - If Write Buffer
+   - Memory O
+---------------------------
+Invalidate
+   1. Flush, same meaning with flush
+   2. Valid bit -> 0
+      => Cache line 전체를 무효화
+      cf. 1번과는 완전히 다르다. 1번은 dirty bit만을 다룬다.
+          2번은 전체 비트(valid bit)을 다룬다.
+   Q. memory 반영이 일어 나는가?
+```
+
 + [119주차](http://bit.ly/2fLbpnq) `2016.12.03`
  - drive: 홍진우님
  - [perf_pmu_register() 진행중]()

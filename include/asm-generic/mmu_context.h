@@ -11,6 +11,7 @@
 struct task_struct;
 struct mm_struct;
 
+// 2016-12-10
 static inline void enter_lazy_tlb(struct mm_struct *mm,
 			struct task_struct *tsk)
 {
