@@ -1,6 +1,6 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
-+ [120주차]() `2016.12.10`
++ [120주차](http://bit.ly/2h8XjMU) `2016.12.10`
  - drive: 홍진우님
  - 사설 스터디 룸 이용으로 4시간만 진행
  - [perf_pmu_register() 진행중]()
