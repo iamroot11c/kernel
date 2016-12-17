@@ -65,6 +65,7 @@ struct notifier_block {
 	int priority;
 };
 
+// 2016-12-17
 struct atomic_notifier_head {
 	spinlock_t lock;
 	struct notifier_block __rcu *head;
@@ -120,6 +121,7 @@ extern void srcu_init_notifier_head(struct srcu_notifier_head *nh);
 		.head = NULL }
 /* srcu_notifier_heads cannot be initialized statically */
 
+// 2016-12-17
 #define ATOMIC_NOTIFIER_HEAD(name)				\
 	struct atomic_notifier_head name =			\
 		ATOMIC_NOTIFIER_INIT(name)

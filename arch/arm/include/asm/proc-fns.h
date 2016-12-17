@@ -77,11 +77,12 @@ extern struct processor {
 	void (*do_resume)(void *);
 } processor;
 
-#ifndef MULTI_CPU
+#ifndef MULTI_CPU // not define
 extern void cpu_proc_init(void);
 extern void cpu_proc_fin(void);
 extern int cpu_do_idle(void);
 extern void cpu_dcache_clean_area(void *, int);
+// 2016-12-17
 extern void cpu_do_switch_mm(phys_addr_t pgd_phys, struct mm_struct *mm);
 #ifdef CONFIG_ARM_LPAE
 extern void cpu_set_pte_ext(pte_t *ptep, pte_t pte);
@@ -111,8 +112,11 @@ extern void cpu_resume(void);
 
 #include <asm/memory.h>
 
-#ifdef CONFIG_MMU
+#ifdef CONFIG_MMU // defined
 
+// 2016-12-17
+// cpu_switch_mm(mm->pgd, mm);
+// cpu_switch_mm(mm->pgd, mm)
 #define cpu_switch_mm(pgd,mm) cpu_do_switch_mm(virt_to_phys(pgd),mm)
 
 #ifdef CONFIG_ARM_LPAE

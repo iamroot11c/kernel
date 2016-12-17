@@ -355,7 +355,7 @@ free_tsk:
 	return NULL;
 }
 
-#ifdef CONFIG_MMU
+#ifdef CONFIG_MMU // defined
 static int dup_mmap(struct mm_struct *mm, struct mm_struct *oldmm)
 {
 	struct vm_area_struct *mpnt, *tmp, *prev, **pprev;
@@ -497,6 +497,7 @@ static inline int mm_alloc_pgd(struct mm_struct *mm)
 	return 0;
 }
 
+// 2016-12-17 시작
 static inline void mm_free_pgd(struct mm_struct *mm)
 {
 	pgd_free(mm, mm->pgd);
@@ -598,9 +599,11 @@ struct mm_struct *mm_alloc(void)
  * is dropped: either by a lazy thread or by
  * mmput. Free the page directory and the mm.
  */
+// 2016-12-17 시작
 void __mmdrop(struct mm_struct *mm)
 {
-	BUG_ON(mm == &init_mm);
+	BUG_ON(mm == &init_mm); // 초기화 단계에서는 경고 출력
+	// 2016-12-17 시작
 	mm_free_pgd(mm);
 	destroy_context(mm);
 	mmu_notifier_mm_destroy(mm);

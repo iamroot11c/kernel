@@ -106,6 +106,7 @@ EXPORT_SYMBOL(elf_hwcap);
 struct processor processor __read_mostly;
 #endif
 #ifdef MULTI_TLB	// set
+// 2016-12-17
 struct cpu_tlb_fns cpu_tlb __read_mostly;
 #endif
 #ifdef MULTI_USER

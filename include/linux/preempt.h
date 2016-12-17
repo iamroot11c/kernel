@@ -72,6 +72,7 @@ do { \
 } while (0)
 
 // 2015-11-07
+// 2016-12-17
 #define sched_preempt_enable_no_resched() \
 do { \
 	barrier(); \
@@ -79,6 +80,7 @@ do { \
 } while (0)
 
 // 2015-11-07
+// 2016-12-17
 #define preempt_enable_no_resched()	sched_preempt_enable_no_resched()
 
 // 2015-11-07

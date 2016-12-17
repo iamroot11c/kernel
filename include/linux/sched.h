@@ -2205,9 +2205,12 @@ extern struct mm_struct * mm_alloc(void);
 
 /* mmdrop drops the mm and the page tables */
 extern void __mmdrop(struct mm_struct *);
+// 2016-12-17
 static inline void mmdrop(struct mm_struct * mm)
 {
 	if (unlikely(atomic_dec_and_test(&mm->mm_count)))
+        // 참조하는 곳이 없으므로 해제함
+        // 2016-12-17 시작
 		__mmdrop(mm);
 }
 

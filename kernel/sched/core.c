@@ -1995,6 +1995,7 @@ fire_sched_out_preempt_notifiers(struct task_struct *curr,
 
 #else /* !CONFIG_PREEMPT_NOTIFIERS */
 
+// 2016-12-17
 static void fire_sched_in_preempt_notifiers(struct task_struct *curr)
 {
 }
@@ -2049,6 +2050,8 @@ prepare_task_switch(struct rq *rq, struct task_struct *prev,
  * with the lock held can cause deadlocks; see schedule() for
  * details.)
  */
+// 2016-12-17
+// finish_task_switch(this_rq(), prev)
 static void finish_task_switch(struct rq *rq, struct task_struct *prev)
 	__releases(rq->lock)
 {
@@ -2069,14 +2072,15 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
 	 *		Manfred Spraul <manfred@colorfullife.com>
 	 */
 	prev_state = prev->state;
-	vtime_task_switch(prev);
+	vtime_task_switch(prev); // No OP.
 	finish_arch_switch(prev);
-	perf_event_task_sched_in(prev, current);
+	perf_event_task_sched_in(prev, current); // No OP.
 	finish_lock_switch(rq, prev);
 	finish_arch_post_lock_switch();
 
-	fire_sched_in_preempt_notifiers(current);
+	fire_sched_in_preempt_notifiers(current); // No OP.
 	if (mm)
+		// 2016-12-17 시작
 		mmdrop(mm);
 	if (unlikely(prev_state == TASK_DEAD)) {
 		/*
@@ -2186,6 +2190,7 @@ context_switch(struct rq *rq, struct task_struct *prev,
 	} else
 		// 2016-12-10, start
 		switch_mm(oldmm, mm, next);
+		// 2016-12-17, 분석완료
 
 	if (!prev->mm) {
 		prev->active_mm = NULL;
@@ -2197,12 +2202,13 @@ context_switch(struct rq *rq, struct task_struct *prev,
 	 * of the scheduler it's an obvious special-case), so we
 	 * do an early lockdep release here:
 	 */
-#ifndef __ARCH_WANT_UNLOCKED_CTXSW
+#ifndef __ARCH_WANT_UNLOCKED_CTXSW // not define
 	spin_release(&rq->lock.dep_map, 1, _THIS_IP_);
 #endif
 
-	context_tracking_task_switch(prev, next);
+	context_tracking_task_switch(prev, next); // No OP.
 	/* Here we just switch the register state and the stack. */
+	// 2016-12-17
 	switch_to(prev, next, prev);
 
 	barrier();
@@ -2211,6 +2217,7 @@ context_switch(struct rq *rq, struct task_struct *prev,
 	 * CPUs since it called schedule(), thus the 'rq' on its stack
 	 * frame will be invalid.
 	 */
+	// 2016-12-17 시작
 	finish_task_switch(this_rq(), prev);
 }
 

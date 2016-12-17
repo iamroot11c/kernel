@@ -284,6 +284,8 @@ int cpumask_any_but(const struct cpumask *mask, unsigned int cpu);
 // 2016-01-23;
 // cpumask_set_cpu(cpu, &cpus_with_pcps);
 // 2016-07-01
+// 2016-12-17
+// cpumask_set_cpu(cpu, mm_cpumask(mm))
 static inline void cpumask_set_cpu(unsigned int cpu, struct cpumask *dstp)
 {
 	set_bit(cpumask_check(cpu)/*cpu:0 or 1*/, cpumask_bits(dstp)/*(dstp)->bits*/);
@@ -341,6 +343,8 @@ static inline int cpumask_test_and_set_cpu(int cpu, struct cpumask *cpumask)
  *
  * test_and_clear_bit wrapper for cpumasks.
  */
+// 2016-12-17
+// cpumask_test_and_clear_cpu(cpu, &tlb_flush_pending)
 static inline int cpumask_test_and_clear_cpu(int cpu, struct cpumask *cpumask)
 {
 	return test_and_clear_bit(cpumask_check(cpu), cpumask_bits(cpumask));

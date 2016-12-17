@@ -683,32 +683,48 @@ ENDPROC(ret_from_exception)
  * r0 = previous task_struct, r1 = previous thread_info, r2 = next thread_info
  * previous and next are guaranteed not to be the same.
  */
+/* 2016-12-17
+ * __switch_to(prev,task_thread_info(prev), task_thread_info(next));
+ */
 ENTRY(__switch_to)
  UNWIND(.fnstart	)
  UNWIND(.cantunwind	)
-	add	ip, r1, #TI_CPU_SAVE
+	add	ip, r1, #TI_CPU_SAVE /* thread_info->cpu_context */
  ARM(	stmia	ip!, {r4 - sl, fp, sp, lr} )	@ Store most regs on stack
  THUMB(	stmia	ip!, {r4 - sl, fp}	   )	@ Store most regs on stack
  THUMB(	str	sp, [ip], #4		   )
  THUMB(	str	lr, [ip], #4		   )
-	ldr	r4, [r2, #TI_TP_VALUE]
-	ldr	r5, [r2, #TI_TP_VALUE + 4]
-#ifdef CONFIG_CPU_USE_DOMAINS
+	ldr	r4, [r2, #TI_TP_VALUE] /* thread_info->tp_value[0] */
+	ldr	r5, [r2, #TI_TP_VALUE + 4] /* thread_info->tp_value[1] */
+#ifdef CONFIG_CPU_USE_DOMAINS /* not define */
 	ldr	r6, [r2, #TI_CPU_DOMAIN]
 #endif
+	/* 
+	 * .macro switch_tls_v6k, base, tp, tpuser, tmp1, tmp2
+	 * switch_tls_v6k r1, r4, r5, r3, r7 
+	 */
 	switch_tls r1, r4, r5, r3, r7
+/*
+ * // CONFIG_CC_STACKPROTECTOR not define
+ * // CONFIG_SMP defined
+ */
 #if defined(CONFIG_CC_STACKPROTECTOR) && !defined(CONFIG_SMP)
 	ldr	r7, [r2, #TI_TASK]
 	ldr	r8, =__stack_chk_guard
 	ldr	r7, [r7, #TSK_STACK_CANARY]
 #endif
-#ifdef CONFIG_CPU_USE_DOMAINS
+#ifdef CONFIG_CPU_USE_DOMAINS /* not define */
 	mcr	p15, 0, r6, c3, c0, 0		@ Set domain register
 #endif
 	mov	r5, r0
 	add	r4, r2, #TI_CPU_SAVE
 	ldr	r0, =thread_notify_head
 	mov	r1, #THREAD_NOTIFY_SWITCH
+	/**
+	 * atomic_notifier_call_chain(thread_notify_head, 
+	 *                            #THREAD_NOTIFY_SWITCH,
+	 *                            task_thread_info(next));
+	 */
 	bl	atomic_notifier_call_chain
 #if defined(CONFIG_CC_STACKPROTECTOR) && !defined(CONFIG_SMP)
 	str	r7, [r8]
@@ -716,6 +732,7 @@ ENTRY(__switch_to)
  THUMB(	mov	ip, r4			   )
 	mov	r0, r5
  ARM(	ldmia	r4, {r4 - sl, fp, sp, pc}  )	@ Load all regs saved previously
+                                                @ // 레지스터 값을 복원함
  THUMB(	ldmia	ip!, {r4 - sl, fp}	   )	@ Load all regs saved previously
  THUMB(	ldr	sp, [ip], #4		   )
  THUMB(	ldr	pc, [ip]		   )

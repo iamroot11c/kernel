@@ -311,6 +311,7 @@ void show_regs(struct pt_regs * regs)
 	dump_stack();
 }
 
+// 2016-12-17
 ATOMIC_NOTIFIER_HEAD(thread_notify_head);
 
 EXPORT_SYMBOL_GPL(thread_notify_head);

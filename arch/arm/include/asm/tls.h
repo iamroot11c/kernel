@@ -6,11 +6,22 @@
 	.macro switch_tls_none, base, tp, tpuser, tmp1, tmp2
 	.endm
 
+    @ // 2016-12-17
+    @ // switch_tls_v6k r1, r4, r5, r3, r7
+    @ // r1 = thread_info->cpu_context
+    @ // r4 = thread_info->tp_value[0]
+    @ // r5 = thread_info->tp_value[1]
 	.macro switch_tls_v6k, base, tp, tpuser, tmp1, tmp2
 	mrc	p15, 0, \tmp2, c13, c0, 2	@ get the user r/w register
+                                    @ // TPIDRURW(User Read/Write Thread ID Register)
+                                    @ // Read/write at all privilege levels, including PL0
 	mcr	p15, 0, \tp, c13, c0, 3		@ set TLS register
+                                    @ // TPIDRURO(User Read-Only Thread ID Register)
+                                    @ // Read-only at PL0
+                                    @ // Read/write at PL1 or higher
 	mcr	p15, 0, \tpuser, c13, c0, 2	@ and the user r/w register
 	str	\tmp2, [\base, #TI_TP_VALUE + 4] @ save it
+                                         @ // *(base+#TI_TP_VALUE/*96*/+4) = tmp2
 	.endm
 
 	.macro switch_tls_v6, base, tp, tpuser, tmp1, tmp2
@@ -39,9 +50,10 @@
 #define tls_emu		0
 #define has_tls_reg		(elf_hwcap & HWCAP_TLS)
 #define switch_tls	switch_tls_v6
-#elif defined(CONFIG_CPU_32v6K) // CONFIG_CPU_32v6K=y
+#elif defined(CONFIG_CPU_32v6K) /* CONFIG_CPU_32v6K=y */
 #define tls_emu		0
 #define has_tls_reg		1
+/* 2016-12-17 */
 #define switch_tls	switch_tls_v6k
 #else
 #define tls_emu		0

@@ -1,7 +1,39 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [121주차]() `2016.12.17`
+ - drive: 양만철님
+ - [perf_pmu_register() 진행중]()
+ - kernel/events/core.c:pref_event_init() 진행 중
+ - kernel/events/core.c:perf_pmu_register() 진행 중
+ - drivers/base/core.c:device_del() 진행 중
+ - drivers/base/power/sysfs.c:dpm_sysfs_remove() 진행 중
+ - drivers/base/power/qos.c:dev_pm_qos_constraints_destroy() 진행 중
+ - drivers/base/power/sysfs.c:pm_qos_sysfs_remove_latency() 진행 중
+ - fs/sysfs/group.c:sysfs_unmerge_group() 진행 중
+ - fs/sysfs/inode.c:sysfs_hash_and_remove() 진행 중
+ - fs/sysfs/dir.c:sysfs_addrm_finish() 진행 중
+ - fs/sysfs/dir.c:sysfs_deactivate() 진행 중
+ - sched/core.c:wait_for_completion() 진행중,  action(timeout);
+ - kernel/timer.c:schedule_timeout() 진행중
+ - kernel/sched/core.c:__schedule() 진행 중
+ - kernel/sched/core.c:context_switch() 진행 중
+ - arch/arm/include/asm/mmu_context.h:switch_mm() 분석완료
+ - arch/arm/mm/context.c:check_and_switch_context() 분석완료
+ - arch/arm/include/asm/tlbflush.h:local_flush_bp_all() 분석완료 
+ - arch/arm/include/asm/tlbflush.h:__local_flush_bp_all() 분석완료
+ - arch/arm/include/asm/tlbflush.h:local_flush_tlb_all() 분석완료
+ - arch/arm/include/asm/proc-fns.h:cpu_switch_mm() 분석완료
+ - kernel/sched/core.c:finish_task_switch() 진행 중
+ - arch/arm/mm/proc-v7-2level.S:cpu_v7_switch_mm() 분석완료
+ - arch/arm/include/asm/switch_to.h:switch_to() 분석완료
+ - arch/arm/kernel/entry-armv.S:__switch_to() 분석완료
+ - kernel/sched/sched.h:finish_lock_switch() 분석완료
+ - include/linux/sched.h:mmdrop() 진행 중
+ - kernel/fork.c:__mmdrop() 진행 중
+ - kernel/fork.c:mm_free_pgd() 진행 중
+ - arch/arm/mm/pgd.c:pgd_free() 훑어봄
 + [120주차](http://bit.ly/2h8XjMU) `2016.12.10`
- - drive: 홍진우님
+ - drive: 보름달님
  - 사설 스터디 룸 이용으로 4시간만 진행
  - [perf_pmu_register() 진행중]()
  - kernel/events/core.c:pref_event_init() 진행 중

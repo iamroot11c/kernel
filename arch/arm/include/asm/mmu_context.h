@@ -63,6 +63,7 @@ static inline void check_and_switch_context(struct mm_struct *mm,
 		cpu_switch_mm(mm->pgd, mm);
 }
 
+// 2016-12-17
 #define finish_arch_post_lock_switch \
 	finish_arch_post_lock_switch
 static inline void finish_arch_post_lock_switch(void)
@@ -79,6 +80,7 @@ static inline void finish_arch_post_lock_switch(void)
 		preempt_disable();
 		if (mm->context.switch_pending) {
 			mm->context.switch_pending = 0;
+            // cpu_v7_switch_mm(mm->pgd, mm)
 			cpu_switch_mm(mm->pgd, mm);
 		}
 		preempt_enable_no_resched();
@@ -136,6 +138,7 @@ switch_mm(struct mm_struct *prev, struct mm_struct *next,
 	if (!cpumask_test_and_set_cpu(cpu, mm_cpumask(next)) || prev != next) {
         // 2016-12-10, start
 		check_and_switch_context(next, tsk);
+        // 2016-12-17, 분석완료
         // 2016-12-10, 우리는 VIPT이다.
 		if (cache_is_vivt())
 			cpumask_clear_cpu(cpu, mm_cpumask(prev));

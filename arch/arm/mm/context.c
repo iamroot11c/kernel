@@ -286,8 +286,11 @@ void check_and_switch_context(struct mm_struct *mm, struct task_struct *tsk)
 	// 2016-12-10, 여기까지
 	
 	// 2016-12-17, 여기부터
+	// 2016-12-17 시작
 	if (cpumask_test_and_clear_cpu(cpu, &tlb_flush_pending)) {
+		// 분기 예측을 무효화함
 		local_flush_bp_all();
+		// invalidated unified, instruction, data TLB
 		local_flush_tlb_all();
 	}
 
@@ -296,5 +299,6 @@ void check_and_switch_context(struct mm_struct *mm, struct task_struct *tsk)
 	raw_spin_unlock_irqrestore(&cpu_asid_lock, flags);
 
 switch_mm_fastpath:
+	// TTBR0에 mm->context.id를 라이트함 
 	cpu_switch_mm(mm->pgd, mm);
 }

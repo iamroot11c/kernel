@@ -105,6 +105,8 @@ no_pgd:
 	return NULL;
 }
 
+// 2016-12-17 훑어봄
+// pgd_free(mm, mm->pgd);
 void pgd_free(struct mm_struct *mm, pgd_t *pgd_base)
 {
 	pgd_t *pgd;
@@ -137,7 +139,7 @@ no_pud:
 	pgd_clear(pgd);
 	pud_free(mm, pud);
 no_pgd:
-#ifdef CONFIG_ARM_LPAE
+#ifdef CONFIG_ARM_LPAE // not define
 	/*
 	 * Free modules/pkmap or identity pmd tables.
 	 */

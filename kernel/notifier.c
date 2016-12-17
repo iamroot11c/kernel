@@ -117,6 +117,11 @@ static int notifier_chain_unregister(struct notifier_block **nl,
  */
 // 2016-01-30
 // ret = notifier_call_chain(&nh->head, 0, &freed, -1, NULL);
+// 2016-12-17
+// notifier_call_chain(thread_notify_head->head, 
+//                     #THREAD_NOTIFY_SWITCH/*2*/,
+//                     task_thread_info(next),
+//                     -1, NULL);
 static int __kprobes notifier_call_chain(struct notifier_block **nl,
 					unsigned long val, void *v,
 					int nr_to_call,	int *nr_calls)
@@ -127,10 +132,15 @@ static int __kprobes notifier_call_chain(struct notifier_block **nl,
 	nb = rcu_dereference_raw(*nl);
 
 	// 초기 : nr_to_call(-1)
+	// 
+	// 2016-12-17
+	// 아직 thread_notify 리스트가 구성되지 않음
+	// 등록은 thread_register_notifier() 함수를 통해 이루어지는데
+	// 이 함수가 아직 호출되지 않음
 	while (nb && nr_to_call) {
 		next_nb = rcu_dereference_raw(nb->next);
 
-#ifdef CONFIG_DEBUG_NOTIFIERS
+#ifdef CONFIG_DEBUG_NOTIFIERS // not define
 		if (unlikely(!func_ptr_is_kernel_text(nb->notifier_call))) {
 			WARN(1, "Invalid notifier called!");
 			nb = next_nb;
@@ -222,6 +232,11 @@ EXPORT_SYMBOL_GPL(atomic_notifier_chain_unregister);
  *	Otherwise the return value is the return value
  *	of the last notifier function called.
  */
+// 2016-12-17
+// __atomic_notifier_call_chain(thread_notify_head, 
+//                            #THREAD_NOTIFY_SWITCH/*2*/,
+//                            task_thread_info(next),
+//                            -1, NULL);
 int __kprobes __atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 					unsigned long val, void *v,
 					int nr_to_call, int *nr_calls)
@@ -235,6 +250,10 @@ int __kprobes __atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 }
 EXPORT_SYMBOL_GPL(__atomic_notifier_call_chain);
 
+// 2016-12-17
+// atomic_notifier_call_chain(thread_notify_head, 
+//                            #THREAD_NOTIFY_SWITCH/*2*/,
+//                            task_thread_info(next));
 int __kprobes atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 		unsigned long val, void *v)
 {

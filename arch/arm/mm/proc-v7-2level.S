@@ -8,14 +8,14 @@
  * published by the Free Software Foundation.
  */
 
-#define TTB_S		(1 << 1)
+#define TTB_S		(1 << 1) // Shareable 
 #define TTB_RGN_NC	(0 << 3)
-#define TTB_RGN_OC_WBWA	(1 << 3)
+#define TTB_RGN_OC_WBWA	(1 << 3) // Normal memory, Outer Write-Back Write-Allocate Cacheable
 #define TTB_RGN_OC_WT	(2 << 3)
 #define TTB_RGN_OC_WB	(3 << 3)
-#define TTB_NOS		(1 << 5)
+#define TTB_NOS		(1 << 5) // Inner Shareable
 #define TTB_IRGN_NC	((0 << 0) | (0 << 6))
-#define TTB_IRGN_WBWA	((0 << 0) | (1 << 6))
+#define TTB_IRGN_WBWA	((0 << 0) | (1 << 6)) // Normal memory, Inner Write-Through Cacheable
 #define TTB_IRGN_WT	((1 << 0) | (0 << 6))
 #define TTB_IRGN_WB	((1 << 0) | (1 << 6))
 
@@ -24,6 +24,8 @@
 #define PMD_FLAGS_UP	PMD_SECT_WB
 
 /* PTWs cacheable, inner WBWA shareable, outer WBWA not shareable */
+// 2016-12-17
+// ((1 << 6) | (1 << 1) | (1 << 5) | (1 << 3))
 #define TTB_FLAGS_SMP	TTB_IRGN_WBWA|TTB_S|TTB_NOS|TTB_RGN_OC_WBWA
 #define PMD_FLAGS_SMP	PMD_SECT_WBWA|PMD_SECT_S
 
@@ -38,25 +40,31 @@
  *	- we are not using split page tables
  */
 ENTRY(cpu_v7_switch_mm)
+// 2016-12-17
+// cpu_v7_switch_mm(virt_to_phys(mm->pgd), mm);
 #ifdef CONFIG_MMU
 	mov	r2, #0
 	mmid	r1, r1				@ get mm->context.id
+	                                        @ // .macro mmid, rd, rn
 	ALT_SMP(orr	r0, r0, #TTB_FLAGS_SMP)
 	ALT_UP(orr	r0, r0, #TTB_FLAGS_UP)
-#ifdef CONFIG_ARM_ERRATA_430973
+#ifdef CONFIG_ARM_ERRATA_430973 // not define
 	mcr	p15, 0, r2, c7, c5, 6		@ flush BTAC/BTB
 #endif
-#ifdef CONFIG_PID_IN_CONTEXTIDR
+#ifdef CONFIG_PID_IN_CONTEXTIDR // not define
 	mrc	p15, 0, r2, c13, c0, 1		@ read current context ID
 	lsr	r2, r2, #8			@ extract the PID
 	bfi	r1, r2, #8, #24			@ insert into new context ID
 #endif
-#ifdef CONFIG_ARM_ERRATA_754322
+#ifdef CONFIG_ARM_ERRATA_754322 // not define
 	dsb
 #endif
 	mcr	p15, 0, r1, c13, c0, 1		@ set context ID
+	                                        @ // CONTEXTIDR(Context ID Register)
 	isb
 	mcr	p15, 0, r0, c2, c0, 0		@ set TTB 0
+	                                        @ // TTBR0(Translation Table 
+						@ //          Base Register 0 and Register
 	isb
 #endif
 	mov	pc, lr

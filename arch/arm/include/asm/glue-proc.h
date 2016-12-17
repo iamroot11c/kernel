@@ -256,6 +256,8 @@
 // 2016-04-16
 // cpu_v7_dcache_clean_area(pte + PTE_HWTABLE_PTRS, PTE_HWTABLE_SIZE)
 #define cpu_dcache_clean_area		__glue(CPU_NAME,_dcache_clean_area)
+// 2016-12-17
+// cpu_v7_switch_mm
 #define cpu_do_switch_mm		__glue(CPU_NAME,_switch_mm)
 // 2015-08-22, cpu_set_pte_ext(ptep, __pte(0), 0)
 // 2015-10-03

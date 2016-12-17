@@ -10,7 +10,7 @@
 #ifndef _ASMARM_TLBFLUSH_H
 #define _ASMARM_TLBFLUSH_H
 
-#ifdef CONFIG_MMU
+#ifdef CONFIG_MMU // defined
 
 #include <asm/glue.h>
 
@@ -32,12 +32,14 @@
 #define TLB_V6_D_ASID	(1 << 17)
 #define TLB_V6_I_ASID	(1 << 18)
 
+// 2016-12-17
 #define TLB_V6_BP	(1 << 19)
 
 /* Unified Inner Shareable TLB operations (ARMv7 MP extensions) */
 #define TLB_V7_UIS_PAGE	(1 << 20)
 #define TLB_V7_UIS_FULL (1 << 21)
 #define TLB_V7_UIS_ASID (1 << 22)
+// 2016-12-17
 #define TLB_V7_UIS_BP	(1 << 23)
 
 #define TLB_BARRIER	(1 << 28)
@@ -228,6 +230,7 @@
 
 #include <linux/sched.h>
 
+// 2016-12-17
 struct cpu_tlb_fns {
 	void (*flush_user_range)(unsigned long, unsigned long, struct vm_area_struct *);
 	void (*flush_kern_range)(unsigned long, unsigned long);
@@ -319,6 +322,7 @@ extern struct cpu_tlb_fns cpu_tlb;
  // 2015-08-29
  // TLB_WB | TLB_BARRIER | TLB_V7_UIS_FULL | TLB_V7_UIS_PAGE | TLB_V7_UIS_ASID | TLB_V7_UIS_BP
  // TLB_WB | TLB_DCLEAN | TLB_BARRIER | TLB_V6_U_FULL | TLB_V6_U_PAGE | TLB_V6_U_ASID | TLB_V6_BP
+ // 2016-12-17
 #define possible_tlb_flags	(v4_possible_flags/*0*/ | \
 				 v4wbi_possible_flags /*0*/ | \
 				 fr_possible_flags/*0*/  | \
@@ -340,6 +344,11 @@ extern struct cpu_tlb_fns cpu_tlb;
 				 v7wbi_always_flags/*TLB_WB | TLB_BARRIER*/)
 
 // 2015-08-29
+// 2016-12-17
+// tlb_flag(TLB_V6_BP) // __tlb_flag = cpu_tlb.tlb_flags;
+// tlb_flag(TLB_V7_UIS_BP) // __tlb_flag = __cpu_tlb_flags;
+//
+// '__tlb_flag'는 매크로를 호출하는 함수 안의 지역변수이다.
 #define tlb_flag(f)	((always_tlb_flags/*TLB_WB | TLB_BARRIER*/ & (f)) || (__tlb_flag & possible_tlb_flags & (f)))
 
 	/* f == tlb_DCLEAN, tlb_L2CLEAN
@@ -361,7 +370,8 @@ extern struct cpu_tlb_fns cpu_tlb;
      %2 =  TLB_DCLEAN
      poc, pou, mva 관련내용은 옛날에도 했던것이며 wiki 10차
      poc로 검색하면 잘나옴
-     */                                 \
+     */
+// 2016-12-17
 #define __tlb_op(f, insnarg, arg)					\
 	do {								\
 		if (always_tlb_flags & (f))				\
@@ -378,6 +388,7 @@ extern struct cpu_tlb_fns cpu_tlb;
 #define tlb_op(f, regs, arg)	__tlb_op(f, "p15, 0, %0, " regs, arg)
 #define tlb_l2_op(f, regs, arg)	__tlb_op(f, "p15, 1, %0, " regs, arg)
 
+// 2016-12-17
 static inline void __local_flush_tlb_all(void)
 {
 	const int zero = 0;
@@ -389,12 +400,16 @@ static inline void __local_flush_tlb_all(void)
     // #define TLB_V6_U_FULL   (1 << 12)
     // #define TLB_V6_D_FULL   (1 << 13)
     // #define TLB_V6_I_FULL   (1 << 14)
+    // Invalidate unified TLB
 	tlb_op(TLB_V4_U_FULL | TLB_V6_U_FULL, "c8, c7, 0", zero);
+    // Invalidate data TLB 
 	tlb_op(TLB_V4_D_FULL | TLB_V6_D_FULL, "c8, c6, 0", zero);
+    // Invalidate instruction TLB
 	tlb_op(TLB_V4_I_FULL | TLB_V6_I_FULL, "c8, c5, 0", zero);
 }
 
 // 2014년 11월 01일
+// 2016-12-17
 static inline void local_flush_tlb_all(void)
 {
 	const int zero = 0;
@@ -409,6 +424,7 @@ static inline void local_flush_tlb_all(void)
 
 	__local_flush_tlb_all();
     // #define TLB_V7_UIS_FULL (1 << 21)
+    // // Invalidate unified TLB
 	tlb_op(TLB_V7_UIS_FULL, "c8, c7, 0", zero);
 
     // #define TLB_BARRIER (1 << 28)
@@ -641,22 +657,27 @@ static inline void __flush_tlb_kernel_page(unsigned long kaddr)
  * Branch predictor maintenance is paired with full TLB invalidation, so
  * there is no need for any barriers here.
  */
+// 2016-12-17
 static inline void __local_flush_bp_all(void)
 {
 	const int zero = 0;
 	const unsigned int __tlb_flag = __cpu_tlb_flags;
 
-	if (tlb_flag(TLB_V6_BP))
+	if (tlb_flag(TLB_V6_BP)) // true
+        // BPIALL - Invalidate all branch predictors
+        // 분기 예측을 무효화함 
 		asm("mcr p15, 0, %0, c7, c5, 6" : : "r" (zero));
 }
 
+// 2016-12-17
 static inline void local_flush_bp_all(void)
 {
 	const int zero = 0;
 	const unsigned int __tlb_flag = __cpu_tlb_flags;
 
 	__local_flush_bp_all();
-	if (tlb_flag(TLB_V7_UIS_BP))
+	if (tlb_flag(TLB_V7_UIS_BP)) // true
+        // 분기 예측을 무효화함 
 		asm("mcr p15, 0, %0, c7, c5, 6" : : "r" (zero));
 }
 

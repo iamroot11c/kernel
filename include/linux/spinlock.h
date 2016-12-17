@@ -238,6 +238,7 @@ static inline void do_raw_spin_unlock(raw_spinlock_t *lock) __releases(lock)
 #define raw_spin_lock_irq(lock)		_raw_spin_lock_irq(lock)
 #define raw_spin_lock_bh(lock)		_raw_spin_lock_bh(lock)
 #define raw_spin_unlock(lock)		_raw_spin_unlock(lock)
+// 2016-12-17
 #define raw_spin_unlock_irq(lock)	_raw_spin_unlock_irq(lock)
 
 // 2015-08-08
