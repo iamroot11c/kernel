@@ -1,6 +1,6 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
-+ [121주차]() `2016.12.17`
++ [121주차](http://bit.ly/2hZFFs9) `2016.12.17`
  - drive: 양만철님
  - [perf_pmu_register() 진행중]()
  - kernel/events/core.c:pref_event_init() 진행 중
