@@ -334,6 +334,7 @@ static inline void mmu_notifier_mm_init(struct mm_struct *mm)
 {
 }
 
+// 2016-12-24
 static inline void mmu_notifier_mm_destroy(struct mm_struct *mm)
 {
 }

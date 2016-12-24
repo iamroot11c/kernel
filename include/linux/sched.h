@@ -1662,6 +1662,7 @@ extern void __put_task_struct(struct task_struct *t);
 // 2016-02-06 glance;
 // 2016-02-13 glance;
 // 2016-03-05 glance;
+// 2016-12-24
 static inline void put_task_struct(struct task_struct *t)
 {
 	if (atomic_dec_and_test(&t->usage))
@@ -1989,7 +1990,7 @@ extern u64 scheduler_tick_max_deferment(void);
 static inline bool sched_can_stop_tick(void) { return false; }
 #endif
 
-#ifdef CONFIG_SCHED_AUTOGROUP
+#ifdef CONFIG_SCHED_AUTOGROUP // not set
 extern void sched_autogroup_create_attach(struct task_struct *p);
 extern void sched_autogroup_detach(struct task_struct *p);
 extern void sched_autogroup_fork(struct signal_struct *sig);
@@ -2002,6 +2003,7 @@ extern int proc_sched_autogroup_set_nice(struct task_struct *p, int nice);
 static inline void sched_autogroup_create_attach(struct task_struct *p) { }
 static inline void sched_autogroup_detach(struct task_struct *p) { }
 static inline void sched_autogroup_fork(struct signal_struct *sig) { }
+// 2016-12-24
 static inline void sched_autogroup_exit(struct signal_struct *sig) { }
 #endif
 

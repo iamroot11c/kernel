@@ -355,6 +355,9 @@ void __dec_zone_state(struct zone *zone, enum zone_stat_item item)
 //
 // 2015-11-14;
 // __dec_zone_page_state(page, NR_ISOLATED_ANON + page_is_file_cache(page))
+//
+// 2016-12-24
+// __dec_zone_page_state(page, NR_PAGETABLE);
 void __dec_zone_page_state(struct page *page, enum zone_stat_item item)
 {
 	__dec_zone_state(page_zone(page), item);
@@ -507,6 +510,9 @@ EXPORT_SYMBOL(inc_zone_page_state);
 //
 // 2015-11-14;
 // dec_zone_page_state(page, NR_ISOLATED_ANON + page_is_file_cache(page))
+//
+// 2016-12-24
+// dec_zone_page_state(page, NR_PAGETABLE);
 void dec_zone_page_state(struct page *page, enum zone_stat_item item)
 {
 	unsigned long flags;

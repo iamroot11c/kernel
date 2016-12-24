@@ -15,7 +15,7 @@
 #include <linux/compiler.h>
 #include <asm/fpstate.h>
 
-#define THREAD_SIZE_ORDER	1
+#define THREAD_SIZE_ORDER	1 // 2^1 이기 때문에 2페이지에 대해 할당 및 해제가 된다.
 #define THREAD_SIZE		8192 // 8KB
 #define THREAD_START_SP		(THREAD_SIZE - 8)
 

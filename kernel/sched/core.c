@@ -2082,16 +2082,21 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
 	if (mm)
 		// 2016-12-17 시작
 		mmdrop(mm);
+		// 2016-12-24 완료
 	if (unlikely(prev_state == TASK_DEAD)) {
 		/*
 		 * Remove function-return probe instances associated with this
 		 * task and put them back on the free list.
 		 */
-		kprobe_flush_task(prev);
-		put_task_struct(prev);
+		kprobe_flush_task(prev); // no op
+		// 2016-12-24 시작
+		put_task_struct(prev); // prev task의 thread_info, task 정보를 메모리에서 제거
+					// (테스크가 죽은 상태에기 때문에 정보 제거) 
+		// 2016-12-24 완료
 	}
 
 	tick_nohz_task_switch(current);
+	// 2016-12-24
 }
 
 #ifdef CONFIG_SMP
@@ -2219,6 +2224,7 @@ context_switch(struct rq *rq, struct task_struct *prev,
 	 */
 	// 2016-12-17 시작
 	finish_task_switch(this_rq(), prev);
+	// 2016-12-24 완료
 }
 
 /*
@@ -2689,6 +2695,7 @@ need_resched:
 
 		// 2016-12-03 진행 중
 		context_switch(rq, prev, next); /* unlocks the rq */
+		// 2016-12-24 완료
 		/*
 		 * The context switch have flipped the stack from under us
 		 * and restored the local variables which were saved when
@@ -2700,8 +2707,8 @@ need_resched:
 	} else
 		raw_spin_unlock_irq(&rq->lock);
 
+	// 2017-01-07 시작 지점
 	post_schedule(rq);
-
 	sched_preempt_enable_no_resched();
 	if (need_resched())
 		goto need_resched;

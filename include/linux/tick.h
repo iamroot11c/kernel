@@ -187,6 +187,7 @@ extern void __tick_nohz_task_switch(struct task_struct *tsk);
 #else
 // 2016-07-23
 static inline void tick_nohz_init(void) { }
+// 2016-12-24
 static inline bool tick_nohz_full_enabled(void) { return false; }
 static inline bool tick_nohz_full_cpu(int cpu) { return false; }
 static inline void __tick_nohz_full_check(void) { }
@@ -201,9 +202,10 @@ static inline void tick_nohz_full_check(void)
 		__tick_nohz_full_check();
 }
 
+// 2016-12-24
 static inline void tick_nohz_task_switch(struct task_struct *tsk)
 {
-	if (tick_nohz_full_enabled())
+	if (tick_nohz_full_enabled()) // CONFIG_NO_HZ_FULL이 미설정이기 때문에 항상 false
 		__tick_nohz_task_switch(tsk);
 }
 

@@ -277,6 +277,9 @@ void pgd_clear_bad(pgd_t *);
 void pud_clear_bad(pud_t *);
 void pmd_clear_bad(pmd_t *);
 
+// 2016-12-24
+// 현재 분석 환경 상에는 pgd_none, pgd_bad가 0이기 때문에
+// 항상 0이 리턴
 static inline int pgd_none_or_clear_bad(pgd_t *pgd)
 {
 	if (pgd_none(*pgd))
@@ -288,6 +291,9 @@ static inline int pgd_none_or_clear_bad(pgd_t *pgd)
 	return 0;
 }
 
+// 2016-12-24
+// 현재 분석 환경에서는 pud_none, pud_clear_bad이 0이기 때문에
+// 항상 0을 리턴
 static inline int pud_none_or_clear_bad(pud_t *pud)
 {
 	if (pud_none(*pud))
@@ -299,6 +305,11 @@ static inline int pud_none_or_clear_bad(pud_t *pud)
 	return 0;
 }
 
+// 2016-12-24
+// return 1 : 
+//      pmd에 가리키는 값이 없는 경우
+//      또는 pmd 내에 section 비트가 설정된 경우
+//          -> 이 경우는 페이지 디렉토리 내 값 제거 및 tlb -> 메모리 갱신 및 초기화
 static inline int pmd_none_or_clear_bad(pmd_t *pmd)
 {
 	if (pmd_none(*pmd))

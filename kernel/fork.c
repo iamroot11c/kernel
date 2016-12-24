@@ -122,6 +122,7 @@ int nr_processes(void)
 	return total;
 }
 
+// 2016-12-24
 void __weak arch_release_task_struct(struct task_struct *tsk)
 {
 }
@@ -134,12 +135,14 @@ static inline struct task_struct *alloc_task_struct_node(int node)
 	return kmem_cache_alloc_node(task_struct_cachep, GFP_KERNEL, node);
 }
 
+/// 2016-12-24
 static inline void free_task_struct(struct task_struct *tsk)
 {
 	kmem_cache_free(task_struct_cachep, tsk);
 }
 #endif
 
+// 2016-12-24
 void __weak arch_release_thread_info(struct thread_info *ti)
 {
 }
@@ -160,6 +163,8 @@ static struct thread_info *alloc_thread_info_node(struct task_struct *tsk,
 	return page ? page_address(page) : NULL;
 }
 
+// 2016-12-24
+// thread_info 페이지를 일괄 해제한다.
 static inline void free_thread_info(struct thread_info *ti)
 {
 	free_memcg_kmem_pages((unsigned long)ti, THREAD_SIZE_ORDER);
@@ -205,6 +210,8 @@ struct kmem_cache *vm_area_cachep;
 /* SLAB cache for mm_struct structures (tsk->mm) */
 static struct kmem_cache *mm_cachep;
 
+// 2016-12-24
+// ti에 속한 zone의 NR_KERNEL_STACK 개수를 account만큼 감소
 static void account_kernel_stack(struct thread_info *ti, int account)
 {
 	struct zone *zone = page_zone(virt_to_page(ti));
@@ -212,26 +219,29 @@ static void account_kernel_stack(struct thread_info *ti, int account)
 	mod_zone_page_state(zone, NR_KERNEL_STACK, account);
 }
 
+// 2016-12-24
 void free_task(struct task_struct *tsk)
 {
 	account_kernel_stack(tsk->stack, -1);
-	arch_release_thread_info(tsk->stack);
-	free_thread_info(tsk->stack);
-	rt_mutex_debug_task_free(tsk);
-	ftrace_graph_exit_task(tsk);
-	put_seccomp_filter(tsk);
-	arch_release_task_struct(tsk);
-	free_task_struct(tsk);
+	arch_release_thread_info(tsk->stack); // no op
+	free_thread_info(tsk->stack); // thread_info 정보가 저장된 tsk->stack 메모리 해제
+	rt_mutex_debug_task_free(tsk); // for debug
+	ftrace_graph_exit_task(tsk); // no op
+	put_seccomp_filter(tsk); // no op
+	arch_release_task_struct(tsk); // no op
+	free_task_struct(tsk); // tsk 삭제
 }
 EXPORT_SYMBOL(free_task);
 
+// 2016-12-24
 static inline void free_signal_struct(struct signal_struct *sig)
 {
-	taskstats_tgid_free(sig);
-	sched_autogroup_exit(sig);
+	taskstats_tgid_free(sig); // no op
+	sched_autogroup_exit(sig); // no op
 	kmem_cache_free(signal_cachep, sig);
 }
 
+// 2016-12-24
 static inline void put_signal_struct(struct signal_struct *sig)
 {
 	if (atomic_dec_and_test(&sig->sigcnt))
@@ -240,6 +250,7 @@ static inline void put_signal_struct(struct signal_struct *sig)
 
 // 2015-08-08 glance;
 // 2016-02-06 glance;
+// 2016-12-24
 void __put_task_struct(struct task_struct *tsk)
 {
 	WARN_ON(!tsk->exit_state);
@@ -247,13 +258,12 @@ void __put_task_struct(struct task_struct *tsk)
 	WARN_ON(tsk == current);
 
 	// CONFIG_SECURITY 미 정의로 아무 역활 없음
-	// no op.
-	security_task_free(tsk);
+	security_task_free(tsk); // no op
 	exit_creds(tsk);
-	delayacct_tsk_free(tsk);
+	delayacct_tsk_free(tsk); // no op
 	put_signal_struct(tsk->signal);
 
-	if (!profile_handoff_task(tsk))
+	if (!profile_handoff_task(tsk)) // 현재 분석 환경에서는 항상 0 리턴
 		free_task(tsk);
 }
 EXPORT_SYMBOL_GPL(__put_task_struct);
@@ -511,6 +521,7 @@ static inline void mm_free_pgd(struct mm_struct *mm)
 __cacheline_aligned_in_smp DEFINE_SPINLOCK(mmlist_lock);
 
 #define allocate_mm()	(kmem_cache_alloc(mm_cachep, GFP_KERNEL))
+// 2016-12-24
 #define free_mm(mm)	(kmem_cache_free(mm_cachep, (mm)))
 
 static unsigned long default_dump_filter = MMF_DUMP_FILTER_DEFAULT;
@@ -561,6 +572,8 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p)
 	return NULL;
 }
 
+// 2016-12-24
+// 디버그 용 함수
 static void check_mm(struct mm_struct *mm)
 {
 	int i;
@@ -605,10 +618,11 @@ void __mmdrop(struct mm_struct *mm)
 	BUG_ON(mm == &init_mm); // 초기화 단계에서는 경고 출력
 	// 2016-12-17 시작
 	mm_free_pgd(mm);
-	destroy_context(mm);
-	mmu_notifier_mm_destroy(mm);
-	check_mm(mm);
-	free_mm(mm);
+	// 2016-12-24
+	destroy_context(mm); // no op
+	mmu_notifier_mm_destroy(mm); // no op
+	check_mm(mm); // for debug
+	free_mm(mm); // mm을 이전에 할당시킨kmem_cache 구조체(mm_cachep)에서 할당 해제
 }
 EXPORT_SYMBOL_GPL(__mmdrop);
 

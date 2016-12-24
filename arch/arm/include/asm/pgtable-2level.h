@@ -158,14 +158,17 @@
  * cleared.
  */
 // 2015-09-19;
+// 2016-12-24
 #define pud_none(pud)		(0)
 #define pud_bad(pud)		(0)
 // 2015-08-22
 #define pud_present(pud)	(1)
+// 2016-12-24
 #define pud_clear(pudp)		do { } while (0)
 #define set_pud(pud,pudp)	do { } while (0)
 
 // 2015-08-22, no pud라서 pud는 pgd값이다.
+// 2016-12-24
 static inline pmd_t *pmd_offset(pud_t *pud, unsigned long addr)
 {
 	// 전달받은 값을 그대로 type cast 후 :리턴

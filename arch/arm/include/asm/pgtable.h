@@ -200,7 +200,7 @@ extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
 // 2015-09-19;
 #define pgd_offset_k(addr)	pgd_offset(&init_mm, addr)
 
-// return (pmd.pmd == 0)
+// return (pmd == 0)
 // 2016-04-16
 #define pmd_none(pmd)		(!pmd_val(pmd))
 // 2015-08-22

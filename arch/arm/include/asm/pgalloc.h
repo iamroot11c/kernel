@@ -53,6 +53,7 @@ static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
  * Since we have only two-level page tables, these are trivial
  */
 #define pmd_alloc_one(mm,addr)		({ BUG(); ((pmd_t *)2); })
+// 2016-12-24
 #define pmd_free(mm, pmd)		do { } while (0)
 #define pud_populate(mm,pmd,pte)	BUG()
 
@@ -131,6 +132,7 @@ static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
 		free_page((unsigned long)pte);
 }
 
+// 2016-12-24
 static inline void pte_free(struct mm_struct *mm, pgtable_t pte)
 {
 	pgtable_page_dtor(pte);

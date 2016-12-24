@@ -1397,6 +1397,7 @@ static inline pmd_t *pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long a
  */
 // 2016-04-16;
 #define pte_lock_init(page)	do {} while (0)
+// 2016-12-24
 #define pte_lock_deinit(page)	do {} while (0)
 // 2015-08-22
 // 2015-10-17
@@ -1412,9 +1413,11 @@ static inline void pgtable_page_ctor(struct page *page)
 	inc_zone_page_state(page, NR_PAGETABLE);
 }
 
+// 2016-12-24
+// pgtable_page_dtor(pte)
 static inline void pgtable_page_dtor(struct page *page)
 {
-	pte_lock_deinit(page);
+	pte_lock_deinit(page); // no OP
 	dec_zone_page_state(page, NR_PAGETABLE);
 }
 

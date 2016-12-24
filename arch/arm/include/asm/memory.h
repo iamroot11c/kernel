@@ -311,6 +311,7 @@ static inline __deprecated void *bus_to_virt(unsigned long x)
 
 // 2016-03-19
 #define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
+// 2016-12-24
 #define virt_addr_valid(kaddr)	((unsigned long)(kaddr) >= PAGE_OFFSET && (unsigned long)(kaddr) < (unsigned long)high_memory)
 
 #endif

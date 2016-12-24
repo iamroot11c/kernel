@@ -62,6 +62,7 @@ typedef pteval_t pgprot_t;
 #define pte_val(x)      (x)
 // 2015-08-22
 // 2016-04-16
+// 2016-12-24
 #define pmd_val(x)      (x)
 #define pgd_val(x)	((x)[0])
 #define pgprot_val(x)   (x) // 2015-01-31

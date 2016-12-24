@@ -55,6 +55,7 @@ static void printk_lock(struct rt_mutex *lock, int print_owner)
 	}
 }
 
+// 2016-12-24
 void rt_mutex_debug_task_free(struct task_struct *task)
 {
 	DEBUG_LOCKS_WARN_ON(!plist_head_empty(&task->pi_waiters));

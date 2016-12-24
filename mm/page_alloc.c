@@ -3350,12 +3350,16 @@ EXPORT_SYMBOL(get_zeroed_page);
 //
 // 2016-04-02
 // __free_pages(page, order);
+// 2016-12-24
+// __free_pages(page, 0)
 void __free_pages(struct page *page, unsigned int order)
 {
-	// 2015-05-16, __free_reserved_page() 수행 중,
-	// init_page_count()을 통해서, count를 1로 set했었다.
-	// 그럼으로, put_page_testzero()는 true를 리턴할 것임.
+	// 레퍼런스 카운트 하나 감소
+	//	2015-05-16 분석 시점에는 __free_reserved_page() 수행 중,
+	//	 init_page_count()을 통해서, count를 1로 set했었다.
+	//	그럼으로, 이 경우 put_page_testzero()는 true를 리턴할 것이다.
 	if (put_page_testzero(page)) {
+		// 레퍼런스 카운트가 0인 경우
 		// 2015-05-16, order가 0으로 전달되었었다.
 		if (order == 0)
 			free_hot_cold_page(page, 0); // hot
@@ -3366,6 +3370,7 @@ void __free_pages(struct page *page, unsigned int order)
 
 EXPORT_SYMBOL(__free_pages);
 
+// 2016-12-24
 void free_pages(unsigned long addr, unsigned int order)
 {
 	if (addr != 0) {
@@ -3388,12 +3393,16 @@ EXPORT_SYMBOL(free_pages);
  * The caller knows better which flags it relies on.
  */
 // 2016-04-02
+// 2016-12-24
+// __free_memcg_kmem_pages(virt_to_page((void *)addr), order);
 void __free_memcg_kmem_pages(struct page *page, unsigned int order)
 {
 	memcg_kmem_uncharge_pages(page, order);	// NOP
 	__free_pages(page, order);
 }
 
+// 2016-12-24
+// free_memcg_kmem_pages((unsigned long)ti, THREAD_SIZE_ORDER);
 void free_memcg_kmem_pages(unsigned long addr, unsigned int order)
 {
 	if (addr != 0) {

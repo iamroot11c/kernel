@@ -23,6 +23,7 @@ static inline int init_new_context(struct task_struct *tsk,
 	return 0;
 }
 
+// 2016-12-24
 static inline void destroy_context(struct mm_struct *mm)
 {
 }

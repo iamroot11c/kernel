@@ -131,6 +131,7 @@ static inline int profile_event_unregister(enum profile_type t, struct notifier_
 }
 
 #define profile_task_exit(a) do { } while (0)
+//2016-12-24
 #define profile_handoff_task(a) (0)
 #define profile_munmap(a) do { } while (0)
 

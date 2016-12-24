@@ -148,6 +148,7 @@ EXPORT_SYMBOL(__put_cred);
  * Clean up a task's credentials when it exits
  */
 // 2015-08-08 glance;
+// 2016-12-24 glance
 void exit_creds(struct task_struct *tsk)
 {
 	struct cred *cred;

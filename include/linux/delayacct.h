@@ -130,6 +130,7 @@ static inline void delayacct_init(void)
 {}
 static inline void delayacct_tsk_init(struct task_struct *tsk)
 {}
+// 2016-12-24
 static inline void delayacct_tsk_free(struct task_struct *tsk)
 {}
 // 2015-06-20

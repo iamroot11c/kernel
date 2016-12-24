@@ -28,6 +28,7 @@ void pud_clear_bad(pud_t *pud)
 	pud_clear(pud);
 }
 
+// 2016-12-24
 void pmd_clear_bad(pmd_t *pmd)
 {
 	pmd_ERROR(*pmd);

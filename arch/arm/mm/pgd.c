@@ -19,7 +19,7 @@
 
 #include "mm.h"
 
-#ifdef CONFIG_ARM_LPAE
+#ifdef CONFIG_ARM_LPAE // not set
 #define __pgd_alloc()	kmalloc(PTRS_PER_PGD * sizeof(pgd_t), GFP_KERNEL)
 #define __pgd_free(pgd)	kfree(pgd)
 #else
@@ -106,6 +106,7 @@ no_pgd:
 }
 
 // 2016-12-17 훑어봄
+// 2016-12-24 시작
 // pgd_free(mm, mm->pgd);
 void pgd_free(struct mm_struct *mm, pgd_t *pgd_base)
 {
@@ -133,8 +134,8 @@ void pgd_free(struct mm_struct *mm, pgd_t *pgd_base)
 	pmd_clear(pmd);
 	pte_free(mm, pte);
 no_pmd:
-	pud_clear(pud);
-	pmd_free(mm, pmd);
+	pud_clear(pud); // no op
+	pmd_free(mm, pmd); // no op
 no_pud:
 	pgd_clear(pgd);
 	pud_free(mm, pud);
