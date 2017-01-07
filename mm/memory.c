@@ -1319,6 +1319,7 @@ static void unmap_page_range(struct mmu_gather *tlb,
 }
 
 
+// 2017-01-07, glance
 static void unmap_single_vma(struct mmu_gather *tlb,
 		struct vm_area_struct *vma, unsigned long start_addr,
 		unsigned long end_addr,
@@ -1358,6 +1359,7 @@ static void unmap_single_vma(struct mmu_gather *tlb,
 				mutex_unlock(&vma->vm_file->f_mapping->i_mmap_mutex);
 			}
 		} else
+			// 2017-01-07, 여기까지
 			unmap_page_range(tlb, vma, start, end, details);
 	}
 }
@@ -1427,6 +1429,7 @@ void zap_page_range(struct vm_area_struct *vma, unsigned long start,
  *
  * The range must fit into one VMA.
  */
+// 2017-01-07, glance
 static void zap_page_range_single(struct vm_area_struct *vma, unsigned long address,
 		unsigned long size, struct zap_details *details)
 {
@@ -1434,11 +1437,16 @@ static void zap_page_range_single(struct vm_area_struct *vma, unsigned long addr
 	struct mmu_gather tlb;
 	unsigned long end = address + size;
 
+	// 2017-01-17
 	lru_add_drain();
+	// 2017-01-17
 	tlb_gather_mmu(&tlb, mm, address, end);
 	update_hiwater_rss(mm);
+	// 2017-01-07, NOP
 	mmu_notifier_invalidate_range_start(mm, address, end);
+	// 2017-01-07, start, 진행중
 	unmap_single_vma(&tlb, vma, address, end, details);
+	// 2017-01-07, NOP
 	mmu_notifier_invalidate_range_end(mm, address, end);
 	tlb_finish_mmu(&tlb, address, end);
 }
@@ -2913,19 +2921,27 @@ unwritable_page:
 	return ret;
 }
 
+// 2017-01-07, glance
 static void unmap_mapping_range_vma(struct vm_area_struct *vma,
 		unsigned long start_addr, unsigned long end_addr,
 		struct zap_details *details)
 {
+	// 2017-01-07, glance
 	zap_page_range_single(vma, start_addr, end_addr - start_addr, details);
 }
 
+// 2017-01-07, glance
 static inline void unmap_mapping_range_tree(struct rb_root *root,
 					    struct zap_details *details)
 {
 	struct vm_area_struct *vma;
 	pgoff_t vba, vea, zba, zea;
 
+/*
+#define vma_interval_tree_foreach(vma, root, start, last)       \
+    for (vma = vma_interval_tree_iter_first(root, start, last); \
+         vma; vma = vma_interval_tree_iter_next(vma, start, last))
+*/
 	vma_interval_tree_foreach(vma, root,
 			details->first_index, details->last_index) {
 
@@ -2939,6 +2955,7 @@ static inline void unmap_mapping_range_tree(struct rb_root *root,
 		if (zea > vea)
 			zea = vea;
 
+		// 2017-01-07
 		unmap_mapping_range_vma(vma,
 			((zba - vba) << PAGE_SHIFT) + vma->vm_start,
 			((zea - vba + 1) << PAGE_SHIFT) + vma->vm_start,
@@ -2977,6 +2994,8 @@ static inline void unmap_mapping_range_list(struct list_head *head,
  * @even_cows: 1 when truncating a file, unmap even private COWed pages;
  * but 0 when invalidating pagecache, don't throw away private data.
  */
+// 2017-01-07, glance
+// unmap_mapping_range(inode->i_mapping, 0, 0, 1);
 void unmap_mapping_range(struct address_space *mapping,
 		loff_t const holebegin, loff_t const holelen, int even_cows)
 {
@@ -3001,6 +3020,7 @@ void unmap_mapping_range(struct address_space *mapping,
 
 
 	mutex_lock(&mapping->i_mmap_mutex);
+	// 2017-01-07, start
 	if (unlikely(!RB_EMPTY_ROOT(&mapping->i_mmap)))
 		unmap_mapping_range_tree(&mapping->i_mmap, &details);
 	if (unlikely(!list_empty(&mapping->i_mmap_nonlinear)))

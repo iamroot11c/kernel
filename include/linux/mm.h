@@ -207,6 +207,7 @@ struct vm_fault {
  * unmapping it (needed to keep files on disk up-to-date etc), pointer
  * to the functions called when a no-page or a wp-page exception occurs. 
  */
+// 2017-01-07
 struct vm_operations_struct {
 	void (*open)(struct vm_area_struct * area);
 	void (*close)(struct vm_area_struct * area);
@@ -1039,6 +1040,7 @@ extern void user_shm_unlock(size_t, struct user_struct *);
 /*
  * Parameter block passed down to zap_pte_range in exceptional cases.
  */
+// 2017-01-07
 struct zap_details {
 	struct vm_area_struct *nonlinear_vma;	/* Check page->index if set */
 	struct address_space *check_mapping;	/* Check page->mapping if set */

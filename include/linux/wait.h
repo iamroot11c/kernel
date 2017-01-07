@@ -153,6 +153,7 @@ static inline void __add_wait_queue_tail_exclusive(wait_queue_head_t *q,
 	__add_wait_queue_tail(q, wait);
 }
 
+// 2017-01-07
 static inline void __remove_wait_queue(wait_queue_head_t *head,
 							wait_queue_t *old)
 {

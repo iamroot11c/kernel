@@ -245,6 +245,7 @@ struct sysfs_dirent *sysfs_get_dirent(struct sysfs_dirent *parent_sd,
 				      const void *ns,
 				      const unsigned char *name);
 struct sysfs_dirent *sysfs_get(struct sysfs_dirent *sd);
+// 2017-01-07
 void sysfs_put(struct sysfs_dirent *sd);
 
 int __must_check sysfs_init(void);

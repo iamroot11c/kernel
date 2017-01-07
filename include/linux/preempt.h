@@ -73,6 +73,7 @@ do { \
 
 // 2015-11-07
 // 2016-12-17
+// 2017-01-07
 #define sched_preempt_enable_no_resched() \
 do { \
 	barrier(); \

@@ -2111,12 +2111,15 @@ static inline void pre_schedule(struct rq *rq, struct task_struct *prev)
 }
 
 /* rq->lock is NOT held, but preemption is disabled */
+// 2017-01-07, 시작
 static inline void post_schedule(struct rq *rq)
 {
 	if (rq->post_schedule) {
 		unsigned long flags;
 
 		raw_spin_lock_irqsave(&rq->lock, flags);
+		// 2017-01-07, fair_sched_class 기준으로 분석
+		// fair_sched_class의 경우, post_schedule에 대한 고려는 없다.
 		if (rq->curr->sched_class->post_schedule)
 			rq->curr->sched_class->post_schedule(rq);
 		raw_spin_unlock_irqrestore(&rq->lock, flags);
@@ -2708,6 +2711,7 @@ need_resched:
 		raw_spin_unlock_irq(&rq->lock);
 
 	// 2017-01-07 시작 지점
+	// fair_sched_class의 경우, post_schedule에 대한 고려가 없다.
 	post_schedule(rq);
 	sched_preempt_enable_no_resched();
 	if (need_resched())
@@ -2736,6 +2740,7 @@ asmlinkage void __sched schedule(void)
 	sched_submit_work(tsk);
 	// 2016-09-24
 	__schedule();
+	// 2017-01-07, end
 }
 EXPORT_SYMBOL(schedule);
 
@@ -3038,8 +3043,10 @@ do_wait_for_common(struct completion *x,
 			// 2016-09-24, schedule_timeout 진행중
 			// schedule_timeout(MAX_SCHEDULE_TIMEOUT);
 			timeout = action(timeout);
+			// 2017-01-07
 			spin_lock_irq(&x->wait.lock);
 		} while (!x->done && timeout);
+		// 2017-01-07
 		__remove_wait_queue(&x->wait, &wait);
 		if (!x->done)
 			return timeout;
@@ -3058,6 +3065,7 @@ __wait_for_common(struct completion *x,
 	spin_lock_irq(&x->wait.lock);
 	// 2016-09-24, start
 	timeout = do_wait_for_common(x, action, timeout, state);
+	// 2017-01-07, end
 	spin_unlock_irq(&x->wait.lock);
 	return timeout;
 }
@@ -3095,6 +3103,7 @@ void __sched wait_for_completion(struct completion *x)
 {
 	// 2016-09-24, start
 	wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_UNINTERRUPTIBLE);
+	// 2017-01-07, end
 }
 EXPORT_SYMBOL(wait_for_completion);
 

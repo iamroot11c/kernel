@@ -27,6 +27,7 @@ struct sysfs_elem_dir {
 	struct rb_root		children;
 };
 
+// 2017-01-07
 struct sysfs_elem_symlink {
 	struct sysfs_dirent	*target_sd;
 };
@@ -36,12 +37,15 @@ struct sysfs_elem_attr {
 	struct sysfs_open_dirent *open;
 };
 
+// 2017-01-07
 struct sysfs_elem_bin_attr {
 	struct bin_attribute	*bin_attr;
+    // 2017-01-07
 	struct hlist_head	buffers;
 };
 
 // 2016-09-24
+// 2017-01-07
 struct sysfs_inode_attrs {
 	struct iattr	ia_iattr;
 	void		*ia_secdata;
@@ -77,6 +81,7 @@ struct sysfs_dirent {
 	unsigned int		s_hash; /* ns + name hash */
 	union {
 		struct sysfs_elem_dir		s_dir;
+        // 2017-01-07
 		struct sysfs_elem_symlink	s_symlink;
 		struct sysfs_elem_attr		s_attr;
 		struct sysfs_elem_bin_attr	s_bin_attr;
@@ -86,6 +91,7 @@ struct sysfs_dirent {
 	umode_t			s_mode;
 	unsigned int		s_ino;
     // 2016-09-24
+    // 2017-01-07
 	struct sysfs_inode_attrs *s_iattr;
 };
 
@@ -99,6 +105,7 @@ struct sysfs_dirent {
 #define SYSFS_KOBJ_ATTR			0x0002
 #define SYSFS_KOBJ_BIN_ATTR		0x0004
 #define SYSFS_KOBJ_LINK			0x0008
+// 2017-01-07
 #define SYSFS_COPY_NAME			(SYSFS_DIR | SYSFS_KOBJ_LINK)
 #define SYSFS_ACTIVE_REF		(SYSFS_KOBJ_ATTR | SYSFS_KOBJ_BIN_ATTR)
 
@@ -112,6 +119,7 @@ struct sysfs_dirent {
 #define SYSFS_FLAG_REMOVED		0x02000
 
 // 2016-09-24
+// 2017-01-07
 static inline unsigned int sysfs_type(struct sysfs_dirent *sd)
 {
 	return sd->s_flags & SYSFS_TYPE_MASK;
@@ -213,11 +221,14 @@ static inline struct sysfs_dirent *__sysfs_get(struct sysfs_dirent *sd)
 }
 #define sysfs_get(sd) __sysfs_get(sd)
 
+// 2017-01-07
 static inline void __sysfs_put(struct sysfs_dirent *sd)
 {
+    // 더 이상 참조하는 것이 없다면, release 한다.
 	if (sd && atomic_dec_and_test(&sd->s_count))
 		release_sysfs_dirent(sd);
 }
+// 2017-01-07
 #define sysfs_put(sd) __sysfs_put(sd)
 
 /*

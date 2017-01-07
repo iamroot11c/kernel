@@ -35,12 +35,14 @@
  */
 static DEFINE_MUTEX(sysfs_bin_lock);
 
+// 2017-01-07
 struct bin_buffer {
 	struct mutex			mutex;
 	void				*buffer;
 	int				mmapped;
 	const struct vm_operations_struct *vm_ops;
 	struct file			*file;
+	// 2017-01-07
 	struct hlist_node		list;
 };
 
@@ -457,6 +459,7 @@ const struct file_operations bin_fops = {
 };
 
 
+// 2017-01-07
 void unmap_bin_file(struct sysfs_dirent *attr_sd)
 {
 	struct bin_buffer *bb;
@@ -466,6 +469,12 @@ void unmap_bin_file(struct sysfs_dirent *attr_sd)
 
 	mutex_lock(&sysfs_bin_lock);
 
+/*
+#define hlist_for_each_entry(pos, head, member)             \
+    for (pos = hlist_entry_safe((head)->first, typeof(*(pos)), member);\
+         pos;                           \
+         pos = hlist_entry_safe((pos)->member.next, typeof(*(pos)), member))
+*/
 	hlist_for_each_entry(bb, &attr_sd->s_bin_attr.buffers, list) {
 		struct inode *inode = file_inode(bb->file);
 

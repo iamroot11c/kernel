@@ -235,6 +235,7 @@ struct vm_region {
  * library, the executable area etc).
  */
 // 2015-08-15
+// 2017-01-07
 struct vm_area_struct {
 	/* The first cache line has the info for VMA tree walking. */
 

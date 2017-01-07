@@ -32,7 +32,9 @@ DEFINE_SPINLOCK(sysfs_assoc_lock);
 // 2016-09-24
 #define to_sysfs_dirent(X) rb_entry((X), struct sysfs_dirent, s_rb);
 
+// 2017-01-07
 static DEFINE_SPINLOCK(sysfs_ino_lock);
+// 2016-01-07
 static DEFINE_IDA(sysfs_ino_ida);
 
 /**
@@ -241,6 +243,7 @@ static void sysfs_deactivate(struct sysfs_dirent *sd)
 		lock_contended(&sd->dep_map, _RET_IP_);		// NOP
 		// 2016-09-24
 		wait_for_completion(&wait);
+		// 2017-01-07
 	}
 
 	lock_acquired(&sd->dep_map, _RET_IP_);
@@ -266,6 +269,7 @@ static int sysfs_alloc_ino(unsigned int *pino)
 	return rc;
 }
 
+// 2017-01-07
 static void sysfs_free_ino(unsigned int ino)
 {
 	spin_lock(&sysfs_ino_lock);
@@ -273,6 +277,8 @@ static void sysfs_free_ino(unsigned int ino)
 	spin_unlock(&sysfs_ino_lock);
 }
 
+// 2017-01-07
+// parent_sd가 NULL일 때까지, release 하도록 구성되어 있다.
 void release_sysfs_dirent(struct sysfs_dirent *sd)
 {
 	struct sysfs_dirent *parent_sd;
@@ -287,17 +293,23 @@ void release_sysfs_dirent(struct sysfs_dirent *sd)
 		"sysfs: free using entry: %s/%s\n",
 		parent_sd ? parent_sd->s_name : "", sd->s_name);
 
+	// 2017-01-07
 	if (sysfs_type(sd) == SYSFS_KOBJ_LINK)
 		sysfs_put(sd->s_symlink.target_sd);
+	// 2017-01-07
 	if (sysfs_type(sd) & SYSFS_COPY_NAME)
 		kfree(sd->s_name);
+	// 2017-01-07, NOP
 	if (sd->s_iattr && sd->s_iattr->ia_secdata)
 		security_release_secctx(sd->s_iattr->ia_secdata,
 					sd->s_iattr->ia_secdata_len);
 	kfree(sd->s_iattr);
+	// 2017-01-07
 	sysfs_free_ino(sd->s_ino);
+	// 2017-01-07
 	kmem_cache_free(sysfs_dir_cachep, sd);
 
+	// parent가 존재하면, parent를 기준으로 해제
 	sd = parent_sd;
 	if (sd && atomic_dec_and_test(&sd->s_count))
 		goto repeat;
@@ -612,7 +624,10 @@ void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt)
 
 		// 2016-09-24, start
 		sysfs_deactivate(sd);
+		// 2017-01-07, end
+		// 2017-01-07, start
 		unmap_bin_file(sd);
+		// 2017-01-07
 		sysfs_put(sd);
 	}
 }

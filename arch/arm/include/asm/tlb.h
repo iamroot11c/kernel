@@ -39,6 +39,7 @@
  * TLB handling.  This allows us to remove pages from the page
  * tables, and efficiently handle the TLB issues.
  */
+// 2017-01-07
 struct mmu_gather {
 	struct mm_struct	*mm;
 	unsigned int		fullmm;
@@ -48,8 +49,10 @@ struct mmu_gather {
 	unsigned long		range_end;
 	unsigned int		nr;
 	unsigned int		max;
+    // 2017-01-07
 	struct page		**pages;
-	struct page		*local[MMU_GATHER_BUNDLE];
+    // 2017-01-07
+	struct page		*local[MMU_GATHER_BUNDLE/*8*/];
 };
 
 DECLARE_PER_CPU(struct mmu_gather, mmu_gathers);
@@ -88,6 +91,8 @@ static inline void tlb_add_flush(struct mmu_gather *tlb, unsigned long addr)
 	}
 }
 
+// 2016-01-07
+// free page를 할당 받음
 static inline void __tlb_alloc_page(struct mmu_gather *tlb)
 {
 	unsigned long addr = __get_free_pages(GFP_NOWAIT | __GFP_NOWARN, 0);
@@ -107,6 +112,7 @@ static inline void tlb_flush_mmu(struct mmu_gather *tlb)
 		__tlb_alloc_page(tlb);
 }
 
+// 2017-01-07
 static inline void
 tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm, unsigned long start, unsigned long end)
 {

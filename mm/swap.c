@@ -43,7 +43,9 @@ int page_cluster;
 
 // 2015-07-11
 static DEFINE_PER_CPU(struct pagevec, lru_add_pvec);
+// 2017-01-07
 static DEFINE_PER_CPU(struct pagevec, lru_rotate_pvecs);
+// 2017-01-07
 static DEFINE_PER_CPU(struct pagevec, lru_deactivate_pvecs);
 
 /*
@@ -528,6 +530,7 @@ static void __activate_page(struct page *page, struct lruvec *lruvec,
 }
 
 #ifdef CONFIG_SMP
+// 2017-01-07
 static DEFINE_PER_CPU(struct pagevec, activate_page_pvecs);
 
 // 2015-04-25

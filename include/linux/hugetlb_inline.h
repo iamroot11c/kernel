@@ -1,7 +1,7 @@
 #ifndef _LINUX_HUGETLB_INLINE_H
 #define _LINUX_HUGETLB_INLINE_H
 
-#ifdef CONFIG_HUGETLB_PAGE
+#ifdef CONFIG_HUGETLB_PAGE  // =n
 
 #include <linux/mm.h>
 

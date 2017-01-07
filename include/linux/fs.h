@@ -224,6 +224,9 @@ typedef void (dio_iodone_t)(struct kiocb *iocb, loff_t offset,
  * Derek Atkins <warlord@MIT.EDU> 94-10-20
  */
 // 2016-09-24
+// 2017-01-07
+//  ctime, mtime, atime 다른 점 설명
+//  > ctime : create time , mtime = modify time , atime = access time
 struct iattr {
 	unsigned int	ia_valid;
 	umode_t		ia_mode;
@@ -771,6 +774,7 @@ static inline int ra_has_index(struct file_ra_state *ra, pgoff_t index)
 #define FILE_MNT_WRITE_TAKEN	1
 #define FILE_MNT_WRITE_RELEASED	2
 
+// 2017-01-07
 struct file {
 	/*
 	 * fu_list becomes invalid after file_free is called and queued via
@@ -2241,6 +2245,7 @@ static inline bool execute_ok(struct inode *inode)
 	return (inode->i_mode & S_IXUGO) || S_ISDIR(inode->i_mode);
 }
 
+// 2017-01-07
 static inline struct inode *file_inode(struct file *f)
 {
 	return f->f_inode;

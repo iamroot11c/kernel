@@ -3317,6 +3317,8 @@ EXPORT_SYMBOL(__alloc_pages_nodemask);
  */
 // 2016-03-19
 //  __get_free_pages(flags, order);
+// 2017-01-07
+// __get_free_pages(GFP_NOWAIT | __GFP_NOWARN, 0);
 unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)
 {
 	struct page *page;

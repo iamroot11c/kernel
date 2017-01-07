@@ -164,6 +164,7 @@ static void idr_layer_rcu_free(struct rcu_head *head)
 	kmem_cache_free(idr_layer_cache, layer);
 }
 
+// 2017-01-07, glance
 static inline void free_layer(struct idr *idr, struct idr_layer *p)
 {
 	if (idr->hint && idr->hint == p)
@@ -577,6 +578,7 @@ static void idr_remove_warning(int id)
 	WARN(1, "idr_remove called for id=%d which is not allocated.\n", id);
 }
 
+// 2017-01-07, glance
 static void sub_remove(struct idr *idp, int shift, int id)
 {
 	struct idr_layer *p = idp->top;
@@ -619,6 +621,7 @@ static void sub_remove(struct idr *idp, int shift, int id)
  * @idp: idr handle
  * @id: unique key
  */
+// 2017-01-07, glance
 void idr_remove(struct idr *idp, int id)
 {
 	struct idr_layer *p;
@@ -937,10 +940,14 @@ EXPORT_SYMBOL(idr_init);
  * 2007-04-25  written by Tejun Heo <htejun@gmail.com>
  */
 
+// 2017-01-07
+// 1. 전달된 bitmap을 해제하는 것을 기본으로 하되,
+// 2. ida->free_bitmap이 NULL이라면, 여기에 할당하자
 static void free_bitmap(struct ida *ida, struct ida_bitmap *bitmap)
 {
 	unsigned long flags;
 
+	// Double Checking Lock
 	if (!ida->free_bitmap) {
 		spin_lock_irqsave(&ida->idr.lock, flags);
 		if (!ida->free_bitmap) {
@@ -950,6 +957,8 @@ static void free_bitmap(struct ida *ida, struct ida_bitmap *bitmap)
 		spin_unlock_irqrestore(&ida->idr.lock, flags);
 	}
 
+	// bitmap을 해제 해라, 
+	// 단 위의 경우에 해당했다면, 값은 NULL일 것이다.
 	kfree(bitmap);
 }
 
@@ -1079,11 +1088,12 @@ EXPORT_SYMBOL(ida_get_new_above);
  * @ida:	ida handle
  * @id:		ID to free
  */
+// 2017-01-07
 void ida_remove(struct ida *ida, int id)
 {
 	struct idr_layer *p = ida->idr.top;
 	int shift = (ida->idr.layers - 1) * IDR_BITS;
-	int idr_id = id / IDA_BITMAP_BITS;
+	int idr_id = id / IDA_BITMAP_BITS/*992*/;
 	int offset = id % IDA_BITMAP_BITS;
 	int n;
 	struct ida_bitmap *bitmap;
@@ -1110,7 +1120,9 @@ void ida_remove(struct ida *ida, int id)
 	__clear_bit(offset, bitmap->bitmap);
 	if (--bitmap->nr_busy == 0) {
 		__set_bit(n, p->bitmap);	/* to please idr_remove() */
+		// 2017-01-07, glance
 		idr_remove(&ida->idr, idr_id);
+		// 2017-01-07
 		free_bitmap(ida, bitmap);
 	}
 

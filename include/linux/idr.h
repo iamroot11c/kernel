@@ -45,6 +45,7 @@ struct idr_layer {
 
 // 2016-08-20
 // https://lwn.net/Articles/103209/
+// 2017-01-07
 struct idr {
 	struct idr_layer __rcu	*hint;	/* the last layer allocated from */
 	struct idr_layer __rcu	*top;
@@ -55,6 +56,7 @@ struct idr {
 	spinlock_t		lock;
 };
 
+// 2017-01-07
 #define IDR_INIT(name)							\
 {									\
 	.lock			= __SPIN_LOCK_UNLOCKED(name.lock),	\
@@ -212,20 +214,26 @@ static inline void __deprecated idr_remove_all(struct idr *idp)
  * ida_bitmap->nr_busy so that the whole struct fits in 128 bytes.
  */
 #define IDA_CHUNK_SIZE		128	/* 128 bytes per chunk */
-#define IDA_BITMAP_LONGS	(IDA_CHUNK_SIZE / sizeof(long) - 1)
-#define IDA_BITMAP_BITS 	(IDA_BITMAP_LONGS * sizeof(long) * 8)
+// 2017-01-07
+#define IDA_BITMAP_LONGS	(IDA_CHUNK_SIZE / sizeof(long) - 1) /*31*/
+// 1개 단위의 비트 수 : sizeof(long) * 8
+#define IDA_BITMAP_BITS 	(IDA_BITMAP_LONGS * sizeof(long) * 8) /*992*/
 
+// 2017-01-07
 struct ida_bitmap {
 	long			nr_busy;
-	unsigned long		bitmap[IDA_BITMAP_LONGS];
+	unsigned long		bitmap[IDA_BITMAP_LONGS/*31*/];
 };
 
+// 2017-01-07
 struct ida {
 	struct idr		idr;
 	struct ida_bitmap	*free_bitmap;
 };
 
+// 2017-01-07
 #define IDA_INIT(name)		{ .idr = IDR_INIT((name).idr), .free_bitmap = NULL, }
+// 2017-01-07
 #define DEFINE_IDA(name)	struct ida name = IDA_INIT(name)
 
 int ida_pre_get(struct ida *ida, gfp_t gfp_mask);

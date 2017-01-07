@@ -1527,6 +1527,7 @@ signed long __sched schedule_timeout(signed long timeout)
 		 */
 		// 2016-09-24, start
 		schedule();
+		// 2017-01-07, end
 		goto out;
         // 2016-03-05, 1
 	default:
