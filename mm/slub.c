@@ -1698,6 +1698,8 @@ static inline void remove_partial(struct kmem_cache_node *n,
  *
  * Must hold list_lock since we modify the partial list.
  */
+// acquire_slab(s, n, page, object == NULL, &objects); 
+// 파라미터 page의 freelist, page 설정 변경 및 설정된 freelist 반환
 static inline void *acquire_slab(struct kmem_cache *s,
 		struct kmem_cache_node *n, struct page *page,
 		int mode, int *objects)
@@ -1723,6 +1725,7 @@ static inline void *acquire_slab(struct kmem_cache *s,
 	}
 
 	VM_BUG_ON(new.frozen);
+	// 공통 세팅
 	new.frozen = 1;
 
 	if (!__cmpxchg_double_slab(s, page,
@@ -1760,18 +1763,33 @@ static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n,
 		return NULL;
 
 	spin_lock(&n->list_lock);
+	 //    #define list_for_each_entry_safe(pos, n, head, member) 
+	 //    for (pos = list_entry((head)->next, typeof(*pos), member), 
+	 //     	n = list_entry(pos->member.next, typeof(*pos), member); 
+	 //      	&pos->member != (head);					
+	 //             pos = n, n = list_entry(n->member.next, typeof(*n), member))
+	 // -> 
+	 //    for (page = list_entry((&n->partial)->next, typeof(*page), lru),
+	 //		page2 = list_entry(page->lru.next, typeof(*page), lru); 
+	 //		&page->lru != &n->partial;
+	 //		page = page2, page2 = list_entry(page2->lru.next, typeof(*page2), lru))
+	 //             
 	list_for_each_entry_safe(page, page2, &n->partial, lru) {
+		// page == 현재 검사 대상 page
+		// page2 == 다음 검사 대상 page
 		void *t;
 
 		if (!pfmemalloc_match(page, flags))
 			continue;
-
+		
+		// 루프 초기 순회 시 object는 null이다.
 		t = acquire_slab(s, n, page, object == NULL, &objects);
 		if (!t)
 			break;
 
 		available += objects;
 		if (!object) {
+			// 초기 설정. object는 루프 초기 순회 시 null이기 때문
 			c->page = page;
 			stat(s, ALLOC_FROM_PARTIAL);
 			object = t;
@@ -1782,9 +1800,15 @@ static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n,
 		if (!kmem_cache_has_cpu_partial(s)
 			|| available > s->cpu_partial / 2)
 			break;
-
+		// 루프 동작 요약
+		// 1) page 설정을 처음 하는 경우, kmem_cache_cpu의 page를 세팅함으로서, 현재 사용 중인 page를 알려준다.
+		// 2) n->partial 에 연결된 page를 s->cpu_slab->partial에 링크드리스트로 옮긴다.
+		// 3) 가장 마지막으로 옮긴 노드가 s->cpu_slab->partial의 최상위노드가 된다.
+		// 4) acuire_slab이 null이 아닐 때까지 순회하기 때문에 s->cpu_slab->partial에 연결된 노드는 freelist가 있는 게 보장된다.
+		// 5) s->cpu_partial값은 루프 내에서 변경되지 않기 때문에, 일정 개수 이상 할당 후 루프를 빠져나오는 것이 보장된다.
 	}
 	spin_unlock(&n->list_lock);
+	// object는 처음 acuire_slab함수에서 얻은 값을 반환한다.
 	return object;
 }
 
@@ -2224,6 +2248,7 @@ static void unfreeze_partials(struct kmem_cache *s,
  * per node partial list.
  */
 // put_cpu_partial(s, page, 1);
+// put_cpu_partial(s, page, 0);
 static void put_cpu_partial(struct kmem_cache *s, struct page *page, int drain)
 {
 #ifdef CONFIG_SLUB_CPU_PARTIAL	// =y
@@ -2266,6 +2291,26 @@ static void put_cpu_partial(struct kmem_cache *s, struct page *page, int drain)
 
 	} while (this_cpu_cmpxchg(s->cpu_slab->partial, oldpage, page)
 								!= oldpage);
+
+	// case 단위로 나눠서 분석 필요
+	// 1. oldpage == null인 경우
+	//	pages == 1
+	//	pobjects == page->objects - page->inuse;
+	//	page->next == null
+	// 2. oldpage != null, (drain && pobjects > s->cpu_partial) ( == if 조건 통과)
+	//	pages == 1
+	//	pobjects == page->objects - page->inuse;
+	//	pages->next == null
+	//	* old_page 값 변경. 루프 재순회
+	// 3. oldpage != null, (drain && pobjects <= s->cpu_partial) ( == if 조건 불통과)
+	//	pages == ++oldpage->pages;
+	//	pobjects == oldpage->pobjects + page->objects - page->inuse;
+	//	page->next == oldpage
+
+	// 분석
+	//	파라미터 page를 cpu_slab->partial 로 설정하고, 다음 순회할 partial 페이지는 이전 partial 페이지로 연결
+	//	사용 가능한 object 개수 및 페이지 수 증가
+	//	만약 이전 페이지가 없다면, 페이지 개수 1, 다음 순회할 partial 페이지는 null로 설정
 #endif
 }
 
@@ -2400,6 +2445,7 @@ slab_out_of_memory(struct kmem_cache *s, gfp_t gfpflags, int nid)
 }
 
 // 2016-04-02
+// 2017-03-04 
 // new_slab_objects(s, gfpflags, node, &c);
 static inline void *new_slab_objects(struct kmem_cache *s, gfp_t flags,
 			int node, struct kmem_cache_cpu **pc)
@@ -2410,9 +2456,12 @@ static inline void *new_slab_objects(struct kmem_cache *s, gfp_t flags,
 
 	freelist = get_partial(s, flags, node, c);
 
+	// 2017-03-04
+	// partial 리스트에서 사용 가능한 freelist가 있다면, 해당 값 리턴
 	if (freelist)
 		return freelist;
 
+	// 2017-03-04 여기까지
 	// 여기부터 먼저 봄
 	page = new_slab(s, flags, node);
 	if (page) {
@@ -2456,7 +2505,9 @@ static inline bool pfmemalloc_match(struct page *page, gfp_t gfpflags)
  * This function must be called with interrupt disabled.
  */
 // 2016-04-02
-// page의 freelist를 넘겨주는 것이 기본 기능
+// 1) 파라미터로 넘어온 page의 freelist 반환
+// 2) 기존 page->freelist는 null 초기화
+//	성공할 때까지 무한루프
 static inline void *get_freelist(struct kmem_cache *s, struct page *page)
 {
 	struct page new;
@@ -2499,6 +2550,7 @@ static inline void *get_freelist(struct kmem_cache *s, struct page *page)
  * a call to the page allocator and the setup of a new slab.
  */
 // 2016-04-02
+// 2017-03-04
 // 놓쳤지만, 지금이라도 보자.
 static void *__slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
 			  unsigned long addr, struct kmem_cache_cpu *c)
@@ -2578,6 +2630,11 @@ load_freelist:
 new_slab:
 
 	if (c->partial) {
+		// alloc이 일부만 된 페이지가 존재하면
+		// 해당 페이지에서 재할당을 시도한다.
+		//	1) page 변수에 partial page를 할당 -> redo를 하며 
+		//	2) c->freelist 에 null을 설정하기 때문에
+		//	partial page에서 freelist 기준으로 할당
 		page = c->page = c->partial;
 		c->partial = page->next;
 		stat(s, CPU_PARTIAL_ALLOC);
@@ -2587,6 +2644,7 @@ new_slab:
 
 	// 최초 할당?
 	// 이것은 page의 가상주소
+	// 2017-03-04
 	freelist = new_slab_objects(s, gfpflags, node, &c);
 
 	if (unlikely(!freelist)) {
@@ -2625,6 +2683,7 @@ new_slab:
  * Otherwise we can simply pick the next object from the lockless free list.
  */
 // 2016-03-19
+// 2017-03-04
 // kmem_cache *s의 cpu_slab에서 다음 할당 가능한 object 주소(freelist) 값을 얻어온다.
 static __always_inline void *slab_alloc_node(struct kmem_cache *s,
 		gfp_t gfpflags, int node, unsigned long addr)
@@ -2723,6 +2782,7 @@ redo:
 
 // 2016-03-19
 // 2016-05-28
+// 2017-03-04
 // slab_alloc(kmem_cache, GFP_NOWAIT | __GFP_ZER, _RET_IP_)
 static __always_inline void *slab_alloc(struct kmem_cache *s,
 		gfp_t gfpflags, unsigned long addr)
@@ -3649,6 +3709,7 @@ static int __init setup_slub_nomerge(char *str)
 __setup("slub_nomerge", setup_slub_nomerge);
 
 // 2016-03-19
+// 2017-03-04
 //  __kmalloc(size, flags);
 void *__kmalloc(size_t size, gfp_t flags)
 {
@@ -3669,6 +3730,7 @@ void *__kmalloc(size_t size, gfp_t flags)
 
 	// kmem_cache의 cpu_slab에서 다음 할당 가능한 메모리 주소를 얻어온다.
 	// 2016-04-02
+	// 2017-03-04
 	ret = slab_alloc(s, flags, _RET_IP_);
 	// 2016-04-02
 

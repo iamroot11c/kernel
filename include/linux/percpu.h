@@ -214,6 +214,7 @@ extern void __bad_size_call_parameter(void);
 //__pcpu_size_call_return2(__this_cpu_add_return_, pcp, -1)
 // 2016-04-02
 // __pcpu_size_call_return2(this_cpu_cmpxchg_, s->cpu_slab->partial, oldpage, page)
+//      this_cpu_cmpxchg_4(variable, );
 #define __pcpu_size_call_return2(stem, variable, ...)			\
 ({									\
 	typeof(variable) pscr2_ret__;					\
@@ -792,6 +793,9 @@ do {									\
 #endif
 
 // 2016-03-26;
+// pcp1, pcp2 값이 각각 oval1, oval2와 같다면
+// nval1, nval2값으로 변경하고 참을 반환
+// 실패한 경우 거짓 반환
 #define __this_cpu_generic_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nval2)	\
 ({									\
 	int __ret = 0;							\

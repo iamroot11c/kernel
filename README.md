@@ -1,5 +1,16 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [125주차]() `2017.03.04`
+ - drive: 홍진우
+ - slub 할당자 동작 재리뷰
+ - 참고 문서 http://events.linuxfoundation.org/images/stories/pdf/klf2012_kim.pdf
+ - kernel/mm/slub.c:__kmalloc() 진행 중
+ - kernel/mm/slub.c:slab_alloc() 진행 중
+ - kernel/mm/slub.c:slab_alloc_node() 진행 중
+ - kernel/mm/slub.c:__slab_alloc() 진행 중
+ - kernel/mm/slub.c:new_slab_objects() 진행 중
+ - kernel/mm/slub.c:get_partial() 진행 완료
+
 + [124주차]() `2017.02.25`
  - drive: 양만철
  - 네트워크 교육(170107~170218) 리뷰
