@@ -1,6 +1,6 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
-+ [125주차]() `2017.03.04`
++ [125주차](http://bit.ly/2lHENcU) `2017.03.04` 
  - drive: 홍진우
  - slub 할당자 동작 재리뷰
  - 참고 문서 http://events.linuxfoundation.org/images/stories/pdf/klf2012_kim.pdf
