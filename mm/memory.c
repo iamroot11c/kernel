@@ -633,12 +633,13 @@ static inline void init_rss_vec(int *rss)
 	memset(rss, 0, sizeof(int) * NR_MM_COUNTERS);
 }
 
+// 2017-04-15
 static inline void add_mm_rss_vec(struct mm_struct *mm, int *rss)
 {
 	int i;
 
 	if (current->mm == mm)
-		sync_mm_rss(mm);
+		sync_mm_rss(mm);	// NOP
 	for (i = 0; i < NR_MM_COUNTERS; i++)
 		if (rss[i])
 			add_mm_counter(mm, i, rss[i]);
@@ -763,6 +764,7 @@ static inline bool is_cow_mapping(vm_flags_t flags)
 #endif
 
 // 2015-10-17
+// 2017-04-14
 struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 				pte_t pte)
 {
@@ -1090,6 +1092,7 @@ int copy_page_range(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 	return ret;
 }
 
+// 2017-04-14
 static unsigned long zap_pte_range(struct mmu_gather *tlb,
 				struct vm_area_struct *vma, pmd_t *pmd,
 				unsigned long addr, unsigned long end,
@@ -1097,7 +1100,7 @@ static unsigned long zap_pte_range(struct mmu_gather *tlb,
 {
 	struct mm_struct *mm = tlb->mm;
 	int force_flush = 0;
-	int rss[NR_MM_COUNTERS];
+	int rss[NR_MM_COUNTERS/*3*/];
 	spinlock_t *ptl;
 	pte_t *start_pte;
 	pte_t *pte;
@@ -1106,6 +1109,7 @@ again:
 	init_rss_vec(rss);
 	start_pte = pte_offset_map_lock(mm, pmd, addr, &ptl);
 	pte = start_pte;
+	// 2017-04-14
 	arch_enter_lazy_mmu_mode();
 	do {
 		pte_t ptent = *pte;
@@ -1116,6 +1120,7 @@ again:
 		if (pte_present(ptent)) {
 			struct page *page;
 
+			// 2017-04-14
 			page = vm_normal_page(vma, addr, ptent);
 			if (unlikely(details) && page) {
 				/*
@@ -1135,6 +1140,7 @@ again:
 				     page->index > details->last_index))
 					continue;
 			}
+			//
 			ptent = ptep_get_and_clear_full(mm, addr, pte,
 							tlb->fullmm);
 			tlb_remove_tlb_entry(tlb, pte, addr);
@@ -1176,6 +1182,7 @@ again:
 			if (unlikely(!(vma->vm_flags & VM_NONLINEAR)))
 				print_bad_pte(vma, addr, ptent, NULL);
 		} else {
+			//
 			swp_entry_t entry = pte_to_swp_entry(ptent);
 
 			if (!non_swap_entry(entry))
@@ -1193,13 +1200,15 @@ again:
 			if (unlikely(!free_swap_and_cache(entry)))
 				print_bad_pte(vma, addr, ptent, NULL);
 		}
+		// 핵심 기능
 		pte_clear_not_present_full(mm, addr, pte, tlb->fullmm);
 	} while (pte++, addr += PAGE_SIZE, addr != end);
 
 	add_mm_rss_vec(mm, rss);
-	arch_leave_lazy_mmu_mode();
+	arch_leave_lazy_mmu_mode();	// NOP
 	pte_unmap_unlock(start_pte, ptl);
 
+	//
 	/*
 	 * mmu_gather ran out of room to batch pages, we break out of
 	 * the PTE lock to avoid doing the potential expensive TLB invalidate
@@ -1230,6 +1239,7 @@ again:
 	return addr;
 }
 
+// 2017-04-14
 static inline unsigned long zap_pmd_range(struct mmu_gather *tlb,
 				struct vm_area_struct *vma, pud_t *pud,
 				unsigned long addr, unsigned long end,
@@ -1241,7 +1251,7 @@ static inline unsigned long zap_pmd_range(struct mmu_gather *tlb,
 	pmd = pmd_offset(pud, addr);
 	do {
 		next = pmd_addr_end(addr, end);
-		if (pmd_trans_huge(*pmd)) {
+		if (pmd_trans_huge(*pmd)) {	// NOP
 			if (next - addr != HPAGE_PMD_SIZE) {
 #ifdef CONFIG_DEBUG_VM
 				if (!rwsem_is_locked(&tlb->mm->mmap_sem)) {
@@ -1264,8 +1274,9 @@ static inline unsigned long zap_pmd_range(struct mmu_gather *tlb,
 		 * because MADV_DONTNEED holds the mmap_sem in read
 		 * mode.
 		 */
-		if (pmd_none_or_trans_huge_or_clear_bad(pmd))
+		if (pmd_none_or_trans_huge_or_clear_bad(pmd))	// almost NOP
 			goto next;
+		// 2017-04-15
 		next = zap_pte_range(tlb, vma, pmd, addr, next, details);
 next:
 		cond_resched();
@@ -1274,6 +1285,8 @@ next:
 	return addr;
 }
 
+// 2017-04-14
+// zap_pud_range(tlb, vma, pgd, addr, next, details);
 static inline unsigned long zap_pud_range(struct mmu_gather *tlb,
 				struct vm_area_struct *vma, pgd_t *pgd,
 				unsigned long addr, unsigned long end,
@@ -1293,6 +1306,7 @@ static inline unsigned long zap_pud_range(struct mmu_gather *tlb,
 	return addr;
 }
 
+// 2017-04-15
 static void unmap_page_range(struct mmu_gather *tlb,
 			     struct vm_area_struct *vma,
 			     unsigned long addr, unsigned long end,
@@ -1305,17 +1319,20 @@ static void unmap_page_range(struct mmu_gather *tlb,
 		details = NULL;
 
 	BUG_ON(addr >= end);
-	mem_cgroup_uncharge_start();
+	mem_cgroup_uncharge_start();	// NOP
+	// 2017-04-15
 	tlb_start_vma(tlb, vma);
+	//
 	pgd = pgd_offset(vma->vm_mm, addr);
 	do {
 		next = pgd_addr_end(addr, end);
 		if (pgd_none_or_clear_bad(pgd))
 			continue;
+		// 2017-04-14
 		next = zap_pud_range(tlb, vma, pgd, addr, next, details);
 	} while (pgd++, addr = next, addr != end);
 	tlb_end_vma(tlb, vma);
-	mem_cgroup_uncharge_end();
+	mem_cgroup_uncharge_end();	// NOP
 }
 
 
@@ -1360,7 +1377,9 @@ static void unmap_single_vma(struct mmu_gather *tlb,
 			}
 		} else
 			// 2017-01-07, 여기까지
+			// 2017-04-15, 시작
 			unmap_page_range(tlb, vma, start, end, details);
+			// 2017-04-15, 여기까지
 	}
 }
 

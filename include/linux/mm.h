@@ -1041,6 +1041,7 @@ extern void user_shm_unlock(size_t, struct user_struct *);
  * Parameter block passed down to zap_pte_range in exceptional cases.
  */
 // 2017-01-07
+// 2017-04-15
 struct zap_details {
 	struct vm_area_struct *nonlinear_vma;	/* Check page->index if set */
 	struct address_space *check_mapping;	/* Check page->mapping if set */
@@ -1249,6 +1250,7 @@ static inline unsigned long get_mm_counter(struct mm_struct *mm, int member)
 	return (unsigned long)val;
 }
 
+// 2017-04-14
 static inline void add_mm_counter(struct mm_struct *mm, int member, long value)
 {
 	atomic_long_add(value, &mm->rss_stat.count[member]);
@@ -1320,6 +1322,7 @@ static inline void setmax_mm_hiwater_rss(unsigned long *maxrss,
 #if defined(SPLIT_RSS_COUNTING)
 void sync_mm_rss(struct mm_struct *mm);
 #else
+// 2017-04-15
 static inline void sync_mm_rss(struct mm_struct *mm)
 {
 }
@@ -1436,6 +1439,7 @@ static inline void pgtable_page_dtor(struct page *page)
 // 2015-08-22
 // 2015-10-10;
 // 2015-11-07
+// 2017-04-15
 #define pte_unmap_unlock(pte, ptl)	do {		\
 	spin_unlock(ptl);				\
 	pte_unmap(pte); /*no OP.*/					\ 

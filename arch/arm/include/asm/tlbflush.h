@@ -452,6 +452,7 @@ static inline void __flush_tlb_all(void)
 	}
 }
 
+// 2017-04-15
 static inline void __local_flush_tlb_mm(struct mm_struct *mm)
 {
 	const int zero = 0;
@@ -486,6 +487,7 @@ static inline void local_flush_tlb_mm(struct mm_struct *mm)
 		dsb(nsh);
 }
 
+// 2017-04-15
 static inline void __flush_tlb_mm(struct mm_struct *mm)
 {
 	const unsigned int __tlb_flag = __cpu_tlb_flags;

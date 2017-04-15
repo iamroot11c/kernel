@@ -214,6 +214,7 @@ static inline pmd_t *pmd_offset(pud_t *pud, unsigned long addr)
 // 2015-10-10; set_pte_ext(pte, swp_pte, ext)
 // 2015-12-26, set_pte_ext(ptep, __pte(0), 0)
 // 2016-04-16 set_pte_ext(ptep, pteval, ext)
+// 2017-04-14, set_pte_ext(ptep, __pte(0), 0)
 #define set_pte_ext(ptep,pte,ext) cpu_set_pte_ext(ptep,pte,ext)
 
 #endif /* __ASSEMBLY__ */

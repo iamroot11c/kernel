@@ -493,6 +493,7 @@ mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent, bool swapout)
  * so leave page_cache_release and release_pages undeclared... */
 #define free_page_and_swap_cache(page) \
 	page_cache_release(page)
+// 2017-04-15
 #define free_pages_and_swap_cache(pages, nr) \
 	release_pages((pages), (nr), 0);
 

@@ -246,6 +246,7 @@ static inline void vivt_flush_cache_mm(struct mm_struct *mm)
 		__cpuc_flush_user_all();
 }
 
+// 2017-04-15
 static inline void
 vivt_flush_cache_range(struct vm_area_struct *vma, unsigned long start, unsigned long end)
 {
@@ -270,6 +271,7 @@ vivt_flush_cache_page(struct vm_area_struct *vma, unsigned long user_addr, unsig
 #ifndef CONFIG_CPU_CACHE_VIPT       // set
 #define flush_cache_mm(mm) \
 		vivt_flush_cache_mm(mm)
+// 2017-04-14
 #define flush_cache_range(vma,start,end) \
 		vivt_flush_cache_range(vma,start,end)
 #define flush_cache_page(vma,addr,pfn) \

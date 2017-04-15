@@ -1,5 +1,32 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [126주차]() `2017.04.15` 
+ - drive: 보름달님
+ - [perf_pmu_register() 진행중]()
+ - kernel/events/core.c:pref_event_init() 진행 중
+ - kernel/events/core.c:perf_pmu_register() 진행 중
+ - drivers/base/core.c:device_del() 진행 중
+ - drivers/base/power/sysfs.c:dpm_sysfs_remove() 진행 중
+ - drivers/base/power/qos.c:dev_pm_qos_constraints_destroy() 진행 중
+ - drivers/base/power/sysfs.c:pm_qos_sysfs_remove_latency() 진행 중
+ - fs/sysfs/group.c:sysfs_unmerge_group() 진행 중
+ - fs/sysfs/inode.c:sysfs_hash_and_remove() 진행 중
+ - fs/sysfs/dir.c:sysfs_addrm_finish() 진행 중
+ - fs/sysfs/dir.c:sysfs_deactivate() 진행 완료
+ - sched/core.c:wait_for_completion() 진행 완료,  action(timeout);
+ - kernel/timer.c:schedule_timeout() 진행 완료
+ - kernel/sched/core.c:__schedule() 진행 완료
+ - kernel/sched/core.c:post_schedule() 진행 완료
+ - kernel/fs/sysfs/bin.c:unmap_bin_file() 진행 중
+ - kernel/mm/memory.c:unmap_mapping_range() glance
+ - kernel/mm/memory.c:unmap_mapping_range_tree() glance
+ - kernel/mm/memory.c:unmap_mapping_range_vma() glance
+ - kernel/mm/memory.c:zap_page_range_single() glance
+ - mm/swap.c:ru_add_drain() 진행 완료
+ - arch/arm/include/asm/tlb.h:tlb_gather_mmu() 진행 완료
+ - kernel/mm/memory.c:unmap_single_vma() 진행 중
+ - kernel/mm/memory.c:unmap_page_range() 진행 완료
+
 + [125주차]() `2017.04.01` 
  - drive: 홍진우
  - [Asio C++ Library 분석](http://think-async.com/Asio)

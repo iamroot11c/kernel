@@ -83,12 +83,13 @@ static inline int is_swap_pte(pte_t pte)
  * arch-independent swp_entry_t.
  */
 // 2015-10-24;
+// 2017-04-15
 static inline swp_entry_t pte_to_swp_entry(pte_t pte)
 {
 	swp_entry_t arch_entry;
 
 	BUG_ON(pte_file(pte));
-	if (pte_swp_soft_dirty(pte))
+	if (pte_swp_soft_dirty(pte))     // NOP
 		pte = pte_swp_clear_soft_dirty(pte);
 	arch_entry = __pte_to_swp_entry(pte); // pte를 가지고 
                                           // swp_entry_t 인스턴스를 생성

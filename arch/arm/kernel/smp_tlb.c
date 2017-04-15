@@ -112,9 +112,10 @@ void flush_tlb_all(void)
 	broadcast_tlb_a15_erratum();
 }
 
+// 2017-04-15
 void flush_tlb_mm(struct mm_struct *mm)
 {
-	if (tlb_ops_need_broadcast())
+	if (tlb_ops_need_broadcast())	// false
 		on_each_cpu_mask(mm_cpumask(mm), ipi_flush_tlb_mm, mm, 1);
 	else
 		__flush_tlb_mm(mm);
@@ -147,6 +148,7 @@ void flush_tlb_kernel_page(unsigned long kaddr)
 	broadcast_tlb_a15_erratum();
 }
 
+// 2017-04-15
 void flush_tlb_range(struct vm_area_struct *vma,
                      unsigned long start, unsigned long end)
 {

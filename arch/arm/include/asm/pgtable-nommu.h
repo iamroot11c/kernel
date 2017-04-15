@@ -21,7 +21,9 @@
  * Trivial page table functions.
  */
 #define pgd_present(pgd)	(1)
+// 2017-04-14
 #define pgd_none(pgd)		(0)
+// 2017-04-14
 #define pgd_bad(pgd)		(0)
 #define pgd_clear(pgdp)
 #define kern_addr_valid(addr)	(1)

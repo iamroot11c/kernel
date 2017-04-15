@@ -478,6 +478,7 @@ void unmap_bin_file(struct sysfs_dirent *attr_sd)
 	hlist_for_each_entry(bb, &attr_sd->s_bin_attr.buffers, list) {
 		struct inode *inode = file_inode(bb->file);
 
+		// 2017-04-14
 		unmap_mapping_range(inode->i_mapping, 0, 0, 1);
 	}
 

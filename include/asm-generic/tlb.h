@@ -68,11 +68,12 @@ extern void tlb_remove_table(struct mmu_gather *tlb, void *table);
  */
 #define MMU_GATHER_BUNDLE	8
 
+// 2017-04-15
 struct mmu_gather_batch {
 	struct mmu_gather_batch	*next;
 	unsigned int		nr;
 	unsigned int		max;
-	struct page		*pages[0];
+	struct page		*pages[0]; // 배열 길이가 0
 };
 
 #define MAX_GATHER_BATCH	\
@@ -89,6 +90,7 @@ struct mmu_gather_batch {
 /* struct mmu_gather is an opaque type used by the mm code for passing around
  * any data needed by arch specific code for tlb_remove_page.
  */
+// 2017-04-14
 struct mmu_gather {
 	struct mm_struct	*mm;
 #ifdef CONFIG_HAVE_RCU_TABLE_FREE
@@ -106,7 +108,7 @@ struct mmu_gather {
 
 	struct mmu_gather_batch *active;
 	struct mmu_gather_batch	local;
-	struct page		*__pages[MMU_GATHER_BUNDLE];
+	struct page		*__pages[MMU_GATHER_BUNDLE/*8*/];
 	unsigned int		batch_count;
 };
 

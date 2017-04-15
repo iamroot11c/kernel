@@ -86,6 +86,7 @@ int pmdp_clear_flush_young(struct vm_area_struct *vma,
 // 2015-12-26
 // 2016-04-16
 // ptep_get_and_clear(&init_mm, addr, pte)
+// 2017-04-14
 static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
 				       unsigned long address,
 				       pte_t *ptep)
@@ -127,6 +128,7 @@ static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm,
  * not present, or in the process of an address space destruction.
  */
 #ifndef __HAVE_ARCH_PTE_CLEAR_NOT_PRESENT_FULL
+// 2017-04-14
 static inline void pte_clear_not_present_full(struct mm_struct *mm,
 					      unsigned long address,
 					      pte_t *ptep,
@@ -282,9 +284,9 @@ void pmd_clear_bad(pmd_t *);
 // 항상 0이 리턴
 static inline int pgd_none_or_clear_bad(pgd_t *pgd)
 {
-	if (pgd_none(*pgd))
+	if (pgd_none(*pgd))     // almost NOP
 		return 1;
-	if (unlikely(pgd_bad(*pgd))) {
+	if (unlikely(pgd_bad(*pgd))) {  // almost NOP
 		pgd_clear_bad(pgd);
 		return 1;
 	}
@@ -395,7 +397,9 @@ static inline void ptep_modify_prot_commit(struct mm_struct *mm,
  * it must synchronize the delayed page table writes properly on other CPUs.
  */
 #ifndef __HAVE_ARCH_ENTER_LAZY_MMU_MODE
+// 2017-04-15
 #define arch_enter_lazy_mmu_mode()	do {} while (0)
+// 2017-04-15
 #define arch_leave_lazy_mmu_mode()	do {} while (0)
 #define arch_flush_lazy_mmu_mode()	do {} while (0)
 #endif

@@ -100,6 +100,7 @@ EXPORT_SYMBOL(kmap_atomic);
 // 2015-06-06
 // 2015-01-31
 // 2015-02-07, 끝
+// 2017-04-15
 void __kunmap_atomic(void *kvaddr)
 {
 	unsigned long vaddr = (unsigned long) kvaddr & PAGE_MASK;

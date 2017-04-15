@@ -1211,6 +1211,7 @@ void page_add_file_rmap(struct page *page)
  * The caller needs to hold the pte lock.
  */
 // 2015-10-10;
+// 2017-04-14
 void page_remove_rmap(struct page *page)
 {
 	bool anon = PageAnon(page);

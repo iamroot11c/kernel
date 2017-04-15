@@ -2285,6 +2285,7 @@ EXPORT_SYMBOL(redirty_page_for_writepage);
 // 2015-09-05 시작;
 // 2015-09-12 마침;
 // 2015-12-26
+// 2017-04-14, 등록 되어진, set_page_dirty function pointer 실행
 int set_page_dirty(struct page *page)
 {
 	struct address_space *mapping = page_mapping(page);

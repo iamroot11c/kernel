@@ -130,6 +130,7 @@ static inline void kmap_atomic_idx_pop(void)
 //2015-02-07, 끝
 //
 // 2015-09-19;
+// 2017-04-15
 #define kunmap_atomic(addr)                                     \
 do {                                                            \
 	BUILD_BUG_ON(__same_type((addr), struct page *));       \

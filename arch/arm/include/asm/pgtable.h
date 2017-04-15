@@ -229,6 +229,7 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 #define __pte_unmap(pte)	do { } while (0)
 #else
 #define __pte_map(pmd)		(pte_t *)kmap_atomic(pmd_page(*(pmd)))
+// 2017-04-15
 #define __pte_unmap(pte)	kunmap_atomic(pte)
 #endif
 
@@ -269,6 +270,7 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 // 2015-08-22
 // Data cache clear by MVA to PoC, VMSA
 // 2015-12-26
+// 2017-04-15
 #define pte_clear(mm,addr,ptep)	set_pte_ext(ptep, __pte(0), 0)
 
 // 2016-04-16

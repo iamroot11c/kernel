@@ -70,6 +70,7 @@ DECLARE_PER_CPU(struct mmu_gather, mmu_gathers);
  *     tlb->fullmm = 0, but tlb_start_vma/tlb_end_vma will not be called.
  *     tlb->vma will be NULL.
  */
+// 2017-04-15
 static inline void tlb_flush(struct mmu_gather *tlb)
 {
 	if (tlb->fullmm || !tlb->vma)
@@ -81,6 +82,8 @@ static inline void tlb_flush(struct mmu_gather *tlb)
 	}
 }
 
+// 2017-04-14
+// struct mmu_gather가 가진 값을 보정하는 역할이다.
 static inline void tlb_add_flush(struct mmu_gather *tlb, unsigned long addr)
 {
 	if (!tlb->fullmm) {
@@ -103,6 +106,7 @@ static inline void __tlb_alloc_page(struct mmu_gather *tlb)
 	}
 }
 
+// 2017-04-15
 static inline void tlb_flush_mmu(struct mmu_gather *tlb)
 {
 	tlb_flush(tlb);
@@ -142,6 +146,7 @@ tlb_finish_mmu(struct mmu_gather *tlb, unsigned long start, unsigned long end)
 /*
  * Memorize the range for the TLB flush.
  */
+// 2017-04-14
 static inline void
 tlb_remove_tlb_entry(struct mmu_gather *tlb, pte_t *ptep, unsigned long addr)
 {
@@ -153,10 +158,13 @@ tlb_remove_tlb_entry(struct mmu_gather *tlb, pte_t *ptep, unsigned long addr)
  * case where we're doing a full MM flush.  When we're doing a munmap,
  * the vmas are adjusted to only cover the region to be torn down.
  */
+// 2017-04-14
 static inline void
 tlb_start_vma(struct mmu_gather *tlb, struct vm_area_struct *vma)
 {
 	if (!tlb->fullmm) {
+        // 2017-04-14
+        // VIPT에서는 mov pc, lr 이 다더라.
 		flush_cache_range(vma, vma->vm_start, vma->vm_end);
 		tlb->vma = vma;
 		tlb->range_start = TASK_SIZE;
@@ -164,6 +172,7 @@ tlb_start_vma(struct mmu_gather *tlb, struct vm_area_struct *vma)
 	}
 }
 
+// 2017-04-15
 static inline void
 tlb_end_vma(struct mmu_gather *tlb, struct vm_area_struct *vma)
 {
@@ -171,6 +180,7 @@ tlb_end_vma(struct mmu_gather *tlb, struct vm_area_struct *vma)
 		tlb_flush(tlb);
 }
 
+// 2017-04-14
 static inline int __tlb_remove_page(struct mmu_gather *tlb, struct page *page)
 {
 	tlb->pages[tlb->nr++] = page;

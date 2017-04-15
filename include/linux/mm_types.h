@@ -236,6 +236,7 @@ struct vm_region {
  */
 // 2015-08-15
 // 2017-01-07
+// 2017-04-15
 struct vm_area_struct {
 	/* The first cache line has the info for VMA tree walking. */
 
