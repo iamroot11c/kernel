@@ -18,6 +18,7 @@
 #include <asm/cacheflush.h>
 #include <asm/tlbflush.h>
 
+// 2017-04-22
 #define check_pgt_cache()		do { } while (0)
 
 #ifdef CONFIG_MMU

@@ -336,11 +336,13 @@ int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const void *ns,
 
 	// 2016-09-24, start
 	sysfs_addrm_finish(&acxt);
+	// 2017-04-22 완료
 
 	if (sd)
 		return 0;
 	else
 		return -ENOENT;
+	// 2017-04-22 완료
 }
 
 int sysfs_permission(struct inode *inode, int mask)

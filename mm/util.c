@@ -21,6 +21,7 @@
  */
 // 2016-07-16
 // kstrdup(name, GFP_KERNEL)
+// 2017-04-22
 char *kstrdup(const char *s, gfp_t gfp)
 {
 	size_t len;

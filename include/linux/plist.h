@@ -82,6 +82,7 @@ struct plist_head {
 	struct list_head node_list;
 };
 
+// 2017-04-22
 struct plist_node {
 	int			prio;
 	struct list_head	prio_list;
@@ -152,6 +153,7 @@ extern void plist_del(struct plist_node *node, struct plist_head *head);
  *
  * Iterate over a plist of given type, safe against removal of list entry.
  */
+// 2017-04-22
 #define plist_for_each_safe(pos, n, head)	\
 	 list_for_each_entry_safe(pos, n, &(head)->node_list, node_list)
 
@@ -173,6 +175,7 @@ extern void plist_del(struct plist_node *node, struct plist_head *head);
  *
  * Iterate over list of given type, safe against removal of list entry.
  */
+// 2017-04-22
 #define plist_for_each_entry_safe(pos, n, head, m)	\
 	list_for_each_entry_safe(pos, n, &(head)->node_list, m.node_list)
 
@@ -236,6 +239,7 @@ static inline int plist_node_empty(const struct plist_node *node)
  *
  * Assumes the plist is _not_ empty.
  */
+// 2017-04-22
 static inline struct plist_node *plist_first(const struct plist_head *head)
 {
 	return list_entry(head->node_list.next,
@@ -248,6 +252,7 @@ static inline struct plist_node *plist_first(const struct plist_head *head)
  *
  * Assumes the plist is _not_ empty.
  */
+// 2017-04-22
 static inline struct plist_node *plist_last(const struct plist_head *head)
 {
 	return list_entry(head->node_list.prev,

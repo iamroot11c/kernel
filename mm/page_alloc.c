@@ -3373,6 +3373,8 @@ void __free_pages(struct page *page, unsigned int order)
 EXPORT_SYMBOL(__free_pages);
 
 // 2016-12-24
+// 2017-04-22 
+// free_pages((unsigned long)tlb->pages, 0);
 void free_pages(unsigned long addr, unsigned int order)
 {
 	if (addr != 0) {

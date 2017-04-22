@@ -26,6 +26,7 @@
 #include <linux/kthread.h>
 #include "base.h"
 
+// 2017-04-22
 static struct task_struct *thread;
 
 #if defined CONFIG_DEVTMPFS_MOUNT
@@ -36,6 +37,7 @@ static int mount_dev;
 
 static DEFINE_SPINLOCK(req_lock);
 
+// 2017-04-22
 static struct req {
 	struct req *next;
 	struct completion done;
@@ -118,6 +120,8 @@ int devtmpfs_create_node(struct device *dev)
 	return req.err;
 }
 
+// 2017-04-22
+// devtmpfs_delete_node(dev)
 int devtmpfs_delete_node(struct device *dev)
 {
 	const char *tmp = NULL;
@@ -135,11 +139,14 @@ int devtmpfs_delete_node(struct device *dev)
 
 	init_completion(&req.done);
 
+	// kdevtmpfs 커널 쓰레드 안에서
+	// devtmpfsd() 함수에서 requests에 연결된 노드를 순회
 	spin_lock(&req_lock);
 	req.next = requests;
-	requests = &req;
+	requests = &req; // 지역 변수의 주소를 저장
 	spin_unlock(&req_lock);
-
+	// 2017-04-22 여기까지 
+	
 	wake_up_process(thread);
 	wait_for_completion(&req.done);
 
@@ -388,6 +395,8 @@ static int devtmpfsd(void *p)
 	complete(&setup_done);
 	while (1) {
 		spin_lock(&req_lock);
+		// 2017-04-22 requests에 연결된 노드를 계속 순회
+		// 차주 분석 예정
 		while (requests) {
 			struct req *req = requests;
 			requests = NULL;

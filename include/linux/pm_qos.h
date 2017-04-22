@@ -27,6 +27,7 @@ enum pm_qos_flags_status {
 	PM_QOS_FLAGS_ALL,
 };
 
+// 2017-04-22
 #define PM_QOS_DEFAULT_VALUE -1
 
 #define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
@@ -43,6 +44,7 @@ struct pm_qos_request {
 	struct delayed_work work; /* for pm_qos_update_request_timeout */
 };
 
+// 2017-04-22
 struct pm_qos_flags_request {
 	struct list_head node;
 	s32 flags;	/* Do not change to 64 bit */
@@ -53,6 +55,7 @@ enum dev_pm_qos_req_type {
 	DEV_PM_QOS_FLAGS,
 };
 
+// 2017-04-22
 struct dev_pm_qos_request {
 	enum dev_pm_qos_req_type type;
 	union {
@@ -73,6 +76,7 @@ enum pm_qos_type {
  * or effective_flags atomically.  Atomic access is only guaranteed on all CPU
  * types linux supports for 32 bit quantites
  */
+// 2017-04-22
 struct pm_qos_constraints {
 	struct plist_head list;
 	s32 target_value;	/* Do not change to 64 bit */
@@ -81,11 +85,13 @@ struct pm_qos_constraints {
 	struct blocking_notifier_head *notifiers;
 };
 
+// 2017-04-22
 struct pm_qos_flags {
 	struct list_head list;
 	s32 effective_flags;	/* Do not change to 64 bit */
 };
 
+// 2017-04-22
 struct dev_pm_qos {
 	struct pm_qos_constraints latency;
 	struct pm_qos_flags flags;
@@ -97,6 +103,7 @@ struct dev_pm_qos {
 enum pm_qos_req_action {
 	PM_QOS_ADD_REQ,		/* Add a new request */
 	PM_QOS_UPDATE_REQ,	/* Update an existing request */
+    // 2017-04-22
 	PM_QOS_REMOVE_REQ	/* Remove an existing request */
 };
 

@@ -96,6 +96,7 @@ static const char enabled[] = "enabled";
 static const char disabled[] = "disabled";
 
 // 2016-09-24
+// 2017-04-22
 const char power_group_name[] = "power";
 EXPORT_SYMBOL_GPL(power_group_name);
 
@@ -333,6 +334,9 @@ wake_store(struct device * dev, struct device_attribute *attr,
 	return n;
 }
 
+// 2017-04-22
+// struct device_attribute dev_attr_wakeup = __ATTR(wakeup, 0644, wake_show, wake_store)
+//
 static DEVICE_ATTR(wakeup, 0644, wake_show, wake_store);
 
 static ssize_t wakeup_count_show(struct device *dev,
@@ -561,12 +565,13 @@ static DEVICE_ATTR(async, 0644, async_show, async_store);
 #endif
 #endif /* CONFIG_PM_ADVANCED_DEBUG */
 
+// 2017-04-22
 static struct attribute *power_attrs[] = {
-#ifdef CONFIG_PM_ADVANCED_DEBUG
-#ifdef CONFIG_PM_SLEEP
+#ifdef CONFIG_PM_ADVANCED_DEBUG // not define
+#ifdef CONFIG_PM_SLEEP          // defined
 	&dev_attr_async.attr,
 #endif
-#ifdef CONFIG_PM_RUNTIME
+#ifdef CONFIG_PM_RUNTIME // not define
 	&dev_attr_runtime_status.attr,
 	&dev_attr_runtime_usage.attr,
 	&dev_attr_runtime_active_kids.attr,
@@ -575,13 +580,16 @@ static struct attribute *power_attrs[] = {
 #endif /* CONFIG_PM_ADVANCED_DEBUG */
 	NULL,
 };
+// 2017-04-22
 static struct attribute_group pm_attr_group = {
 	.name	= power_group_name,
 	.attrs	= power_attrs,
 };
 
+// 2017-04-22
 static struct attribute *wakeup_attrs[] = {
-#ifdef CONFIG_PM_SLEEP
+#ifdef CONFIG_PM_SLEEP // defined
+	// DEVICE_ATTR() 
 	&dev_attr_wakeup.attr,
 	&dev_attr_wakeup_count.attr,
 	&dev_attr_wakeup_active_count.attr,
@@ -597,6 +605,8 @@ static struct attribute *wakeup_attrs[] = {
 #endif
 	NULL,
 };
+
+// 2017-04-22
 static struct attribute_group pm_wakeup_attr_group = {
 	.name	= power_group_name,
 	.attrs	= wakeup_attrs,
@@ -614,6 +624,7 @@ static struct attribute *runtime_attrs[] = {
 #endif /* CONFIG_PM_RUNTIME */
 	NULL,
 };
+// 2017-04-22
 static struct attribute_group pm_runtime_attr_group = {
 	.name	= power_group_name,
 	.attrs	= runtime_attrs,
@@ -633,13 +644,15 @@ static struct attribute_group pm_qos_latency_attr_group = {
 	.attrs	= pm_qos_latency_attrs,
 };
 
+// 2017-04-22
 static struct attribute *pm_qos_flags_attrs[] = {
-#ifdef CONFIG_PM_RUNTIME
+#ifdef CONFIG_PM_RUNTIME // not define
 	&dev_attr_pm_qos_no_power_off.attr,
 	&dev_attr_pm_qos_remote_wakeup.attr,
 #endif /* CONFIG_PM_RUNTIME */
 	NULL,
 };
+// 2017-04-22
 static struct attribute_group pm_qos_flags_attr_group = {
 	.name	= power_group_name,
 	.attrs	= pm_qos_flags_attrs,
@@ -695,6 +708,7 @@ void pm_qos_sysfs_remove_latency(struct device *dev)
 {
 	// 2016-09-24
 	sysfs_unmerge_group(&dev->kobj, &pm_qos_latency_attr_group);
+	// 2017-04-22
 }
 
 int pm_qos_sysfs_add_flags(struct device *dev)
@@ -702,13 +716,17 @@ int pm_qos_sysfs_add_flags(struct device *dev)
 	return sysfs_merge_group(&dev->kobj, &pm_qos_flags_attr_group);
 }
 
+// 2017-04-22
 void pm_qos_sysfs_remove_flags(struct device *dev)
 {
+	// 2017-04-22
 	sysfs_unmerge_group(&dev->kobj, &pm_qos_flags_attr_group);
 }
 
+// 2017-04-22
 void rpm_sysfs_remove(struct device *dev)
 {
+	// 2017-04-22
 	sysfs_unmerge_group(&dev->kobj, &pm_runtime_attr_group);
 }
 
@@ -717,7 +735,11 @@ void dpm_sysfs_remove(struct device *dev)
 {
 	// 2016-09-24
 	dev_pm_qos_constraints_destroy(dev);
+	// 2017-04-22 완료
+	// 2017-04-22
 	rpm_sysfs_remove(dev);
 	sysfs_unmerge_group(&dev->kobj, &pm_wakeup_attr_group);
+	// 2017-04-22
 	sysfs_remove_group(&dev->kobj, &pm_attr_group);
+	// 2017-04-22 완료
 }

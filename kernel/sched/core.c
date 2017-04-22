@@ -1761,6 +1761,7 @@ out:
 // 2016-11-19
 // task = cpu_stopper_task
 // worker가 fn=active_load_balance_cpu_stop, arg=busiest로 셋된 상태
+// 2017-04-22
 int wake_up_process(struct task_struct *p)
 {
 	WARN_ON(task_is_stopped_or_traced(p));

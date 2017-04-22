@@ -404,6 +404,11 @@ EXPORT_SYMBOL_GPL(__blocking_notifier_call_chain);
 // 2016-09-24
 // blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
 //                                     BUS_NOTIFY_DEL_DEVICE, dev);
+// 2017-04-22
+// blocking_notifier_call_chain(c->notifiers,
+//                               (unsigned long)curr_value, NULL);
+// blocking_notifier_call_chain(&dev_pm_notifiers,
+//                               (unsigned long)value, req);
 int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 		unsigned long val, void *v)
 {

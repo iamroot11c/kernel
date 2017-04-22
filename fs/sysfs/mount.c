@@ -199,6 +199,7 @@ out_err:
 }
 
 #undef sysfs_get
+// 2017-04-22
 struct sysfs_dirent *sysfs_get(struct sysfs_dirent *sd)
 {
 	return __sysfs_get(sd);

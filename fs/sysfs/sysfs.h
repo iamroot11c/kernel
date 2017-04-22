@@ -153,6 +153,7 @@ do {								\
  * Context structure to be used while adding/removing nodes.
  */
 // 2016-09-24
+// 2017-04-22
 struct sysfs_addrm_cxt {
 	struct sysfs_dirent	*parent_sd;
 	struct sysfs_dirent	*removed;
@@ -211,6 +212,7 @@ void sysfs_remove_subdir(struct sysfs_dirent *sd);
 int sysfs_rename(struct sysfs_dirent *sd, struct sysfs_dirent *new_parent_sd,
 		 const void *ns, const char *new_name);
 
+// 2017-04-22
 static inline struct sysfs_dirent *__sysfs_get(struct sysfs_dirent *sd)
 {
 	if (sd) {
@@ -229,6 +231,7 @@ static inline void __sysfs_put(struct sysfs_dirent *sd)
 		release_sysfs_dirent(sd);
 }
 // 2017-01-07
+// 2017-04-22 
 #define sysfs_put(sd) __sysfs_put(sd)
 
 /*

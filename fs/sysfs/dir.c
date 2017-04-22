@@ -45,6 +45,7 @@ static DEFINE_IDA(sysfs_ino_ida);
  *	Returns 31 bit hash of ns + name (so it fits in an off_t )
  */
 // 2016-09-24
+// 2017-04-22
 static unsigned int sysfs_name_hash(const void *ns, const char *name)
 {
 	unsigned long hash = init_name_hash();
@@ -439,6 +440,8 @@ struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type)
  *	return.
  */
 // 2016-09-24
+// 2017-04-22
+// sysfs_addrm_start(&acxt, sd->s_parent);
 void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
 		       struct sysfs_dirent *parent_sd)
 {
@@ -574,6 +577,7 @@ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
  *	Determined by sysfs_addrm_start().
  */
 // 2016-09-24
+// 2017-04-22
 void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
 {
 	struct sysfs_inode_attrs *ps_iattr;
@@ -609,7 +613,8 @@ void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
  *	LOCKING:
  *	sysfs_mutex is released.
  */
-// 2016-09-24, glance
+// 2016-09-24
+// 2017-04-22
 void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt)
 {
 	/* release resources acquired by sysfs_addrm_start() */
@@ -627,9 +632,11 @@ void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt)
 		// 2017-01-07, end
 		// 2017-01-07, start
 		unmap_bin_file(sd);
+		// 2017-04-22 완료
 		// 2017-01-07
 		sysfs_put(sd);
 	}
+	// 2017-04-22 완료
 }
 
 /**
@@ -662,7 +669,7 @@ struct sysfs_dirent *sysfs_find_dirent(struct sysfs_dirent *parent_sd,
 	}
 
 	// 2016-09-24
-	hash = sysfs_name_hash(ns, name);
+	hash = sysfs_name_hash(ns, name); // 해쉬값을 구함
 	while (node) {
 		struct sysfs_dirent *sd;
 		int result;
@@ -702,7 +709,7 @@ struct sysfs_dirent *sysfs_get_dirent(struct sysfs_dirent *parent_sd,
 	struct sysfs_dirent *sd;
 
 	mutex_lock(&sysfs_mutex);
-	sd = sysfs_find_dirent(parent_sd, ns, name);
+	sd = sysfs_find_dirent(parent_sd, ns, name); // 이름으로 찾음
 	sysfs_get(sd);
 	mutex_unlock(&sysfs_mutex);
 
@@ -851,6 +858,7 @@ const struct inode_operations sysfs_dir_inode_operations = {
 	.setxattr	= sysfs_setxattr,
 };
 
+// 2017-04-22
 static void remove_dir(struct sysfs_dirent *sd)
 {
 	struct sysfs_addrm_cxt acxt;
@@ -860,6 +868,7 @@ static void remove_dir(struct sysfs_dirent *sd)
 	sysfs_addrm_finish(&acxt);
 }
 
+// 2017-04-22
 void sysfs_remove_subdir(struct sysfs_dirent *sd)
 {
 	remove_dir(sd);

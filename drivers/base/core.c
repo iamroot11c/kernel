@@ -1271,9 +1271,12 @@ void device_del(struct device *dev)
 					     BUS_NOTIFY_DEL_DEVICE, dev);
 	// 2016-09-24
 	dpm_sysfs_remove(dev);
+	// 2017-04-22 완료
 	if (parent)
+		// 2017-04-22
 		klist_del(&dev->p->knode_parent);
 	if (MAJOR(dev->devt)) {
+		// 2017-04-22 시작
 		devtmpfs_delete_node(dev);
 		device_remove_sys_dev_entry(dev);
 		device_remove_file(dev, &dev_attr_dev);
@@ -1354,6 +1357,8 @@ static struct device *next_device(struct klist_iter *i)
  * a name. This memory is returned in tmp and needs to be
  * freed by the caller.
  */
+// 2017-04-22
+// device_get_devnode(dev, NULL, NULL, NULL, &tmp)
 const char *device_get_devnode(struct device *dev,
 			       umode_t *mode, kuid_t *uid, kgid_t *gid,
 			       const char **tmp)

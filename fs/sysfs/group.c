@@ -17,16 +17,21 @@
 #include <linux/err.h>
 #include "sysfs.h"
 
-
+// 2017-04-22
+// remove_files(sd, &dev->kobj, &pm_attr_group)
 static void remove_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
 			 const struct attribute_group *grp)
 {
 	struct attribute *const *attr;
 	struct bin_attribute *const *bin_attr;
 
+	// 2017-04-22 grp의 attrs가 pm_attr_group 으로 전달되어
+	// 반복문 실행 안함
 	if (grp->attrs)
 		for (attr = grp->attrs; *attr; attr++)
 			sysfs_hash_and_remove(dir_sd, NULL, (*attr)->name);
+	// 2017-04-22 grp의 attrs가 pm_attr_group 으로 전달되어
+	// bin_attrs 가 NULL 이다
 	if (grp->bin_attrs)
 		for (bin_attr = grp->bin_attrs; *bin_attr; bin_attr++)
 			sysfs_remove_bin_file(kobj, *bin_attr);
@@ -199,6 +204,8 @@ EXPORT_SYMBOL_GPL(sysfs_update_group);
  * This function removes a group of attributes from a kobject.  The attributes
  * previously have to have been created for this group, otherwise it will fail.
  */
+// 2017-04-22
+// sysfs_remove_group(&dev->kobj, &pm_attr_group);
 void sysfs_remove_group(struct kobject *kobj,
 			const struct attribute_group *grp)
 {
@@ -283,6 +290,11 @@ EXPORT_SYMBOL_GPL(sysfs_merge_group);
  * @grp:	The files to remove and the attribute group they belong to.
  */
 // 2016-09-24
+// sysfs_unmerge_group(&dev->kobj, &pm_qos_latency_attr_group);
+// 2017-04-22
+// sysfs_unmerge_group(&dev->kobj, &pm_qos_flags_attr_group);
+// sysfs_unmerge_group(&dev->kobj, &pm_runtime_attr_group);
+// sysfs_unmerge_group(&dev->kobj, &pm_wakeup_attr_group);
 void sysfs_unmerge_group(struct kobject *kobj,
 		       const struct attribute_group *grp)
 {
@@ -294,8 +306,12 @@ void sysfs_unmerge_group(struct kobject *kobj,
 		// 2016-09-24
 		for (attr = grp->attrs; *attr; ++attr)
 			sysfs_hash_and_remove(dir_sd, NULL, (*attr)->name);
+			// 2017-04-22 완료
+	
+		// 2017-04-22
 		sysfs_put(dir_sd);
 	}
+	// 2017-04-22 완료
 }
 EXPORT_SYMBOL_GPL(sysfs_unmerge_group);
 

@@ -4317,6 +4317,8 @@ static struct notifier_block slab_notifier = {
 
 // 2016-07-16
 // __kmalloc_track_caller(len, GFP_KERNEL, _RET_IP)
+// 2017-04-22
+// __kmalloc_track_caller(size, GFP_KERNEL, _RET_IP_)
 void *__kmalloc_track_caller(size_t size, gfp_t gfpflags, unsigned long caller)
 {
 	struct kmem_cache *s;

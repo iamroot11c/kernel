@@ -1448,7 +1448,8 @@ void zap_page_range(struct vm_area_struct *vma, unsigned long start,
  *
  * The range must fit into one VMA.
  */
-// 2017-01-07, glance
+// 2017-01-07 시작
+// 2017-04-22 분석완료
 static void zap_page_range_single(struct vm_area_struct *vma, unsigned long address,
 		unsigned long size, struct zap_details *details)
 {
@@ -1465,9 +1466,12 @@ static void zap_page_range_single(struct vm_area_struct *vma, unsigned long addr
 	mmu_notifier_invalidate_range_start(mm, address, end);
 	// 2017-01-07, start, 진행중
 	unmap_single_vma(&tlb, vma, address, end, details);
+	// 2017-04-15, 분석완료
 	// 2017-01-07, NOP
 	mmu_notifier_invalidate_range_end(mm, address, end);
+	// 2017-04-22, 시작
 	tlb_finish_mmu(&tlb, address, end);
+	// 2017-04-22, 분석완료
 }
 
 /**
@@ -2940,16 +2944,18 @@ unwritable_page:
 	return ret;
 }
 
-// 2017-01-07, glance
+// 2017-01-07
+// 2017-04-22
 static void unmap_mapping_range_vma(struct vm_area_struct *vma,
 		unsigned long start_addr, unsigned long end_addr,
 		struct zap_details *details)
 {
-	// 2017-01-07, glance
+	// 2017-01-07 시작
 	zap_page_range_single(vma, start_addr, end_addr - start_addr, details);
+	// 2017-04-22 완료
 }
 
-// 2017-01-07, glance
+// 2017-01-07
 static inline void unmap_mapping_range_tree(struct rb_root *root,
 					    struct zap_details *details)
 {
@@ -2974,14 +2980,17 @@ static inline void unmap_mapping_range_tree(struct rb_root *root,
 		if (zea > vea)
 			zea = vea;
 
-		// 2017-01-07
+		// 2017-01-07 시작
 		unmap_mapping_range_vma(vma,
 			((zba - vba) << PAGE_SHIFT) + vma->vm_start,
 			((zea - vba + 1) << PAGE_SHIFT) + vma->vm_start,
 				details);
+		// 2017-04-22 완료
 	}
 }
 
+// 2017-04-22
+// unmap_mapping_range_list(&mapping->i_mmap_nonlinear, &details)
 static inline void unmap_mapping_range_list(struct list_head *head,
 					    struct zap_details *details)
 {
@@ -2995,6 +3004,7 @@ static inline void unmap_mapping_range_list(struct list_head *head,
 	 */
 	list_for_each_entry(vma, head, shared.nonlinear) {
 		details->nonlinear_vma = vma;
+		// 2017-04-22
 		unmap_mapping_range_vma(vma, vma->vm_start, vma->vm_end, details);
 	}
 }
@@ -3013,7 +3023,7 @@ static inline void unmap_mapping_range_list(struct list_head *head,
  * @even_cows: 1 when truncating a file, unmap even private COWed pages;
  * but 0 when invalidating pagecache, don't throw away private data.
  */
-// 2017-01-07, glance
+// 2017-01-07
 // unmap_mapping_range(inode->i_mapping, 0, 0, 1);
 void unmap_mapping_range(struct address_space *mapping,
 		loff_t const holebegin, loff_t const holelen, int even_cows)
@@ -3042,9 +3052,13 @@ void unmap_mapping_range(struct address_space *mapping,
 	// 2017-01-07, start
 	if (unlikely(!RB_EMPTY_ROOT(&mapping->i_mmap)))
 		unmap_mapping_range_tree(&mapping->i_mmap, &details);
+	// 2017-04-22, 완료
+	
+	// 2017-04-22
 	if (unlikely(!list_empty(&mapping->i_mmap_nonlinear)))
 		unmap_mapping_range_list(&mapping->i_mmap_nonlinear, &details);
 	mutex_unlock(&mapping->i_mmap_mutex);
+	// 2017-04-22, 완료
 }
 EXPORT_SYMBOL(unmap_mapping_range);
 

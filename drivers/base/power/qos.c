@@ -136,6 +136,8 @@ s32 dev_pm_qos_read_value(struct device *dev)
  * code and if needed call the per-device and the global notification
  * callbacks
  */
+// 2017-04-22
+// apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE/*-1*/);
 static int apply_constraint(struct dev_pm_qos_request *req,
 			    enum pm_qos_req_action action, s32 value)
 {
@@ -144,8 +146,11 @@ static int apply_constraint(struct dev_pm_qos_request *req,
 
 	switch(req->type) {
 	case DEV_PM_QOS_LATENCY:
+		// 2017-04-22
 		ret = pm_qos_update_target(&qos->latency, &req->data.pnode,
 					   action, value);
+
+		// 예외처리
 		if (ret) {
 			value = pm_qos_read_value(&qos->latency);
 			blocking_notifier_call_chain(&dev_pm_notifiers,
@@ -229,12 +234,14 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
 	 */
 	// 2016-09-24
 	pm_qos_sysfs_remove_latency(dev);
+	// 2017-04-22
+	// 2017-04-22
 	pm_qos_sysfs_remove_flags(dev);
 
 	mutex_lock(&dev_pm_qos_mtx);
 
-	__dev_pm_qos_hide_latency_limit(dev);
-	__dev_pm_qos_hide_flags(dev);
+	__dev_pm_qos_hide_latency_limit(dev); // No OP.
+	__dev_pm_qos_hide_flags(dev); // No OP.
 
 	qos = dev->power.qos;
 	if (!qos)
@@ -242,13 +249,29 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
 
 	/* Flush the constraints lists for the device. */
 	c = &qos->latency;
+	// #define list_for_each_entry_safe(pos, n, head, member)			\
+	//     for (pos = list_entry((head)->next, typeof(*pos), member),	\
+	//	n = list_entry(pos->member.next, typeof(*pos), member);	\
+	//     &pos->member != (head); 					\
+	//     pos = n, n = list_entry(n->member.next, typeof(*n), member))
+	//
+	// #define plist_for_each_safe(pos, n, head)	\
+	//   list_for_each_entry_safe(pos, n, &(head)->node_list, node_list)
+	// #define plist_for_each_entry_safe(pos, n, head, m)	\
+	//   list_for_each_entry_safe(pos, n, &(head)->node_list, m.node_list)
+	//
+	// for (req = list_entry((&((&c->list))->node_list)->next, typeof(*req), node_list),  \
+	//	n = list_entry(req->member.next, typeof(*req), node_list); \
+	//	&pos->member != (&((&c->list))->node_list);                    \
+	//	pos = tmp, tmp = list_entry(tmp->member.next, typeof(*tmp), node_list))
+	//
 	plist_for_each_entry_safe(req, tmp, &c->list, data.pnode) {
 		/*
 		 * Update constraints list and call the notification
 		 * callbacks if needed
 		 */
-		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
-		memset(req, 0, sizeof(*req));
+		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE/*-1*/);
+		memset(req, 0, sizeof(*req)); // req 크기를 구할 때 조심
 	}
 	f = &qos->flags;
 	list_for_each_entry_safe(req, tmp, &f->list, data.flr.node) {
@@ -267,6 +290,7 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
 	mutex_unlock(&dev_pm_qos_mtx);
 
 	mutex_unlock(&dev_pm_qos_sysfs_mtx);
+	// 2017-04-22 완료
 }
 
 /**
@@ -556,7 +580,7 @@ int dev_pm_qos_add_ancestor_request(struct device *dev,
 }
 EXPORT_SYMBOL_GPL(dev_pm_qos_add_ancestor_request);
 
-#ifdef CONFIG_PM_RUNTIME
+#ifdef CONFIG_PM_RUNTIME // Not define
 static void __dev_pm_qos_drop_user_request(struct device *dev,
 					   enum dev_pm_qos_req_type type)
 {
@@ -773,6 +797,8 @@ int dev_pm_qos_update_flags(struct device *dev, s32 mask, bool set)
 	return ret;
 }
 #else /* !CONFIG_PM_RUNTIME */
+// 2017-04-22
 static void __dev_pm_qos_hide_latency_limit(struct device *dev) {}
+// 2017-04-22
 static void __dev_pm_qos_hide_flags(struct device *dev) {}
 #endif /* CONFIG_PM_RUNTIME */

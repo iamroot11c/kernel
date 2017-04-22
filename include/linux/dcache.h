@@ -106,6 +106,7 @@ extern unsigned int full_name_hash(const unsigned char *, unsigned int);
 
 #define d_lock	d_lockref.lock
 
+// 2017-04-22
 struct dentry {
 	/* RCU lookup touched fields */
 	unsigned int d_flags;		/* protected by d_lock */

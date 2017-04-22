@@ -480,9 +480,11 @@ void unmap_bin_file(struct sysfs_dirent *attr_sd)
 
 		// 2017-04-14
 		unmap_mapping_range(inode->i_mapping, 0, 0, 1);
+		// 2017-04-22 완료
 	}
 
 	mutex_unlock(&sysfs_bin_lock);
+	// 2017-04-22 완료
 }
 
 /**

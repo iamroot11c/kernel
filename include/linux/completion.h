@@ -76,6 +76,7 @@ struct completion {
  * This inline function will initialize a dynamically created completion
  * structure.
  */
+// 2017-04-22
 static inline void init_completion(struct completion *x)
 {
 	x->done = 0;

@@ -1,5 +1,29 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [127주차]() `2017.04.22`
+ - drive: 양만철님
+ - [perf_pmu_register() 진행중]()
+ - kernel/events/core.c:pref_event_init() 진행 중
+ - kernel/events/core.c:perf_pmu_register() 진행 중
+ - drivers/base/core.c:device_del() 진행 중
+ - drivers/base/power/sysfs.c:dpm_sysfs_remove() 진행 완료
+ - drivers/base/power/qos.c:dev_pm_qos_constraints_destroy() 진행 완료
+ - drivers/base/power/sysfs.c:pm_qos_sysfs_remove_latency() 진행 완료
+ - fs/sysfs/group.c:sysfs_unmerge_group() 진행 완료
+ - fs/sysfs/inode.c:sysfs_hash_and_remove() 진행 완료
+ - fs/sysfs/dir.c:sysfs_addrm_finish() 진행 완료
+ - fs/sysfs/dir.c:sysfs_deactivate() 진행 완료
+ - kernel/fs/sysfs/bin.c:unmap_bin_file() 진행 완료
+ - kernel/mm/memory.c:unmap_mapping_range() 진행 완료
+ - kernel/mm/memory.c:unmap_mapping_range_tree() 진행 완료
+ - kernel/mm/memory.c:unmap_mapping_range_vma() 진행 완료
+ - kernel/mm/memory.c:zap_page_range_single() 진행 완료
+ - kernel/mm/memory.c:unmap_mapping_range_list() 진행 완료
+ - fs/sysfs/group.c:sysfs_remove_group() 분석 완료
+ - lib/klist.c:klist_del() 분석 완료
+ - drivers/base/devtmpfs.c:devtmpfs_delete_node() 진행 중
+ - drivers/base/core.c:device_get_devnode() 분석 완료
+
 + [126주차](http://bit.ly/2nOmGYQ) `2017.04.15` 
  - drive: 보름달님
  - [perf_pmu_register() 진행중]()

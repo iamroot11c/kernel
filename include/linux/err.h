@@ -19,6 +19,7 @@
 
 #define IS_ERR_VALUE(x) unlikely((x) >= (unsigned long)-MAX_ERRNO)
 
+// 2017-04-22
 static inline void * __must_check ERR_PTR(long error)
 {
 	return (void *) error;

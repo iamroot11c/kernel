@@ -27,10 +27,11 @@
 #include <linux/plist.h>
 #include <linux/spinlock.h>
 
-#ifdef CONFIG_DEBUG_PI_LIST
+#ifdef CONFIG_DEBUG_PI_LIST // defined
 
 static struct plist_head test_head;
 
+// 2017-04-22
 static void plist_check_prev_next(struct list_head *t, struct list_head *p,
 				  struct list_head *n)
 {
@@ -43,6 +44,7 @@ static void plist_check_prev_next(struct list_head *t, struct list_head *p,
 			n, n->next, n->prev);
 }
 
+// 2017-04-22
 static void plist_check_list(struct list_head *top)
 {
 	struct list_head *prev = top, *next = top->next;
@@ -55,6 +57,7 @@ static void plist_check_list(struct list_head *top)
 	}
 }
 
+// 2017-04-22
 static void plist_check_head(struct plist_head *head)
 {
 	if (!plist_head_empty(head))
@@ -111,6 +114,7 @@ ins_node:
  * @node:	&struct plist_node pointer - entry to be removed
  * @head:	&struct plist_head pointer - list head
  */
+// 2017-04-22
 void plist_del(struct plist_node *node, struct plist_head *head)
 {
 	plist_check_head(head);

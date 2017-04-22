@@ -42,20 +42,25 @@
  * Use the lowest bit of n_klist to mark deleted nodes and exclude
  * dead ones from iteration.
  */
+// 2017-04-22
 #define KNODE_DEAD		1LU
-#define KNODE_KLIST_MASK	~KNODE_DEAD
+#define KNODE_KLIST_MASK	~KNODE_DEAD 
 
+// 2017-04-22
 static struct klist *knode_klist(struct klist_node *knode)
 {
 	return (struct klist *)
 		((unsigned long)knode->n_klist & KNODE_KLIST_MASK);
 }
 
+// 2017-04-22
 static bool knode_dead(struct klist_node *knode)
 {
 	return (unsigned long)knode->n_klist & KNODE_DEAD;
 }
 
+// 2017-04-22
+// knode_set_klist(n, NULL);
 static void knode_set_klist(struct klist_node *knode, struct klist *klist)
 {
 	knode->n_klist = klist;
@@ -63,6 +68,8 @@ static void knode_set_klist(struct klist_node *knode, struct klist *klist)
 	WARN_ON(knode_dead(knode));
 }
 
+// 2017-04-22
+// knode_kill(&dev->p->knode_parent)
 static void knode_kill(struct klist_node *knode)
 {
 	/* and no knode should die twice ever either, see we're very humane */
@@ -171,6 +178,7 @@ void klist_add_before(struct klist_node *n, struct klist_node *pos)
 }
 EXPORT_SYMBOL_GPL(klist_add_before);
 
+// 2017-04-22
 struct klist_waiter {
 	struct list_head list;
 	struct klist_node *node;
@@ -179,8 +187,10 @@ struct klist_waiter {
 };
 
 static DEFINE_SPINLOCK(klist_remove_lock);
+// 2017-04-22
 static LIST_HEAD(klist_remove_waiters);
 
+// 2017-04-22
 static void klist_release(struct kref *kref)
 {
 	struct klist_waiter *waiter, *tmp;
@@ -202,11 +212,14 @@ static void klist_release(struct kref *kref)
 	knode_set_klist(n, NULL);
 }
 
+// 2017-04-22
 static int klist_dec_and_del(struct klist_node *n)
 {
 	return kref_put(&n->n_ref, klist_release);
 }
 
+// 2017-04-22
+// klist_put(&dev->p->knode_parent, true)
 static void klist_put(struct klist_node *n, bool kill)
 {
 	struct klist *k = knode_klist(n);
@@ -216,6 +229,7 @@ static void klist_put(struct klist_node *n, bool kill)
 	if (kill)
 		knode_kill(n);
 	if (!klist_dec_and_del(n))
+		// 참조하는 것이 없다면 put을 NULL로 변경
 		put = NULL;
 	spin_unlock(&k->k_lock);
 	if (put)
@@ -226,6 +240,8 @@ static void klist_put(struct klist_node *n, bool kill)
  * klist_del - Decrement the reference count of node and try to remove.
  * @n: node we're deleting.
  */
+// 2017-04-22
+// klist_del(&dev->p->knode_parent)
 void klist_del(struct klist_node *n)
 {
 	klist_put(n, true);

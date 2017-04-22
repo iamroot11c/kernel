@@ -107,6 +107,7 @@ static inline void __tlb_alloc_page(struct mmu_gather *tlb)
 }
 
 // 2017-04-15
+// 2017-04-22
 static inline void tlb_flush_mmu(struct mmu_gather *tlb)
 {
 	tlb_flush(tlb);
@@ -131,13 +132,15 @@ tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm, unsigned long start
 	__tlb_alloc_page(tlb);
 }
 
+// 2017-04-22
 static inline void
 tlb_finish_mmu(struct mmu_gather *tlb, unsigned long start, unsigned long end)
 {
+    // 2017-04-22
 	tlb_flush_mmu(tlb);
 
 	/* keep the page table cache within bounds */
-	check_pgt_cache();
+	check_pgt_cache(); // No OP.
 
 	if (tlb->pages != tlb->local)
 		free_pages((unsigned long)tlb->pages, 0);

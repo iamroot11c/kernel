@@ -25,10 +25,11 @@ struct module;
 struct bin_attribute;
 enum kobj_ns_type;
 
+// 2017-04-22
 struct attribute {
 	const char		*name;
 	umode_t			mode;
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
+#ifdef CONFIG_DEBUG_LOCK_ALLOC // not defined
 	bool			ignore_lockdep:1;
 	struct lock_class_key	*key;
 	struct lock_class_key	skey;
@@ -56,6 +57,7 @@ do {							\
 #define sysfs_attr_init(attr) do {} while (0)
 #endif
 
+// 2017-04-22
 struct attribute_group {
 	const char		*name;
 	umode_t			(*is_visible)(struct kobject *,

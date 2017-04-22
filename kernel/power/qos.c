@@ -125,6 +125,7 @@ static const struct file_operations pm_qos_power_fops = {
 };
 
 /* unlocked internal variant */
+// 2017-04-22
 static inline int pm_qos_get_value(struct pm_qos_constraints *c)
 {
 	if (plist_head_empty(&c->list))
@@ -144,6 +145,7 @@ static inline int pm_qos_get_value(struct pm_qos_constraints *c)
 	}
 }
 
+// 2017-04-22
 s32 pm_qos_read_value(struct pm_qos_constraints *c)
 {
 	return c->target_value;
@@ -165,6 +167,8 @@ static inline void pm_qos_set_value(struct pm_qos_constraints *c, s32 value)
  * This function returns 1 if the aggregated constraint value has changed, 0
  *  otherwise.
  */
+// 2017-04-22
+// pm_qos_update_target(&qos->latency, &req->data.pnode, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE/*-1*/)
 int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
 			 enum pm_qos_req_action action, int value)
 {
@@ -180,6 +184,7 @@ int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
 
 	switch (action) {
 	case PM_QOS_REMOVE_REQ:
+		// 2017-04-22 action이 PM_QOS_REMOVE_REQ로 전달
 		plist_del(node, &c->list);
 		break;
 	case PM_QOS_UPDATE_REQ:
@@ -219,6 +224,7 @@ int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
  * @pqf: Device PM QoS flags set to remove the request from.
  * @req: Request to remove from the set.
  */
+// 2017-04-22
 static void pm_qos_flags_remove_req(struct pm_qos_flags *pqf,
 				    struct pm_qos_flags_request *req)
 {
@@ -242,6 +248,8 @@ static void pm_qos_flags_remove_req(struct pm_qos_flags *pqf,
  * value has changed.  Returns 1 if the aggregate constraint value has changed,
  * 0 otherwise.
  */
+// 2017-04-22
+// pm_qos_update_flags(&qos->flags, &req->data.flr, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE/*-1*/)
 bool pm_qos_update_flags(struct pm_qos_flags *pqf,
 			 struct pm_qos_flags_request *req,
 			 enum pm_qos_req_action action, s32 val)
@@ -255,6 +263,7 @@ bool pm_qos_update_flags(struct pm_qos_flags *pqf,
 
 	switch (action) {
 	case PM_QOS_REMOVE_REQ:
+		// 2017-04-22 action이 PM_QOS_REMOVE_REQ로 전달
 		pm_qos_flags_remove_req(pqf, req);
 		break;
 	case PM_QOS_UPDATE_REQ:
