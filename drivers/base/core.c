@@ -47,6 +47,7 @@ early_param("sysfs.deprecated", sysfs_deprecated_setup);
 int (*platform_notify)(struct device *dev) = NULL;
 int (*platform_notify_remove)(struct device *dev) = NULL;
 static struct kobject *dev_kobj;
+// 2017-05-12
 struct kobject *sysfs_dev_char_kobj;
 struct kobject *sysfs_dev_block_kobj;
 
@@ -422,6 +423,8 @@ static ssize_t uevent_store(struct device *dev, struct device_attribute *attr,
 		dev_err(dev, "uevent: unknown action-string\n");
 	return count;
 }
+
+// 2017-05-13
 static DEVICE_ATTR_RW(uevent);
 
 static ssize_t online_show(struct device *dev, struct device_attribute *attr,
@@ -453,6 +456,7 @@ static ssize_t online_store(struct device *dev, struct device_attribute *attr,
 	unlock_device_hotplug();
 	return ret < 0 ? ret : count;
 }
+// 2017-05-13
 static DEVICE_ATTR_RW(online);
 
 static int device_add_attributes(struct device *dev,
@@ -474,6 +478,7 @@ static int device_add_attributes(struct device *dev,
 	return error;
 }
 
+// 2017-05-13
 static void device_remove_attributes(struct device *dev,
 				     struct device_attribute *attrs)
 {
@@ -503,6 +508,7 @@ static int device_add_bin_attributes(struct device *dev,
 	return error;
 }
 
+// 2017-05-13
 static void device_remove_bin_attributes(struct device *dev,
 					 struct bin_attribute *attrs)
 {
@@ -518,6 +524,7 @@ int device_add_groups(struct device *dev, const struct attribute_group **groups)
 	return sysfs_create_groups(&dev->kobj, groups);
 }
 
+// 2017-05-13
 void device_remove_groups(struct device *dev,
 			  const struct attribute_group **groups)
 {
@@ -576,6 +583,7 @@ static int device_add_attrs(struct device *dev)
 	return error;
 }
 
+// 2017-05-13
 static void device_remove_attrs(struct device *dev)
 {
 	struct class *class = dev->class;
@@ -599,6 +607,20 @@ static ssize_t dev_show(struct device *dev, struct device_attribute *attr,
 {
 	return print_dev_t(buf, dev->devt);
 }
+
+// 2017-05-13
+// #define DEVICE_ATTR_RO(_name) \
+//      struct device_attribute dev_attr_##_name = __ATTR_RO(_name)
+//
+//  #define __ATTR_RO(_name) {                      \
+//     .attr   = { .name = __stringify(_name), .mode = S_IRUGO },  \
+//     .show   = _name##_show,                     \
+// }
+
+// struct device_attribute dev_attr_dev = {
+//	.attr   = { .name = "dev", .mode = S_IRUGO },
+//      .show   = dev_show,
+// }
 static DEVICE_ATTR_RO(dev);
 
 /* /sys/devices/ */
@@ -633,6 +655,9 @@ EXPORT_SYMBOL_GPL(device_create_file);
  * @dev: device.
  * @attr: device attribute descriptor.
  */
+// 2017-05-13
+// device_remove_file(dev, &dev_attr_dev);
+// device_remove_file(dev, &dev_attr_uevent);
 void device_remove_file(struct device *dev,
 			const struct device_attribute *attr)
 {
@@ -975,6 +1000,7 @@ EXPORT_SYMBOL_GPL(dev_set_name);
  * device_remove_sys_dev_entry() will disagree about the presence of
  * the link.
  */
+// 2017-05-12
 static struct kobject *device_to_dev_kobj(struct device *dev)
 {
 	struct kobject *kobj;
@@ -1001,13 +1027,22 @@ static int device_create_sys_dev_entry(struct device *dev)
 	return error;
 }
 
+// 2017-05-12
 static void device_remove_sys_dev_entry(struct device *dev)
 {
 	struct kobject *kobj = device_to_dev_kobj(dev);
 	char devt_str[15];
 
 	if (kobj) {
+/*
+ #define format_dev_t(buffer, dev)                   \
+      ({                              \
+          sprintf(buffer, "%u:%u", MAJOR(dev), MINOR(dev));   \
+          buffer;                         \
+      })
+*/
 		format_dev_t(devt_str, dev->devt);
+		// 2017-05-12
 		sysfs_remove_link(kobj, devt_str);
 	}
 }
@@ -1278,9 +1313,16 @@ void device_del(struct device *dev)
 	if (MAJOR(dev->devt)) {
 		// 2017-04-22 시작
 		devtmpfs_delete_node(dev);
+		// 2017-05-13 end
+		// 2017-05-13 start
 		device_remove_sys_dev_entry(dev);
+		// 2017-05-13 end
+		// 2017-05-13 start
 		device_remove_file(dev, &dev_attr_dev);
+		// 2017-05-13 end
 	}
+
+	// 2017-05-13, detail한 부분이어서, 넘어감 {
 	if (dev->class) {
 		device_remove_class_symlinks(dev);
 
@@ -1294,8 +1336,15 @@ void device_del(struct device *dev)
 		klist_del(&dev->knode_class);
 		mutex_unlock(&dev->class->p->mutex);
 	}
+	// 2017-05-13 } 
+
+	// 2017-05-13
 	device_remove_file(dev, &dev_attr_uevent);
+	// 2017-05-13
+	// 2017-05-13
 	device_remove_attrs(dev);
+	// 2017-05-13
+	// 2017-05-13, start
 	bus_remove_device(dev);
 	device_pm_remove(dev);
 	driver_deferred_probe_del(dev);

@@ -34,6 +34,7 @@ static const struct super_operations sysfs_ops = {
 	.evict_inode	= sysfs_evict_inode,
 };
 
+// 2017-05-12
 struct sysfs_dirent sysfs_root = {
 	.s_name		= "",
 	.s_count	= ATOMIC_INIT(1),

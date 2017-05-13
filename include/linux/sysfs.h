@@ -26,6 +26,7 @@ struct bin_attribute;
 enum kobj_ns_type;
 
 // 2017-04-22
+// 2017-05-13
 struct attribute {
 	const char		*name;
 	umode_t			mode;
@@ -58,6 +59,7 @@ do {							\
 #endif
 
 // 2017-04-22
+// 2017-05-13
 struct attribute_group {
 	const char		*name;
 	umode_t			(*is_visible)(struct kobject *,
@@ -77,6 +79,7 @@ struct attribute_group {
 	.store	= _store,						\
 }
 
+// 2017-05-13
 #define __ATTR_RO(_name) {						\
 	.attr	= { .name = __stringify(_name), .mode = S_IRUGO },	\
 	.show	= _name##_show,						\
@@ -87,6 +90,7 @@ struct attribute_group {
 	.store	= _name##_store,					\
 }
 
+// 2017-05-13
 #define __ATTR_RW(_name) __ATTR(_name, (S_IWUSR | S_IRUGO),		\
 			 _name##_show, _name##_store)
 
@@ -118,6 +122,7 @@ __ATTRIBUTE_GROUPS(_name)
 struct file;
 struct vm_area_struct;
 
+// 2017-05-13
 struct bin_attribute {
 	struct attribute	attr;
 	size_t			size;
@@ -172,6 +177,7 @@ struct bin_attribute bin_attr_##_name = __BIN_ATTR_RO(_name, _size)
 #define BIN_ATTR_RW(_name, _size)					\
 struct bin_attribute bin_attr_##_name = __BIN_ATTR_RW(_name, _size)
 
+// 2017-05-12
 struct sysfs_ops {
 	ssize_t	(*show)(struct kobject *, struct attribute *, char *);
 	ssize_t	(*store)(struct kobject *, struct attribute *, const char *, size_t);
@@ -197,6 +203,7 @@ int __must_check sysfs_create_files(struct kobject *kobj,
 				   const struct attribute **attr);
 int __must_check sysfs_chmod_file(struct kobject *kobj,
 				  const struct attribute *attr, umode_t mode);
+// 2017-05-13
 void sysfs_remove_file(struct kobject *kobj, const struct attribute *attr);
 void sysfs_remove_files(struct kobject *kobj, const struct attribute **attr);
 

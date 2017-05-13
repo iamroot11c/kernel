@@ -19,6 +19,7 @@
 
 // 2017-04-22
 // remove_files(sd, &dev->kobj, &pm_attr_group)
+// 2017-05-13
 static void remove_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
 			 const struct attribute_group *grp)
 {
@@ -206,6 +207,8 @@ EXPORT_SYMBOL_GPL(sysfs_update_group);
  */
 // 2017-04-22
 // sysfs_remove_group(&dev->kobj, &pm_attr_group);
+// 2017-05-13
+// sysfs_remove_group(kobj, groups[i]);
 void sysfs_remove_group(struct kobject *kobj,
 			const struct attribute_group *grp)
 {
@@ -223,6 +226,7 @@ void sysfs_remove_group(struct kobject *kobj,
 	} else
 		sd = sysfs_get(dir_sd);
 
+	// 단위 삭제
 	remove_files(sd, kobj, grp);
 	if (grp->name)
 		sysfs_remove_subdir(sd);
@@ -239,6 +243,7 @@ EXPORT_SYMBOL_GPL(sysfs_remove_group);
  *
  * If groups is not NULL, remove the specified groups from the kobject.
  */
+// 2017-05-13
 void sysfs_remove_groups(struct kobject *kobj,
 			 const struct attribute_group **groups)
 {

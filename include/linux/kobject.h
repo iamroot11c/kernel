@@ -58,6 +58,7 @@ enum kobject_action {
 	KOBJ_MAX
 };
 
+// 2017-05-13
 struct kobject {
 	const char		*name;
 	struct list_head	entry;
@@ -110,6 +111,7 @@ extern void kobject_put(struct kobject *kobj);
 
 extern char *kobject_get_path(struct kobject *kobj, gfp_t flag);
 
+// 2017-05-12
 struct kobj_type {
 	void (*release)(struct kobject *kobj);
 	const struct sysfs_ops *sysfs_ops;
@@ -125,6 +127,7 @@ struct kobj_uevent_env {
 	int buflen;
 };
 
+// 2017-05-12
 struct kset_uevent_ops {
 	int (* const filter)(struct kset *kset, struct kobject *kobj);
 	const char *(* const name)(struct kset *kset, struct kobject *kobj);
@@ -161,6 +164,7 @@ struct sock;
  * can add new environment variables, or filter out the uevents if so
  * desired.
  */
+// 2017-05-12
 struct kset {
 	struct list_head list;
 	spinlock_t list_lock;

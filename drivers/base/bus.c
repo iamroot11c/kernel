@@ -472,6 +472,7 @@ static int device_add_attrs(struct bus_type *bus, struct device *dev)
 	return error;
 }
 
+// 2017-05-13
 static void device_remove_attrs(struct bus_type *bus, struct device *dev)
 {
 	int i;
@@ -563,6 +564,7 @@ void bus_probe_device(struct device *dev)
  * - Detach from its driver.
  * - Drop reference taken in bus_add_device().
  */
+// 2017-05-13
 void bus_remove_device(struct device *dev)
 {
 	struct bus_type *bus = dev->bus;
@@ -587,6 +589,7 @@ void bus_remove_device(struct device *dev)
 
 	pr_debug("bus: '%s': remove device %s\n",
 		 dev->bus->name, dev_name(dev));
+	// 2017-05-13, start
 	device_release_driver(dev);
 	bus_put(dev->bus);
 }

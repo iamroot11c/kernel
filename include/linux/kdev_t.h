@@ -15,6 +15,7 @@
 #define print_dev_t(buffer, dev)					\
 	sprintf((buffer), "%u:%u\n", MAJOR(dev), MINOR(dev))
 
+// 2017-05-12
 #define format_dev_t(buffer, dev)					\
 	({								\
 		sprintf(buffer, "%u:%u", MAJOR(dev), MINOR(dev));	\

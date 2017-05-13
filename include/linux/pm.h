@@ -274,6 +274,7 @@ typedef struct pm_message {
  *
  */
 
+// 2017-05-13
 struct dev_pm_ops {
 	int (*prepare)(struct device *dev);
 	void (*complete)(struct device *dev);

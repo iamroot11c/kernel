@@ -103,6 +103,7 @@ extern void bus_remove_file(struct bus_type *, struct bus_attribute *);
  * private data.
  */
 // 2016-09-24
+// 2017-05-13
 struct bus_type {
 	const char		*name;
 	const char		*dev_name;
@@ -231,6 +232,7 @@ extern struct klist *bus_get_device_klist(struct bus_type *bus);
  * can export information and configuration variables that are independent
  * of any specific device.
  */
+// 2017-05-13
 struct device_driver {
 	const char		*name;
 	struct bus_type		*bus;
@@ -310,6 +312,7 @@ struct device *driver_find_device(struct device_driver *drv,
  * exclusively claim or control devices. Interfaces usually represent
  * a specific functionality of a subsystem/class of devices.
  */
+// 2017-05-13
 struct subsys_interface {
 	const char *name;
 	struct bus_type *subsys;
@@ -498,6 +501,7 @@ extern void class_destroy(struct class *cls);
  * If "name" is specified, the uevent will contain it in
  * the DEVTYPE variable.
  */
+// 2017-05-13
 struct device_type {
 	const char *name;
 	const struct attribute_group **groups;
@@ -511,6 +515,7 @@ struct device_type {
 
 /* interface for exporting device attributes */
 // 2017-04-22
+// 2017-05-13
 struct device_attribute {
 	struct attribute	attr;
 	ssize_t (*show)(struct device *dev, struct device_attribute *attr,
@@ -540,8 +545,10 @@ ssize_t device_store_bool(struct device *dev, struct device_attribute *attr,
 // 2017-04-22
 #define DEVICE_ATTR(_name, _mode, _show, _store) \
 	struct device_attribute dev_attr_##_name = __ATTR(_name, _mode, _show, _store)
+// 2017-05-13
 #define DEVICE_ATTR_RW(_name) \
 	struct device_attribute dev_attr_##_name = __ATTR_RW(_name)
+// 2017-05-13
 #define DEVICE_ATTR_RO(_name) \
 	struct device_attribute dev_attr_##_name = __ATTR_RO(_name)
 #define DEVICE_ATTR_WO(_name) \
@@ -756,6 +763,7 @@ struct device {
 	struct device_node	*of_node; /* associated device tree node */
 	struct acpi_dev_node	acpi_node; /* associated ACPI device node */
 
+    // 2017-05-12
 	dev_t			devt;	/* dev_t, creates the sysfs "dev" */
 	u32			id;	/* device instance */
 
@@ -763,7 +771,9 @@ struct device {
 	struct list_head	devres_head;
 
 	struct klist_node	knode_class;
+    // 2017-05-13
 	struct class		*class;
+    // 2017-05-13
 	const struct attribute_group **groups;	/* optional groups */
 
 	void	(*release)(struct device *dev);
@@ -870,6 +880,7 @@ static inline void dev_pm_syscore_device(struct device *dev, bool val)
 #endif
 }
 
+// 2017-05-13
 static inline void device_lock(struct device *dev)
 {
 	mutex_lock(&dev->mutex);
@@ -880,6 +891,7 @@ static inline int device_trylock(struct device *dev)
 	return mutex_trylock(&dev->mutex);
 }
 
+// 2017-05-13
 static inline void device_unlock(struct device *dev)
 {
 	mutex_unlock(&dev->mutex);

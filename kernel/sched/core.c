@@ -119,6 +119,7 @@ static void update_rq_clock_task(struct rq *rq, s64 delta);
 
 // 2016-10-01
 // 2016-11-05
+// 2017-05-13
 void update_rq_clock(struct rq *rq)
 {
 	s64 delta;
@@ -320,6 +321,7 @@ int sysctl_sched_rt_runtime = 950000;
 /*
  * __task_rq_lock - lock the rq @p resides on.
  */
+// 2017-05-13
 static inline struct rq *__task_rq_lock(struct task_struct *p)
 	__acquires(rq->lock)
 {
@@ -327,6 +329,7 @@ static inline struct rq *__task_rq_lock(struct task_struct *p)
 
 	lockdep_assert_held(&p->pi_lock);
 
+	// 2017-05-13, infinite loop
 	for (;;) {
 		rq = task_rq(p);
 		raw_spin_lock(&rq->lock);
@@ -1116,6 +1119,7 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
 		perf_sw_event(PERF_COUNT_SW_CPU_MIGRATIONS, 1, NULL, 0);
 	}
 
+	// 핵심 기능
 	__set_task_cpu(p, new_cpu);
 }
 
@@ -1440,6 +1444,8 @@ static void ttwu_activate(struct rq *rq, struct task_struct *p, int en_flags)
 // ttwu_do_wakeup(rq, p, 0);
 // 2016-11-26
 // ttwu_do_wakeup(rq, p, 0); 
+// 2017-05-13
+// task_struct에 설정된 task_woken을 실행하는 schedule 알고리즘 실행
 static void
 ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags)
 {
@@ -1488,6 +1494,10 @@ ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags)
  * since all we need to do is flip p->state to TASK_RUNNING, since
  * the task is still ->on_rq.
  */
+// 2017-05-13
+// task가 runqueue에서 충분히 스케쥴되지 못한 경우 호출된다.
+// 이런 경우, 반듯이, remote wakeup해야 함. 
+// p->state를 TASK_RUNNING으로 변경할 필요가 있음.
 static int ttwu_remote(struct task_struct *p, int wake_flags)
 {
 	struct rq *rq;
@@ -1497,6 +1507,7 @@ static int ttwu_remote(struct task_struct *p, int wake_flags)
 	if (p->on_rq) {
 		/* check_preempt_curr() may use rq clock */
 		update_rq_clock(rq);
+		// woken 알고리즘 실행
 		ttwu_do_wakeup(rq, p, wake_flags);
 		ret = 1;
 	}
@@ -1618,6 +1629,8 @@ static void ttwu_queue(struct task_struct *p, int cpu)
 // 2016-11-19 glance more
 // try_to_wake_up(p, TASK_NORMAL, 0);
 // worker가 fn=active_load_balance_cpu_stop, arg=busiest로 셋된 상태
+// 2017-05-13
+// try_to_wake_up(p, TASK_NORMAL, 0);
 static int
 try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 {
@@ -1673,6 +1686,7 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	cpu = select_task_rq(p, SD_BALANCE_WAKE, wake_flags);
 	if (task_cpu(p) != cpu) {
 		wake_flags |= WF_MIGRATED;
+		// task의 cpu를 새로운 cpu로 설정
 		set_task_cpu(p, cpu);
 	}
 #endif /* CONFIG_SMP */

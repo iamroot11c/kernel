@@ -485,6 +485,7 @@ const struct file_operations sysfs_file_operations = {
 	.poll		= sysfs_poll,
 };
 
+// 2017-05-13
 static int sysfs_attr_ns(struct kobject *kobj, const struct attribute *attr,
 			 const void **pns)
 {
@@ -661,6 +662,7 @@ EXPORT_SYMBOL_GPL(sysfs_chmod_file);
  *
  *	Hash the attribute name and kill the victim.
  */
+// 2017-05-13
 void sysfs_remove_file(struct kobject *kobj, const struct attribute *attr)
 {
 	const void *ns;
@@ -668,6 +670,7 @@ void sysfs_remove_file(struct kobject *kobj, const struct attribute *attr)
 	if (sysfs_attr_ns(kobj, attr, &ns))
 		return;
 
+	// 2017-05-13
 	sysfs_hash_and_remove(kobj->sd, ns, attr->name);
 }
 EXPORT_SYMBOL_GPL(sysfs_remove_file);

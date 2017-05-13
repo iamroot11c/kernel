@@ -46,6 +46,7 @@ struct sysfs_elem_bin_attr {
 
 // 2016-09-24
 // 2017-01-07
+// 2017-05-13
 struct sysfs_inode_attrs {
 	struct iattr	ia_iattr;
 	void		*ia_secdata;
@@ -154,6 +155,7 @@ do {								\
  */
 // 2016-09-24
 // 2017-04-22
+// 2017-05-13
 struct sysfs_addrm_cxt {
 	struct sysfs_dirent	*parent_sd;
 	struct sysfs_dirent	*removed;
@@ -213,6 +215,7 @@ int sysfs_rename(struct sysfs_dirent *sd, struct sysfs_dirent *new_parent_sd,
 		 const void *ns, const char *new_name);
 
 // 2017-04-22
+// 2017-05-13
 static inline struct sysfs_dirent *__sysfs_get(struct sysfs_dirent *sd)
 {
 	if (sd) {

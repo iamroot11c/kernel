@@ -35,6 +35,9 @@ DEFINE_SPINLOCK(sysfs_assoc_lock);
 // 2017-01-07
 static DEFINE_SPINLOCK(sysfs_ino_lock);
 // 2016-01-07
+// 2017-05-13
+// #define DEFINE_IDA(name)    struct ida name = IDA_INIT(name)
+// struct ida sysfs_ino_ida = IDA_INIT(sysfs_ino_ida);
 static DEFINE_IDA(sysfs_ino_ida);
 
 /**
@@ -442,6 +445,8 @@ struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type)
 // 2016-09-24
 // 2017-04-22
 // sysfs_addrm_start(&acxt, sd->s_parent);
+// 2017-05-12
+// sysfs_addrm_start(&acxt, dir_sd);
 void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
 		       struct sysfs_dirent *parent_sd)
 {
@@ -578,6 +583,7 @@ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
  */
 // 2016-09-24
 // 2017-04-22
+// 2017-05-13
 void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
 {
 	struct sysfs_inode_attrs *ps_iattr;
@@ -599,6 +605,7 @@ void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
 	sd->s_flags |= SYSFS_FLAG_REMOVED;
 	// 2016-09-24, 현재는 쓰레기값 or NULL 예상
 	sd->u.removed_list = acxt->removed;
+	// removed 설정
 	acxt->removed = sd;
 }
 
@@ -654,6 +661,8 @@ void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt)
  */
 // 2016-09-24
 // sysfs_find_dirent(parent_sd, ns, name);
+// 2017-05-13
+// sysfs_find_dirent(dir_sd, NULL, "MAJOR:MINOR");
 struct sysfs_dirent *sysfs_find_dirent(struct sysfs_dirent *parent_sd,
 				       const void *ns,
 				       const unsigned char *name)
@@ -702,6 +711,8 @@ struct sysfs_dirent *sysfs_find_dirent(struct sysfs_dirent *parent_sd,
  *	Pointer to sysfs_dirent if found, NULL if not.
  */
 // 2016-09-24
+// 2017-05-13
+// sysfs_get_dirent(dir_sd, NULL, grp->name);
 struct sysfs_dirent *sysfs_get_dirent(struct sysfs_dirent *parent_sd,
 				      const void *ns,
 				      const unsigned char *name)
@@ -869,6 +880,7 @@ static void remove_dir(struct sysfs_dirent *sd)
 }
 
 // 2017-04-22
+// 2017-05-13
 void sysfs_remove_subdir(struct sysfs_dirent *sd)
 {
 	remove_dir(sd);

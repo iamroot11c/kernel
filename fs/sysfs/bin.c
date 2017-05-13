@@ -506,6 +506,7 @@ EXPORT_SYMBOL_GPL(sysfs_create_bin_file);
  *	@kobj:	object.
  *	@attr:	attribute descriptor.
  */
+// 2017-05-13
 void sysfs_remove_bin_file(struct kobject *kobj,
 			   const struct bin_attribute *attr)
 {

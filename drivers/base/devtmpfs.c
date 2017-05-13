@@ -147,8 +147,12 @@ int devtmpfs_delete_node(struct device *dev)
 	spin_unlock(&req_lock);
 	// 2017-04-22 여기까지 
 	
+	// 2017-05-13 여기부터
 	wake_up_process(thread);
+	// 2017-05-13 end
+	// 2017-05-13, start
 	wait_for_completion(&req.done);
+	// 2017-05-13, end
 
 	kfree(tmp);
 	return req.err;

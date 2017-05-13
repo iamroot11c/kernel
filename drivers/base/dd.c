@@ -224,6 +224,7 @@ static int driver_sysfs_add(struct device *dev)
 	return ret;
 }
 
+// 2017-05-13
 static void driver_sysfs_remove(struct device *dev)
 {
 	struct device_driver *drv = dev->driver;
@@ -484,28 +485,32 @@ EXPORT_SYMBOL_GPL(driver_attach);
  * __device_release_driver() must be called with @dev lock held.
  * When called for a USB interface, @dev->parent lock must be held as well.
  */
+// 2017-05-13
 static void __device_release_driver(struct device *dev)
 {
 	struct device_driver *drv;
 
 	drv = dev->driver;
+	// 2017-05-13
 	if (drv) {
-		pm_runtime_get_sync(dev);
+		pm_runtime_get_sync(dev);	// NOP
 
 		driver_sysfs_remove(dev);
 
+		// 2017-05-13, 여기까지
+		// 2017-05-13, blocking_notifier_call_chain는 차주에 분석 필요
 		if (dev->bus)
 			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
 						     BUS_NOTIFY_UNBIND_DRIVER,
 						     dev);
 
-		pm_runtime_put_sync(dev);
+		pm_runtime_put_sync(dev);	// NOP
 
 		if (dev->bus && dev->bus->remove)
 			dev->bus->remove(dev);
 		else if (drv->remove)
 			drv->remove(dev);
-		devres_release_all(dev);
+		devres_release_all(dev);	
 		dev->driver = NULL;
 		dev_set_drvdata(dev, NULL);
 		klist_remove(&dev->p->knode_driver);
@@ -524,6 +529,7 @@ static void __device_release_driver(struct device *dev)
  * Manually detach device from driver.
  * When called for a USB interface, @dev->parent lock must be held.
  */
+// 2017-05-13
 void device_release_driver(struct device *dev)
 {
 	/*

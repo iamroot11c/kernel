@@ -279,6 +279,7 @@ EXPORT_SYMBOL_GPL(klist_remove);
  * klist_node_attached - Say whether a node is bound to a list or not.
  * @n: Node that we're testing.
  */
+// 2017-05-13
 int klist_node_attached(struct klist_node *n)
 {
 	return (n->n_klist != NULL);

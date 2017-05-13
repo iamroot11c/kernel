@@ -167,6 +167,7 @@ void sysfs_delete_link(struct kobject *kobj, struct kobject *targ,
  *	@kobj:	object we're acting for.
  *	@name:	name of the symlink to remove.
  */
+// 2017-05-12
 void sysfs_remove_link(struct kobject *kobj, const char *name)
 {
 	struct sysfs_dirent *parent_sd = NULL;

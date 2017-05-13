@@ -19,11 +19,12 @@
 #define RPM_ASYNC		0x01	/* Request is asynchronous */
 #define RPM_NOWAIT		0x02	/* Don't wait for concurrent
 					    state change */
+// 2017-05-13
 #define RPM_GET_PUT		0x04	/* Increment/decrement the
 					    usage_count */
 #define RPM_AUTO		0x08	/* Use autosuspend_delay */
 
-#ifdef CONFIG_PM_RUNTIME
+#ifdef CONFIG_PM_RUNTIME    // not set
 
 extern struct workqueue_struct *pm_wq;
 
@@ -108,6 +109,7 @@ static inline void pm_runtime_mark_last_busy(struct device *dev)
 
 #else /* !CONFIG_PM_RUNTIME */
 
+// 2017-05-13
 static inline int __pm_runtime_idle(struct device *dev, int rpmflags)
 {
 	return -ENOSYS;
@@ -116,6 +118,8 @@ static inline int __pm_runtime_suspend(struct device *dev, int rpmflags)
 {
 	return -ENOSYS;
 }
+
+// 2017-05-13
 static inline int __pm_runtime_resume(struct device *dev, int rpmflags)
 {
 	return 1;
@@ -200,6 +204,7 @@ static inline int pm_runtime_get(struct device *dev)
 	return __pm_runtime_resume(dev, RPM_GET_PUT | RPM_ASYNC);
 }
 
+// 2017-05-13
 static inline int pm_runtime_get_sync(struct device *dev)
 {
 	return __pm_runtime_resume(dev, RPM_GET_PUT);
@@ -216,6 +221,7 @@ static inline int pm_runtime_put_autosuspend(struct device *dev)
 	    RPM_GET_PUT | RPM_ASYNC | RPM_AUTO);
 }
 
+// 2017-05-13
 static inline int pm_runtime_put_sync(struct device *dev)
 {
 	return __pm_runtime_idle(dev, RPM_GET_PUT);
