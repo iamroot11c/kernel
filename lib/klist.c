@@ -89,6 +89,9 @@ static void knode_kill(struct klist_node *knode)
  * functions that take and release references on the embedding
  * objects.
  */
+// 2017-05-27
+// klist 구조체 초기화 (파라미터 get, put함수는 레퍼런스 카운트 조절 용으로 추정)
+// klist 구조체는 레퍼런스 카운트가 지원이 되는 객체에 내장될 수 있는 것으로 추정(주석 내용으로 추측할 때)
 void klist_init(struct klist *k, void (*get)(struct klist_node *),
 		void (*put)(struct klist_node *))
 {
@@ -252,6 +255,9 @@ EXPORT_SYMBOL_GPL(klist_del);
  * klist_remove - Decrement the refcount of node and wait for it to go away.
  * @n: node we're removing.
  */
+// 2017-05-27
+// 현재 대기할 프로세스 정보 생성 및 remove 대상을 klist_remove_waiters에 설정
+// 프로세스가 깨어날 때까지 무한 대기
 void klist_remove(struct klist_node *n)
 {
 	struct klist_waiter waiter;

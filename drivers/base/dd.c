@@ -510,10 +510,13 @@ static void __device_release_driver(struct device *dev)
 			dev->bus->remove(dev);
 		else if (drv->remove)
 			drv->remove(dev);
+		// 2017-05-27
 		devres_release_all(dev);	
 		dev->driver = NULL;
 		dev_set_drvdata(dev, NULL);
+		// 2017-05-27
 		klist_remove(&dev->p->knode_driver);
+		// 여기까지
 		if (dev->bus)
 			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
 						     BUS_NOTIFY_UNBOUND_DRIVER,
@@ -589,6 +592,9 @@ void *dev_get_drvdata(const struct device *dev)
 }
 EXPORT_SYMBOL(dev_get_drvdata);
 
+// 2017-05-27
+// dev에 private, data정보 세팅
+// dev_set_drvdata(dev, NULL);
 int dev_set_drvdata(struct device *dev, void *data)
 {
 	int error;

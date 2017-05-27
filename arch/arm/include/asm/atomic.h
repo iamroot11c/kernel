@@ -272,12 +272,13 @@ static inline int __atomic_add_unless(atomic_t *v, int a, int u)
 
 #define atomic_inc_and_test(v)	(atomic_add_return(1, v) == 0)
 // 2015-04-18;
-// 감소된 값이 0이면 true, 0이 아니면 false;
+// (v = v - 1) == 0이면 true, 0이 아니면 false;
 #define atomic_dec_and_test(v)	(atomic_sub_return(1, v) == 0)
 #define atomic_inc_return(v)    (atomic_add_return(1, v))
 #define atomic_dec_return(v)    (atomic_sub_return(1, v))
 // 2017-04-22
-// 값을 뺀후 값이 0이면 true, 0이 아니면 false
+// 2017-05-27
+// (v = v - i) ==  0이면 true, 0이 아니면 false
 #define atomic_sub_and_test(i, v) (atomic_sub_return(i, v) == 0)
 
 // atomic_add_return() 함수의 결과가 0 보다 작으면 TRUE, 크거나 같으면 FALSE

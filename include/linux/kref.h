@@ -67,7 +67,8 @@ static inline void kref_get(struct kref *kref)
  * gone, not present.
  */
 // 2017-04-22
-// kref_sub(&n->n_ref, 1, klist_release) 
+// kref_sub(&n->n_ref, 1, klist_release)
+// kref의 레퍼런스 카운트를 1 감소. 레퍼런스 카운트가 0이면 release 콜백을 수행 
 static inline int kref_sub(struct kref *kref, unsigned int count,
 	     void (*release)(struct kref *kref))
 {

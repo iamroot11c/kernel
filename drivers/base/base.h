@@ -80,6 +80,8 @@ struct device_private {
 	void *driver_data;
 	struct device *device;
 };
+// 2017-05-27
+// obj를 부모 노드(knode_parent)로 가지고 있는 자식 device_private객체를 얻는다.
 #define to_device_private_parent(obj)	\
 	container_of(obj, struct device_private, knode_parent)
 #define to_device_private_driver(obj)	\

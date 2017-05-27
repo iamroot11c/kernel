@@ -837,6 +837,7 @@ static inline void ftrace_dump(enum ftrace_dump_mode oops_dump_mode) { }
 #define swap(a, b) \
 	do { typeof(a) __tmp = (a); (a) = (b); (b) = __tmp; } while (0)
 
+// 2017-05-27
 /**
  * container_of - cast a member of a structure out to the containing structure
  * @ptr:	the pointer to the member.
@@ -850,6 +851,18 @@ static inline void ftrace_dump(enum ftrace_dump_mode oops_dump_mode) { }
 // 힙(heap)은 주소가 작은값에서 큰값으로 증가하며
 // member의 주소에서 오프셋만큼 빼면 type의 인스턴스
 // 주소를 구할 수 있음
+//
+// 1) member 타입으로 ptr 캐스팅
+// 2) type ~ type.member까지의 거리를 얻어온다.//((size_t) &((TYPE *)0)->MEMBER)
+// 3) 2)에서 구한 거리를 이용하여, ptr를 가지고 있는 TYPE 객체를 얻는다.
+//
+// 한줄 요약) TYPE.member인 ptr을 가지고 있는 TYPE 객체를 얻는다. 
+// 
+// ex) container_of(obj, struct subsys_private, subsys.kobj)
+//  -> typeof((subsys_private*)0->subsys.kobj)* __mptr = ptr;
+//  -> (subsys_private*)((char*)ptr - (subsys_private에서 subsys.kobj까지의 거리))
+//      -> ptr -  (객체 주소 시작 ~ 객체 멤버 주소까지의 거리)
+//          -> 객체 시작 주소 반환
 #define container_of(ptr, type, member) ({			\
 	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
 	(type *)( (char *)__mptr - offsetof(type,member) );})

@@ -727,6 +727,8 @@ int device_schedule_callback_owner(struct device *dev,
 }
 EXPORT_SYMBOL_GPL(device_schedule_callback_owner);
 
+// 2017-05-27
+// node의 자식 device 객체를 레퍼런스 증가하여 얻어온다. 
 static void klist_children_get(struct klist_node *n)
 {
 	struct device_private *p = to_device_private_parent(n);
@@ -735,6 +737,8 @@ static void klist_children_get(struct klist_node *n)
 	get_device(dev);
 }
 
+// 2017-05-27
+// klist_node의 자식 device 객체를 레퍼런스 카운트 감소하여 얻어온다.
 static void klist_children_put(struct klist_node *n)
 {
 	struct device_private *p = to_device_private_parent(n);
@@ -1047,12 +1051,16 @@ static void device_remove_sys_dev_entry(struct device *dev)
 	}
 }
 
+// 2017-05-27 
+// device_private 객체 초기화 및 dev에 정보 저장
+// 메모리 할당 불가 시 에러 반환
 int device_private_init(struct device *dev)
 {
 	dev->p = kzalloc(sizeof(*dev->p), GFP_KERNEL);
 	if (!dev->p)
 		return -ENOMEM;
 	dev->p->device = dev;
+	// klist 노드 초기화 및 get, put 콜백 등록(레퍼런스 증감 처리를 담당)
 	klist_init(&dev->p->klist_children, klist_children_get,
 		   klist_children_put);
 	INIT_LIST_HEAD(&dev->p->deferred_probe);
@@ -1260,6 +1268,8 @@ EXPORT_SYMBOL_GPL(device_register);
  * we do take care to provide for the case that we get a NULL
  * pointer passed in.
  */
+// 2017-05-27
+// dev != null이면 레퍼런스 카운트를 증가한 dev를 그대로 리턴
 struct device *get_device(struct device *dev)
 {
 	return dev ? kobj_to_dev(kobject_get(&dev->kobj)) : NULL;
@@ -1270,6 +1280,8 @@ EXPORT_SYMBOL_GPL(get_device);
  * put_device - decrement reference count.
  * @dev: device in question.
  */
+// 2017-05-27
+// dev->kobj 레퍼런스 카운트 감소 / 0인 경우 제거
 void put_device(struct device *dev)
 {
 	/* might_sleep(); */

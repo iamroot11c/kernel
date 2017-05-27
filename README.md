@@ -1,5 +1,22 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [129주차](http://bit.ly/2pvqr6v) `2017.05.27`
+ - drive: 홍진우
+ - [perf_pmu_register() 진행중]()
+ - kernel/events/core.c:pref_event_init() 진행 중
+ - kernel/events/core.c:perf_pmu_register() 진행 중
+ - drivers/base/core.c:device_del() 진행 중
+ - drivers/base/devtmpfs.c:devtmpfs_delete_node() 진행 완료
+ - drivers/base/core.c:device_remove_sys_dev_entry() 진행 완료
+ - drivers/base/core.c:device_remove_file() 진행 완료
+ - drivers/base/core.c:device_remove_attrs() 진행 완료
+ - drivers/base/bus.c:bus_remove_device() 진행 중
+ - drivers/base/dd.c:device_release_driver() 진행 중
+ - drivers/base/dd.c:__device_release_driver() 진행 중
+ - drivers/base/devres.c:devres_release_all() 진행 완료
+ - kernel/lib/klist.c:klist_remove() 진행 완료
+ - kernel/notifier.c:blocking_notifier_call_chain() 진행 중
+
 + [128주차](http://bit.ly/2pvqr6v) `2017.05.13`
  - drive: 보름달님
  - [perf_pmu_register() 진행중]()

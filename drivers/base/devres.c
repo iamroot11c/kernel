@@ -13,6 +13,7 @@
 
 #include "base.h"
 
+// 2017-05-27
 struct devres_node {
 	struct list_head		entry;
 	dr_release_t			release;
@@ -28,6 +29,7 @@ struct devres {
 	unsigned long long		data[];	/* guarantee ull alignment */
 };
 
+// 2017-05-27
 struct devres_group {
 	struct devres_node		node[2];
 	void				*id;
@@ -402,7 +404,10 @@ int devres_release(struct device *dev, dr_release_t release,
 	return 0;
 }
 EXPORT_SYMBOL_GPL(devres_release);
-
+// [first,end]까지 순회하면서 
+//	1) grp가 아닌 노드를 todo에 삽입
+//	2) grp 노드 리스트 중 grp.node[0].entry가 1개 이상 값이 있고, grp.node[1].entry가 빈 경우
+//		grp.node[0].entry 값을 todo에 이동 및 grp.node[1].entry값을 연결된 리스트에서 제거
 static int remove_nodes(struct device *dev,
 			struct list_head *first, struct list_head *end,
 			struct list_head *todo)
@@ -437,18 +442,19 @@ static int remove_nodes(struct device *dev,
 
 	if (!nr_groups)
 		return cnt;
-
 	/* Second pass - Scan groups and color them.  A group gets
 	 * color value of two iff the group is wholly contained in
 	 * [cur, end).  That is, for a closed group, both opening and
 	 * closing markers should be in the range, while just the
 	 * opening marker is enough for an open group.
 	 */
+	// first == 마지막으로 grp 노드가 아닌 노드의 다음 값.
+	// first 이후의 노드는 모두 grp 노드라는 것이 보장
+	// grp->!grp->!grp->grp->!grp->[grp]->grp
 	cur = first;
 	while (cur != end) {
 		struct devres_node *node;
 		struct devres_group *grp;
-
 		node = list_entry(cur, struct devres_node, entry);
 		cur = cur->next;
 
@@ -472,6 +478,9 @@ static int remove_nodes(struct device *dev,
 	return cnt;
 }
 
+// 2017-05-27
+// 1) [first,end]까지 순회하며, 삭제할 노드를 얻어온다.
+// 2) 삭제할 노드를 역 순으로 조회하여, 노드에 연결된 device resoure를 제거한다. 
 static int release_nodes(struct device *dev, struct list_head *first,
 			 struct list_head *end, unsigned long flags)
 	__releases(&dev->devres_lock)
@@ -487,7 +496,13 @@ static int release_nodes(struct device *dev, struct list_head *first,
 	/* Release.  Note that both devres and devres_group are
 	 * handled as devres in the following loop.  This is safe.
 	 */
+
+	//#define list_for_each_entry_safe_reverse(pos, n, head, member)      \
+	// for (pos = list_entry((head)->prev, typeof(*pos), member), n = list_entry(pos->member.prev, typeof(*pos), member); \
+	//      &pos->member != (head);                    \
+	//      pos = n, n = list_entry(n->member.prev, typeof(*n), member))
 	list_for_each_entry_safe_reverse(dr, tmp, &todo, node.entry) {
+		// todo에 저장된 노드를 역순으로 순회하며, 노드에 연결된 devres값을 제거한다.
 		devres_log(dev, &dr->node, "REL");
 		dr->node.release(dev, dr->data);
 		kfree(dr);
@@ -503,6 +518,8 @@ static int release_nodes(struct device *dev, struct list_head *first,
  * Release all resources associated with @dev.  This function is
  * called on driver detach.
  */
+// 2017-05-27
+// 파라미터 dev에 연결된 모든 devres값을 제거, 제거한 개수를 반환
 int devres_release_all(struct device *dev)
 {
 	unsigned long flags;

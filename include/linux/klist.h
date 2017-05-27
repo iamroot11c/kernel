@@ -33,6 +33,7 @@ struct klist {
 #define DEFINE_KLIST(_name, _get, _put)					\
 	struct klist _name = KLIST_INIT(_name, _get, _put)
 
+// 2017-05-27
 extern void klist_init(struct klist *k, void (*get)(struct klist_node *),
 		       void (*put)(struct klist_node *));
 

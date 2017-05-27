@@ -540,6 +540,8 @@ static struct kobject * __must_check kobject_get_unless_zero(struct kobject *kob
  * kobject_cleanup - free kobject resources.
  * @kobj: object to cleanup
  */
+// 2017-05-27 glance
+// kobject를 삭제하는 동작 정도로 이해하고 넘어감
 static void kobject_cleanup(struct kobject *kobj)
 {
 	struct kobj_type *t = get_ktype(kobj);
@@ -588,10 +590,12 @@ static void kobject_delayed_cleanup(struct work_struct *work)
 }
 #endif
 
+// 2017-05-27
+// kref에 연결된 kobj를 삭제한다.(메모리 해제 등의 동작 진행)
 static void kobject_release(struct kref *kref)
 {
 	struct kobject *kobj = container_of(kref, struct kobject, kref);
-#ifdef CONFIG_DEBUG_KOBJECT_RELEASE
+#ifdef CONFIG_DEBUG_KOBJECT_RELEASE // not set
 	pr_info("kobject: '%s' (%p): %s, parent %p (delayed)\n",
 		 kobject_name(kobj), kobj, __func__, kobj->parent);
 	INIT_DELAYED_WORK(&kobj->release, kobject_delayed_cleanup);
@@ -607,6 +611,8 @@ static void kobject_release(struct kref *kref)
  *
  * Decrement the refcount, and if 0, call kobject_cleanup().
  */
+// 2017-05-27
+// kobj의 레퍼런스 카운트 감소. 0인 경우 삭제
 void kobject_put(struct kobject *kobj)
 {
 	if (kobj) {

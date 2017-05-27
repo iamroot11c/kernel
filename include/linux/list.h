@@ -95,6 +95,7 @@ static inline void list_add_tail(struct list_head *new, struct list_head *head)
 // 자신의 이전 노드->다음 노드 리스트를 자신의 다음 노드 리스트로 변경
 // 말이 어려운데, 간단히 설명하면 
 // 링크드 리스트에서 자기 자신은 빠지고 빠진 자리의 링크드 리스트를 연결시킨다고 생각하는 것이 좋다.
+// prev, next를 서로 연결하여 특정 노드를 링크드리스트에서 제거
 static inline void __list_del(struct list_head * prev, struct list_head * next)
 {
 	next->prev = prev;
@@ -156,7 +157,7 @@ static inline void list_replace_init(struct list_head *old,
  */
 // 2015-06-20
 // 2015-07-25; 
-// 리스트에서 자기는 빠지고 리스를 자기자신으로 가르켜 초기화 함
+//  entry가 연결된 링크드리스트에서 entry 제거, entry노드 초기화
 static inline void list_del_init(struct list_head *entry)
 {
 	__list_del_entry(entry);
@@ -183,6 +184,7 @@ static inline void list_move(struct list_head *list, struct list_head *head)
  * @head: the head that will follow our entry
  */
 // 2015-04-11
+// list의 연결을 끊고, head의 맨 마지막에 list를 넣는다.
 static inline void list_move_tail(struct list_head *list,
 				  struct list_head *head)
 {

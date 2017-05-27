@@ -783,6 +783,8 @@ struct device {
 	bool			offline:1;
 };
 
+// 2017-05-27
+// device.kobj 멤버인 kobj를 가지고 있는 device 객체를 얻어온다.
 static inline struct device *kobj_to_dev(struct kobject *kobj)
 {
 	return container_of(kobj, struct device, kobj);
