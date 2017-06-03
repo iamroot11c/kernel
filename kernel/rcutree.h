@@ -227,6 +227,7 @@ struct rcu_node {
  * specified rcu_state structure.  Note that if there is a singleton
  * rcu_node tree with but one rcu_node structure, this loop is a no-op.
  */
+// 2017-06-03
 #define rcu_for_each_nonleaf_node_breadth_first(rsp, rnp) \
 	for ((rnp) = &(rsp)->node[0]; \
 	     (rnp) < (rsp)->level[rcu_num_lvls - 1]; (rnp)++)

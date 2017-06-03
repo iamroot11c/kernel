@@ -194,6 +194,7 @@ extern int bus_unregister_notifier(struct bus_type *bus,
 #define BUS_NOTIFY_BOUND_DRIVER		0x00000004 /* driver bound to device */
 #define BUS_NOTIFY_UNBIND_DRIVER	0x00000005 /* driver about to be
 						      unbound */
+// 2017-06-03
 #define BUS_NOTIFY_UNBOUND_DRIVER	0x00000006 /* driver is unbound
 						      from the device */
 

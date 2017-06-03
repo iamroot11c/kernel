@@ -78,6 +78,7 @@ static struct {
 
 // 2016-07-09
 // refcount 증가하는 기능
+// 2017-06-03
 void get_online_cpus(void)
 {
 	might_sleep();	// NOP

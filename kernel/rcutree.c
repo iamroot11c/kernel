@@ -181,6 +181,7 @@ int rcu_num_nodes __read_mostly = NUM_RCU_NODES/*1*/; /* Total # rcu_nodes in us
  * grace periods.  This variable is also used to suppress boot-time false
  * positives from lockdep-RCU error checking.
  */
+// 2017-06-03
 int rcu_scheduler_active __read_mostly;
 EXPORT_SYMBOL_GPL(rcu_scheduler_active);
 

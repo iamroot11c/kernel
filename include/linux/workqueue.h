@@ -234,6 +234,7 @@ static inline unsigned int work_static(struct work_struct *work) { return 0; }
 	} while (0)
 #else
 // 2016-05-28
+// 2017-06-03
 #define __INIT_WORK(_work, _func, _onstack)				\
 	do {								\
 		__init_work((_work), _onstack); /* No OP. */		\
@@ -521,6 +522,8 @@ extern void print_worker_info(const char *log_lvl, struct task_struct *task);
  * We queue the work to the CPU on which it was submitted, but if the CPU dies
  * it can be processed by another CPU.
  */
+// 2017-06-10
+// queue_work(khelper_wq, &sub_info->work);
 static inline bool queue_work(struct workqueue_struct *wq,
 			      struct work_struct *work)
 {

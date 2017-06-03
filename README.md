@@ -1,5 +1,27 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [130주차]() `2017.06.03`
+ - drive: 양만철
+ - [perf_pmu_register() 진행중]()
+ - kernel/events/core.c:pref_event_init() 진행 중
+ - kernel/events/core.c:perf_pmu_register() 진행 중
+ - drivers/base/core.c:device_del() 진행 중
+ - lib/kobject_uevent.c:kobject_uevent() 진행 중
+ - lib/kobject_uevent.c:kobject_uevent_env() 진행 중
+ - lib/kobject_uevent.c:add_uevent_var() 분석 완료
+ - kernel/kmod.c:call_usermodehelper() 진행 중
+ - kernel/kmod.c:call_usermodehelper_setup() 분석 완료
+ - kernel/kmod.c:call_usermodehelper_exec() 분석 중
+ - drivers/base/bus.c:bus_remove_device() 진행 완료
+ - drivers/base/dd.c:device_release_driver() 진행 완료
+ - drivers/base/dd.c:__device_release_driver() 진행 완료
+ - drivers/base/devres.c:devres_release_all() 진행 완료
+ - kernel/lib/klist.c:klist_remove() 진행 완료
+ - kernel/notifier.c:blocking_notifier_call_chain() 진행 완료
+ - drivers/base/power/main.c:device_pm_remove() 진행완료
+ - drivers/base/power/wakeup.c:device_wakeup_disable() 진행완료
+ - drivers/base/dd.c:driver_deferred_probe_del() 진행완료
+
 + [129주차](http://bit.ly/2qZ21RT) `2017.05.27`
  - drive: 홍진우
  - [perf_pmu_register() 진행중]()

@@ -43,6 +43,7 @@
  * @active: Status of the wakeup source.
  * @has_timeout: The wakeup source has been activated with a timeout.
  */
+// 2017-06-03
 struct wakeup_source {
 	const char 		*name;
 	struct list_head	entry;
@@ -63,7 +64,7 @@ struct wakeup_source {
 	bool			autosleep_enabled:1;
 };
 
-#ifdef CONFIG_PM_SLEEP
+#ifdef CONFIG_PM_SLEEP // defined
 
 /*
  * Changes to device_may_wakeup take effect on the next pm state change.

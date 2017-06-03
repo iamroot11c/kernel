@@ -27,10 +27,11 @@
 #include <net/sock.h>
 #include <net/net_namespace.h>
 
-
+// 2017-06-03
 u64 uevent_seqnum;
-char uevent_helper[UEVENT_HELPER_PATH_LEN] = CONFIG_UEVENT_HELPER_PATH;
-#ifdef CONFIG_NET
+char uevent_helper[UEVENT_HELPER_PATH_LEN/*256*/] = CONFIG_UEVENT_HELPER_PATH/*/sbin/hotplug*/;
+#ifdef CONFIG_NET // defined
+// 2017-06-03
 struct uevent_sock {
 	struct list_head list;
 	struct sock *sk;
@@ -42,6 +43,7 @@ static LIST_HEAD(uevent_sock_list);
 static DEFINE_MUTEX(uevent_sock_mutex);
 
 /* the strings here must match the enum in include/linux/kobject.h */
+// 2017-06-03
 static const char *kobject_actions[] = {
 	[KOBJ_ADD] =		"add",
 	[KOBJ_REMOVE] =		"remove",
@@ -103,6 +105,7 @@ static int kobj_bcast_filter(struct sock *dsk, struct sk_buff *skb, void *data)
 }
 #endif
 
+// 2017-06-03
 static int kobj_usermode_filter(struct kobject *kobj)
 {
 	const struct kobj_ns_type_operations *ops;
@@ -128,6 +131,8 @@ static int kobj_usermode_filter(struct kobject *kobj)
  * Returns 0 if kobject_uevent_env() is completed with success or the
  * corresponding error when it fails.
  */
+// 2017-06-03 
+// kobject_uevent_env(&dev->kobj, KOBJ_REMOVE, NULL);
 int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 		       char *envp_ext[])
 {
@@ -140,7 +145,7 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 	const struct kset_uevent_ops *uevent_ops;
 	int i = 0;
 	int retval = 0;
-#ifdef CONFIG_NET
+#ifdef CONFIG_NET // defined
 	struct uevent_sock *ue_sk;
 #endif
 
@@ -203,6 +208,7 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 	}
 
 	/* default keys */
+	// 2017-06-03 action_string == "REMOVE"
 	retval = add_uevent_var(env, "ACTION=%s", action_string);
 	if (retval)
 		goto exit;
@@ -214,6 +220,7 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 		goto exit;
 
 	/* keys passed in from the caller */
+	// 201706-03 envp_ext == NULL
 	if (envp_ext) {
 		for (i = 0; envp_ext[i]; i++) {
 			retval = add_uevent_var(env, "%s", envp_ext[i]);
@@ -242,6 +249,7 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 	if (action == KOBJ_ADD)
 		kobj->state_add_uevent_sent = 1;
 	else if (action == KOBJ_REMOVE)
+		// 2017-06-03
 		kobj->state_remove_uevent_sent = 1;
 
 	mutex_lock(&uevent_sock_mutex);
@@ -252,7 +260,7 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 		goto exit;
 	}
 
-#if defined(CONFIG_NET)
+#if defined(CONFIG_NET) // defined
 	/* send netlink message */
 	list_for_each_entry(ue_sk, &uevent_sock_list, list) {
 		struct sock *uevent_sock = ue_sk->sk;
@@ -308,8 +316,9 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 		if (retval)
 			goto exit;
 
+		// 2017-06-03 시작
 		retval = call_usermodehelper(argv[0], argv,
-					     env->envp, UMH_WAIT_EXEC);
+					     env->envp, UMH_WAIT_EXEC/*1*/);
 	}
 
 exit:
@@ -328,8 +337,11 @@ EXPORT_SYMBOL_GPL(kobject_uevent_env);
  * Returns 0 if kobject_uevent() is completed with success or the
  * corresponding error when it fails.
  */
+// 2017-06-03 
+// kobject_uevent(&dev->kobj, KOBJ_REMOVE);
 int kobject_uevent(struct kobject *kobj, enum kobject_action action)
 {
+	// 2017-06-03 시작 
 	return kobject_uevent_env(kobj, action, NULL);
 }
 EXPORT_SYMBOL_GPL(kobject_uevent);
@@ -342,6 +354,10 @@ EXPORT_SYMBOL_GPL(kobject_uevent);
  * Returns 0 if environment variable was added successfully or -ENOMEM
  * if no space was available.
  */
+// 2017-06-03
+// add_uevent_var(env, "ACTION=%s", action_string)
+// add_uevent_var(env, "DEVPATH=%s", devpath)
+// add_uevent_var(env, "SUBSYSTEM=%s", subsystem)
 int add_uevent_var(struct kobj_uevent_env *env, const char *format, ...)
 {
 	va_list args;

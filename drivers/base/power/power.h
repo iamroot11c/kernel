@@ -9,7 +9,7 @@ static inline void device_pm_init_common(struct device *dev)
 	}
 }
 
-#ifdef CONFIG_PM_RUNTIME
+#ifdef CONFIG_PM_RUNTIME // not define
 
 static inline void pm_runtime_early_init(struct device *dev)
 {
@@ -28,11 +28,12 @@ static inline void pm_runtime_early_init(struct device *dev)
 }
 
 static inline void pm_runtime_init(struct device *dev) {}
+// 2017-06-03
 static inline void pm_runtime_remove(struct device *dev) {}
 
 #endif /* !CONFIG_PM_RUNTIME */
 
-#ifdef CONFIG_PM_SLEEP
+#ifdef CONFIG_PM_SLEEP // defined
 
 /* kernel/power/main.c */
 extern int pm_async_enabled;

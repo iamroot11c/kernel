@@ -177,7 +177,7 @@ extern void call_rcu_sched(struct rcu_head *head,
 
 extern void synchronize_sched(void);
 
-#ifdef CONFIG_PREEMPT_RCU
+#ifdef CONFIG_PREEMPT_RCU // defined
 
 extern void __rcu_read_lock(void);
 extern void __rcu_read_unlock(void);
@@ -289,14 +289,16 @@ void wait_rcu_gp(call_rcu_func_t crf);
  * allocated dynamically in the heap or defined statically don't need any
  * initialization.
  */
-#ifdef CONFIG_DEBUG_OBJECTS_RCU_HEAD
+#ifdef CONFIG_DEBUG_OBJECTS_RCU_HEAD // not define
 extern void init_rcu_head_on_stack(struct rcu_head *head);
 extern void destroy_rcu_head_on_stack(struct rcu_head *head);
 #else /* !CONFIG_DEBUG_OBJECTS_RCU_HEAD */
+// 2017-06-03
 static inline void init_rcu_head_on_stack(struct rcu_head *head)
 {
 }
 
+// 2017-06-03
 static inline void destroy_rcu_head_on_stack(struct rcu_head *head)
 {
 }

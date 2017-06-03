@@ -400,7 +400,7 @@ typedef unsigned char *sk_buff_data_t;
  *	@truesize: Buffer size
  *	@users: User count - see {datagram,tcp}.c
  */
-
+// 2017-06-03
 struct sk_buff {
 	/* These two members must be first. */
 	struct sk_buff		*next;

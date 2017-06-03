@@ -1431,6 +1431,8 @@ retry:
  *
  * Return: %false if @work was already on a queue, %true otherwise.
  */
+// 2017-06-10
+// queue_work(khelper_wq, &sub_info->work);
 bool queue_work_on(int cpu, struct workqueue_struct *wq,
 		   struct work_struct *work)
 {

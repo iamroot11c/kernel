@@ -118,6 +118,7 @@ static void driver_deferred_probe_add(struct device *dev)
 	mutex_unlock(&deferred_probe_mutex);
 }
 
+// 2017-06-03 
 void driver_deferred_probe_del(struct device *dev)
 {
 	mutex_lock(&deferred_probe_mutex);
@@ -517,9 +518,11 @@ static void __device_release_driver(struct device *dev)
 		// 2017-05-27
 		klist_remove(&dev->p->knode_driver);
 		// 여기까지
+		//
+		// 2017-06-03 시작 
 		if (dev->bus)
 			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
-						     BUS_NOTIFY_UNBOUND_DRIVER,
+						     BUS_NOTIFY_UNBOUND_DRIVER/*0x00000006*/,
 						     dev);
 
 	}
@@ -541,7 +544,9 @@ void device_release_driver(struct device *dev)
 	 * will deadlock right here.
 	 */
 	device_lock(dev);
+	// 2017-05-13 시작
 	__device_release_driver(dev);
+	// 2017-06-03 분석완료
 	device_unlock(dev);
 }
 EXPORT_SYMBOL_GPL(device_release_driver);

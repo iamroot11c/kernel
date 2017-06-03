@@ -28,6 +28,7 @@
 #include <linux/atomic.h>
 #include <linux/workqueue.h>
 
+// 2016-06-03
 #define UEVENT_HELPER_PATH_LEN		256
 #define UEVENT_NUM_ENVP			32	/* number of env pointers */
 #define UEVENT_BUFFER_SIZE		2048	/* buffer for the variables */
@@ -120,10 +121,11 @@ struct kobj_type {
 	const void *(*namespace)(struct kobject *kobj);
 };
 
+// 2017-06-03 
 struct kobj_uevent_env {
-	char *envp[UEVENT_NUM_ENVP];
+	char *envp[UEVENT_NUM_ENVP/*32*/];
 	int envp_idx;
-	char buf[UEVENT_BUFFER_SIZE];
+	char buf[UEVENT_BUFFER_SIZE/*2048*/];
 	int buflen;
 };
 
@@ -189,6 +191,8 @@ static inline struct kset *kset_get(struct kset *k)
 	return k ? to_kset(kobject_get(&k->kobj)) : NULL;
 }
 
+// 2017-06-03
+// kset_put(&bus->p->subsys);
 static inline void kset_put(struct kset *k)
 {
 	kobject_put(&k->kobj);

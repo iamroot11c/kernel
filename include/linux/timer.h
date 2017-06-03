@@ -69,6 +69,7 @@ extern struct tvec_base boot_tvec_bases;
  * workqueue locking issues. It's not meant for executing random crap
  * with interrupts disabled. Abuse is monitored!
  */
+// 2017-06-03
 #define TIMER_DEFERRABLE		0x1LU
 #define TIMER_IRQSAFE			0x2LU
 
@@ -173,6 +174,7 @@ static inline void init_timer_on_stack_key(struct timer_list *timer,
  */
 // 2015-09-05;
 // 2015-09-12
+// 2017-06-03
 static inline int timer_pending(const struct timer_list * timer)
 {
 	return timer->entry.next != NULL;
@@ -241,6 +243,7 @@ static inline void timer_stats_timer_set_start_info(struct timer_list *timer)
 {
 }
 
+// 2017-06-03
 static inline void timer_stats_timer_clear_start_info(struct timer_list *timer)
 {
 }
@@ -250,7 +253,7 @@ extern void add_timer(struct timer_list *timer);
 
 extern int try_to_del_timer_sync(struct timer_list *timer);
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
   extern int del_timer_sync(struct timer_list *timer);
 #else
 # define del_timer_sync(t)		del_timer(t)

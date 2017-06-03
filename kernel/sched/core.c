@@ -2878,6 +2878,8 @@ EXPORT_SYMBOL(default_wake_function);
 // __wake_up_common(q, TASK_NORMAL, 1, 0, NULL);
 // 2016-11-19
 // __wake_up_common(&x->wait, TASK_NORMAL, 1, 0, NULL);
+// 2017-06-03 시작
+// __wake_up_common(&x->wait, TASK_NORMAL, 1, 0, NULL);
 static void __wake_up_common(wait_queue_head_t *q, unsigned int mode,
 			int nr_exclusive, int wake_flags, void *key)
 {
@@ -3016,6 +3018,8 @@ EXPORT_SYMBOL(complete);
  * It may be assumed that this function implies a write memory barrier before
  * changing the task state if and only if any tasks are woken up.
  */
+// 2017-06-03 시작
+// complete_all(&dev->power.completion);
 void complete_all(struct completion *x)
 {
 	unsigned long flags;

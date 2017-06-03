@@ -45,9 +45,11 @@ static struct bus_type *bus_get(struct bus_type *bus)
 	return NULL;
 }
 
+// 2017-06-03
 static void bus_put(struct bus_type *bus)
 {
 	if (bus)
+		// 2017-06-03
 		kset_put(&bus->p->subsys);
 }
 
@@ -565,6 +567,7 @@ void bus_probe_device(struct device *dev)
  * - Drop reference taken in bus_add_device().
  */
 // 2017-05-13
+// 2017-06-03 분석완료
 void bus_remove_device(struct device *dev)
 {
 	struct bus_type *bus = dev->bus;
@@ -591,6 +594,8 @@ void bus_remove_device(struct device *dev)
 		 dev->bus->name, dev_name(dev));
 	// 2017-05-13, start
 	device_release_driver(dev);
+	// 2017-06-03 분석완료
+	// 2017-06-03
 	bus_put(dev->bus);
 }
 

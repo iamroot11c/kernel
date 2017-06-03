@@ -45,6 +45,7 @@ early_param("sysfs.deprecated", sysfs_deprecated_setup);
 #endif
 
 int (*platform_notify)(struct device *dev) = NULL;
+// 2017-06-03 
 int (*platform_notify_remove)(struct device *dev) = NULL;
 static struct kobject *dev_kobj;
 // 2017-05-12
@@ -1358,7 +1359,10 @@ void device_del(struct device *dev)
 	// 2017-05-13
 	// 2017-05-13, start
 	bus_remove_device(dev);
+	// 2017-06-03 분석완료
+	// 2017-06-03 
 	device_pm_remove(dev);
+	// 2017-06-03 
 	driver_deferred_probe_del(dev);
 
 	/* Notify the platform of the removal, in case they
@@ -1366,6 +1370,7 @@ void device_del(struct device *dev)
 	 */
 	if (platform_notify_remove)
 		platform_notify_remove(dev);
+	// 2017-06-03 시작
 	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
 	cleanup_device_parent(dev);
 	kobject_del(&dev->kobj);

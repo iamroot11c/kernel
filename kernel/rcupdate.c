@@ -180,17 +180,19 @@ static void wakeme_after_rcu(struct rcu_head  *head)
 	complete(&rcu->completion);
 }
 
+// 2017-06-03
+// wait_rcu_gp(call_rcu);
 void wait_rcu_gp(call_rcu_func_t crf)
 {
 	struct rcu_synchronize rcu;
 
-	init_rcu_head_on_stack(&rcu.head);
+	init_rcu_head_on_stack(&rcu.head); // No OP.
 	init_completion(&rcu.completion);
 	/* Will wake me after RCU finished. */
 	crf(&rcu.head, wakeme_after_rcu);
 	/* Wait for it. */
 	wait_for_completion(&rcu.completion);
-	destroy_rcu_head_on_stack(&rcu.head);
+	destroy_rcu_head_on_stack(&rcu.head); // No OP.
 }
 EXPORT_SYMBOL_GPL(wait_rcu_gp);
 

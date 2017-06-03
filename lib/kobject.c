@@ -56,6 +56,7 @@ static int create_dir(struct kobject *kobj)
 	return error;
 }
 
+// 2017-06-03
 static int get_kobj_path_length(struct kobject *kobj)
 {
 	int length = 1;
@@ -74,6 +75,7 @@ static int get_kobj_path_length(struct kobject *kobj)
 	return length;
 }
 
+// 2017-06-03
 static void fill_kobj_path(struct kobject *kobj, char *path, int length)
 {
 	struct kobject *parent;
@@ -99,11 +101,13 @@ static void fill_kobj_path(struct kobject *kobj, char *path, int length)
  *
  * The result must be freed by the caller with kfree().
  */
+// 2017-06-03
 char *kobject_get_path(struct kobject *kobj, gfp_t gfp_mask)
 {
 	char *path;
 	int len;
 
+	// kobj 부모들의 이름의 총 길이를 구함 
 	len = get_kobj_path_length(kobj);
 	if (len == 0)
 		return NULL;
@@ -613,6 +617,7 @@ static void kobject_release(struct kref *kref)
  */
 // 2017-05-27
 // kobj의 레퍼런스 카운트 감소. 0인 경우 삭제
+// 2017-06-03
 void kobject_put(struct kobject *kobj)
 {
 	if (kobj) {

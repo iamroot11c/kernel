@@ -258,6 +258,7 @@ static int call_helper(void *data)
 	return ____call_usermodehelper(data);
 }
 
+// 2017-06-03
 static void call_usermodehelper_freeinfo(struct subprocess_info *info)
 {
 	if (info->cleanup)
@@ -361,6 +362,7 @@ static void __call_usermodehelper(struct work_struct *work)
  * land has been frozen during a system-wide hibernation or suspend operation).
  * Should always be manipulated under umhelper_sem acquired for write.
  */
+// 2017-06-03
 static enum umh_disable_depth usermodehelper_disabled = UMH_DISABLED;
 
 /* Number of helpers running */
@@ -495,6 +497,7 @@ int __usermodehelper_disable(enum umh_disable_depth depth)
 	return -EAGAIN;
 }
 
+// 2017-06-03
 static void helper_lock(void)
 {
 	atomic_inc(&running_helpers);
@@ -530,6 +533,9 @@ static void helper_unlock(void)
  * Function must be runnable in either a process context or the
  * context in which call_usermodehelper_exec is called.
  */
+// 2017-06-03
+// call_usermodehelper_setup(path, argv, envp, gfp_mask,
+//					 NULL, NULL, NULL);
 struct subprocess_info *call_usermodehelper_setup(char *path, char **argv,
 		char **envp, gfp_t gfp_mask,
 		int (*init)(struct subprocess_info *info, struct cred *new),
@@ -566,6 +572,8 @@ EXPORT_SYMBOL(call_usermodehelper_setup);
  * asynchronously if wait is not set, and runs as a child of keventd.
  * (ie. it runs with full root capabilities).
  */
+// 2017-06-03
+// call_usermodehelper_exec(info, UMH_WAIT_EXEC/*1*/);
 int call_usermodehelper_exec(struct subprocess_info *sub_info, int wait)
 {
 	DECLARE_COMPLETION_ONSTACK(done);
@@ -594,10 +602,12 @@ int call_usermodehelper_exec(struct subprocess_info *sub_info, int wait)
 	sub_info->complete = &done;
 	sub_info->wait = wait;
 
+	// 2017-06-03 여기까지
 	queue_work(khelper_wq, &sub_info->work);
 	if (wait == UMH_NO_WAIT)	/* task has freed sub_info */
 		goto unlock;
 
+	// 2017-06-03 wait == UMH_WAIT_EXEC
 	if (wait & UMH_KILLABLE) {
 		retval = wait_for_completion_killable(&done);
 		if (!retval)
@@ -633,16 +643,21 @@ EXPORT_SYMBOL(call_usermodehelper_exec);
  * This function is the equivalent to use call_usermodehelper_setup() and
  * call_usermodehelper_exec().
  */
+// 2017-06-03
+//call_usermodehelper(argv[0], argv,
+//			     env->envp, UMH_WAIT_EXEC/*1*/);
 int call_usermodehelper(char *path, char **argv, char **envp, int wait)
 {
 	struct subprocess_info *info;
 	gfp_t gfp_mask = (wait == UMH_NO_WAIT) ? GFP_ATOMIC : GFP_KERNEL;
 
+	// 2017-06-03
 	info = call_usermodehelper_setup(path, argv, envp, gfp_mask,
 					 NULL, NULL, NULL);
 	if (info == NULL)
 		return -ENOMEM;
 
+	// 2017-06-03 시작
 	return call_usermodehelper_exec(info, wait);
 }
 EXPORT_SYMBOL(call_usermodehelper);

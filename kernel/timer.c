@@ -101,7 +101,7 @@ static DEFINE_PER_CPU(struct tvec_base *, tvec_bases) = &boot_tvec_bases;
 // 2015-09-12, deferable 타입을 base pointer로부터 얻음 
 static inline unsigned int tbase_get_deferrable(struct tvec_base *base)
 {
-	return ((unsigned int)(unsigned long)base & TIMER_DEFERRABLE);
+	return ((unsigned int)(unsigned long)base & TIMER_DEFERRABLE/*0x01*/);
 }
 
 static inline unsigned int tbase_get_irqsafe(struct tvec_base *base)
@@ -110,9 +110,10 @@ static inline unsigned int tbase_get_irqsafe(struct tvec_base *base)
 }
 
 // 2015-09-05;
+// 2017-06-03
 static inline struct tvec_base *tbase_get_base(struct tvec_base *base)
 {
-	return ((struct tvec_base *)((unsigned long)base & ~TIMER_FLAG_MASK));
+	return ((struct tvec_base *)((unsigned long)base & ~TIMER_FLAG_MASK/*0x03*/));
 }
 
 // 2015-09-12
@@ -720,6 +721,8 @@ detach_expired_timer(struct timer_list *timer, struct tvec_base *base)
 }
 // 2015-09-12
 //  detach_if_pending(timer, base, false);
+// 2017-06-03
+// detach_if_pending(timer, base, true);
 static int detach_if_pending(struct timer_list *timer, struct tvec_base *base,
 			     bool clear_pending)
 {
@@ -1054,6 +1057,7 @@ EXPORT_SYMBOL(del_timer);
  * This function tries to deactivate a timer. Upon successful (ret >= 0)
  * exit the timer is not queued and the handler is not running on any CPU.
  */
+// 2017-06-03
 int try_to_del_timer_sync(struct timer_list *timer)
 {
 	struct tvec_base *base;
@@ -1065,7 +1069,7 @@ int try_to_del_timer_sync(struct timer_list *timer)
 	base = lock_timer_base(timer, &flags);
 
 	if (base->running_timer != timer) {
-		timer_stats_timer_clear_start_info(timer);
+		timer_stats_timer_clear_start_info(timer); // No OP.
 		ret = detach_if_pending(timer, base, true);
 	}
 	spin_unlock_irqrestore(&base->lock, flags);
@@ -1111,9 +1115,11 @@ EXPORT_SYMBOL(try_to_del_timer_sync);
  *
  * The function returns whether it has deactivated a pending timer or not.
  */
+// 2017-06-03
+// del_timer_sync(&ws->timer);
 int del_timer_sync(struct timer_list *timer)
 {
-#ifdef CONFIG_LOCKDEP
+#ifdef CONFIG_LOCKDEP // not define
 	unsigned long flags;
 
 	/*

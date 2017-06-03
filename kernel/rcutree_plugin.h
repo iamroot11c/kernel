@@ -702,6 +702,8 @@ static void rcu_preempt_do_callbacks(void)
 // call_rcu(&cred->rcu, put_cred_rcu);
 // 2015-12-12
 // call_rcu(&node->rcu_head, radix_tree_node_rcu_free);
+// 2017-06-03
+// call_rcu(&rcu.head, wakeme_after_rcu);
 void call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu))
 {
 	__call_rcu(head, func, &rcu_preempt_state, -1, 0);
@@ -736,6 +738,7 @@ EXPORT_SYMBOL_GPL(kfree_call_rcu);
  * See the description of synchronize_sched() for more detailed information
  * on memory ordering guarantees.
  */
+// 2017-06-03
 void synchronize_rcu(void)
 {
 	rcu_lockdep_assert(!lock_is_held(&rcu_bh_lock_map) &&
@@ -745,6 +748,7 @@ void synchronize_rcu(void)
 	if (!rcu_scheduler_active)
 		return;
 	if (rcu_expedited)
+        // 2017-06-03
 		synchronize_rcu_expedited();
 	else
 		wait_rcu_gp(call_rcu);
@@ -752,7 +756,9 @@ void synchronize_rcu(void)
 EXPORT_SYMBOL_GPL(synchronize_rcu);
 
 static DECLARE_WAIT_QUEUE_HEAD(sync_rcu_preempt_exp_wq);
+// 2017-06-03
 static unsigned long sync_rcu_preempt_exp_count;
+// 2017-06-03
 static DEFINE_MUTEX(sync_rcu_preempt_exp_mutex);
 
 /*
@@ -828,6 +834,7 @@ static void rcu_report_exp_rnp(struct rcu_state *rsp, struct rcu_node *rnp,
  * Caller must hold sync_rcu_preempt_exp_mutex and must exclude
  * CPU hotplug operations.
  */
+// 2017-06-03
 static void
 sync_rcu_preempt_exp_init(struct rcu_state *rsp, struct rcu_node *rnp)
 {
@@ -863,6 +870,7 @@ sync_rcu_preempt_exp_init(struct rcu_state *rsp, struct rcu_node *rnp)
  * to call this function from a CPU-hotplug notifier.  Failing to observe
  * these restriction will result in deadlock.
  */
+// 2017-06-03
 void synchronize_rcu_expedited(void)
 {
 	unsigned long flags;
@@ -891,12 +899,14 @@ void synchronize_rcu_expedited(void)
 	 * expedited grace period for us, just leave.
 	 */
 	while (!mutex_trylock(&sync_rcu_preempt_exp_mutex)) {
+        // #define ULONG_CMP_LT(a, b)  (ULONG_MAX / 2 < (a) - (b))
+        // (ULONG_MAX / 2 < (snap) - (ACCESS_ONCE(sync_rcu_preempt_exp_count))) 
 		if (ULONG_CMP_LT(snap,
 		    ACCESS_ONCE(sync_rcu_preempt_exp_count))) {
 			put_online_cpus();
 			goto mb_ret; /* Others did our work for us. */
 		}
-		if (trycount++ < 10) {
+		if (trycount++ < 10) { // 10번 시도 
 			udelay(trycount * num_online_cpus());
 		} else {
 			put_online_cpus();
@@ -913,6 +923,9 @@ void synchronize_rcu_expedited(void)
 	synchronize_sched_expedited();
 
 	/* Initialize ->expmask for all non-leaf rcu_node structures. */
+    // #define rcu_for_each_nonleaf_node_breadth_first(rsp, rnp) \
+	// for ((rnp) = &(rsp)->node[0]; \
+	//     (rnp) < (rsp)->level[rcu_num_lvls - 1]; (rnp)++)
 	rcu_for_each_nonleaf_node_breadth_first(rsp, rnp) {
 		raw_spin_lock_irqsave(&rnp->lock, flags);
 		rnp->expmask = rnp->qsmaskinit;
@@ -920,6 +933,7 @@ void synchronize_rcu_expedited(void)
 	}
 
 	/* Snapshot current state of ->blkd_tasks lists. */
+    // 2017-06-03
 	rcu_for_each_leaf_node(rsp, rnp)
 		sync_rcu_preempt_exp_init(rsp, rnp);
 	if (NUM_RCU_NODES > 1)
@@ -1319,6 +1333,7 @@ static int rcu_boost_kthread(void *arg)
  * The ->boost_kthread_task is immortal, so we don't need to worry
  * about it going away.
  */
+// 2017-06-03
 static void rcu_initiate_boost(struct rcu_node *rnp, unsigned long flags)
 {
 	struct task_struct *t;

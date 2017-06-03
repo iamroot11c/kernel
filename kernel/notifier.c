@@ -413,7 +413,9 @@ EXPORT_SYMBOL_GPL(__blocking_notifier_call_chain);
 // blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
 //                                BUS_NOTIFY_UNBIND_DRIVER,
 //                                                        dev);
-
+// blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+//				BUS_NOTIFY_UNBOUND_DRIVER/*0x00000006*/,
+//				dev);
 int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 		unsigned long val, void *v)
 {
