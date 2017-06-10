@@ -1,6 +1,6 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
-+ [131주차]() `2017.06.10`
++ [131주차](http://bit.ly/2sotGgD) `2017.06.10`
  - drive: 양만철님
  - [call_function_init() 진행중]()
  - call_function_init() 진행 중
