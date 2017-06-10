@@ -25,6 +25,7 @@ static inline void static_key_slow_dec_deferred(struct static_key_deferred *key)
 {
 	static_key_slow_dec(&key->key);
 }
+// 2017-06-10
 static inline void
 jump_label_rate_limit(struct static_key_deferred *key,
 		unsigned long rl)

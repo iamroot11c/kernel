@@ -11,6 +11,7 @@
  *	at shutdown. This is used to stop any idling DMA operations
  *	and the like.
  */
+// 2017-06-10
 BLOCKING_NOTIFIER_HEAD(reboot_notifier_list);
 
 /*

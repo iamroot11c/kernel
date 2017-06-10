@@ -319,6 +319,7 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 		// 2017-06-03 시작
 		retval = call_usermodehelper(argv[0], argv,
 					     env->envp, UMH_WAIT_EXEC/*1*/);
+		// 2017-06-10, end
 	}
 
 exit:

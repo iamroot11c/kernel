@@ -679,7 +679,9 @@ asmlinkage void __init start_kernel(void)
 	perf_event_init();
 	// 2017-06-10, end 
 	// 2017-06-10, 여기까지
-	profile_init();
+	profile_init(); // NOP
+	// 2017-06-10, 여기까지
+	// 2017-06-17, 여기부터
 	call_function_init();
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 	early_boot_irqs_disabled = false;

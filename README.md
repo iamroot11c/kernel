@@ -1,7 +1,37 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [131주차]() `2017.06.10`
+ - drive: 양만철님
+ - [call_function_init() 진행중]()
+ - call_function_init() 진행 중
+ - kernel/events/core.c:pref_event_init() 완료
+ - kernel/events/core.c:perf_pmu_register() 완료
+ - drivers/base/core.c:device_del() 완료
+ - lib/kobject_uevent.c:kobject_uevent() 완료
+ - lib/kobject_uevent.c:kobject_uevent_env() 완료
+ - lib/kobject_uevent.c:add_uevent_var() 분석 완료
+ - kernel/kmod.c:call_usermodehelper() 완료
+ - kernel/kmod.c:call_usermodehelper_setup() 분석 완료
+ - kernel/kmod.c:call_usermodehelper_exec() 분석 완료
+ -  kernel/drivers/base/core.c:cleanup_device_parent() 완료
+ - kernel/lib/kobject.c:kobject_del() 완료
+ - kernel/drivers/base/core.c:put_device() 완료
+ - kernel/include/linux/perf_event.h: perf_cpu_notifier() 완료
+ - kernel/reboot.c:register_reboot_notifier() 완료 
+
+```
+perf_pmu_register()의 기능
+
+pmu : performance monitoring unit
+// 1. pmu 생성 및 등록
+// 2. 생성 실패 시 해당 device node를 삭제함
+//    - parent / child 관계를 가지고 있음
+//    - 자식부터, 부모의 순이며
+//    - 단위 파일 부터 삭제 후 dir을 삭제하는 논리
+```
+
 + [130주차](http://bit.ly/2rCyONe) `2017.06.03`
- - drive: 양만철
+ - drive: 양만철님
  - [perf_pmu_register() 진행중]()
  - kernel/events/core.c:pref_event_init() 진행 중
  - kernel/events/core.c:perf_pmu_register() 진행 중
@@ -23,7 +53,7 @@
  - drivers/base/dd.c:driver_deferred_probe_del() 진행완료
 
 + [129주차](http://bit.ly/2qZ21RT) `2017.05.27`
- - drive: 홍진우
+ - drive: 홍진우님
  - [perf_pmu_register() 진행중]()
  - kernel/events/core.c:pref_event_init() 진행 중
  - kernel/events/core.c:perf_pmu_register() 진행 중

@@ -86,6 +86,7 @@ static inline struct arch_hw_breakpoint *counter_arch_bp(struct perf_event *bp)
 
 #else /* !CONFIG_HAVE_HW_BREAKPOINT */
 
+// 2017-06-10
 static inline int __init init_hw_breakpoint(void) { return 0; }
 
 static inline struct perf_event *

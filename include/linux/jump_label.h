@@ -153,6 +153,7 @@ static inline void static_key_slow_inc(struct static_key *key)
 	atomic_inc(&key->enabled);
 }
 
+// 2017-06-10
 static inline void static_key_slow_dec(struct static_key *key)
 {
 	atomic_dec(&key->enabled);

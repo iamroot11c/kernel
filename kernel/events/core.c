@@ -138,6 +138,7 @@ enum event_type_t {
  * perf_sched_events : >0 events exist
  * perf_cgroup_events: >0 per-cpu cgroup events exist on this cpu
  */
+// 2017-06-10
 struct static_key_deferred perf_sched_events __read_mostly;
 static DEFINE_PER_CPU(atomic_t, perf_cgroup_events);
 static DEFINE_PER_CPU(atomic_t, perf_branch_stack_events);
@@ -5899,6 +5900,7 @@ static int perf_tp_event_init(struct perf_event *event)
 	return 0;
 }
 
+// 2017-06-10
 static struct pmu perf_tracepoint = {
 	.task_ctx_nr	= perf_sw_context,
 
@@ -5912,6 +5914,7 @@ static struct pmu perf_tracepoint = {
 	.event_idx	= perf_swevent_event_idx,
 };
 
+// 2017-06-10
 static inline void perf_tp_register(void)
 {
 	perf_pmu_register(&perf_tracepoint, "tracepoint", PERF_TYPE_TRACEPOINT);
@@ -7823,11 +7826,13 @@ static void __init perf_event_init_all_cpus(void)
 	}
 }
 
+// 2017-06-10
 static void perf_event_init_cpu(int cpu)
 {
 	struct swevent_htable *swhash = &per_cpu(swevent_htable, cpu);
 
 	mutex_lock(&swhash->hlist_mutex);
+	// 이미 생성된 것이 있다면, 새로 생성 후, list에 추가
 	if (swhash->hlist_refcount > 0) {
 		struct swevent_hlist *hlist;
 
@@ -7878,6 +7883,7 @@ static void perf_event_exit_cpu_context(int cpu)
 	srcu_read_unlock(&pmus_srcu, idx);
 }
 
+// 2017-06-10
 static void perf_event_exit_cpu(int cpu)
 {
 	struct swevent_htable *swhash = &per_cpu(swevent_htable, cpu);
@@ -7907,11 +7913,13 @@ perf_reboot(struct notifier_block *notifier, unsigned long val, void *v)
  * Run the perf reboot notifier at the very last possible moment so that
  * the generic watchdog code runs as long as possible.
  */
+// 2017-06-10
 static struct notifier_block perf_reboot_notifier = {
 	.notifier_call = perf_reboot,
 	.priority = INT_MIN,
 };
 
+// 2017-06-10
 static int
 perf_cpu_notify(struct notifier_block *self, unsigned long action, void *hcpu)
 {
@@ -7951,15 +7959,39 @@ void __init perf_event_init(void)
 	perf_pmu_register(&perf_swevent, "software", PERF_TYPE_SOFTWARE);
 	perf_pmu_register(&perf_cpu_clock, NULL, -1);
 	perf_pmu_register(&perf_task_clock, NULL, -1);
+	// 2017-06-10
 	perf_tp_register();
+/*
+ #define perf_cpu_notifier(fn)                       \
+ do {                                    \
+     static struct notifier_block fn##_nb =              \
+         { .notifier_call = fn, .priority = CPU_PRI_PERF };  \
+     unsigned long cpu = smp_processor_id();             \
+     unsigned long flags;                        \
+     fn(&fn##_nb, (unsigned long)CPU_UP_PREPARE,         \
+         (void *)(unsigned long)cpu);                \
+     local_irq_save(flags);                      \
+     fn(&fn##_nb, (unsigned long)CPU_STARTING,           \
+         (void *)(unsigned long)cpu);                \
+     local_irq_restore(flags);                   \
+     fn(&fn##_nb, (unsigned long)CPU_ONLINE,             \
+         (void *)(unsigned long)cpu);                \
+     register_cpu_notifier(&fn##_nb);                \
+ } while (0)
+*/
+// static struct notifier_block perf_cpu_notify_nb = {};
+// perf_cpu_notify(perf_cpu_notify_nb, CPU_UP_PREPARE, cpu);
+// perf_cpu_notify(perf_cpu_notify_nb, CPU_STARTING, cpu);
+// perf_cpu_notify(perf_cpu_notify_nb, CPU_ONLINE,, cpu);
+// register_cpu_notifier(perf_cpu_notify_nb);
 	perf_cpu_notifier(perf_cpu_notify);
-	register_reboot_notifier(&perf_reboot_notifier);
+	regester_reboot_notifier(&perf_reboot_notifier);
 
-	ret = init_hw_breakpoint();
+	ret = init_hw_breakpoint();	// NOP
 	WARN(ret, "hw_breakpoint initialization failed with: %d", ret);
 
 	/* do not patch jump label more than once per second */
-	jump_label_rate_limit(&perf_sched_events, HZ);
+	jump_label_rate_limit(&perf_sched_events, HZ);	// NOP
 
 	/*
 	 * Build time assertion that we keep the data_head at the intended

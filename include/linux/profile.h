@@ -89,6 +89,7 @@ struct pt_regs;
 
 #define prof_on 0
 
+// 2017-06-10
 static inline int profile_init(void)
 {
 	return 0;
