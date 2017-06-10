@@ -622,6 +622,7 @@ static void sub_remove(struct idr *idp, int shift, int id)
  * @id: unique key
  */
 // 2017-01-07, glance
+// 2017-06-10, glance
 void idr_remove(struct idr *idp, int id)
 {
 	struct idr_layer *p;
@@ -719,6 +720,7 @@ void idr_destroy(struct idr *idp)
 }
 EXPORT_SYMBOL(idr_destroy);
 
+// 2017-06-10, glance
 void *idr_find_slowpath(struct idr *idp, int id)
 {
 	int n;

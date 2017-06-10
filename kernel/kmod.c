@@ -259,6 +259,7 @@ static int call_helper(void *data)
 }
 
 // 2017-06-03
+// 2017-06-10
 static void call_usermodehelper_freeinfo(struct subprocess_info *info)
 {
 	if (info->cleanup)
@@ -372,6 +373,7 @@ static atomic_t running_helpers = ATOMIC_INIT(0);
  * Wait queue head used by usermodehelper_disable() to wait for all running
  * helpers to finish.
  */
+// 2017-06-10
 static DECLARE_WAIT_QUEUE_HEAD(running_helpers_waitq);
 
 /*
@@ -504,6 +506,7 @@ static void helper_lock(void)
 	smp_mb__after_atomic_inc();
 }
 
+// 2017-06-10
 static void helper_unlock(void)
 {
 	if (atomic_dec_and_test(&running_helpers))
@@ -603,11 +606,13 @@ int call_usermodehelper_exec(struct subprocess_info *sub_info, int wait)
 	sub_info->wait = wait;
 
 	// 2017-06-03 여기까지
+	// 2017-06-10, 여기부터
 	queue_work(khelper_wq, &sub_info->work);
 	if (wait == UMH_NO_WAIT)	/* task has freed sub_info */
 		goto unlock;
 
 	// 2017-06-03 wait == UMH_WAIT_EXEC
+	// 현재 동작 안 함
 	if (wait & UMH_KILLABLE) {
 		retval = wait_for_completion_killable(&done);
 		if (!retval)

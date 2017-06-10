@@ -56,6 +56,7 @@ struct worker {
 /**
  * current_wq_worker - return struct worker if %current is a workqueue worker
  */
+// 2017-06-10
 static inline struct worker *current_wq_worker(void)
 {
 	if (current->flags & PF_WQ_WORKER)

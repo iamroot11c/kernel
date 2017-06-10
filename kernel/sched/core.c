@@ -1776,6 +1776,7 @@ out:
 // task = cpu_stopper_task
 // worker가 fn=active_load_balance_cpu_stop, arg=busiest로 셋된 상태
 // 2017-04-22
+// 2017-06-10
 int wake_up_process(struct task_struct *p)
 {
 	WARN_ON(task_is_stopped_or_traced(p));
@@ -2915,6 +2916,8 @@ static void __wake_up_common(wait_queue_head_t *q, unsigned int mode,
 //
 // 2015-06-13;
 // __wake_up(&pgdat->kswapd_wait, TASK_INTERRUPTIBLE, 1, NULL);
+// 2017-06-10
+// __wake_up(x, TASK_NORMAL, 1, NULL)
 void __wake_up(wait_queue_head_t *q, unsigned int mode,
 			int nr_exclusive, void *key)
 {

@@ -26,6 +26,7 @@
 
 static struct vfsmount *sysfs_mnt;
 // 2017-01-07
+// 2017-06-10
 struct kmem_cache *sysfs_dir_cachep;
 
 static const struct super_operations sysfs_ops = {
@@ -208,6 +209,7 @@ struct sysfs_dirent *sysfs_get(struct sysfs_dirent *sd)
 EXPORT_SYMBOL_GPL(sysfs_get);
 
 #undef sysfs_put
+// 2017-06-10
 void sysfs_put(struct sysfs_dirent *sd)
 {
 	__sysfs_put(sd);

@@ -114,6 +114,7 @@ struct pcpu_chunk {
 
 // 2016-04-02
 static int pcpu_unit_pages __read_mostly;
+// 2017-06-10
 static int pcpu_unit_size __read_mostly;
 // 2016-04-02
 static int pcpu_nr_units __read_mostly;
@@ -148,6 +149,7 @@ static const size_t *pcpu_group_sizes __read_mostly;
  * ways and thus often doesn't live in the vmalloc area.
  */
 // 2016-05-28;
+// 2017-06-10
 static struct pcpu_chunk *pcpu_first_chunk;
 
 /*
@@ -160,6 +162,7 @@ static struct pcpu_chunk *pcpu_first_chunk;
 // 2016-03-12
 // 2016-05-28;
 static struct pcpu_chunk *pcpu_reserved_chunk;
+// 2017-06-10
 static int pcpu_reserved_chunk_limit;
 
 /*
@@ -199,6 +202,7 @@ static struct list_head *pcpu_slot __read_mostly; /* chunk list slots */
 static void pcpu_reclaim(struct work_struct *work);
 static DECLARE_WORK(pcpu_reclaim_work, pcpu_reclaim);
 
+// 2017-06-10
 static bool pcpu_addr_in_first_chunk(void *addr)
 {
 	void *first_start = pcpu_first_chunk->base_addr;
@@ -206,6 +210,7 @@ static bool pcpu_addr_in_first_chunk(void *addr)
 	return addr >= first_start && addr < first_start + pcpu_unit_size;
 }
 
+// 2017-06-10
 static bool pcpu_addr_in_reserved_chunk(void *addr)
 {
 	void *first_start = pcpu_first_chunk->base_addr;
@@ -253,6 +258,7 @@ static void pcpu_set_page_chunk(struct page *page, struct pcpu_chunk *pcpu)
 }
 
 /* obtain pointer to a chunk from a page struct */
+// 2017-06-10
 static struct pcpu_chunk *pcpu_get_page_chunk(struct page *page)
 {
 	return (struct pcpu_chunk *)page->index;
@@ -738,6 +744,7 @@ static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int off, int size);
 static void pcpu_depopulate_chunk(struct pcpu_chunk *chunk, int off, int size);
 static struct pcpu_chunk *pcpu_create_chunk(void);
 static void pcpu_destroy_chunk(struct pcpu_chunk *chunk);
+// 2017-06-10, addr을 page로 변환하는 기능
 static struct page *pcpu_addr_to_page(void *addr);
 static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai);
 
@@ -754,6 +761,7 @@ static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai);
  * RETURNS:
  * The address of the found chunk.
  */
+// 2017-06-10
 static struct pcpu_chunk *pcpu_chunk_addr_search(void *addr)
 {
 	/* is it in the first chunk? */
@@ -1024,6 +1032,7 @@ static void pcpu_reclaim(struct work_struct *work)
  * CONTEXT:
  * Can be called from atomic context.
  */
+// 2017-06-10
 void free_percpu(void __percpu *ptr)
 {
 	void *addr;
@@ -1034,8 +1043,10 @@ void free_percpu(void __percpu *ptr)
 	if (!ptr)
 		return;
 
-	kmemleak_free_percpu(ptr);
+	kmemleak_free_percpu(ptr);	// NOP
 
+	// 2017-06-10
+	// 현재 CPU의 ptr로 변환
 	addr = __pcpu_ptr_to_addr(ptr);
 
 	spin_lock_irqsave(&pcpu_lock, flags);
@@ -1043,7 +1054,9 @@ void free_percpu(void __percpu *ptr)
 	chunk = pcpu_chunk_addr_search(addr);
 	off = addr - chunk->base_addr;
 
+	// 2017-06-10
 	pcpu_free_area(chunk, off);
+	// 2017-06-10
 
 	/* if there are more than one fully free chunks, wake up grim reaper */
 	if (chunk->free_size == pcpu_unit_size) {

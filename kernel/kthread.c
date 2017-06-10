@@ -136,6 +136,7 @@ EXPORT_SYMBOL_GPL(kthread_freezable_should_stop);
  * calling this function.
  */
 // 2016-10-01
+// 2017-06-10
 void *kthread_data(struct task_struct *task)
 {
 	return to_kthread(task)->data;

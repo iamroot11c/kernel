@@ -6423,6 +6423,13 @@ static struct lock_class_key cpuctx_lock;
 // perf_pmu_register(&perf_swevent, "software", PERF_TYPE_SOFTWARE);
 // perf_pmu_register(&perf_cpu_clock, NULL, -1);
 // perf_pmu_register(&perf_task_clock, NULL, -1);
+// 2017-06-10
+// pmu : performance monitoring unit
+// 1. pmu 생성 및 등록
+// 2. 생성 실패 시 해당 device node를 삭제함
+//    - parent / child 관계를 가지고 있음
+//    - 자식부터, 부모의 순이며
+//    - 단위 파일 부터 삭제 후 dir을 삭제하는 논리
 int perf_pmu_register(struct pmu *pmu, const char *name, int type)
 {
 	int cpu, ret;
@@ -6467,6 +6474,8 @@ skip_type:
 	if (!pmu->pmu_cpu_context)
 		goto free_dev;
 
+	// 2017-06-10, cpuctx를 할당받고 저장하는 곳이 없다?
+	// => per cpu로 부터 할당 받았으니, per cpu에 저장하고 있는 것이다.
 	for_each_possible_cpu(cpu) {
 		struct perf_cpu_context *cpuctx;
 
@@ -6486,6 +6495,7 @@ skip_type:
 	// 2016-09-10 여기까지
 
 // 2016-09-24 시작
+// pmu : performance monitoring unit
 got_cpu_context:
 	if (!pmu->start_txn) {
 		if (pmu->pmu_enable) {
@@ -6514,6 +6524,7 @@ got_cpu_context:
 	if (!pmu->event_idx)
 		pmu->event_idx = perf_event_idx_default;
 
+	// add to list
 	list_add_rcu(&pmu->entry, &pmus);
 	ret = 0;
 unlock:
@@ -6523,14 +6534,19 @@ unlock:
 free_dev:
 	// 2016-09-24
 	device_del(pmu->dev);
+	// 2017-06-10
 	put_device(pmu->dev);
+	// 2017-06-10, end
 
 free_idr:
+	// 2017-06-10
 	if (pmu->type >= PERF_TYPE_MAX)
 		idr_remove(&pmu_idr, pmu->type);
 
 free_pdc:
+	// 2017-06-10
 	free_percpu(pmu->pmu_disable_count);
+	// 2017-06-10
 	goto unlock;
 }
 

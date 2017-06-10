@@ -44,7 +44,8 @@ enum {
 
 	WORK_STRUCT_PENDING	= 1 << WORK_STRUCT_PENDING_BIT,
 	WORK_STRUCT_DELAYED	= 1 << WORK_STRUCT_DELAYED_BIT,
-	WORK_STRUCT_PWQ		= 1 << WORK_STRUCT_PWQ_BIT,
+    // 2017-06-10, PWQ : Pool Work Queue
+	WORK_STRUCT_PWQ		= 1 << WORK_STRUCT_PWQ_BIT/*2*/,
 	WORK_STRUCT_LINKED	= 1 << WORK_STRUCT_LINKED_BIT,
 #ifdef CONFIG_DEBUG_OBJECTS_WORK
 	WORK_STRUCT_STATIC	= 1 << WORK_STRUCT_STATIC_BIT,
@@ -56,7 +57,7 @@ enum {
 	 * The last color is no color used for works which don't
 	 * participate in workqueue flushing.
 	 */
-	WORK_NR_COLORS		= (1 << WORK_STRUCT_COLOR_BITS) - 1,
+	WORK_NR_COLORS/*15*/		= (1 << WORK_STRUCT_COLOR_BITS) - 1,
 	WORK_NO_COLOR		= WORK_NR_COLORS,
 
 	/* special cpu IDs */
@@ -69,11 +70,11 @@ enum {
 	 * This makes pwqs aligned to 256 bytes and allows 15 workqueue
 	 * flush colors.
 	 */
-	WORK_STRUCT_FLAG_BITS	= WORK_STRUCT_COLOR_SHIFT +
-				  WORK_STRUCT_COLOR_BITS,
+	WORK_STRUCT_FLAG_BITS/*9*/	= WORK_STRUCT_COLOR_SHIFT/*5*/ +
+				  WORK_STRUCT_COLOR_BITS/*4*/,
 
 	/* data contains off-queue information when !WORK_STRUCT_PWQ */
-	WORK_OFFQ_FLAG_BASE	= WORK_STRUCT_COLOR_SHIFT,
+	WORK_OFFQ_FLAG_BASE/*5*/	= WORK_STRUCT_COLOR_SHIFT,
 
 	WORK_OFFQ_CANCELING	= (1 << WORK_OFFQ_FLAG_BASE),
 
@@ -89,8 +90,9 @@ enum {
 	WORK_OFFQ_POOL_NONE	= (1LU << WORK_OFFQ_POOL_BITS) - 1,
 
 	/* convenience constants */
-	WORK_STRUCT_FLAG_MASK	= (1UL << WORK_STRUCT_FLAG_BITS) - 1,
-	WORK_STRUCT_WQ_DATA_MASK = ~WORK_STRUCT_FLAG_MASK,
+	WORK_STRUCT_FLAG_MASK	= (1UL << WORK_STRUCT_FLAG_BITS/*9*/) - 1,
+    // 2017-06-10
+	WORK_STRUCT_WQ_DATA_MASK/*0xFFFFFE00*/ = ~WORK_STRUCT_FLAG_MASK,
     /* 2016-05-28 */
 	WORK_STRUCT_NO_POOL	= (unsigned long)WORK_OFFQ_POOL_NONE << WORK_OFFQ_POOL_SHIFT,
 
@@ -106,6 +108,7 @@ enum {
 // 2016-05-28
 // 2016-08-20
 struct work_struct {
+    // 2017-06-10
 	atomic_long_t data;
 	struct list_head entry;
 	work_func_t func;
@@ -211,6 +214,7 @@ static inline unsigned int work_static(struct work_struct *work)
 // 2016-05-28
 static inline void __init_work(struct work_struct *work, int onstack) { }
 static inline void destroy_work_on_stack(struct work_struct *work) { }
+// 2017-06-10
 static inline unsigned int work_static(struct work_struct *work) { return 0; }
 #endif
 

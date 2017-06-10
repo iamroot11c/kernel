@@ -141,6 +141,7 @@ enum {
 /* struct worker is defined in workqueue_internal.h */
 
 // 2016-10-01
+// 2017-06-10
 struct worker_pool {
 	spinlock_t		lock;		/* the pool lock */
 	int			cpu;		/* I: the associated cpu */
@@ -191,6 +192,7 @@ struct worker_pool {
  * point to the pwq; thus, pwqs need to be aligned at two's power of the
  * number of flag bits.
  */
+// 2017-06-10
 struct pool_workqueue {
 	struct worker_pool	*pool;		/* I: the associated pool */
 	struct workqueue_struct *wq;		/* I: the owning workqueue */
@@ -262,7 +264,9 @@ struct workqueue_struct {
 
 	/* hot fields used during command issue, aligned to cacheline */
 	unsigned int		flags ____cacheline_aligned; /* WQ: WQ_* flags */
+	// 2017-06-10
 	struct pool_workqueue __percpu *cpu_pwqs; /* I: per-cpu pwqs */
+	// 2017-06-10
 	struct pool_workqueue __rcu *numa_pwq_tbl[]; /* FR: unbound pwqs indexed by node */
 };
 
@@ -299,6 +303,8 @@ static bool workqueue_freezing;		/* PL: have wqs started freezing? */
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct worker_pool [NR_STD_WORKER_POOLS],
 				     cpu_worker_pools);
 
+// 2017-06-10
+//  struct idr worker_pool_idr = IDR_INIT(worker_pool_idr);
 static DEFINE_IDR(worker_pool_idr);	/* PR: idr of all pools */
 
 /* PL: hash of all unbound pools keyed by pool->attrs */
@@ -332,6 +338,7 @@ static void copy_workqueue_attrs(struct workqueue_attrs *to,
 #define CREATE_TRACE_POINTS
 #include <trace/events/workqueue.h>
 
+// 2017-06-10
 #define assert_rcu_or_pool_mutex()					\
 	rcu_lockdep_assert(rcu_read_lock_sched_held() ||		\
 			   lockdep_is_held(&wq_pool_mutex),		\
@@ -407,7 +414,7 @@ static void copy_workqueue_attrs(struct workqueue_attrs *to,
 		if (({ assert_rcu_or_wq_mutex(wq); false; })) { }	\
 		else
 
-#ifdef CONFIG_DEBUG_OBJECTS_WORK
+#ifdef CONFIG_DEBUG_OBJECTS_WORK	// =n
 
 static struct debug_obj_descr work_debug_descr;
 
@@ -519,6 +526,7 @@ void destroy_work_on_stack(struct work_struct *work)
 EXPORT_SYMBOL_GPL(destroy_work_on_stack);
 
 #else
+// 2017-06-10
 static inline void debug_work_activate(struct work_struct *work) { }
 static inline void debug_work_deactivate(struct work_struct *work) { }
 #endif
@@ -549,6 +557,7 @@ static int worker_pool_assign_id(struct worker_pool *pool)
  *
  * Return: The unbound pool_workqueue for @node.
  */
+// 2017-06-10
 static struct pool_workqueue *unbound_pwq_by_node(struct workqueue_struct *wq,
 						  int node)
 {
@@ -556,9 +565,10 @@ static struct pool_workqueue *unbound_pwq_by_node(struct workqueue_struct *wq,
 	return rcu_dereference_raw(wq->numa_pwq_tbl[node]);
 }
 
+// 2017-06-10
 static unsigned int work_color_to_flags(int color)
 {
-	return color << WORK_STRUCT_COLOR_SHIFT;
+	return color << WORK_STRUCT_COLOR_SHIFT/*5*/;
 }
 
 static int get_work_color(struct work_struct *work)
@@ -592,6 +602,9 @@ static int work_next_color(int color)
  * but stay off timer and worklist for arbitrarily long and nobody should
  * try to steal the PENDING bit.
  */
+// 2017-06-10
+// set_work_data(work, (unsigned long)pwq,
+//                        WORK_STRUCT_PENDING | WORK_STRUCT_PWQ | extra_flags);
 static inline void set_work_data(struct work_struct *work, unsigned long data,
 				 unsigned long flags)
 {
@@ -599,6 +612,8 @@ static inline void set_work_data(struct work_struct *work, unsigned long data,
 	atomic_long_set(&work->data, data | flags | work_static(work));
 }
 
+// 2017-06-10
+// set_work_pwq(work, pwq, extra_flags);
 static void set_work_pwq(struct work_struct *work, struct pool_workqueue *pwq,
 			 unsigned long extra_flags)
 {
@@ -657,6 +672,7 @@ static struct pool_workqueue *get_work_pwq(struct work_struct *work)
  *
  * Return: The worker_pool @work was last associated with.  %NULL if none.
  */
+// 2016-06-10
 static struct worker_pool *get_work_pool(struct work_struct *work)
 {
 	unsigned long data = atomic_long_read(&work->data);
@@ -799,6 +815,7 @@ static struct worker *first_worker(struct worker_pool *pool)
  * CONTEXT:
  * spin_lock_irq(pool->lock).
  */
+// 2017-06-10
 static void wake_up_worker(struct worker_pool *pool)
 {
 	struct worker *worker = first_worker(pool);
@@ -990,11 +1007,15 @@ static inline void worker_clr_flags(struct worker *worker, unsigned int flags)
  * Pointer to worker which is executing @work if found, %NULL
  * otherwise.
  */
+// 2017-06-10
 static struct worker *find_worker_executing_work(struct worker_pool *pool,
 						 struct work_struct *work)
 {
 	struct worker *worker;
 
+	// 아래 논리로 찾는다.
+	// worker->current_work == work &&
+	//                      worker->current_func == work->func`
 	hash_for_each_possible(pool->busy_hash, worker, hentry,
 			       (unsigned long)work)
 		if (worker->current_work == work &&
@@ -1052,9 +1073,11 @@ static void move_linked_works(struct work_struct *work, struct list_head *head,
  * Obtain an extra reference on @pwq.  The caller should guarantee that
  * @pwq has positive refcnt and be holding the matching pool->lock.
  */
+// 2017-06-10
+// ref count 증가의 역할
 static void get_pwq(struct pool_workqueue *pwq)
 {
-	lockdep_assert_held(&pwq->pool->lock);
+	lockdep_assert_held(&pwq->pool->lock);	// NOP
 	WARN_ON_ONCE(pwq->refcnt <= 0);
 	pwq->refcnt++;
 }
@@ -1282,13 +1305,15 @@ fail:
  * CONTEXT:
  * spin_lock_irq(pool->lock).
  */
+// 2017-06-10
+// insert_work(pwq, work, worklist, work_flags);
 static void insert_work(struct pool_workqueue *pwq, struct work_struct *work,
 			struct list_head *head, unsigned int extra_flags)
 {
 	struct worker_pool *pool = pwq->pool;
 
 	/* we own @work, set data and link */
-	set_work_pwq(work, pwq, extra_flags);
+	set_work_pwq(work, pwq, extra_flags); // data 필드 설정
 	list_add_tail(&work->entry, head);
 	get_pwq(pwq);
 
@@ -1307,6 +1332,7 @@ static void insert_work(struct pool_workqueue *pwq, struct work_struct *work,
  * Test whether @work is being queued from another work executing on the
  * same workqueue.
  */
+// 2017-06-10
 static bool is_chained_work(struct workqueue_struct *wq)
 {
 	struct worker *worker;
@@ -1319,6 +1345,7 @@ static bool is_chained_work(struct workqueue_struct *wq)
 	return worker && worker->current_pwq->wq == wq;
 }
 
+// 2017-06-10
 static void __queue_work(int cpu, struct workqueue_struct *wq,
 			 struct work_struct *work)
 {
@@ -1336,19 +1363,20 @@ static void __queue_work(int cpu, struct workqueue_struct *wq,
 	 */
 	WARN_ON_ONCE(!irqs_disabled());
 
-	debug_work_activate(work);
+	debug_work_activate(work);	// NOP
 
 	/* if dying, only works from the same workqueue are allowed */
 	if (unlikely(wq->flags & __WQ_DRAINING) &&
 	    WARN_ON_ONCE(!is_chained_work(wq)))
 		return;
 retry:
+	//  WORK_CPU_UNBOUND는 현재 할당된 CPU가 없다는 뜻으로 보임 
 	if (req_cpu == WORK_CPU_UNBOUND)
 		cpu = raw_smp_processor_id();
 
 	/* pwq which will be used unless @work is executing elsewhere */
 	if (!(wq->flags & WQ_UNBOUND))
-		pwq = per_cpu_ptr(wq->cpu_pwqs, cpu);
+		pwq = per_cpu_ptr(wq->cpu_pwqs, cpu);	// 지정된 cpu로 부터
 	else
 		pwq = unbound_pwq_by_node(wq, cpu_to_node(cpu));
 
@@ -1357,6 +1385,7 @@ retry:
 	 * running there, in which case the work needs to be queued on that
 	 * pool to guarantee non-reentrancy.
 	 */
+	// 2017-06-10
 	last_pool = get_work_pool(work);
 	if (last_pool && last_pool != pwq->pool) {
 		struct worker *worker;
@@ -1365,6 +1394,7 @@ retry:
 
 		worker = find_worker_executing_work(last_pool, work);
 
+		// 2017-06-10
 		if (worker && worker->current_pwq->wq == wq) {
 			pwq = worker->current_pwq;
 		} else {
@@ -1398,6 +1428,7 @@ retry:
 	/* pwq determined, queue */
 	trace_workqueue_queue_work(req_cpu, pwq, work);
 
+	// 2017-06-10, work-entry가 비어있어야 한다
 	if (WARN_ON(!list_empty(&work->entry))) {
 		spin_unlock(&pwq->pool->lock);
 		return;
@@ -1415,6 +1446,7 @@ retry:
 		worklist = &pwq->delayed_works;
 	}
 
+	// 2017-06-10
 	insert_work(pwq, work, worklist, work_flags);
 
 	spin_unlock(&pwq->pool->lock);
@@ -1441,7 +1473,9 @@ bool queue_work_on(int cpu, struct workqueue_struct *wq,
 
 	local_irq_save(flags);
 
+	// %false if @work was already on a queue, %true otherwise.
 	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))) {
+		// 2017-06-10
 		__queue_work(cpu, wq, work);
 		ret = true;
 	}

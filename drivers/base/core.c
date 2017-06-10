@@ -904,6 +904,7 @@ static struct kobject *get_device_parent(struct device *dev,
 	return NULL;
 }
 
+// 2017-06-10
 static void cleanup_glue_dir(struct device *dev, struct kobject *glue_dir)
 {
 	/* see if we live in a "glue" directory */
@@ -914,6 +915,7 @@ static void cleanup_glue_dir(struct device *dev, struct kobject *glue_dir)
 	kobject_put(glue_dir);
 }
 
+// 2017-06-10
 static void cleanup_device_parent(struct device *dev)
 {
 	cleanup_glue_dir(dev, dev->kobj.parent);
@@ -1283,6 +1285,7 @@ EXPORT_SYMBOL_GPL(get_device);
  */
 // 2017-05-27
 // dev->kobj 레퍼런스 카운트 감소 / 0인 경우 제거
+// 2017-06-10
 void put_device(struct device *dev)
 {
 	/* might_sleep(); */
@@ -1372,9 +1375,16 @@ void device_del(struct device *dev)
 		platform_notify_remove(dev);
 	// 2017-06-03 시작
 	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
+	// 2017-06-10, end
+	// 2017-06-10, start
 	cleanup_device_parent(dev);
+	// 2017-06-10, end
+	// 2017-06-10, start
 	kobject_del(&dev->kobj);
+	// 2017-06-10, end
+	// 2017-06-10, start
 	put_device(parent);
+	// 2017-06-10, end
 }
 EXPORT_SYMBOL_GPL(device_del);
 

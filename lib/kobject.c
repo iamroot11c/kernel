@@ -510,6 +510,7 @@ out:
  * kobject_del - unlink kobject from hierarchy.
  * @kobj: object.
  */
+// 2017-06-10
 void kobject_del(struct kobject *kobj)
 {
 	if (!kobj)

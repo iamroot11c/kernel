@@ -27,6 +27,7 @@
 
 // 2016-09-24
 DEFINE_MUTEX(sysfs_mutex);
+// 2017-06-10
 DEFINE_SPINLOCK(sysfs_assoc_lock);
 
 // 2016-09-24
@@ -311,6 +312,7 @@ void release_sysfs_dirent(struct sysfs_dirent *sd)
 	// 2017-01-07
 	sysfs_free_ino(sd->s_ino);
 	// 2017-01-07
+	// 2017-06-10, sysfs_dir_cachep에 반납, 실제 해제는 일어나지 않는다.
 	kmem_cache_free(sysfs_dir_cachep, sd);
 
 	// parent가 존재하면, parent를 기준으로 해제
@@ -447,6 +449,7 @@ struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type)
 // sysfs_addrm_start(&acxt, sd->s_parent);
 // 2017-05-12
 // sysfs_addrm_start(&acxt, dir_sd);
+// 2017-06-10
 void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
 		       struct sysfs_dirent *parent_sd)
 {
@@ -870,6 +873,7 @@ const struct inode_operations sysfs_dir_inode_operations = {
 };
 
 // 2017-04-22
+// 2017-06-10
 static void remove_dir(struct sysfs_dirent *sd)
 {
 	struct sysfs_addrm_cxt acxt;
@@ -886,7 +890,7 @@ void sysfs_remove_subdir(struct sysfs_dirent *sd)
 	remove_dir(sd);
 }
 
-
+// 2017-06-10
 static void __sysfs_remove_dir(struct sysfs_dirent *dir_sd)
 {
 	struct sysfs_addrm_cxt acxt;
@@ -896,16 +900,19 @@ static void __sysfs_remove_dir(struct sysfs_dirent *dir_sd)
 		return;
 
 	pr_debug("sysfs %s: removing dir\n", dir_sd->s_name);
-	sysfs_addrm_start(&acxt, dir_sd);
+	sysfs_addrm_start(&acxt, dir_sd);	// lock
 	pos = rb_first(&dir_sd->s_dir.children);
+	
+	// 단위 파일 삭제
 	while (pos) {
 		struct sysfs_dirent *sd = to_sysfs_dirent(pos);
 		pos = rb_next(pos);
-		if (sysfs_type(sd) != SYSFS_DIR)
+		if (sysfs_type(sd) != SYSFS_DIR)	// file
 			sysfs_remove_one(&acxt, sd);
 	}
-	sysfs_addrm_finish(&acxt);
+	sysfs_addrm_finish(&acxt);		// unlock
 
+	// 단위 dir 삭제
 	remove_dir(dir_sd);
 }
 
@@ -917,7 +924,7 @@ static void __sysfs_remove_dir(struct sysfs_dirent *dir_sd)
  *	the directory before we remove the directory, and we've inlined
  *	what used to be sysfs_rmdir() below, instead of calling separately.
  */
-
+// 2017-06-10
 void sysfs_remove_dir(struct kobject *kobj)
 {
 	struct sysfs_dirent *sd = kobj->sd;
