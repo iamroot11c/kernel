@@ -262,6 +262,8 @@ enum zone_watermarks {
 #define high_wmark_pages(z) (z->watermark[WMARK_HIGH])
 
 // 2015-04-25
+// 2017-06-17
+// percpu에서 관리하는 page 상태 관리를 위한 구조체로 추정
 struct per_cpu_pages {
 	int count;		/* number of pages in the list */
 	int high;		/* high watermark, emptying needed */
@@ -272,6 +274,7 @@ struct per_cpu_pages {
 };
 
 // 2015-09-05;
+// 2017-06-17
 struct per_cpu_pageset {
 	struct per_cpu_pages pcp;
 #ifdef CONFIG_NUMA // not define
@@ -378,6 +381,8 @@ struct zone {
 	unsigned long		min_unmapped_pages;
 	unsigned long		min_slab_pages;
 #endif
+    // 2017-06-17
+    // zone이 관리하고 있는 page 정보 
 	struct per_cpu_pageset __percpu *pageset;
 	/*
 	 * free areas of different sizes
@@ -829,7 +834,9 @@ typedef struct pglist_data {
 #endif
 #define nid_page_nr(nid, pagenr) 	pgdat_page_nr(NODE_DATA(nid),(pagenr))
 
+// 2017-06-17
 #define node_start_pfn(nid)	(NODE_DATA(nid)->node_start_pfn)
+// 2017-06-17
 #define node_end_pfn(nid) pgdat_end_pfn(NODE_DATA(nid))
 
 static inline unsigned long pgdat_end_pfn(pg_data_t *pgdat)
@@ -1158,7 +1165,7 @@ static inline unsigned long early_pfn_to_nid(unsigned long pfn)
 }
 #endif
 
-#ifdef CONFIG_FLATMEM
+#ifdef CONFIG_FLATMEM // not set
 #define pfn_to_nid(pfn)		(0)
 #endif
 
@@ -1327,6 +1334,7 @@ static inline int valid_section_nr(unsigned long nr)
 }
 
 // 2015-01-24;
+// 2017-06-17
 static inline struct mem_section *__pfn_to_section(unsigned long pfn)
 {
 	return __nr_to_section(pfn_to_section_nr(pfn));

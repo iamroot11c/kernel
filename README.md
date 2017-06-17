@@ -1,7 +1,23 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [132주차](http://bit.ly/2sotGgD) `2017.06.17`
+ - drive: 홍진우님
+ - init/main.c:pidmap_init() 진행 예정
+ - init/main.c:calibrate_delay() 완료
+ - init/main.c:sched_clock_init() 완료
+ - init/main.c:setup_per_cpu_pageset() 완료
+ - init/main.c:kmemleak_init() 완료
+ - init/main.c:debug_objects_mem_init() 완료
+ - init/main.c:page_cgroup_init() 완료
+ - init/main.c:locking_selftest() 완료
+ - init/main.c:lockdep_info() 완료
+ - init/main.c:console_init() 완료
+ - init/main.c:kmem_cache_init_late() 완료
+ - init/main.c:call_function_init() 완료
+ - init/main.c:start_kernel() 진행
+
 + [131주차](http://bit.ly/2sotGgD) `2017.06.10`
- - drive: 양만철님
+ - drive: 보름달님
  - [call_function_init() 진행중]()
  - call_function_init() 진행 중
  - kernel/events/core.c:pref_event_init() 완료

@@ -119,6 +119,7 @@ extern void do_trace_rcu_torture_read(const char *rcutorturename,
  * more than one CPU).
  */
 // 205-12-12
+// 2017-06-17
 extern void call_rcu(struct rcu_head *head,
 			      void (*func)(struct rcu_head *head));
 

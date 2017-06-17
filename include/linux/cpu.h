@@ -131,6 +131,7 @@ enum {
 #ifdef CONFIG_HOTPLUG_CPU
 // 2015-04-04
 // 2016-07-23
+// 2017-06-17
 extern int register_cpu_notifier(struct notifier_block *nb);
 extern void unregister_cpu_notifier(struct notifier_block *nb);
 #else

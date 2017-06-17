@@ -199,6 +199,7 @@ static int __init obsolete_checksetup(char *line)
  * This should be approx 2 Bo*oMips to start (note initial shift), and will
  * still work even if initially too large, it will just take slightly longer
  */
+// 2017-06-17
 unsigned long loops_per_jiffy = (1<<12);
 
 EXPORT_SYMBOL(loops_per_jiffy);
@@ -683,10 +684,14 @@ asmlinkage void __init start_kernel(void)
 	// 2017-06-10, 여기까지
 	// 2017-06-17, 여기부터
 	call_function_init();
+	// 2017-06-17
+	// 이 시점에서 하드웨어 인터럽트가 설정되지 않은 것을 기대
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 	early_boot_irqs_disabled = false;
+	// IRQ 활성화
 	local_irq_enable();
 
+	// 2017-06-17
 	kmem_cache_init_late();
 
 	/*
@@ -694,20 +699,24 @@ asmlinkage void __init start_kernel(void)
 	 * we've done PCI setups etc, and console_init() must be aware of
 	 * this. But we do want output early, in case something goes wrong.
 	 */
+	// 2017-06-17
 	console_init();
 	if (panic_later)
 		panic(panic_later, panic_param);
 
-	lockdep_info();
+	// 2017-06-17
+	lockdep_info(); // NOP
 
 	/*
 	 * Need to run this when irqs are enabled, because it wants
 	 * to self-test [hard/soft]-irqs on/off lock inversion bugs
 	 * too:
 	 */
-	locking_selftest();
+	// 2017-06-17
+	locking_selftest(); // NOP
 
 #ifdef CONFIG_BLK_DEV_INITRD
+	// glance
 	if (initrd_start && !initrd_below_start_ok &&
 	    page_to_pfn(virt_to_page((void *)initrd_start)) < min_low_pfn) {
 		pr_crit("initrd overwritten (0x%08lx < 0x%08lx) - disabling it.\n",
@@ -716,15 +725,23 @@ asmlinkage void __init start_kernel(void)
 		initrd_start = 0;
 	}
 #endif
+	// 2017-06-17
 	page_cgroup_init();
-	debug_objects_mem_init();
-	kmemleak_init();
+	// 2017-06-17
+	debug_objects_mem_init(); // NOP
+	kmemleak_init(); // NOP
+	// 2017-06-17
+	// zone의 page 관리 객체(pageset) 초기화
 	setup_per_cpu_pageset();
-	numa_policy_init();
+	numa_policy_init(); // NOP
+	// late_time_init 함수 포인터는 미설정된 것으로 파악
 	if (late_time_init)
 		late_time_init();
+	// 2017-06-17
 	sched_clock_init();
+	// 2017-06-17
 	calibrate_delay();
+	// 2017-06-17 여기까지
 	pidmap_init();
 	anon_vma_init();
 #ifdef CONFIG_X86

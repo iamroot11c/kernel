@@ -104,7 +104,7 @@ struct page_cgroup *lookup_page_cgroup(struct page *page)
 #endif
 	return section->page_cgroup + pfn;
 }
-
+// 2017-06-17
 static void *__meminit alloc_page_cgroup(size_t size, int nid)
 {
 	gfp_t flags = GFP_KERNEL | __GFP_ZERO | __GFP_NOWARN;
@@ -124,6 +124,11 @@ static void *__meminit alloc_page_cgroup(size_t size, int nid)
 	return addr;
 }
 
+// 2017-06-17
+// 동작 : page_cgroup 관련 메모리 할당(PAGES_PER_SECTION 개수만큼) 및 
+// offset, 총 사용할 메모리 량 설정
+
+// return : 성공 : 0 / 실패 : 0보다 작은 값
 static int __meminit init_section_page_cgroup(unsigned long pfn, int nid)
 {
 	struct mem_section *section;
@@ -143,6 +148,7 @@ static int __meminit init_section_page_cgroup(unsigned long pfn, int nid)
 	 * and it does not point to the memory block allocated above,
 	 * causing kmemleak false positives.
 	 */
+	// 2017-06-17 식사 전
 	kmemleak_not_leak(base);
 
 	if (!base) {
@@ -266,6 +272,8 @@ static int __meminit page_cgroup_callback(struct notifier_block *self,
 
 #endif
 
+// 2017-06-17
+// 동작 : start_pfn ~ end_pfn까지 croup에서 사용할 메모리 할당 
 void __init page_cgroup_init(void)
 {
 	unsigned long pfn;
@@ -274,6 +282,7 @@ void __init page_cgroup_init(void)
 	if (mem_cgroup_disabled())
 		return;
 
+	// 현 분석조건에서는 nid == 0
 	for_each_node_state(nid, N_MEMORY) {
 		unsigned long start_pfn, end_pfn;
 
@@ -302,7 +311,7 @@ void __init page_cgroup_init(void)
 				goto oom;
 		}
 	}
-	hotplug_memory_notifier(page_cgroup_callback, 0);
+	hotplug_memory_notifier(page_cgroup_callback, 0); // NOP
 	printk(KERN_INFO "allocated %ld bytes of page_cgroup\n", total_usage);
 	printk(KERN_INFO "please try 'cgroup_disable=memory' option if you "
 			 "don't want memory cgroups\n");

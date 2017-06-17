@@ -11,7 +11,9 @@
 #include <linux/smp.h>
 #include <linux/percpu.h>
 
+// 2017-06-17
 unsigned long lpj_fine;
+// 2017-06-17
 unsigned long preset_lpj;
 static int __init lpj_setup(char *str)
 {
@@ -183,6 +185,7 @@ static unsigned long calibrate_delay_direct(void)
  */
 #define LPS_PREC 8
 
+// 2017-06-17
 static unsigned long calibrate_delay_converge(void)
 {
 	/* First stage - slowly accelerate to find initial bounds */
@@ -261,7 +264,10 @@ unsigned long __attribute__((weak)) calibrate_delay_is_known(void)
 {
 	return 0;
 }
-
+// 2017-06-17
+// glance
+// cpu_loops_per_jiffy 값에 따라 로그, 
+// cpu_loops_per_jiffy 값 재갱신
 void calibrate_delay(void)
 {
 	unsigned long lpj;

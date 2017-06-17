@@ -58,6 +58,7 @@
  */
  // 2015-11-07
 #define raw_local_irq_disable()		arch_local_irq_disable()
+ // 2017-06-17
 #define raw_local_irq_enable()		arch_local_irq_enable()
 // 2016-03-26
 #define raw_local_irq_save(flags)			\

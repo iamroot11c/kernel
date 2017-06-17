@@ -89,6 +89,7 @@
 #define in_irq()		(hardirq_count())
 #define in_softirq()		(softirq_count())
 // 2016-09-10
+// 인터럽트(hw interrupt, sw interrupt, nmi)가 설정이 되었는지 확인
 #define in_interrupt()		(irq_count())
 // 2015-06-13;
 // urrent_thread_info()->preempt_count & HARDIRQ_MASK & SOFTIRQ_OFFSET

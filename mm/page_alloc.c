@@ -4862,6 +4862,9 @@ static int __meminit zone_batchsize(struct zone *zone)
  */
 // 2015-03-28;
 // pageset_update(p, 0, 1);
+//
+// 2017-06-17
+// 동작: pcp에 high, batch값을 readlock 없이 업데이트
 static void pageset_update(struct per_cpu_pages *pcp, unsigned long high,
 		unsigned long batch)
 {
@@ -4885,6 +4888,8 @@ static void pageset_set_batch(struct per_cpu_pageset *p, unsigned long batch)
 }
 
 // 2015-03-28
+// 2017-06-17
+// per_cpu_pageset 초기화 및 migratetype 관련 list 초기화
 static void pageset_init(struct per_cpu_pageset *p)
 {
 	struct per_cpu_pages *pcp;
@@ -4917,13 +4922,15 @@ static void setup_pageset(struct per_cpu_pageset *p, unsigned long batch)
 static void pageset_set_high(struct per_cpu_pageset *p,
 				unsigned long high)
 {
+	// batch == high / 4이며
+	// 1 <= batch <= PAGE_SHIFT * 8 사이 값으로 보정
 	unsigned long batch = max(1UL, high / 4);
 	if ((high / 4) > (PAGE_SHIFT * 8))
 		batch = PAGE_SHIFT * 8;
 
 	pageset_update(&p->pcp, high, batch);
 }
-
+// 2017-06-17
 static void __meminit pageset_set_high_and_batch(struct zone *zone,
 		struct per_cpu_pageset *pcp)
 {
@@ -4934,7 +4941,8 @@ static void __meminit pageset_set_high_and_batch(struct zone *zone,
 	else
 		pageset_set_batch(pcp, zone_batchsize(zone));
 }
-
+// 2017-06-17
+// zone->pageset 초기화 및 high / batch값 설정 
 static void __meminit zone_pageset_init(struct zone *zone, int cpu)
 {
 	struct per_cpu_pageset *pcp = per_cpu_ptr(zone->pageset, cpu);
@@ -4942,7 +4950,7 @@ static void __meminit zone_pageset_init(struct zone *zone, int cpu)
 	pageset_init(pcp);
 	pageset_set_high_and_batch(zone, pcp);
 }
-
+// 2017-06-17
 static void __meminit setup_zone_pageset(struct zone *zone)
 {
 	int cpu;
@@ -4955,6 +4963,8 @@ static void __meminit setup_zone_pageset(struct zone *zone)
  * Allocate per cpu pagesets and initialize them.
  * Before this call only boot pagesets were available.
  */
+// 2017-06-17
+// popular된 zone에 대해 pageset 초기화
 void __init setup_per_cpu_pageset(void)
 {
 	struct zone *zone;

@@ -775,6 +775,7 @@ static inline bool zalloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
 }
 
 // 2016-08-06
+// 2017-06-17
 // zalloc_cpumask_var_node(&desc->irq_data.affinity, GFP_KERNEL, node)
 static inline bool zalloc_cpumask_var_node(cpumask_var_t *mask, gfp_t flags,
 					  int node)

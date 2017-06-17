@@ -58,6 +58,7 @@ static inline void kmemleak_erase(void **ptr)
 
 #else
 
+// 2017-06-17
 static inline void kmemleak_init(void)
 {
 }

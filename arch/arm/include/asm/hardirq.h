@@ -7,6 +7,7 @@
 
 #define NR_IPI	6
 
+// 2017-06-17
 typedef struct {
 	unsigned int __softirq_pending;
 #ifdef CONFIG_SMP

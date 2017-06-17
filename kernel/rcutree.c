@@ -2012,6 +2012,9 @@ static void rcu_cleanup_dead_cpu(int cpu, struct rcu_state *rsp)
  * Invoke any RCU callbacks that have made it to the end of their grace
  * period.  Thottle as specified by rdp->blimit.
  */
+
+// 2017-06-17
+// glance (콜백 호출 부(__rcu_reclaim() 만 간략히 확인)
 static void rcu_do_batch(struct rcu_state *rsp, struct rcu_data *rdp)
 {
 	unsigned long flags;
@@ -2306,7 +2309,7 @@ static void invoke_rcu_callbacks(struct rcu_state *rsp, struct rcu_data *rdp)
 	}
 	invoke_rcu_callbacks_kthread();
 }
-
+// 2017-06-17
 static void invoke_rcu_core(void)
 {
 	if (cpu_online(smp_processor_id()))
@@ -2316,6 +2319,7 @@ static void invoke_rcu_core(void)
 /*
  * Handle any core-RCU processing required by a call_rcu() invocation.
  */
+// 2017-06-17
 static void __call_rcu_core(struct rcu_state *rsp, struct rcu_data *rdp,
 			    struct rcu_head *head, unsigned long flags)
 {
@@ -2377,6 +2381,9 @@ static void rcu_leak_callback(struct rcu_head *rhp)
 // 2015-08-08 glance;
 // __call_rcu(&cred->rcu, put_cred_rcu, &rcu_preempt_state, -1, 0);
 // 2015-12-12
+// 2017-06-17
+//__call_rcu(&object->rcu, free_object_rcu, &rcu_preempt_state, -1, 0)
+// 동작 : head에 fun 콜백 등록 / rcu softirq (__call_rcu_core)호출
 static void
 __call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu),
 	   struct rcu_state *rsp, int cpu, bool lazy)
@@ -2419,7 +2426,7 @@ __call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu),
 	if (lazy)
 		rdp->qlen_lazy++;
 	else
-		rcu_idle_count_callbacks_posted();
+		rcu_idle_count_callbacks_posted(); // NOP
 	smp_mb();  /* Count before adding callback for rcu_barrier(). */
 	*rdp->nxttail[RCU_NEXT_TAIL] = head;
 	rdp->nxttail[RCU_NEXT_TAIL] = &head->next;

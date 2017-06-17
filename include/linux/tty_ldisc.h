@@ -171,7 +171,7 @@ extern int ldsem_down_write_nested(struct ld_semaphore *sem, int subclass,
 		ldsem_down_write(sem, timeout)
 #endif
 
-
+// 2017-06-17
 struct tty_ldisc_ops {
 	int	magic;
 	char	*name;

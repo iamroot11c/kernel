@@ -66,6 +66,8 @@ void __weak panic_smp_self_stop(void)
  *
  *	This function never returns.
  */
+// 2017-06-17
+// glance
 void panic(const char *fmt, ...)
 {
 	static DEFINE_SPINLOCK(panic_lock);

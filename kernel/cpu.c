@@ -191,14 +191,17 @@ void cpu_hotplug_enable(void)
 // 2016-08-13
 // register_cpu_notifier(&timers_nb);
 // register_cpu_notifier(&hrtimers_nb);
-// register_cpu_notifier(&remote_softirq_cpu_notifier);
+// register_cpu_notifier(&remote_softirq_cpu_notifier)
+//
+// 동작 : cpu_chain에 n을 우선 순위 내림차순 기준으로 삽입한다.
+// 동기화를 위해 mutex()를 설정한다.
 int __ref register_cpu_notifier(struct notifier_block *nb)
 {
 	int ret;
 
 	// begin, done 사이에 실제 register가 이루어 진다.
 	cpu_maps_update_begin();
-	ret = raw_notifier_chain_register(&cpu_chain, nb); // 리턴 0
+	ret = raw_notifier_chain_register(&cpu_chain, nb);
 	cpu_maps_update_done();
 	return ret;
 }

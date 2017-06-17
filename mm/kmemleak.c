@@ -471,6 +471,9 @@ static void free_object_rcu(struct rcu_head *rcu)
  * is also possible.
  */
 // 2014-11-22
+// 동작 : object의 레퍼런스 카운트 1 감소.
+// 레퍼런스 카운트가 0인 경우 
+// free_object_rcu 콜백(소멸자 역할) 호출 요청
 static void put_object(struct kmemleak_object *object)
 {
 	// kmemleak_object 인스턴스의 use_count 변수를 1감소 후
@@ -482,14 +485,9 @@ static void put_object(struct kmemleak_object *object)
 	/* should only get here after delete_object was called */
 	WARN_ON(object->flags & OBJECT_ALLOCATED);
 
-	// rcu의 비 동기 콜백 함수 등록
-	//
-	// 두번째 인자의 타입은 void(*)(struct rcu_head*)이며, 
-	// 첫 번째 인자는 콜백함수의 인자로 전달됨
-	//
-	// 즉 free_object_rcu 함수 포인터를 두번째 인자로 전달하며,
-	// free_object_rcu() 함수의 인자로 kmemleak_object 구조체의 
-	// 인스턴스의 rcu 멤버를 전달
+	// object->rcu에 free_object_rcu 콜백 등록
+	// 콜백 호출 시점에 파라미터로 &object->rcu가 등록
+	// (__rcu_reclaim()함수 참고)
 	call_rcu(&object->rcu, free_object_rcu);
 }
 
@@ -739,14 +737,14 @@ static void delete_object_part(unsigned long ptr, size_t size)
 
 	put_object(object);
 }
-
+// 2017-06-17
 static void __paint_it(struct kmemleak_object *object, int color)
 {
 	object->min_count = color;
 	if (color == KMEMLEAK_BLACK)
 		object->flags |= OBJECT_NO_SCAN;
 }
-
+// 2017-06-17
 static void paint_it(struct kmemleak_object *object, int color)
 {
 	unsigned long flags;
@@ -756,6 +754,7 @@ static void paint_it(struct kmemleak_object *object, int color)
 	spin_unlock_irqrestore(&object->lock, flags);
 }
 
+// 2017-06-17
 static void paint_ptr(unsigned long ptr, int color)
 {
 	struct kmemleak_object *object;
@@ -776,6 +775,7 @@ static void paint_ptr(unsigned long ptr, int color)
  * Mark an object permanently as gray-colored so that it can no longer be
  * reported as a leak. This is used in general to mark a false positive.
  */
+// 메모리 릭 체크 대상이 아님을 표시
 static void make_gray_object(unsigned long ptr)
 {
 	paint_ptr(ptr, KMEMLEAK_GREY);
@@ -1055,6 +1055,8 @@ EXPORT_SYMBOL_GPL(kmemleak_free_percpu);
  * Calling this function on an object will cause the memory block to no longer
  * be reported as leak and always be scanned.
  */
+// 2017-06-17
+// 동작 : memory leak 체크 대상에서 제외처리
 void __ref kmemleak_not_leak(const void *ptr)
 {
 	pr_debug("%s(0x%p)\n", __func__, ptr);

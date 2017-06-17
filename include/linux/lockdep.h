@@ -394,6 +394,7 @@ static inline void lockdep_on(void)
 # define lockdep_clear_current_reclaim_state()	do { } while (0)
 # define lockdep_trace_alloc(g)			do { } while (0) // 2015-05-23;
 # define lockdep_init()				do { } while (0)
+// 2017-06-17
 # define lockdep_info()				do { } while (0)
 // 2016-08-20
 # define lockdep_init_map(lock, name, key, sub) \

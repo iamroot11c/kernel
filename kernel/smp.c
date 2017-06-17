@@ -22,6 +22,7 @@ enum {
 
 // 2015-08-29
 // 2016-01-23
+// 2017-06-17
 struct call_function_data {
 	struct call_single_data	__percpu *csd;
 	cpumask_var_t		cpumask;
@@ -35,6 +36,7 @@ struct call_function_data {
 // 2016-01-26
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct call_function_data, cfd_data);
 
+// 2017-06-17
 // 2015-08-29
 struct call_single_queue {
 	struct list_head	list;
@@ -43,9 +45,15 @@ struct call_single_queue {
 
 // 2015-08-29
 // 2016-01-23
+// 2017-06-17
 // static struct call_single_queue call_single_queue;
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct call_single_queue, call_single_queue);
 
+// 2017-06-17
+// hotplug_cfd(&hotplug_cfd_notifier, CPU_UP_PREPARE, cpu);
+
+// 동작 : 
+// per_cpu call_function_data 타입인 cfd_data[cpu]를 할당
 static int
 hotplug_cfd(struct notifier_block *nfb, unsigned long action, void *hcpu)
 {
@@ -55,14 +63,18 @@ hotplug_cfd(struct notifier_block *nfb, unsigned long action, void *hcpu)
 	switch (action) {
 	case CPU_UP_PREPARE:
 	case CPU_UP_PREPARE_FROZEN:
+		// zalloc_cpumask_var_node : 현 분석환경에서는 항상 true
+		// cfd->cpumask clear
 		if (!zalloc_cpumask_var_node(&cfd->cpumask, GFP_KERNEL,
 				cpu_to_node(cpu)))
 			return notifier_from_errno(-ENOMEM);
+		// cfd->cpumask ipi clear
 		if (!zalloc_cpumask_var_node(&cfd->cpumask_ipi, GFP_KERNEL,
 				cpu_to_node(cpu))) {
 			free_cpumask_var(cfd->cpumask);
 			return notifier_from_errno(-ENOMEM);
 		}
+		// call_single_data percpu 할당. 실패 시 해제
 		cfd->csd = alloc_percpu(struct call_single_data);
 		if (!cfd->csd) {
 			free_cpumask_var(cfd->cpumask_ipi);
@@ -71,7 +83,7 @@ hotplug_cfd(struct notifier_block *nfb, unsigned long action, void *hcpu)
 		}
 		break;
 
-#ifdef CONFIG_HOTPLUG_CPU
+#ifdef CONFIG_HOTPLUG_CPU // not set
 	case CPU_UP_CANCELED:
 	case CPU_UP_CANCELED_FROZEN:
 
@@ -87,10 +99,14 @@ hotplug_cfd(struct notifier_block *nfb, unsigned long action, void *hcpu)
 	return NOTIFY_OK;
 }
 
+// 2017-06-17
 static struct notifier_block hotplug_cfd_notifier = {
 	.notifier_call		= hotplug_cfd,
 };
 
+// 2017-06-17 시작
+// 동작 : per_cpu call_single_queue 초기화. 
+// hotplug_cfd 콜백 cpu_chain에 등록
 void __init call_function_init(void)
 {
 	void *cpu = (void *)(long)smp_processor_id();

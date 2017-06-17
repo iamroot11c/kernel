@@ -17,6 +17,7 @@
  */
 
 #ifndef __ARCH_IRQ_STAT
+// 2017-06-17
 extern irq_cpustat_t irq_stat[];		/* defined in asm/hardirq.h */
 #define __IRQ_STAT(cpu, member)	(irq_stat[cpu].member)
 #endif

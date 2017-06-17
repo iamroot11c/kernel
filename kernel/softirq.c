@@ -49,6 +49,9 @@
  */
 
 #ifndef __ARCH_IRQ_STAT
+// 2017-06-17
+// cpu 별 softirq 상태를 관리
+// (bit number는 interrupt.h 참조)
 irq_cpustat_t irq_stat[NR_CPUS] ____cacheline_aligned;
 EXPORT_SYMBOL(irq_stat);
 #endif
@@ -63,6 +66,7 @@ EXPORT_SYMBOL(irq_stat);
 //
 static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp;
 
+// 2017-06-17
 DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
 
 char *softirq_to_name[NR_SOFTIRQS] = {
@@ -76,9 +80,12 @@ char *softirq_to_name[NR_SOFTIRQS] = {
  * to the pending events, so lets the scheduler to balance
  * the softirq load for us.
  */
+// 2017-06-17
+// 현재 cpu의 kernel softirq daemon 태스크가 실행되지 않는다면, 실행한다.
 static void wakeup_softirqd(void)
 {
 	/* Interrupts are disabled: no need to stop preemption */
+	// 현재 cpu의 ksoftirqd task를 얻어온다.
 	struct task_struct *tsk = __this_cpu_read(ksoftirqd);
 
 	if (tsk && tsk->state != TASK_RUNNING)
@@ -388,6 +395,7 @@ void irq_exit(void)
 /*
  * This function must run with irqs disabled!
  */
+// 2017-06-17
 inline void raise_softirq_irqoff(unsigned int nr)
 {
 	__raise_softirq_irqoff(nr);
@@ -404,7 +412,7 @@ inline void raise_softirq_irqoff(unsigned int nr)
 	if (!in_interrupt())
 		wakeup_softirqd();
 }
-
+// 2017-06-17
 void raise_softirq(unsigned int nr)
 {
 	unsigned long flags;
@@ -417,6 +425,7 @@ void raise_softirq(unsigned int nr)
 void __raise_softirq_irqoff(unsigned int nr)
 {
 	trace_softirq_raise(nr);
+	// softirq bit 설정
 	or_softirq_pending(1UL << nr);
 }
 

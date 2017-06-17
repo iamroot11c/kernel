@@ -61,6 +61,8 @@ static struct tty_ldisc_ops *tty_ldiscs[NR_LDISCS];
  *		takes tty_ldiscs_lock to guard against ldisc races
  */
 
+// 2017-06-17
+// tty_ldiscs, new_ldisc 설정
 int tty_register_ldisc(int disc, struct tty_ldisc_ops *new_ldisc)
 {
 	unsigned long flags;
@@ -821,6 +823,8 @@ void tty_ldisc_deinit(struct tty_struct *tty)
 	tty->ldisc = NULL;
 }
 
+// 2017-06-17
+// N_TTY 타입에 대해 &tty_ldisc_N_TTY 정보를 삽입 및 초기화한다.
 void tty_ldisc_begin(void)
 {
 	/* Setup the default TTY line discipline. */

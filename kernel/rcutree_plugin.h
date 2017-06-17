@@ -704,6 +704,8 @@ static void rcu_preempt_do_callbacks(void)
 // call_rcu(&node->rcu_head, radix_tree_node_rcu_free);
 // 2017-06-03
 // call_rcu(&rcu.head, wakeme_after_rcu);
+// 2017-06-17
+// call_rcu(&object->rcu, free_object_rcu);
 void call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu))
 {
 	__call_rcu(head, func, &rcu_preempt_state, -1, 0);
@@ -1642,6 +1644,7 @@ static void rcu_prepare_for_idle(int cpu)
  * Don't bother keeping a running count of the number of RCU callbacks
  * posted because CONFIG_RCU_FAST_NO_HZ=n.
  */
+// 2017-06-17
 static void rcu_idle_count_callbacks_posted(void)
 {
 }

@@ -39,6 +39,8 @@ BLOCKING_NOTIFIER_HEAD(reboot_notifier_list);
 // 2016-07-23
 // 전달된 chain에 따라서 다르게 구성된다.
 // blocking_notifier_chain_register(&pm_chain_head, nb);
+//
+// 동작 : nl 링크드리스트에 n 노드를 삽입한다.(삽입 기준. 우선 순위 별 내림차순)
 static int notifier_chain_register(struct notifier_block **nl,
 		struct notifier_block *n)
 {
@@ -52,6 +54,10 @@ static int notifier_chain_register(struct notifier_block **nl,
 	// nh->head(nl) == slab_notifier
 	// slab_notifier -> NULL
 	// rcu_cpu_notify_nb.priority == 0
+	//
+	// nl 링크드 리스트를 순회하면서 
+	// 처음 n보다 우선순위가 낮은 head노드( == 마지막으로 우선순위가 높은 노드의 next 노드)
+	// 를 얻어온다.
 	while ((*nl) != NULL) {
 		if (n->priority > (*nl)->priority)
 			break;
@@ -63,15 +69,11 @@ static int notifier_chain_register(struct notifier_block **nl,
 	// n이 맨마지막에 삽입된다면, n->next = NULL;
 	// n이 우선순위가 높아서, 중간에 삽입된다면, *nl앞에 삽입된다.
 	n->next = *nl;
-	// 2015-04-04
-	// *nl에 n을 할당하는 기능
-	// rcu_assign_pointer(NULL, n);
-	// 
-	// 2016-07-23
-	// #define __rcu_assign_pointer(p, v, space)
-	//  (p) = (typeof(*v) __force space *)(v); \
-	// 
+	
 	// *nl = n;
+	// n의 
+	// (이유 : nl == &(nl_before_node)->next이다.
+	// 따라서 *nl = n은 nl 전 노드가 이동할 노드를 n으로 변경하는 동작이다.)
 	rcu_assign_pointer(*nl, n);
 	return 0;
 }

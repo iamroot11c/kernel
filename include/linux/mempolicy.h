@@ -16,7 +16,7 @@
 
 struct mm_struct;
 
-#ifdef CONFIG_NUMA
+#ifdef CONFIG_NUMA // n
 
 /*
  * Describe a memory policy.
@@ -247,6 +247,7 @@ vma_dup_policy(struct vm_area_struct *src, struct vm_area_struct *dst)
 	return 0;
 }
 
+// 2017-06-17
 static inline void numa_policy_init(void)
 {
 }

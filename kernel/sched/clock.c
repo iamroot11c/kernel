@@ -350,6 +350,8 @@ u64 local_clock(void)
 
 #else /* CONFIG_HAVE_UNSTABLE_SCHED_CLOCK */
 
+// 2017-06-17
+// clock 관련 동작이 가능하다는 것을 명시적으로 표기
 void sched_clock_init(void)
 {
 	sched_clock_running = 1;
@@ -358,7 +360,9 @@ void sched_clock_init(void)
 // 2016-10-01
 // 2016-11-05
 // 2016-12-03
+// 2017-06-17
 // CONFIG_HAVE_UNSTABLE_SCHED_CLOCK 이 not defined이기 때문에 이 함수가 호출된다.
+// sched_clock_init() 함수 호출 이후 사용 가능
 u64 sched_clock_cpu(int cpu)
 {
 	// sched_clock_running은 sched_clock_init() 함수를 호출해야 세팅되지만,

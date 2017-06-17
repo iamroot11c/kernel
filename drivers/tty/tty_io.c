@@ -3484,6 +3484,7 @@ void tty_default_fops(struct file_operations *fops)
  * Just do some early initializations, and do the complex setup
  * later.
  */
+// 2017-06-17
 void __init console_init(void)
 {
 	initcall_t *call;

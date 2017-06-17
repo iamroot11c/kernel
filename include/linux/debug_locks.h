@@ -39,9 +39,10 @@ extern int debug_locks_off(void);
 # define SMP_DEBUG_LOCKS_WARN_ON(c)			do { } while (0)
 #endif
 
-#ifdef CONFIG_DEBUG_LOCKING_API_SELFTESTS
+#ifdef CONFIG_DEBUG_LOCKING_API_SELFTESTS // not set
   extern void locking_selftest(void);
 #else
+// 2017-06-17
 # define locking_selftest()	do { } while (0)
 #endif
 

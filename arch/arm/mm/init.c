@@ -330,6 +330,7 @@ static void __init arm_bootmem_free(unsigned long min, unsigned long max_low,
 #ifdef CONFIG_HAVE_ARCH_PFN_VALID // true
 // 2015-06-20
 // 2015-10-03
+// 2017-06-17
 // 미리 구성된 memblock에서 이진 탐색을 통해서 점검한다.
 int pfn_valid(unsigned long pfn)
 {
