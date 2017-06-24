@@ -1898,7 +1898,7 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
  * This is the default capabilities functionality.  Most of these functions
  * are just stubbed out, but a few must call the proper capable code.
  */
-
+// 2017-06-24
 static inline int security_init(void)
 {
 	return 0;
@@ -2003,6 +2003,7 @@ static inline int security_sb_alloc(struct super_block *sb)
 static inline void security_sb_free(struct super_block *sb)
 { }
 
+// 2017-06-24
 static inline int security_sb_copy_data(char *orig, char *copy)
 {
 	return 0;
@@ -2013,6 +2014,7 @@ static inline int security_sb_remount(struct super_block *sb, void *data)
 	return 0;
 }
 
+// 2017-06-24
 static inline int security_sb_kern_mount(struct super_block *sb, int flags, void *data)
 {
 	return 0;
@@ -3129,12 +3131,13 @@ static inline void free_secdata(void *secdata)
 }
 
 #else
-
+// 2017-06-24
 static inline char *alloc_secdata(void)
 {
         return (char *)1;
 }
 
+// 2017-06-24
 static inline void free_secdata(void *secdata)
 { }
 #endif /* CONFIG_SECURITY */

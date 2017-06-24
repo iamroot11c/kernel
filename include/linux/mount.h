@@ -49,7 +49,7 @@ struct mnt_namespace;
 
 #define MNT_LOCK_READONLY	0x400000
 #define MNT_LOCKED		0x800000
-
+// 2017-06-24
 struct vfsmount {
 	struct dentry *mnt_root;	/* root of the mounted tree */
 	struct super_block *mnt_sb;	/* pointer to superblock */

@@ -466,6 +466,8 @@ void __init __weak smp_setup_processor_id(void)
 }
 
 # if THREAD_SIZE >= PAGE_SIZE
+// 2017-06-24
+// weak 이므로 다른곳의 함수를 참조할 수 있음
 void __init __weak thread_info_cache_init(void)
 {
 }
@@ -742,20 +744,23 @@ asmlinkage void __init start_kernel(void)
 	// 2017-06-17
 	calibrate_delay();
 	// 2017-06-17 여기까지
+	
+	// 2017-06-24 시작
 	pidmap_init();
 	anon_vma_init();
-#ifdef CONFIG_X86
+#ifdef CONFIG_X86 // not define
 	if (efi_enabled(EFI_RUNTIME_SERVICES))
 		efi_enter_virtual_mode();
 #endif
-	thread_info_cache_init();
+	thread_info_cache_init(); // No OP.
 	cred_init();
 	fork_init(totalram_pages);
 	proc_caches_init();
 	buffer_init();
-	key_init();
-	security_init();
-	dbg_late_init();
+	key_init(); // No OP.
+	security_init(); // No OP.
+	dbg_late_init(); // No OP.
+	// 2017-06-24 시작
 	vfs_caches_init(totalram_pages);
 	signals_init();
 	/* rootfs populating might need page-writeback */

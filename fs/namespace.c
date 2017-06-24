@@ -30,6 +30,7 @@
 #define HASH_SIZE (1UL << HASH_SHIFT)
 
 static int event;
+// 2017-06-24
 static DEFINE_IDA(mnt_id_ida);
 static DEFINE_IDA(mnt_group_ida);
 static DEFINE_SPINLOCK(mnt_id_lock);
@@ -38,7 +39,9 @@ static int mnt_group_start = 1;
 
 static struct list_head *mount_hashtable __read_mostly;
 static struct list_head *mountpoint_hashtable __read_mostly;
+// 2017-06-24
 static struct kmem_cache *mnt_cache __read_mostly;
+// 2017-06-24
 static struct rw_semaphore namespace_sem;
 
 /* /sys/fs */
@@ -53,6 +56,7 @@ EXPORT_SYMBOL_GPL(fs_kobj);
  * It should be taken for write in all cases where the vfsmount
  * tree or hash is modified or when a vfsmount structure is modified.
  */
+// 2017-06-24
 DEFINE_BRLOCK(vfsmount_lock);
 
 static inline unsigned long hash(struct vfsmount *mnt, struct dentry *dentry)
@@ -69,6 +73,7 @@ static inline unsigned long hash(struct vfsmount *mnt, struct dentry *dentry)
  * allocation is serialized by namespace_sem, but we need the spinlock to
  * serialize with freeing.
  */
+// 2017-06-24
 static int mnt_alloc_id(struct mount *mnt)
 {
 	int res;
@@ -162,6 +167,7 @@ unsigned int mnt_get_count(struct mount *mnt)
 #endif
 }
 
+// 2017-06-24
 static struct mount *alloc_vfsmnt(const char *name)
 {
 	struct mount *mnt = kmem_cache_zalloc(mnt_cache, GFP_KERNEL);
@@ -197,7 +203,7 @@ static struct mount *alloc_vfsmnt(const char *name)
 		INIT_LIST_HEAD(&mnt->mnt_share);
 		INIT_LIST_HEAD(&mnt->mnt_slave_list);
 		INIT_LIST_HEAD(&mnt->mnt_slave);
-#ifdef CONFIG_FSNOTIFY
+#ifdef CONFIG_FSNOTIFY // defined
 		INIT_HLIST_HEAD(&mnt->mnt_fsnotify_marks);
 #endif
 	}
@@ -770,6 +776,8 @@ static struct mount *skip_mnt_tree(struct mount *p)
 	return p;
 }
 
+// 2017-06-24
+// vfs_kern_mount(&sysfs_fs_type, MS_KERNMOUNT, (&sysfs_fs_type)->name, NULL)
 struct vfsmount *
 vfs_kern_mount(struct file_system_type *type, int flags, const char *name, void *data)
 {
@@ -2762,6 +2770,7 @@ static void __init init_mount_tree(void)
 	set_fs_root(current->fs, &root);
 }
 
+// 2017-06-24 시작
 void __init mnt_init(void)
 {
 	unsigned u;
@@ -2785,12 +2794,14 @@ void __init mnt_init(void)
 	for (u = 0; u < HASH_SIZE; u++)
 		INIT_LIST_HEAD(&mountpoint_hashtable[u]);
 
-	br_lock_init(&vfsmount_lock);
+	br_lock_init(&vfsmount_lock); // No OP.
 
+	// 2017-06-24
 	err = sysfs_init();
 	if (err)
 		printk(KERN_WARNING "%s: sysfs_init error: %d\n",
 			__func__, err);
+	// 2017-06-24 시작
 	fs_kobj = kobject_create_and_add("fs", NULL);
 	if (!fs_kobj)
 		printk(KERN_WARNING "%s: kobj create error\n", __func__);
@@ -2810,6 +2821,8 @@ void put_mnt_ns(struct mnt_namespace *ns)
 	free_mnt_ns(ns);
 }
 
+// 2017-06-24
+// kern_mount_data(&sysfs_fs_type, NULL)
 struct vfsmount *kern_mount_data(struct file_system_type *type, void *data)
 {
 	struct vfsmount *mnt;

@@ -25,6 +25,7 @@
 
 int sysctl_nr_open __read_mostly = 1024*1024;
 int sysctl_nr_open_min = BITS_PER_LONG;
+// 2017-06-24
 int sysctl_nr_open_max = 1024 * 1024; /* raised later */
 
 static void *alloc_fdmem(size_t size)
@@ -437,6 +438,7 @@ void exit_files(struct task_struct *tsk)
 	}
 }
 
+// 2017-06-24
 void __init files_defer_init(void)
 {
 	sysctl_nr_open_max = min((size_t)INT_MAX, ~(size_t)0/sizeof(void *)) &

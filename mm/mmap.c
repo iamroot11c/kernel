@@ -93,6 +93,7 @@ unsigned long sysctl_admin_reserve_kbytes __read_mostly = 1UL << 13; /* 8MB */
  * Make sure vm_committed_as in one cacheline and not cacheline shared with
  * other variables. It can be updated by several CPUs frequently.
  */
+// 2017-06-24
 struct percpu_counter vm_committed_as ____cacheline_aligned_in_smp;
 
 /*
@@ -3122,6 +3123,7 @@ void mm_drop_all_locks(struct mm_struct *mm)
 /*
  * initialise the VMA slab
  */
+// 2017-06-24
 void __init mmap_init(void)
 {
 	int ret;

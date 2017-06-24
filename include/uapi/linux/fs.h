@@ -42,6 +42,7 @@ struct fstrim_range {
 };
 
 /* And dynamically-tunable limits and defaults: */
+// 2017-06-24
 struct files_stat_struct {
 	unsigned long nr_files;		/* read only */
 	unsigned long nr_free_files;	/* read only */
@@ -54,7 +55,7 @@ struct inodes_stat_t {
 	long dummy[5];		/* padding for sysctl ABI compatibility */
 };
 
-
+// 2017-06-24
 #define NR_FILE  8192	/* this can well be larger on a larger system */
 
 
@@ -89,6 +90,7 @@ struct inodes_stat_t {
 
 /* These sb flags are internal to the kernel */
 #define MS_NOSEC	(1<<28)
+// 2017-06-24
 #define MS_BORN		(1<<29)
 #define MS_ACTIVE	(1<<30)
 #define MS_NOUSER	(1<<31)

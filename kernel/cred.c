@@ -27,6 +27,7 @@
 	no_printk("[%-5.5s%5u] "FMT"\n", current->comm, current->pid ,##__VA_ARGS__)
 #endif
 
+// 2017-06-24
 static struct kmem_cache *cred_jar;
 
 /*
@@ -563,6 +564,7 @@ EXPORT_SYMBOL(revert_creds);
 /*
  * initialise the credentials stuff
  */
+// 2017-06-24
 void __init cred_init(void)
 {
 	/* allocate a slab in which we can store credentials */

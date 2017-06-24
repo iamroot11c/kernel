@@ -1826,6 +1826,7 @@ static inline void file_accessed(struct file *file)
 int sync_inode(struct inode *inode, struct writeback_control *wbc);
 int sync_inode_metadata(struct inode *inode, int wait);
 
+// 2017-06-24
 struct file_system_type {
 	const char *name;
 	int fs_flags;
@@ -1893,6 +1894,8 @@ extern struct dentry *mount_pseudo(struct file_system_type *, char *,
 extern int register_filesystem(struct file_system_type *);
 extern int unregister_filesystem(struct file_system_type *);
 extern struct vfsmount *kern_mount_data(struct file_system_type *, void *data);
+// 2017-06-24
+// kern_mount(&sysfs_fs_type)
 #define kern_mount(type) kern_mount_data(type, NULL)
 extern void kern_unmount(struct vfsmount *mnt);
 extern int may_umount_tree(struct vfsmount *);

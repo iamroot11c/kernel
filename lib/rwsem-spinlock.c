@@ -51,10 +51,12 @@ EXPORT_SYMBOL(rwsem_is_locked);
 /*
  * initialise the semaphore
  */
+// 2017-06-24
+// __init_rwsem(&namespace_sem, "namespace_sem", &__key)
 void __init_rwsem(struct rw_semaphore *sem, const char *name,
 		  struct lock_class_key *key)
 {
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
+#ifdef CONFIG_DEBUG_LOCK_ALLOC // not define
 	/*
 	 * Make sure we are not reinitializing a held semaphore:
 	 */
@@ -310,6 +312,8 @@ void __up_read(struct rw_semaphore *sem)
  * release a write lock on the semaphore
  */
 // 2015-08-08;
+// 2017-06-24
+// __up_write(&sb->s_umount)
 void __up_write(struct rw_semaphore *sem)
 {
 	unsigned long flags;

@@ -32,6 +32,7 @@
 #include "internal.h"
 
 /* sysctl tunables... */
+// 2017-06-24
 struct files_stat_struct files_stat = {
 	.max_files = NR_FILE
 };
@@ -39,6 +40,7 @@ struct files_stat_struct files_stat = {
 DEFINE_STATIC_LGLOCK(files_lglock);
 
 /* SLAB cache for file structures */
+// 2017-06-24
 static struct kmem_cache *filp_cachep __read_mostly;
 
 static struct percpu_counter nr_files __cacheline_aligned_in_smp;
@@ -468,6 +470,8 @@ void mark_files_ro(struct super_block *sb)
 	lg_global_unlock(&files_lglock);
 }
 
+// 2017-06-24
+// files_init(mempages)
 void __init files_init(unsigned long mempages)
 { 
 	unsigned long n;
@@ -481,8 +485,8 @@ void __init files_init(unsigned long mempages)
 	 */ 
 
 	n = (mempages * (PAGE_SIZE / 1024)) / 10;
-	files_stat.max_files = max_t(unsigned long, n, NR_FILE);
+	files_stat.max_files = max_t(unsigned long, n, NR_FILE/*8192*/);
 	files_defer_init();
-	lg_lock_init(&files_lglock, "files_lglock");
+	lg_lock_init(&files_lglock, "files_lglock"); // No OP.
 	percpu_counter_init(&nr_files, 0);
 } 

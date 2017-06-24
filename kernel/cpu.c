@@ -193,8 +193,10 @@ void cpu_hotplug_enable(void)
 // register_cpu_notifier(&hrtimers_nb);
 // register_cpu_notifier(&remote_softirq_cpu_notifier)
 //
-// 동작 : cpu_chain에 n을 우선 순위 내림차순 기준으로 삽입한다.
+// 동작 : cpu_chain에 nb을 우선 순위 내림차순 기준으로 삽입한다.
 // 동기화를 위해 mutex()를 설정한다.
+// 2017-06-24
+// register_cpu_notifier(&buffer_cpu_notify_nb)
 int __ref register_cpu_notifier(struct notifier_block *nb)
 {
 	int ret;

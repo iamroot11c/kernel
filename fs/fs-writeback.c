@@ -1024,6 +1024,8 @@ static long wb_do_writeback(struct bdi_writeback *wb)
  * Handle writeback of dirty data for the device backed by this bdi. Also
  * reschedules periodically and does kupdated style flushing.
  */
+// 2017-06-24
+// bdi_wb_init():INIT_DELAYED_WORK(&wb->dwork, bdi_writeback_workfn)
 void bdi_writeback_workfn(struct work_struct *work)
 {
 	struct bdi_writeback *wb = container_of(to_delayed_work(work),

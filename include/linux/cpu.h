@@ -120,6 +120,8 @@ enum {
 // 2016-07-23
 // hotcpu_notifier(radix_tree_callback, 0);
 // => register_cpu_notifier(&radix_tree_callback_nb);
+// // 2017-06-24
+// cpu_notifier(buffer_cpu_notify, 0)
 #define cpu_notifier(fn, pri) {					\
 	static struct notifier_block fn##_nb =			\
 		{ .notifier_call = fn, .priority = pri };	\
@@ -199,6 +201,8 @@ extern void cpu_hotplug_enable(void);
 // hotcpu_notifier(page_alloc_cpu_notify, 0);
 // 2016-07-23
 // hotcpu_notifier(radix_tree_callback, 0);
+// 2017-06-24
+// hotcpu_notifier(buffer_cpu_notify, 0)
 #define hotcpu_notifier(fn, pri)	cpu_notifier(fn, pri)
 // 2016-08-13
 // register_hotcpu_notifier(&remote_softirq_cpu_notifier);

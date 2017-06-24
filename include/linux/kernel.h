@@ -790,6 +790,8 @@ static inline void ftrace_dump(enum ftrace_dump_mode oops_dump_mode) { }
 
 // 2016-07-09
 // max_t(size_t, dyn_size, PERCPU_DYNAMIC_EARLY_SIZE)
+// 2017-06-24
+// max_t(int, pid_max, PIDS_PER_CPU_DEFAULT * num_possible_cpus())
 #define max_t(type, x, y) ({			\
 	type __max1 = (x);			\
 	type __max2 = (y);			\

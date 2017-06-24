@@ -1,5 +1,27 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [133주차]() `2017.06.24`
+ - drive: 양만철
+ - fs/sysfs/dir.c:create_dir() 진행 예정
+ - fs/sysfs/dir.c:sysfs_create_dir() 분석중
+ - lib/kobject.c:create_dir() 분석중
+ - lib/kobject.c:kobject_add_internal() 분석중
+ - lib/kobject.c:kobject_set_name_vargs() 완료
+ - lib/kobject.c:kobject_add_varg() 분석중
+ - lib/kobject.c:kobject_add() 분석중
+ - lib/kobject.c:kobject_create() 완료
+ - lib/kobject.c:kobject_create_and_add() 분석중
+ - fs/sysfs/mount.c:sysfs_init() 완료
+ - fs/namespace.c:mnt_init() 분석중
+ - fs/dcache.c:vfs_caches_init() 분석중
+ - init/main.c:buffer_init() 완료
+ - init/main.c:proc_caches_init() 완료
+ - init/main.c:fork_init() 완료
+ - init/main.c:cred_init() 완료
+ - init/main.c:anon_vma_init() 완료
+ - init/main.c:pidmap_init() 완료
+ - init/main.c:start_kernel() 진행
+
 + [132주차](https://goo.gl/ADaea5) `2017.06.17`
  - drive: 홍진우님
  - init/main.c:pidmap_init() 진행 예정

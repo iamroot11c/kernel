@@ -44,9 +44,11 @@ static int populate_dir(struct kobject *kobj)
 	return error;
 }
 
+// 2017-06-24 시작
 static int create_dir(struct kobject *kobj)
 {
 	int error = 0;
+	// 2017-06-24 시작
 	error = sysfs_create_dir(kobj);
 	if (!error) {
 		error = populate_dir(kobj);
@@ -144,6 +146,7 @@ static void kobj_kset_leave(struct kobject *kobj)
 	kset_put(kobj->kset);
 }
 
+// 2017-06-24
 static void kobject_init_internal(struct kobject *kobj)
 {
 	if (!kobj)
@@ -156,7 +159,7 @@ static void kobject_init_internal(struct kobject *kobj)
 	kobj->state_initialized = 1;
 }
 
-
+// 2017-06-24 시작
 static int kobject_add_internal(struct kobject *kobj)
 {
 	int error = 0;
@@ -186,6 +189,7 @@ static int kobject_add_internal(struct kobject *kobj)
 		 parent ? kobject_name(parent) : "<NULL>",
 		 kobj->kset ? kobject_name(&kobj->kset->kobj) : "<NULL>");
 
+	// 2017-06-24 시작
 	error = create_dir(kobj);
 	if (error) {
 		kobj_kset_leave(kobj);
@@ -214,6 +218,8 @@ static int kobject_add_internal(struct kobject *kobj)
  * @fmt: format string used to build the name
  * @vargs: vargs to format the string.
  */
+// 2017-06-24
+// kobject_set_name_vargs(kobj, "%s", "fs")
 int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
 				  va_list vargs)
 {
@@ -223,6 +229,8 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
 	if (kobj->name && !fmt)
 		return 0;
 
+	// 2017-06-24
+	// kobj->name = "fs"
 	kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
 	if (!kobj->name)
 		return -ENOMEM;
@@ -269,6 +277,8 @@ EXPORT_SYMBOL(kobject_set_name);
  * to kobject_put(), not by a call to kfree directly to ensure that all of
  * the memory is cleaned up properly.
  */
+// 2017-06-24
+// kobject_init(kobj, &dynamic_kobj_ktype)
 void kobject_init(struct kobject *kobj, struct kobj_type *ktype)
 {
 	char *err_str;
@@ -298,6 +308,8 @@ error:
 }
 EXPORT_SYMBOL(kobject_init);
 
+// 2017-06-24 시작
+// kobject_add_varg(kobj, NULL, "%s", "fs")
 static int kobject_add_varg(struct kobject *kobj, struct kobject *parent,
 			    const char *fmt, va_list vargs)
 {
@@ -309,6 +321,7 @@ static int kobject_add_varg(struct kobject *kobj, struct kobject *parent,
 		return retval;
 	}
 	kobj->parent = parent;
+	// 2017-06-24 시작
 	return kobject_add_internal(kobj);
 }
 
@@ -337,6 +350,8 @@ static int kobject_add_varg(struct kobject *kobj, struct kobject *parent,
  * kobject_uevent() with the UEVENT_ADD parameter to ensure that
  * userspace is properly notified of this kobject's creation.
  */
+// 2017-06-24
+// kobject_add(kobj, NULL, "%s", "fs")
 int kobject_add(struct kobject *kobj, struct kobject *parent,
 		const char *fmt, ...)
 {
@@ -354,6 +369,7 @@ int kobject_add(struct kobject *kobj, struct kobject *parent,
 		return -EINVAL;
 	}
 	va_start(args, fmt);
+	// 2017-06-24 시작
 	retval = kobject_add_varg(kobj, parent, fmt, args);
 	va_end(args);
 
@@ -527,6 +543,7 @@ void kobject_del(struct kobject *kobj)
  * kobject_get - increment refcount for object.
  * @kobj: object.
  */
+// 2017-06-24
 struct kobject *kobject_get(struct kobject *kobj)
 {
 	if (kobj)
@@ -636,6 +653,7 @@ static void dynamic_kobj_release(struct kobject *kobj)
 	kfree(kobj);
 }
 
+// 2017-06-24
 static struct kobj_type dynamic_kobj_ktype = {
 	.release	= dynamic_kobj_release,
 	.sysfs_ops	= &kobj_sysfs_ops,
@@ -652,6 +670,7 @@ static struct kobj_type dynamic_kobj_ktype = {
  * call to kobject_put() and not kfree(), as kobject_init() has
  * already been called on this structure.
  */
+// 2017-06-24
 struct kobject *kobject_create(void)
 {
 	struct kobject *kobj;
@@ -677,6 +696,8 @@ struct kobject *kobject_create(void)
  *
  * If the kobject was not able to be created, NULL will be returned.
  */
+// 2017-06-24 시작
+// kobject_create_and_add("fs", NULL)
 struct kobject *kobject_create_and_add(const char *name, struct kobject *parent)
 {
 	struct kobject *kobj;
@@ -686,6 +707,7 @@ struct kobject *kobject_create_and_add(const char *name, struct kobject *parent)
 	if (!kobj)
 		return NULL;
 
+	// 2017-06-24 시작
 	retval = kobject_add(kobj, parent, "%s", name);
 	if (retval) {
 		printk(KERN_WARNING "%s: kobject_add error: %d\n",
@@ -887,6 +909,7 @@ EXPORT_SYMBOL_GPL(kset_create_and_add);
 
 
 static DEFINE_SPINLOCK(kobj_ns_type_lock);
+// 2017-06-24
 static const struct kobj_ns_type_operations *kobj_ns_ops_tbl[KOBJ_NS_TYPES];
 
 int kobj_ns_type_register(const struct kobj_ns_type_operations *ops)
@@ -956,6 +979,7 @@ bool kobj_ns_current_may_mount(enum kobj_ns_type type)
 	return may_mount;
 }
 
+// 2017-06-24
 void *kobj_ns_grab_current(enum kobj_ns_type type)
 {
 	void *ns = NULL;

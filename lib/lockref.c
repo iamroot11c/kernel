@@ -1,7 +1,7 @@
 #include <linux/export.h>
 #include <linux/lockref.h>
 
-#ifdef CONFIG_CMPXCHG_LOCKREF
+#ifdef CONFIG_CMPXCHG_LOCKREF // not define
 
 /*
  * Allow weakly-ordered memory architectures to provide barrier-less
@@ -41,7 +41,7 @@
 } while (0)
 
 #else
-
+// 2017-06-24
 #define CMPXCHG_LOOP(CODE, SUCCESS) do { } while (0)
 
 #endif
@@ -53,13 +53,14 @@
  * This operation is only valid if you already hold a reference
  * to the object, so you know the count cannot be zero.
  */
+// 2017-06-24
 void lockref_get(struct lockref *lockref)
 {
 	CMPXCHG_LOOP(
 		new.count++;
 	,
 		return;
-	);
+	); // No OP.
 
 	spin_lock(&lockref->lock);
 	lockref->count++;

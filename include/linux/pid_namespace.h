@@ -9,6 +9,7 @@
 #include <linux/nsproxy.h>
 #include <linux/kref.h>
 
+// 2017-06-24
 struct pidmap {
        atomic_t nr_free;
        void *page;
@@ -16,12 +17,13 @@ struct pidmap {
 
 #define BITS_PER_PAGE		(PAGE_SIZE * 8) // 4096 * 8 = 32768
 #define BITS_PER_PAGE_MASK	(BITS_PER_PAGE-1)   // 32767
-#define PIDMAP_ENTRIES		((PID_MAX_LIMIT/*0x8000(32768)*/+BITS_PER_PAGE-1)/BITS_PER_PAGE) // (32768 + 32767) / 32768 = 1
+#define PIDMAP_ENTRIES		((PID_MAX_LIMIT/*0x8000(32768)*/+BITS_PER_PAGE-1)/BITS_PER_PAGE) // (32768 + 32767) / 32768 = 1// 2^15
 
 struct bsd_acct_struct;
 
 // 2015-03-07
 // 2016-03-05
+// 2017-06-24
 struct pid_namespace {
 	struct kref kref;
 	struct pidmap pidmap[PIDMAP_ENTRIES/*1*/];
@@ -48,7 +50,8 @@ struct pid_namespace {
 
 extern struct pid_namespace init_pid_ns;
 
-#define PIDNS_HASH_ADDING (1U << 31)
+// 2017-06-24
+#define PIDNS_HASH_ADDING (1U << 31) // 0x1000_0000
 
 #ifdef CONFIG_PID_NS
 static inline struct pid_namespace *get_pid_ns(struct pid_namespace *ns)

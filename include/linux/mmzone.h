@@ -123,7 +123,7 @@ struct zone_padding {
 // 2015-04-25
 enum zone_stat_item {
 	/* First 128 byte cacheline (assuming 64 bit words) */
-	NR_FREE_PAGES,
+	NR_FREE_PAGES, // 2017-06-24
 	NR_ALLOC_BATCH,
 	NR_LRU_BASE,
 	NR_INACTIVE_ANON = NR_LRU_BASE, /* must match order of LRU_[IN]ACTIVE */

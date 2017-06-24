@@ -29,7 +29,7 @@
 #define LIST_BL_BUG_ON(x)
 #endif
 
-
+// 2017-06-24
 struct hlist_bl_head {
 	struct hlist_bl_node *first;
 };
@@ -37,6 +37,8 @@ struct hlist_bl_head {
 struct hlist_bl_node {
 	struct hlist_bl_node *next, **pprev;
 };
+// 2017-06-24
+// INIT_HLIST_BL_HEAD(dentry_hashtable + loop)
 #define INIT_HLIST_BL_HEAD(ptr) \
 	((ptr)->first = NULL)
 

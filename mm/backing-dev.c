@@ -423,6 +423,8 @@ void bdi_unregister(struct backing_dev_info *bdi)
 }
 EXPORT_SYMBOL(bdi_unregister);
 
+// 2017-06-24
+// bdi_wb_init(&bdi->wb, bdi)
 static void bdi_wb_init(struct bdi_writeback *wb, struct backing_dev_info *bdi)
 {
 	memset(wb, 0, sizeof(*wb));
@@ -441,6 +443,8 @@ static void bdi_wb_init(struct bdi_writeback *wb, struct backing_dev_info *bdi)
  */
 #define INIT_BW		(100 << (20 - PAGE_SHIFT))
 
+// 2017-06-24
+// bdi_init(&sysfs_backing_dev_info)
 int bdi_init(struct backing_dev_info *bdi)
 {
 	int i, err;

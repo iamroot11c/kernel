@@ -731,6 +731,8 @@ struct sysfs_dirent *sysfs_get_dirent(struct sysfs_dirent *parent_sd,
 }
 EXPORT_SYMBOL_GPL(sysfs_get_dirent);
 
+// 2017-06-24
+// 차주(2017-07-01) 분석 예정
 static int create_dir(struct kobject *kobj, struct sysfs_dirent *parent_sd,
 	enum kobj_ns_type type, const void *ns, const char *name,
 	struct sysfs_dirent **p_sd)
@@ -798,6 +800,7 @@ static enum kobj_ns_type sysfs_read_ns_type(struct kobject *kobj)
  *	sysfs_create_dir - create a directory for an object.
  *	@kobj:		object we're creating directory for.
  */
+// 2017-06-24 시작
 int sysfs_create_dir(struct kobject *kobj)
 {
 	enum kobj_ns_type type;
@@ -819,6 +822,7 @@ int sysfs_create_dir(struct kobject *kobj)
 		ns = kobj->ktype->namespace(kobj);
 	type = sysfs_read_ns_type(kobj);
 
+	// 2017-06-24 차주(2017-07-01) 분석 예정
 	error = create_dir(kobj, parent_sd, type, ns, kobject_name(kobj), &sd);
 	if (!error)
 		kobj->sd = sd;

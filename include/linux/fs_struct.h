@@ -6,6 +6,7 @@
 #include <linux/seqlock.h>
 
 // 2015-03-07
+// 2017-06-24
 struct fs_struct {
 	int users;
 	spinlock_t lock;

@@ -45,12 +45,15 @@ static struct hlist_head *pid_hash;
 static unsigned int pidhash_shift = 4;
 struct pid init_struct_pid = INIT_STRUCT_PID;
 
-int pid_max = PID_MAX_DEFAULT;
+// 2017-06-24
+int pid_max = PID_MAX_DEFAULT/*0x8000*/;
 
+// 2017-06-24
 #define RESERVED_PIDS		300
 
+// 2017-06-24
 int pid_max_min = RESERVED_PIDS + 1;
-int pid_max_max = PID_MAX_LIMIT;
+int pid_max_max = PID_MAX_LIMIT/*0x8000*/;
 
 static inline int mk_pid(struct pid_namespace *pid_ns,
 		struct pidmap *map, int off)
@@ -68,6 +71,7 @@ static inline int mk_pid(struct pid_namespace *pid_ns,
  * the scheme scales to up to 4 million PIDs, runtime.
  */
 // 2015-03-07
+// 2017-06-24
 struct pid_namespace init_pid_ns = {
 	.kref = {
 		.refcount       = ATOMIC_INIT(2),
@@ -78,7 +82,7 @@ struct pid_namespace init_pid_ns = {
 	.last_pid = 0,
 	.nr_hashed = PIDNS_HASH_ADDING,
 	.level = 0,
-	.child_reaper = &init_task,
+	.child_reaper = &init_task, // 초기 자식 프로세스는 init_task
 	.user_ns = &init_user_ns,
 	.proc_inum = PROC_PID_INIT_INO,/* 0xEFFFFFFCU */
 };
@@ -588,10 +592,11 @@ void __init pidhash_init(void)
 		INIT_HLIST_HEAD(&pid_hash[i]);
 }
 
+// 2017-06-24 시작
 void __init pidmap_init(void)
 {
 	/* Veryify no one has done anything silly */
-	BUILD_BUG_ON(PID_MAX_LIMIT >= PIDNS_HASH_ADDING);
+	BUILD_BUG_ON(PID_MAX_LIMIT/*0x8000*/ >= PIDNS_HASH_ADDING/*0x1000_0000*/);
 
 	/* bump default and minimum pid_max based on number of cpus */
 	pid_max = min(pid_max_max, max_t(int, pid_max,
@@ -605,6 +610,13 @@ void __init pidmap_init(void)
 	set_bit(0, init_pid_ns.pidmap[0].page);
 	atomic_dec(&init_pid_ns.pidmap[0].nr_free);
 
+
+	// #define KMEM_CACHE(__struct, __flags) kmem_cache_create(#__struct,\
+	//	sizeof(struct __struct), __alignof__(struct __struct),\
+	//	(__flags), NULL)
+	//
+	// kmem_cache_create("pid", sizeof(struct pid), __alignof__(struct pid),
+	//                   SLAB_HWCACHE_ALIGN | SLAB_PANIC, NULL)
 	init_pid_ns.pid_cachep = KMEM_CACHE(pid,
 			SLAB_HWCACHE_ALIGN | SLAB_PANIC);
 }

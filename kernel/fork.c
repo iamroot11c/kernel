@@ -127,7 +127,8 @@ void __weak arch_release_task_struct(struct task_struct *tsk)
 {
 }
 
-#ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
+#ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR // not define
+// 2017-06-24
 static struct kmem_cache *task_struct_cachep;
 
 static inline struct task_struct *alloc_task_struct_node(int node)
@@ -153,7 +154,7 @@ void __weak arch_release_thread_info(struct thread_info *ti)
  * Allocate pages if THREAD_SIZE is >= PAGE_SIZE, otherwise use a
  * kmemcache based allocator.
  */
-# if THREAD_SIZE >= PAGE_SIZE
+# if THREAD_SIZE/*8KB*/ >= PAGE_SIZE/*4KB*/
 static struct thread_info *alloc_thread_info_node(struct task_struct *tsk,
 						  int node)
 {
@@ -192,21 +193,22 @@ void thread_info_cache_init(void)
 # endif
 #endif
 
+// 2017-06-24
 /* SLAB cache for signal_struct structures (tsk->signal) */
 static struct kmem_cache *signal_cachep;
-
+// 2017-06-24
 /* SLAB cache for sighand_struct structures (tsk->sighand) */
 struct kmem_cache *sighand_cachep;
-
+// 2017-06-24
 /* SLAB cache for files_struct structures (tsk->files) */
 struct kmem_cache *files_cachep;
-
+// 2017-06-24
 /* SLAB cache for fs_struct structures (tsk->fs) */
 struct kmem_cache *fs_cachep;
-
+// 2017-06-24
 /* SLAB cache for vm_area_struct structures */
 struct kmem_cache *vm_area_cachep;
-
+// 2017-06-24
 /* SLAB cache for mm_struct structures (tsk->mm) */
 static struct kmem_cache *mm_cachep;
 
@@ -268,19 +270,23 @@ void __put_task_struct(struct task_struct *tsk)
 }
 EXPORT_SYMBOL_GPL(__put_task_struct);
 
+// 2017-06-24
+// weak이므로 각 아키텍처에 따라 참조하는 함수가 다를 수 있음
 void __init __weak arch_task_cache_init(void) { }
 
+// 2017-06-24 시작
+// fork_init(totalram_pages)
 void __init fork_init(unsigned long mempages)
 {
-#ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
+#ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR // not define
 #ifndef ARCH_MIN_TASKALIGN
-#define ARCH_MIN_TASKALIGN	L1_CACHE_BYTES
-#endif
+#define ARCH_MIN_TASKALIGN	L1_CACHE_BYTES/*64Byte*/
+#endif // ARCH_MIN_TASKALIGN
 	/* create a slab on which task_structs can be allocated */
 	task_struct_cachep =
 		kmem_cache_create("task_struct", sizeof(struct task_struct),
 			ARCH_MIN_TASKALIGN, SLAB_PANIC | SLAB_NOTRACK, NULL);
-#endif
+#endif // CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
 
 	/* do the arch specific task caches init */
 	arch_task_cache_init();
@@ -290,7 +296,7 @@ void __init fork_init(unsigned long mempages)
 	 * value: the thread structures can take up at most half
 	 * of memory.
 	 */
-	max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE);
+	max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE)/*16*/;
 
 	/*
 	 * we need to allow at least 20 threads to boot a system
@@ -298,10 +304,10 @@ void __init fork_init(unsigned long mempages)
 	if (max_threads < 20)
 		max_threads = 20;
 
-	init_task.signal->rlim[RLIMIT_NPROC].rlim_cur = max_threads/2;
-	init_task.signal->rlim[RLIMIT_NPROC].rlim_max = max_threads/2;
-	init_task.signal->rlim[RLIMIT_SIGPENDING] =
-		init_task.signal->rlim[RLIMIT_NPROC];
+	init_task.signal->rlim[RLIMIT_NPROC/*6*/].rlim_cur = max_threads/2;
+	init_task.signal->rlim[RLIMIT_NPROC/*6*/].rlim_max = max_threads/2;
+	init_task.signal->rlim[RLIMIT_SIGPENDING/*11*/] =
+		init_task.signal->rlim[RLIMIT_NPROC/*6*/];
 }
 
 int __attribute__((weak)) arch_dup_task_struct(struct task_struct *dst,
@@ -1729,6 +1735,7 @@ static void sighand_ctor(void *data)
 	init_waitqueue_head(&sighand->signalfd_wqh);
 }
 
+// 2017-06-24 시작
 void __init proc_caches_init(void)
 {
 	sighand_cachep = kmem_cache_create("sighand_cache",
@@ -1755,6 +1762,7 @@ void __init proc_caches_init(void)
 			sizeof(struct mm_struct), ARCH_MIN_MMSTRUCT_ALIGN,
 			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_NOTRACK, NULL);
 	vm_area_cachep = KMEM_CACHE(vm_area_struct, SLAB_PANIC);
+	// 2017-06-24
 	mmap_init();
 	nsproxy_cache_init();
 }

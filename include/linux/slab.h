@@ -24,9 +24,11 @@
 // 2016-03-26
 #define SLAB_RED_ZONE		0x00000400UL	/* DEBUG: Red zone objs in a cache */
 #define SLAB_POISON		0x00000800UL	/* DEBUG: Poison objects */
+// 2017-06-24
 #define SLAB_HWCACHE_ALIGN	0x00002000UL	/* Align objs on cache lines */
 #define SLAB_CACHE_DMA		0x00004000UL	/* Use GFP_DMA memory */
 #define SLAB_STORE_USER		0x00010000UL	/* DEBUG: Store the last owner for bug hunting */
+// 2017-06-24
 #define SLAB_PANIC		0x00040000UL	/* Panic if kmem_cache_create() fails */
 /*
  * SLAB_DESTROY_BY_RCU - **WARNING** READ THIS!
@@ -57,6 +59,7 @@
  * See also the comment on struct slab_rcu in mm/slab.c.
  */
 #define SLAB_DESTROY_BY_RCU	0x00080000UL	/* Defer freeing slabs to RCU */
+// 2017-06-24
 #define SLAB_MEM_SPREAD		0x00100000UL	/* Spread some memory over cpuset */
 #define SLAB_TRACE		0x00200000UL	/* Trace allocations and frees */
 
@@ -70,9 +73,10 @@
 #define SLAB_NOLEAKTRACE	0x00800000UL	/* Avoid kmemleak tracing */
 
 /* Don't track use of uninitialized memory */
-#ifdef CONFIG_KMEMCHECK
+#ifdef CONFIG_KMEMCHECK // not define
 # define SLAB_NOTRACK		0x01000000UL
 #else
+// 2017-06-24
 # define SLAB_NOTRACK		0x00000000UL
 #endif
 #ifdef CONFIG_FAILSLAB
@@ -82,6 +86,7 @@
 #endif
 
 /* The following flags affect the page allocator grouping pages by mobility */
+// 2017-06-24
 #define SLAB_RECLAIM_ACCOUNT	0x00020000UL		/* Objects are reclaimable */
 #define SLAB_TEMPORARY		SLAB_RECLAIM_ACCOUNT	/* Objects are short-lived */
 /*
@@ -128,6 +133,7 @@ void kmem_cache_free(struct kmem_cache *, void *);
  * f.e. add ____cacheline_aligned_in_smp to the struct declaration
  * then the objects will be properly aligned in SMP configurations.
  */
+// 2017-06-24
 #define KMEM_CACHE(__struct, __flags) kmem_cache_create(#__struct,\
 		sizeof(struct __struct), __alignof__(struct __struct),\
 		(__flags), NULL)

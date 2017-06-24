@@ -260,6 +260,8 @@ static inline unsigned int work_static(struct work_struct *work) { return 0; }
 		__INIT_WORK((_work), (_func), 1);			\
 	} while (0)
 
+// 2017-06-24
+// __INIT_DELAYED_WORK(&wb->dwork, bdi_writeback_workfn, 0)
 #define __INIT_DELAYED_WORK(_work, _func, _tflags)			\
 	do {								\
 		INIT_WORK(&(_work)->work, (_func));			\
@@ -278,6 +280,8 @@ static inline unsigned int work_static(struct work_struct *work) { return 0; }
 	} while (0)
 
 // 2016-08-20
+// 2017-06-24
+// INIT_DELAYED_WORK(&wb->dwork, bdi_writeback_workfn)
 #define INIT_DELAYED_WORK(_work, _func)					\
 	__INIT_DELAYED_WORK(_work, _func, 0)
 

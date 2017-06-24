@@ -168,6 +168,8 @@ void fprop_fraction_single(struct fprop_global *p,
  */
 #define PROP_BATCH (8*(1+ilog2(nr_cpu_ids)))
 
+// 2017-06-24
+// fprop_local_init_percpu(&bdi->completions)
 int fprop_local_init_percpu(struct fprop_local_percpu *pl)
 {
 	int err;

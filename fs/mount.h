@@ -29,6 +29,7 @@ struct mount {
 	struct list_head mnt_hash;
 	struct mount *mnt_parent;
 	struct dentry *mnt_mountpoint;
+    // 2017-06-24
 	struct vfsmount mnt;
 #ifdef CONFIG_SMP
 	struct mnt_pcp __percpu *mnt_pcp;

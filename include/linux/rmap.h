@@ -70,7 +70,7 @@ struct anon_vma_chain {
 	struct list_head same_vma;   /* locked by mmap_sem & page_table_lock */
 	struct rb_node rb;			/* locked by anon_vma->rwsem */
 	unsigned long rb_subtree_last;
-#ifdef CONFIG_DEBUG_VM_RB
+#ifdef CONFIG_DEBUG_VM_RB // not define
 	unsigned long cached_vma_start, cached_vma_last;
 #endif
 };

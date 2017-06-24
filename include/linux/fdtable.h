@@ -42,6 +42,7 @@ static inline bool fd_is_open(int fd, const struct fdtable *fdt)
 /*
  * Open file table structure
  */
+// 2017-06-24
 struct files_struct {
   /*
    * read mostly part

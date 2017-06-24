@@ -13,13 +13,14 @@
 #include <linux/percpu.h>
 #include <linux/types.h>
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // defined
 
 // 2015-08-15
+// 2017-06-24
 struct percpu_counter {
 	raw_spinlock_t lock;
 	s64 count;              // 아래 counters와 차이점?
-#ifdef CONFIG_HOTPLUG_CPU
+#ifdef CONFIG_HOTPLUG_CPU // defined
 	struct list_head list;	/* All percpu_counters are on a list */
 #endif
 	s32 __percpu *counters;
@@ -30,6 +31,9 @@ extern int percpu_counter_batch;
 int __percpu_counter_init(struct percpu_counter *fbc, s64 amount,
 			  struct lock_class_key *key);
 
+// 2017-06-24
+// percpu_counter_init(&vm_committed_as, 0)
+// percpu_counter_init(&nr_files, 0)
 #define percpu_counter_init(fbc, value)					\
 	({								\
 		static struct lock_class_key __key;			\

@@ -471,6 +471,8 @@ EXPORT_SYMBOL(generic_shutdown_super);
  *	@flags:	mount flags
  *	@data:	argument to each of them
  */
+// 2017-06-24
+// sget(fs_type, sysfs_test_super, sysfs_set_super, flags, info)
 struct super_block *sget(struct file_system_type *type,
 			int (*test)(struct super_block *,void *),
 			int (*set)(struct super_block *,void *),
@@ -485,6 +487,7 @@ retry:
 	spin_lock(&sb_lock);
 	if (test) {
 		hlist_for_each_entry(old, &type->fs_supers, s_instances) {
+			// 2017-06-24 sysfs_test_super
 			if (!test(old, data))
 				continue;
 			if (!grab_super(old))
@@ -1114,6 +1117,8 @@ struct dentry *mount_single(struct file_system_type *fs_type,
 }
 EXPORT_SYMBOL(mount_single);
 
+// 2017-06-24
+// mount_fs(&sysfs_fs_type, MS_KERNMOUNT, (&sysfs_fs_type)->name, NULL)
 struct dentry *
 mount_fs(struct file_system_type *type, int flags, const char *name, void *data)
 {
@@ -1127,11 +1132,12 @@ mount_fs(struct file_system_type *type, int flags, const char *name, void *data)
 		if (!secdata)
 			goto out;
 
-		error = security_sb_copy_data(data, secdata);
+		error = security_sb_copy_data(data, secdata); // No OP.
 		if (error)
 			goto out_free_secdata;
 	}
 
+	// 2017-06-24 sysfs_mount
 	root = type->mount(type, flags, name, data);
 	if (IS_ERR(root)) {
 		error = PTR_ERR(root);
@@ -1143,7 +1149,7 @@ mount_fs(struct file_system_type *type, int flags, const char *name, void *data)
 	WARN_ON(sb->s_bdi == &default_backing_dev_info);
 	sb->s_flags |= MS_BORN;
 
-	error = security_sb_kern_mount(sb, flags, secdata);
+	error = security_sb_kern_mount(sb, flags, secdata); // No OP.
 	if (error)
 		goto out_sb;
 
@@ -1157,7 +1163,7 @@ mount_fs(struct file_system_type *type, int flags, const char *name, void *data)
 		"negative value (%lld)\n", type->name, sb->s_maxbytes);
 
 	up_write(&sb->s_umount);
-	free_secdata(secdata);
+	free_secdata(secdata); // No OP.
 	return root;
 out_sb:
 	dput(root);

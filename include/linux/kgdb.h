@@ -20,7 +20,7 @@
 #include <asm/kgdb.h>
 #endif
 
-#ifdef CONFIG_KGDB
+#ifdef CONFIG_KGDB // not define
 struct pt_regs;
 
 /**
@@ -320,6 +320,7 @@ extern bool dbg_is_early;
 extern void __init dbg_late_init(void);
 #else /* ! CONFIG_KGDB */
 #define in_dbg_master() (0)
+// 2017-06-24
 #define dbg_late_init()
 #endif /* ! CONFIG_KGDB */
 #endif /* _KGDB_H_ */

@@ -105,6 +105,8 @@ EXPORT_SYMBOL(up_read);
  * release a write lock
  */
 // 2015-08-08;
+// 2017-06-24
+// up_write(&sb->s_umount)
 void up_write(struct rw_semaphore *sem)
 {
 	// CONFIG_LOCKDEP 미 정의로 아무 역활이 없다.

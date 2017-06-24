@@ -26,6 +26,7 @@
 #include <linux/file.h>
 #include <linux/syscalls.h>
 
+// 2017-06-24
 static struct kmem_cache *nsproxy_cachep;
 
 // 2015-03-07
@@ -263,6 +264,7 @@ out:
 	return err;
 }
 
+// 2017-06-24
 int __init nsproxy_cache_init(void)
 {
 	nsproxy_cachep = KMEM_CACHE(nsproxy, SLAB_PANIC);

@@ -976,6 +976,7 @@ static void free_bitmap(struct ida *ida, struct ida_bitmap *bitmap)
  * If the system is REALLY out of memory this function returns %0,
  * otherwise %1.
  */
+// 2017-06-24
 int ida_pre_get(struct ida *ida, gfp_t gfp_mask)
 {
 	/* allocate idr_layers */
@@ -1012,6 +1013,8 @@ EXPORT_SYMBOL(ida_pre_get);
  *
  * @p_id returns a value in the range @starting_id ... %0x7fffffff.
  */
+// 2017-06-24
+// ida_get_new_above(&mnt_id_ida, mnt_id_start, &mnt->mnt_id)
 int ida_get_new_above(struct ida *ida, int starting_id, int *p_id)
 {
 	struct idr_layer *pa[MAX_IDR_LEVEL + 1];

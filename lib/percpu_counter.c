@@ -10,7 +10,8 @@
 #include <linux/module.h>
 #include <linux/debugobjects.h>
 
-#ifdef CONFIG_HOTPLUG_CPU
+#ifdef CONFIG_HOTPLUG_CPU // defined
+// 2017-06-24
 static LIST_HEAD(percpu_counters);
 static DEFINE_SPINLOCK(percpu_counters_lock);
 #endif
@@ -117,6 +118,9 @@ s64 __percpu_counter_sum(struct percpu_counter *fbc)
 }
 EXPORT_SYMBOL(__percpu_counter_sum);
 
+// 2017-06-24
+// __percpu_counter_init(&vm_committed_as, 0, &__key)
+// __percpu_counter_init(&nr_files, 0, &__key)
 int __percpu_counter_init(struct percpu_counter *fbc, s64 amount,
 			  struct lock_class_key *key)
 {
@@ -129,7 +133,7 @@ int __percpu_counter_init(struct percpu_counter *fbc, s64 amount,
 
 	debug_percpu_counter_activate(fbc);
 
-#ifdef CONFIG_HOTPLUG_CPU
+#ifdef CONFIG_HOTPLUG_CPU // defined
 	INIT_LIST_HEAD(&fbc->list);
 	spin_lock(&percpu_counters_lock);
 	list_add(&fbc->list, &percpu_counters);
@@ -139,6 +143,7 @@ int __percpu_counter_init(struct percpu_counter *fbc, s64 amount,
 }
 EXPORT_SYMBOL(__percpu_counter_init);
 
+// 2017-06-24
 void percpu_counter_destroy(struct percpu_counter *fbc)
 {
 	if (!fbc->counters)

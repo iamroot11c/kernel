@@ -111,6 +111,7 @@ static DEFINE_SPINLOCK(managed_page_count_lock);
 
 // 2015-05-09;
 // 2016-01-30
+// 2017-06-24
 unsigned long totalram_pages __read_mostly;
 unsigned long totalreserve_pages __read_mostly;
 /*
@@ -3506,6 +3507,8 @@ EXPORT_SYMBOL(free_pages_exact);
 // 2015-03-28
 // nr_free_zone_pages(gfp_zone(GFP_HIGHUSER_MOVABLE));
 // nr_free_zone_pages(2);
+// 2017-06-24
+// nr_free_zone_pages(gfp_zone(GFP_USER))
 static unsigned long nr_free_zone_pages(int offset)
 {
 	struct zoneref *z;
@@ -3538,6 +3541,7 @@ static unsigned long nr_free_zone_pages(int offset)
  * nr_free_buffer_pages() counts the number of pages which are beyond the high
  * watermark within ZONE_DMA and ZONE_NORMAL.
  */
+// 2017-06-24
 unsigned long nr_free_buffer_pages(void)
 {
 	return nr_free_zone_pages(gfp_zone(GFP_USER));
@@ -6654,6 +6658,7 @@ int percpu_pagelist_fraction_sysctl_handler(ctl_table *table, int write,
 }
 
 // 2015-05-02, default 0,
+// 2017-06-24
 int hashdist = HASHDIST_DEFAULT;
 
 #ifdef CONFIG_NUMA
@@ -6691,6 +6696,28 @@ __setup("hashdist=", set_hashdist);
 //                                          &d_hash_mask,
 //                                          0,
 //                                          0);
+//
+// 2017-06-24
+// alloc_large_system_hash("Dentry cache", 
+//                                          sizeof(struct hlist_bl_head),
+//                                          dhash_entries,
+//                                          13,
+//                                          0,
+//                                          &d_hash_shift,
+//                                          &d_hash_mask,
+//                                          0,
+//                                          0);
+//
+//alloc_large_system_hash("Inode-cache",
+//					sizeof(struct hlist_head),
+//					ihash_entries,
+//					14,
+//					0,
+//					&i_hash_shift,
+//					&i_hash_mask,
+//					0,
+//					0);
+//
 void *__init alloc_large_system_hash(const char *tablename,
 				     unsigned long bucketsize,
 				     unsigned long numentries,

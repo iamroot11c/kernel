@@ -28,7 +28,7 @@
  *	returned 0 we must skip the element, otherwise we got the reference.
  *	Once the reference is obtained we can drop the spinlock.
  */
-
+// 2017-06-24
 static struct file_system_type *file_systems;
 static DEFINE_RWLOCK(file_systems_lock);
 
@@ -43,6 +43,7 @@ void put_filesystem(struct file_system_type *fs)
 	module_put(fs->owner);
 }
 
+// 2017-06-24
 static struct file_system_type **find_filesystem(const char *name, unsigned len)
 {
 	struct file_system_type **p;
@@ -65,7 +66,8 @@ static struct file_system_type **find_filesystem(const char *name, unsigned len)
  *	structures and must not be freed until the file system has been
  *	unregistered.
  */
- 
+// 2017-06-24
+// register_filesystem(&sysfs_fs_type) 
 int register_filesystem(struct file_system_type * fs)
 {
 	int res = 0;

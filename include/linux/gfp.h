@@ -125,6 +125,7 @@ struct vm_area_struct;
 #define GFP_KERNEL	(__GFP_WAIT | __GFP_IO | __GFP_FS) // 0xD0 = 0x10 | 0x40 | 0x80;
 #define GFP_TEMPORARY	(__GFP_WAIT | __GFP_IO | __GFP_FS | \
 			 __GFP_RECLAIMABLE)
+// 2017-06-24
 #define GFP_USER	(__GFP_WAIT | __GFP_IO | __GFP_FS | __GFP_HARDWALL)
 #define GFP_HIGHUSER	(__GFP_WAIT | __GFP_IO | __GFP_FS | __GFP_HARDWALL | \
 			 __GFP_HIGHMEM)
@@ -458,6 +459,8 @@ void *alloc_pages_exact_nid(int nid, size_t size, gfp_t gfp_mask);
 
 // 2016-04-16
 // __get_free_page(PGALLOC_GFP)
+// 2017-06-24
+// __get_free_page(GFP_ATOMIC)
 #define __get_free_page(gfp_mask) \
 		__get_free_pages((gfp_mask), 0)
 

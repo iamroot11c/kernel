@@ -30,6 +30,7 @@ static const struct address_space_operations sysfs_aops = {
 	.write_end	= simple_write_end,
 };
 
+// 2017-06-24
 static struct backing_dev_info sysfs_backing_dev_info = {
 	.name		= "sysfs",
 	.ra_pages	= 0,	/* No readahead */
@@ -43,6 +44,7 @@ static const struct inode_operations sysfs_inode_operations = {
 	.setxattr	= sysfs_setxattr,
 };
 
+// 2017-06-24
 int __init sysfs_inode_init(void)
 {
 	return bdi_init(&sysfs_backing_dev_info);

@@ -9,10 +9,12 @@
  * modules (but it's fine to use them from there)
  * Could be added though, just undo lg_lock_init
  */
-
+// 2017-06-24
+// lg_lock_init(&files_lglock, "files_lglock")
+// lg_lock_init(&vfsmount_lock, "vfsmount_lock")
 void lg_lock_init(struct lglock *lg, char *name)
 {
-	LOCKDEP_INIT_MAP(&lg->lock_dep_map, name, &lg->lock_key, 0);
+	LOCKDEP_INIT_MAP(&lg->lock_dep_map, name, &lg->lock_key, 0); // No OP.
 }
 EXPORT_SYMBOL(lg_lock_init);
 

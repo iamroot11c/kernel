@@ -17,6 +17,7 @@
  * bound on the number of events per period like
  *   ULLONG_MAX >> FPROP_FRAC_SHIFT.
  */
+// 2017-06-24
 #define FPROP_FRAC_SHIFT 10
 #define FPROP_FRAC_BASE (1UL << FPROP_FRAC_SHIFT)
 

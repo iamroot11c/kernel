@@ -143,6 +143,8 @@ static inline void zone_page_state_add(long x, struct zone *zone,
 // 2016-01-16;
 // global_page_state(NR_FILE_DIRTY)
 // global_page_state(NR_UNSTABLE_NFS)
+// 2017-06-24
+// global_page_state(NR_FREE_PAGES)
 static inline unsigned long global_page_state(enum zone_stat_item item)
 {
 	long x = atomic_long_read(&vm_stat[item]);

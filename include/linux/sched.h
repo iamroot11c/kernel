@@ -507,6 +507,7 @@ struct autogroup;
  * the locking of signal_struct.
  */
 // 2016-03-05
+// 2017-06-24
 struct signal_struct {
 	atomic_t		sigcnt;
 	atomic_t		live;
@@ -618,6 +619,7 @@ struct signal_struct {
 	 * protect this instead of the siglock, because they really
 	 * have no need to disable irqs.
 	 */
+    // 2017-06-24
 	struct rlimit rlim[RLIM_NLIMITS/*16*/];
 
 #ifdef CONFIG_BSD_PROCESS_ACCT
@@ -1285,6 +1287,7 @@ struct task_struct {
 /* namespaces */
 	struct nsproxy *nsproxy;
 /* signal handlers */
+    // 2017-06-24
 	struct signal_struct *signal;
     // 2016-03-05
     // 2016-10-22

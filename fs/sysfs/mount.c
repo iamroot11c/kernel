@@ -27,6 +27,7 @@
 static struct vfsmount *sysfs_mnt;
 // 2017-01-07
 // 2017-06-10
+// 2017-06-24
 struct kmem_cache *sysfs_dir_cachep;
 
 static const struct super_operations sysfs_ops = {
@@ -107,6 +108,8 @@ static void free_sysfs_super_info(struct sysfs_super_info *info)
 	kfree(info);
 }
 
+// 2017-06-24
+// super_block을 통해 dentry를 구함
 static struct dentry *sysfs_mount(struct file_system_type *fs_type,
 	int flags, const char *dev_name, void *data)
 {
@@ -115,6 +118,8 @@ static struct dentry *sysfs_mount(struct file_system_type *fs_type,
 	struct super_block *sb;
 	int error;
 
+	// 2017-06-24 
+	// flags에 MS_KERNMOUNT 비트가 셋되어 있음
 	if (!(flags & MS_KERNMOUNT)) {
 		if (!capable(CAP_SYS_ADMIN) && !fs_fully_visible(fs_type))
 			return ERR_PTR(-EPERM);
@@ -159,6 +164,7 @@ static void sysfs_kill_sb(struct super_block *sb)
 	free_sysfs_super_info(info);
 }
 
+// 2017-06-24
 static struct file_system_type sysfs_fs_type = {
 	.name		= "sysfs",
 	.mount		= sysfs_mount,
@@ -166,6 +172,7 @@ static struct file_system_type sysfs_fs_type = {
 	.fs_flags	= FS_USERNS_MOUNT,
 };
 
+// 2017-06-24
 int __init sysfs_init(void)
 {
 	int err = -ENOMEM;

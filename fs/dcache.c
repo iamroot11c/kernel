@@ -86,6 +86,7 @@ __cacheline_aligned_in_smp DEFINE_SEQLOCK(rename_lock);
 
 EXPORT_SYMBOL(rename_lock);
 
+// 2017-06-24
 static struct kmem_cache *dentry_cache __read_mostly;
 
 /**
@@ -131,6 +132,7 @@ static inline void done_seqretry(seqlock_t *lock, int seq)
 static unsigned int d_hash_mask __read_mostly;
 static unsigned int d_hash_shift __read_mostly;
 
+// 2017-06-24
 static struct hlist_bl_head *dentry_hashtable __read_mostly;
 
 static inline struct hlist_bl_head *d_hash(const struct dentry *parent,
@@ -3390,6 +3392,7 @@ static void __init dcache_init_early(void)
 		INIT_HLIST_BL_HEAD(dentry_hashtable + loop);
 }
 
+// 2017-06-24
 static void __init dcache_init(void)
 {
 	unsigned int loop;
@@ -3422,6 +3425,7 @@ static void __init dcache_init(void)
 }
 
 /* SLAB cache for __getname() consumers */
+// 2017-06-24
 struct kmem_cache *names_cachep __read_mostly;
 EXPORT_SYMBOL(names_cachep);
 
@@ -3434,6 +3438,8 @@ void __init vfs_caches_init_early(void)
 	inode_init_early();
 }
 
+// 2017-06-24 시작
+// vfs_caches_init(totalram_pages)
 void __init vfs_caches_init(unsigned long mempages)
 {
 	unsigned long reserve;
@@ -3450,6 +3456,7 @@ void __init vfs_caches_init(unsigned long mempages)
 	dcache_init();
 	inode_init();
 	files_init(mempages);
+	// 2017-06-24 시작
 	mnt_init();
 	bdev_cache_init();
 	chrdev_init();

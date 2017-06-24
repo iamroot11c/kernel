@@ -53,6 +53,7 @@
 
 static unsigned int i_hash_mask __read_mostly;
 static unsigned int i_hash_shift __read_mostly;
+// 2017-06-24
 static struct hlist_head *inode_hashtable __read_mostly;
 static __cacheline_aligned_in_smp DEFINE_SPINLOCK(inode_hash_lock);
 
@@ -75,6 +76,7 @@ struct inodes_stat_t inodes_stat;
 static DEFINE_PER_CPU(unsigned long, nr_inodes);
 static DEFINE_PER_CPU(unsigned long, nr_unused);
 
+// 2017-06-24
 static struct kmem_cache *inode_cachep __read_mostly;
 
 // 2016-01-16
@@ -1741,6 +1743,7 @@ void __init inode_init_early(void)
 		INIT_HLIST_HEAD(&inode_hashtable[loop]);
 }
 
+// 2017-06-24
 void __init inode_init(void)
 {
 	unsigned int loop;
