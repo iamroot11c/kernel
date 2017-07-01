@@ -1,6 +1,6 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
-+ [134주차]() `2017.07.01`
++ [134주차](http://bit.ly/2twtFHw) `2017.07.01`
  - drive: 보름달님
  - fs/proc/root.c:proc_root_init() 진행중
  - mm/page-writeback.c:page_writeback_init() 완료
