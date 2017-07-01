@@ -16,6 +16,7 @@
 #include <linux/kobject.h>
 #include <linux/kobj_map.h>
 
+// 2017-07-01
 struct kobj_map {
 	struct probe {
 		struct probe *next;
@@ -133,6 +134,8 @@ retry:
 	return NULL;
 }
 
+// 2017-07-01
+// kobj_map_init(base_probe, &chrdevs_lock);
 struct kobj_map *kobj_map_init(kobj_probe_t *base_probe, struct mutex *lock)
 {
 	struct kobj_map *p = kmalloc(sizeof(struct kobj_map), GFP_KERNEL);

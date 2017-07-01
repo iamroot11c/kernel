@@ -182,6 +182,7 @@ static void __move_to_free_list(struct idr *idp, struct idr_layer *p)
 	idp->id_free_cnt++;
 }
 
+// 2017-07-01
 static void move_to_free_list(struct idr *idp, struct idr_layer *p)
 {
 	unsigned long flags;
@@ -216,6 +217,7 @@ static void idr_mark_full(struct idr_layer **pa, int id)
 	}
 }
 
+// 2017-07-01
 int __idr_pre_get(struct idr *idp, gfp_t gfp_mask)
 {
 	while (idp->id_free_cnt < MAX_IDR_FREE) {
@@ -1015,6 +1017,7 @@ EXPORT_SYMBOL(ida_pre_get);
  */
 // 2017-06-24
 // ida_get_new_above(&mnt_id_ida, mnt_id_start, &mnt->mnt_id)
+// ida_get_new_above(&sysfs_ino_ida, 2, &ino);
 int ida_get_new_above(struct ida *ida, int starting_id, int *p_id)
 {
 	struct idr_layer *pa[MAX_IDR_LEVEL + 1];

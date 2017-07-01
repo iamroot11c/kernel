@@ -39,6 +39,7 @@ static inline int __sync_blockdev(struct block_device *bdev, int wait)
 /*
  * char_dev.c
  */
+// 2017-07-01
 extern void __init chrdev_init(void);
 
 /*

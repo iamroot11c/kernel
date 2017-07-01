@@ -368,6 +368,7 @@ EXPORT_SYMBOL(blkdev_fsync);
  */
 
 static  __cacheline_aligned_in_smp DEFINE_SPINLOCK(bdev_lock);
+// 2017-07-01
 static struct kmem_cache * bdev_cachep __read_mostly;
 
 static struct inode *bdev_alloc_inode(struct super_block *sb)
@@ -444,6 +445,7 @@ static struct dentry *bd_mount(struct file_system_type *fs_type,
 	return mount_pseudo(fs_type, "bdev:", &bdev_sops, NULL, BDEVFS_MAGIC);
 }
 
+// 2017-07-01
 static struct file_system_type bd_type = {
 	.name		= "bdev",
 	.mount		= bd_mount,
@@ -451,8 +453,10 @@ static struct file_system_type bd_type = {
 };
 
 // 2015-05-09;
+// 2017-07-01
 static struct super_block *blockdev_superblock __read_mostly;
 
+// 2017-07-01
 void __init bdev_cache_init(void)
 {
 	int err;

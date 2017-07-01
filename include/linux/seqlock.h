@@ -48,6 +48,7 @@ typedef struct seqcount {
 	unsigned sequence;
 } seqcount_t;
 
+// 2017-07-01
 #define SEQCNT_ZERO { 0 }
 #define seqcount_init(x)	do { *(x) = (seqcount_t) SEQCNT_ZERO; } while (0)
 

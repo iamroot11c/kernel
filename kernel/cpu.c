@@ -197,6 +197,8 @@ void cpu_hotplug_enable(void)
 // 동기화를 위해 mutex()를 설정한다.
 // 2017-06-24
 // register_cpu_notifier(&buffer_cpu_notify_nb)
+// 2017-07-01
+// register_cpu_notifier(&ratelimit_nb);
 int __ref register_cpu_notifier(struct notifier_block *nb)
 {
 	int ret;

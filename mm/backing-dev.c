@@ -445,6 +445,10 @@ static void bdi_wb_init(struct bdi_writeback *wb, struct backing_dev_info *bdi)
 
 // 2017-06-24
 // bdi_init(&sysfs_backing_dev_info)
+// 2017-07-01
+// bdi_init(&shmem_backing_dev_info)
+// 2017-07-01
+// bdi_init(&directly_mappable_cdev_bdi)
 int bdi_init(struct backing_dev_info *bdi)
 {
 	int i, err;

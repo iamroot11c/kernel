@@ -47,6 +47,7 @@
  * SLAB caches for signal bits.
  */
 
+// 2017-07-01
 static struct kmem_cache *sigqueue_cachep;
 
 int print_fatal_signals __read_mostly;
@@ -3683,6 +3684,7 @@ __attribute__((weak)) const char *arch_vma_name(struct vm_area_struct *vma)
 	return NULL;
 }
 
+// 2017-07-01
 void __init signals_init(void)
 {
 	sigqueue_cachep = KMEM_CACHE(sigqueue, SLAB_PANIC);

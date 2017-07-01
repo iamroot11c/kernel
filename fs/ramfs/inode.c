@@ -43,6 +43,7 @@
 static const struct super_operations ramfs_ops;
 static const struct inode_operations ramfs_dir_inode_operations;
 
+// 2017-07-01
 static struct backing_dev_info ramfs_backing_dev_info = {
 	.name		= "ramfs",
 	.ra_pages	= 0,	/* No readahead */
@@ -257,6 +258,7 @@ static struct file_system_type ramfs_fs_type = {
 	.fs_flags	= FS_USERNS_MOUNT,
 };
 
+// 2017-07-01
 int __init init_ramfs_fs(void)
 {
 	static unsigned long once;

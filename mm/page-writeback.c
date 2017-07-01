@@ -63,6 +63,7 @@
  * After a CPU has dirtied this many pages, balance_dirty_pages_ratelimited
  * will look to see if it needs to force writeback or throttling.
  */
+// 2017-07-01
 static long ratelimit_pages = 32;
 
 /* The following parameters are exported via /proc/sys/vm */
@@ -140,6 +141,7 @@ EXPORT_SYMBOL(laptop_mode);
 /* End of sysctl-exported parameters */
 
 // 2016-01-09
+// 2017-07-01
 unsigned long global_dirty_limit;
 
 /*
@@ -158,6 +160,7 @@ unsigned long global_dirty_limit;
  * measured in page writeback completions.
  *
  */
+// 2017-07-01
 static struct fprop_global writeout_completions;
 
 static void writeout_period(unsigned long t);
@@ -1780,6 +1783,7 @@ void laptop_sync_completion(void)
  * thresholds.
  */
 
+// 2017-07-01
 void writeback_set_ratelimit(void)
 {
 	unsigned long background_thresh;
@@ -1829,6 +1833,7 @@ static struct notifier_block ratelimit_nb = {
  * But we might still want to scale the dirty_ratio by how
  * much memory the box has..
  */
+// 2017-07-01
 void __init page_writeback_init(void)
 {
 	writeback_set_ratelimit();

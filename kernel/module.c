@@ -978,6 +978,7 @@ void __module_get(struct module *module)
 }
 EXPORT_SYMBOL(__module_get);
 
+// 2017-07-01
 bool try_module_get(struct module *module)
 {
 	bool ret = true;
@@ -997,6 +998,7 @@ bool try_module_get(struct module *module)
 }
 EXPORT_SYMBOL(try_module_get);
 
+// 2017-07-01
 void module_put(struct module *module)
 {
 	if (module) {

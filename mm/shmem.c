@@ -174,6 +174,7 @@ static const struct inode_operations shmem_dir_inode_operations;
 static const struct inode_operations shmem_special_inode_operations;
 static const struct vm_operations_struct shmem_vm_ops;
 
+// 2017-07-01
 static struct backing_dev_info shmem_backing_dev_info  __read_mostly = {
 	.ra_pages	= 0,	/* No readahead */
 	.capabilities	= BDI_CAP_NO_ACCT_AND_WRITEBACK | BDI_CAP_SWAP_BACKED,
@@ -2664,6 +2665,7 @@ failed:
 	return err;
 }
 
+// 2017-07-01
 static struct kmem_cache *shmem_inode_cachep;
 
 static struct inode *shmem_alloc_inode(struct super_block *sb)
@@ -2694,6 +2696,7 @@ static void shmem_init_inode(void *foo)
 	inode_init_once(&info->vfs_inode);
 }
 
+// 2017-07-01
 static int shmem_init_inodecache(void)
 {
 	shmem_inode_cachep = kmem_cache_create("shmem_inode_cache",
@@ -2702,6 +2705,7 @@ static int shmem_init_inodecache(void)
 	return 0;
 }
 
+// 2017-07-01
 static void shmem_destroy_inodecache(void)
 {
 	kmem_cache_destroy(shmem_inode_cachep);
@@ -2815,6 +2819,7 @@ static struct file_system_type shmem_fs_type = {
 	.fs_flags	= FS_USERNS_MOUNT,
 };
 
+// 2017-07-01
 int __init shmem_init(void)
 {
 	int error;
@@ -2831,6 +2836,7 @@ int __init shmem_init(void)
 	if (error)
 		goto out3;
 
+	// 2017-07-01
 	error = register_filesystem(&shmem_fs_type);
 	if (error) {
 		printk(KERN_ERR "Could not register tmpfs\n");
@@ -2867,6 +2873,7 @@ out4:
  * effectively equivalent, but much lighter weight.
  */
 
+// 2017-07-01
 static struct file_system_type shmem_fs_type = {
 	.name		= "tmpfs",
 	.mount		= ramfs_mount,

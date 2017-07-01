@@ -952,6 +952,7 @@ void mntput(struct vfsmount *mnt)
 }
 EXPORT_SYMBOL(mntput);
 
+// 2017-07-01
 struct vfsmount *mntget(struct vfsmount *mnt)
 {
 	if (mnt)
@@ -2399,6 +2400,7 @@ static void free_mnt_ns(struct mnt_namespace *ns)
  */
 static atomic64_t mnt_ns_seq = ATOMIC64_INIT(1);
 
+// 2017-07-01
 static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns)
 {
 	struct mnt_namespace *new_ns;
@@ -2513,6 +2515,7 @@ struct mnt_namespace *copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
  * create_mnt_ns - creates a private namespace and adds a root filesystem
  * @mnt: pointer to the new root filesystem mountpoint
  */
+// 2017-07-01
 static struct mnt_namespace *create_mnt_ns(struct vfsmount *m)
 {
 	struct mnt_namespace *new_ns = alloc_mnt_ns(&init_user_ns);
@@ -2741,6 +2744,7 @@ out0:
 	return error;
 }
 
+// 2017-07-01
 static void __init init_mount_tree(void)
 {
 	struct vfsmount *mnt;
@@ -2803,9 +2807,13 @@ void __init mnt_init(void)
 			__func__, err);
 	// 2017-06-24 시작
 	fs_kobj = kobject_create_and_add("fs", NULL);
+	// 2017-07-01
 	if (!fs_kobj)
 		printk(KERN_WARNING "%s: kobj create error\n", __func__);
+	// 2017-07-01, start
 	init_rootfs();
+	// 2017-07-01, end
+	// 2017-07-01, start
 	init_mount_tree();
 }
 

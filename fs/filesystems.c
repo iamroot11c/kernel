@@ -30,6 +30,7 @@
  */
 // 2017-06-24
 static struct file_system_type *file_systems;
+// 2017-07-01
 static DEFINE_RWLOCK(file_systems_lock);
 
 /* WARNING: This can be used only if we _already_ own a reference */
@@ -38,6 +39,7 @@ void get_filesystem(struct file_system_type *fs)
 	__module_get(fs->owner);
 }
 
+// 2017-07-01
 void put_filesystem(struct file_system_type *fs)
 {
 	module_put(fs->owner);
@@ -68,6 +70,28 @@ static struct file_system_type **find_filesystem(const char *name, unsigned len)
  */
 // 2017-06-24
 // register_filesystem(&sysfs_fs_type) 
+// 2017-07-01
+// static struct file_system_type rootfs_fs_type = { 
+//        .name           = "rootfs",
+//        .mount          = rootfs_mount,
+//        .kill_sb        = kill_litter_super,
+//};
+// register_filesystem(&rootfs_fs_type);
+// 2017-07-01
+// static struct file_system_type shmem_fs_type = {
+//        .name           = "tmpfs",
+//        .mount          = ramfs_mount,
+//        .kill_sb        = kill_litter_super,
+//        .fs_flags       = FS_USERNS_MOUNT,
+//};
+// register_filesystem(&shmem_fs_type)
+// register_filesystem(&ramfs_fs_type)
+// tatic struct file_system_type bd_type = {
+//        .name           = "bdev",
+//        .mount          = bd_mount,
+//        .kill_sb        = kill_anon_super,
+//};
+
 int register_filesystem(struct file_system_type * fs)
 {
 	int res = 0;
@@ -100,6 +124,7 @@ EXPORT_SYMBOL(register_filesystem);
  *	may be freed or reused.
  */
  
+// 2017-07-01
 int unregister_filesystem(struct file_system_type * fs)
 {
 	struct file_system_type ** tmp;
@@ -256,6 +281,7 @@ static int __init proc_filesystems_init(void)
 module_init(proc_filesystems_init);
 #endif
 
+// 2017-07-01
 static struct file_system_type *__get_fs_type(const char *name, int len)
 {
 	struct file_system_type *fs;
@@ -268,6 +294,7 @@ static struct file_system_type *__get_fs_type(const char *name, int len)
 	return fs;
 }
 
+// 2017-07-01
 struct file_system_type *get_fs_type(const char *name)
 {
 	struct file_system_type *fs;

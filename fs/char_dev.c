@@ -31,6 +31,7 @@
  * - does not permit private mmap in NOMMU mode (can't do COW)
  * - no readahead or I/O queue unplugging required
  */
+// 2017-07-01
 struct backing_dev_info directly_mappable_cdev_bdi = {
 	.name = "char",
 	.capabilities	= (
@@ -45,6 +46,7 @@ struct backing_dev_info directly_mappable_cdev_bdi = {
 		BDI_CAP_NO_ACCT_AND_WRITEBACK),
 };
 
+// 2017-07-01
 static struct kobj_map *cdev_map;
 
 static DEFINE_MUTEX(chrdevs_lock);
@@ -563,6 +565,7 @@ void cdev_init(struct cdev *cdev, const struct file_operations *fops)
 	cdev->ops = fops;
 }
 
+// 2017-07-01
 static struct kobject *base_probe(dev_t dev, int *part, void *data)
 {
 	if (request_module("char-major-%d-%d", MAJOR(dev), MINOR(dev)) > 0)
@@ -571,6 +574,7 @@ static struct kobject *base_probe(dev_t dev, int *part, void *data)
 	return NULL;
 }
 
+// 2017-07-01
 void __init chrdev_init(void)
 {
 	cdev_map = kobj_map_init(base_probe, &chrdevs_lock);

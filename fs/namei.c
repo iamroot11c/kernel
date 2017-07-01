@@ -451,6 +451,7 @@ int inode_permission(struct inode *inode, int mask)
  *
  * Given a path increment the reference count to the dentry and the vfsmount.
  */
+// 2017-07-01
 void path_get(const struct path *path)
 {
 	mntget(path->mnt);

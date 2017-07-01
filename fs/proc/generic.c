@@ -119,15 +119,18 @@ static int xlate_proc_name(const char *name, struct proc_dir_entry **ret,
 	return rv;
 }
 
+// 2017-07-01
 static DEFINE_IDA(proc_inum_ida);
 static DEFINE_SPINLOCK(proc_inum_lock); /* protects the above */
 
+// 2017-07-01
 #define PROC_DYNAMIC_FIRST 0xF0000000U
 
 /*
  * Return an inode number between PROC_DYNAMIC_FIRST and
  * 0xffffffff, or zero on failure.
  */
+// 2017-07-01
 int proc_alloc_inum(unsigned int *inum)
 {
 	unsigned int i;

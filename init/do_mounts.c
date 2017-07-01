@@ -39,6 +39,7 @@ int __initdata rd_doload;	/* 1 = load RAM disk, 0 = don't load */
 
 int root_mountflags = MS_RDONLY | MS_SILENT; // MS_RDONLY = 1 | MS_SILENT =2^15 = 2^15 + 1
 static char * __initdata root_device_name;
+// 2017-07-01
 static char __initdata saved_root_name[64];
 static int root_wait;
 
@@ -309,6 +310,7 @@ static int __init root_data_setup(char *str)
 	return 1;
 }
 
+// 2017-07-01
 static char * __initdata root_fs_names;
 static int __init fs_names_setup(char *str)
 {
@@ -592,6 +594,8 @@ out:
 }
 
 static bool is_tmpfs;
+// 2017-07-01
+// .mount          = rootfs_mount,
 static struct dentry *rootfs_mount(struct file_system_type *fs_type,
 	int flags, const char *dev_name, void *data)
 {
@@ -607,12 +611,14 @@ static struct dentry *rootfs_mount(struct file_system_type *fs_type,
 	return mount_nodev(fs_type, flags, data, fill);
 }
 
+// 2017-07-01
 static struct file_system_type rootfs_fs_type = {
 	.name		= "rootfs",
 	.mount		= rootfs_mount,
 	.kill_sb	= kill_litter_super,
 };
 
+// 2017-07-01
 int __init init_rootfs(void)
 {
 	int err = register_filesystem(&rootfs_fs_type);

@@ -24,6 +24,7 @@
 /*
  * ---- Global proportion definitions ----
  */
+// 2017-07-01
 struct fprop_global {
 	/* Number of events in the current period */
 	struct percpu_counter events;

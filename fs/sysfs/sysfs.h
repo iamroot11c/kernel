@@ -62,6 +62,7 @@ struct sysfs_inode_attrs {
  * requires s_active reference.
  */
 // 2016-09-24
+// 2017-07-01
 struct sysfs_dirent {
 	atomic_t		s_count;
 	atomic_t		s_active;

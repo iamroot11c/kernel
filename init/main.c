@@ -762,9 +762,15 @@ asmlinkage void __init start_kernel(void)
 	dbg_late_init(); // No OP.
 	// 2017-06-24 시작
 	vfs_caches_init(totalram_pages);
+	// 2017-07-01, end
+	// 2017-07-01, start 
 	signals_init();
+	// 2017-07-01, end
 	/* rootfs populating might need page-writeback */
+	// 2017-07-01, start 
 	page_writeback_init();
+	// 2017-07-01, end
+	// 2017-07-01, 여기까지
 #ifdef CONFIG_PROC_FS
 	proc_root_init();
 #endif

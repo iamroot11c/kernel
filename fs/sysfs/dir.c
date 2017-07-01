@@ -101,6 +101,7 @@ static int sysfs_sd_compare(const struct sysfs_dirent *left,
  *	RETURNS:
  *	0 on susccess -EEXIST on failure.
  */
+// 2017-07-01
 static int sysfs_link_sibling(struct sysfs_dirent *sd)
 {
 	struct rb_node **node = &sd->s_parent->s_dir.children.rb_node;
@@ -255,12 +256,14 @@ static void sysfs_deactivate(struct sysfs_dirent *sd)
 	rwsem_release(&sd->dep_map, 1, _RET_IP_);
 }
 
+// 2017-07-01
 static int sysfs_alloc_ino(unsigned int *pino)
 {
 	int ino, rc;
 
  retry:
 	spin_lock(&sysfs_ino_lock);
+	// 2017-07-01
 	rc = ida_get_new_above(&sysfs_ino_ida, 2, &ino);
 	spin_unlock(&sysfs_ino_lock);
 
@@ -396,11 +399,14 @@ const struct dentry_operations sysfs_dentry_ops = {
 	.d_release	= sysfs_dentry_release,
 };
 
+// 2017-07-01
+// sysfs_new_dirent(name, mode, SYSFS_DIR);
 struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type)
 {
 	char *dup_name = NULL;
 	struct sysfs_dirent *sd;
 
+	// SYSFS_DIR
 	if (type & SYSFS_COPY_NAME) {
 		name = dup_name = kstrdup(name, GFP_KERNEL);
 		if (!name)
@@ -411,6 +417,7 @@ struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type)
 	if (!sd)
 		goto err_out1;
 
+	// inode 할당
 	if (sysfs_alloc_ino(&sd->s_ino))
 		goto err_out2;
 
@@ -479,6 +486,7 @@ void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
  *	0 on success, -EEXIST if entry with the given name already
  *	exists.
  */
+// 2017-07-01
 int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
 {
 	struct sysfs_inode_attrs *ps_iattr;
@@ -492,8 +500,10 @@ int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
 	}
 
 	sd->s_hash = sysfs_name_hash(sd->s_ns, sd->s_name);
+	// ref count 증가
 	sd->s_parent = sysfs_get(acxt->parent_sd);
 
+	// 2017-07-01
 	ret = sysfs_link_sibling(sd);
 	if (ret)
 		return ret;
@@ -549,10 +559,12 @@ static char *sysfs_pathname(struct sysfs_dirent *sd, char *path)
  *	0 on success, -EEXIST if entry with the given name already
  *	exists.
  */
+// 2017-07-01
 int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
 {
 	int ret;
 
+	// 2017-07-01
 	ret = __sysfs_add_one(acxt, sd);
 	if (ret == -EEXIST) {
 		char *path = kzalloc(PATH_MAX, GFP_KERNEL);
@@ -732,7 +744,7 @@ struct sysfs_dirent *sysfs_get_dirent(struct sysfs_dirent *parent_sd,
 EXPORT_SYMBOL_GPL(sysfs_get_dirent);
 
 // 2017-06-24
-// 차주(2017-07-01) 분석 예정
+// 차주(2017-07-01) 시작 
 static int create_dir(struct kobject *kobj, struct sysfs_dirent *parent_sd,
 	enum kobj_ns_type type, const void *ns, const char *name,
 	struct sysfs_dirent **p_sd)
@@ -743,6 +755,7 @@ static int create_dir(struct kobject *kobj, struct sysfs_dirent *parent_sd,
 	int rc;
 
 	/* allocate */
+	// 2017-07-01
 	sd = sysfs_new_dirent(name, mode, SYSFS_DIR);
 	if (!sd)
 		return -ENOMEM;
@@ -752,6 +765,7 @@ static int create_dir(struct kobject *kobj, struct sysfs_dirent *parent_sd,
 	sd->s_dir.kobj = kobj;
 
 	/* link in */
+	// 2017-07-01
 	sysfs_addrm_start(&acxt, parent_sd);
 	rc = sysfs_add_one(&acxt, sd);
 	sysfs_addrm_finish(&acxt);

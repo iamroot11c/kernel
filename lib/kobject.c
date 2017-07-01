@@ -191,6 +191,7 @@ static int kobject_add_internal(struct kobject *kobj)
 
 	// 2017-06-24 시작
 	error = create_dir(kobj);
+	// 2017-07-01 end
 	if (error) {
 		kobj_kset_leave(kobj);
 		kobject_put(parent);
@@ -709,6 +710,7 @@ struct kobject *kobject_create_and_add(const char *name, struct kobject *parent)
 
 	// 2017-06-24 시작
 	retval = kobject_add(kobj, parent, "%s", name);
+	// 2017-07-01
 	if (retval) {
 		printk(KERN_WARNING "%s: kobject_add error: %d\n",
 		       __func__, retval);

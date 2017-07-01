@@ -3458,6 +3458,11 @@ void __init vfs_caches_init(unsigned long mempages)
 	files_init(mempages);
 	// 2017-06-24 시작
 	mnt_init();
+	// 2017-07-01, end
+	// 2017-07-01, start 
 	bdev_cache_init();
+	// 2017-07-01, end 
+	// 2017-07-01, start 
 	chrdev_init();
+	// 2017-07-01, end 
 }
