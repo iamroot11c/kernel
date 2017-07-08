@@ -725,6 +725,8 @@ static inline void rcu_preempt_sleep_check(void)
  * when protected only by rcu_read_lock() will result in infrequent
  * but very ugly failures.
  */
+// 2017-07-08
+// == (type(*p)*)p
 #define rcu_dereference_protected(p, c) \
 	__rcu_dereference_protected((p), (c), __rcu)
 
@@ -949,6 +951,8 @@ static inline notrace void rcu_read_unlock_sched_notrace(void)
 // 2016-07-23
 // 2016-09-24
 // rcu_assign_pointer(list_next_rcu(prev), new);
+// 2017-07-08
+// (p) = (typeof(*v) __force space *)(v);
 #define rcu_assign_pointer(p, v) \
 	__rcu_assign_pointer((p), (v), __rcu)
 

@@ -180,6 +180,7 @@ const struct file_operations proc_net_operations = {
 	.iterate	= proc_tgid_net_readdir,
 };
 
+// 2017-07-08
 static __net_init int proc_net_ns_init(struct net *net)
 {
 	struct proc_dir_entry *netd, *net_statd;
@@ -197,10 +198,12 @@ static __net_init int proc_net_ns_init(struct net *net)
 	memcpy(netd->name, "net", 4);
 
 	err = -EEXIST;
+	// netd를 부모로 하는 "stat" dir_entry 생성
 	net_statd = proc_net_mkdir(net, "stat", netd);
 	if (!net_statd)
 		goto free_net;
 
+	// 할당한 proc 관련 파일 등록
 	net->proc_net = netd;
 	net->proc_net_stat = net_statd;
 	return 0;
@@ -217,11 +220,14 @@ static __net_exit void proc_net_ns_exit(struct net *net)
 	kfree(net->proc_net);
 }
 
+// 2017-07-08
 static struct pernet_operations __net_initdata proc_net_ns_ops = {
+	// 2017-07-08
 	.init = proc_net_ns_init,
 	.exit = proc_net_ns_exit,
 };
 
+// 2017-07-08
 int __init proc_net_init(void)
 {
 	proc_symlink("net", NULL, "self/net");

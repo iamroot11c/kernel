@@ -57,6 +57,7 @@ static void proc_evict_inode(struct inode *inode)
 		ns_ops->put(ns);
 }
 
+// 2017-07-08
 static struct kmem_cache * proc_inode_cachep;
 
 static struct inode *proc_alloc_inode(struct super_block *sb)
@@ -98,6 +99,7 @@ static void init_once(void *foo)
 	inode_init_once(&ei->vfs_inode);
 }
 
+// 2017-07-08
 void __init proc_init_inodecache(void)
 {
 	proc_inode_cachep = kmem_cache_create("proc_inode_cache",

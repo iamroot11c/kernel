@@ -29,6 +29,7 @@ struct mempolicy;
  * /proc file has a parent, but "subdir" is NULL for all
  * non-directory entries).
  */
+// 2017-07-08
 struct proc_dir_entry {
 	unsigned int low_ino;
 	umode_t mode;
@@ -229,7 +230,7 @@ extern const struct file_operations proc_ns_dir_operations;
 extern const struct file_operations proc_net_operations;
 extern const struct inode_operations proc_net_inode_operations;
 
-#ifdef CONFIG_NET
+#ifdef CONFIG_NET // y
 extern int proc_net_init(void);
 #else
 static inline int proc_net_init(void) { return 0; }

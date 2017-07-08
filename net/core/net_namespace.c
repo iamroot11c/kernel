@@ -22,10 +22,12 @@
  *	Our network namespace constructor/destructor lists
  */
 
+// 2017-07-08
 static LIST_HEAD(pernet_list);
 static struct list_head *first_device = &pernet_list;
 static DEFINE_MUTEX(net_mutex);
 
+// 2017-07-08
 LIST_HEAD(net_namespace_list);
 EXPORT_SYMBOL_GPL(net_namespace_list);
 
@@ -35,9 +37,11 @@ struct net init_net = {
 EXPORT_SYMBOL(init_net);
 
 #define INITIAL_NET_GEN_PTRS	13 /* +1 for len +2 for rcu_head */
-
+// 2017-07-08
 static unsigned int max_gen_ptrs = INITIAL_NET_GEN_PTRS;
 
+// 2017-07-08
+// net_generic의 실제 크기만큼 메모리 할당
 static struct net_generic *net_alloc_generic(void)
 {
 	struct net_generic *ng;
@@ -50,6 +54,10 @@ static struct net_generic *net_alloc_generic(void)
 	return ng;
 }
 
+// 2017-07-08
+// net_assign_generic(net, *ops->id, data)
+// 동작 : net->gen 을 ptr size 값 변경하여 재할당
+// (stl::vector.push_back() 시 메모리 재할당하는 것과 동일한 뉘앙스)
 static int net_assign_generic(struct net *net, int id, void *data)
 {
 	struct net_generic *ng, *old_ng;
@@ -57,6 +65,9 @@ static int net_assign_generic(struct net *net, int id, void *data)
 	BUG_ON(!mutex_is_locked(&net_mutex));
 	BUG_ON(id == 0);
 
+	// 2017-07-08
+	// __rcu_dereference_protected((p), (c), __rcu)
+	// old_ng = net->gen;
 	old_ng = rcu_dereference_protected(net->gen,
 					   lockdep_is_held(&net_mutex));
 	ng = old_ng;
@@ -87,6 +98,9 @@ assign:
 	return 0;
 }
 
+// 2017-07-08
+// *ops->id 인덱스에 대해 net->gen->ptr[index]에 초기화된 메모리 추가
+// 생성자 등록된 경우 생성자 호출 (현 분석 기준 net 관련 proc정보 세팅)
 static int ops_init(const struct pernet_operations *ops, struct net *net)
 {
 	int err = -ENOMEM;
@@ -97,11 +111,15 @@ static int ops_init(const struct pernet_operations *ops, struct net *net)
 		if (!data)
 			goto out;
 
+		// net->gen->ptr의 마지막 인덱스에 data삽입
 		err = net_assign_generic(net, *ops->id, data);
 		if (err)
 			goto cleanup;
 	}
 	err = 0;
+	// 2017-07-08
+	// 생성자가 등록되어 있으며 호출
+	// 현재 분석 기준 proc_net_ns_init()이 등록
 	if (ops->init)
 		err = ops->init(net);
 	if (!err)
@@ -122,6 +140,8 @@ static void ops_free(const struct pernet_operations *ops, struct net *net)
 	}
 }
 
+// 2017-07-08
+// net_exit_list에 포함된 리스트에 대해 소멸자 호출
 static void ops_exit_list(const struct pernet_operations *ops,
 			  struct list_head *net_exit_list)
 {
@@ -134,6 +154,8 @@ static void ops_exit_list(const struct pernet_operations *ops,
 		ops->exit_batch(net_exit_list);
 }
 
+// 2017-07-08
+// net_exit_list를 순회하면서 ops->id에 해당하는 data를 free 
 static void ops_free_list(const struct pernet_operations *ops,
 			  struct list_head *net_exit_list)
 {
@@ -436,6 +458,11 @@ static int __init net_ns_init(void)
 pure_initcall(net_ns_init);
 
 #ifdef CONFIG_NET_NS
+// 2017-07-08
+// return : 성공 : 0 / 실패 : error code
+// 동작 : net_namespace_list에 연결된 모든 net에 대해
+// net->gen->ptr[*ops->id] 위치에 초기화된 데이터 할당
+// 한 개라도 설정 실패 시 모든 정보에 대해 소멸자 호출 및 데이터 제거
 static int __register_pernet_operations(struct list_head *list,
 					struct pernet_operations *ops)
 {
@@ -445,6 +472,7 @@ static int __register_pernet_operations(struct list_head *list,
 
 	list_add_tail(&ops->list, list);
 	if (ops->init || (ops->id && ops->size)) {
+		// list_for_each_entry(VAR, &net_namespace_list, list)
 		for_each_net(net) {
 			error = ops_init(ops, net);
 			if (error)
@@ -456,6 +484,7 @@ static int __register_pernet_operations(struct list_head *list,
 
 out_undo:
 	/* If I have an error cleanup all namespaces I initialized */
+	// 2017-07-08
 	list_del(&ops->list);
 	ops_exit_list(ops, &net_exit_list);
 	ops_free_list(ops, &net_exit_list);
@@ -492,8 +521,12 @@ static void __unregister_pernet_operations(struct pernet_operations *ops)
 
 #endif /* CONFIG_NET_NS */
 
+// 2017-07-08
 static DEFINE_IDA(net_generic_ids);
 
+// 2017-07-08
+// *ops->id 인덱스에 대해 net_namespace_list내 모든 net->gen->ptr[index] 할당
+// 실패 시 제거 처리
 static int register_pernet_operations(struct list_head *list,
 				      struct pernet_operations *ops)
 {
@@ -549,6 +582,7 @@ static void unregister_pernet_operations(struct pernet_operations *ops)
  *	are called in the reverse of the order with which they were
  *	registered.
  */
+// 2017-07-08
 int register_pernet_subsys(struct pernet_operations *ops)
 {
 	int error;

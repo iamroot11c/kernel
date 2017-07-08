@@ -151,6 +151,7 @@ static void proc_kill_sb(struct super_block *sb)
 	put_pid_ns(ns);
 }
 
+// 2017-07-08
 static struct file_system_type proc_fs_type = {
 	.name		= "proc",
 	.mount		= proc_mount,
@@ -158,6 +159,7 @@ static struct file_system_type proc_fs_type = {
 	.fs_flags	= FS_USERNS_MOUNT,
 };
 
+// 2017-07-08
 void __init proc_root_init(void)
 {
 	int err;
@@ -170,8 +172,9 @@ void __init proc_root_init(void)
 	proc_self_init();
 	proc_symlink("mounts", NULL, "self/mounts");
 
+	// 2017-07-08
 	proc_net_init();
-
+	// 2017-07-08 완료
 #ifdef CONFIG_SYSVIPC
 	proc_mkdir("sysvipc", NULL);
 #endif
@@ -182,6 +185,7 @@ void __init proc_root_init(void)
 	/* just give it a mountpoint */
 	proc_mkdir("openprom", NULL);
 #endif
+	// 2017-07-08 여기까지
 	proc_tty_init();
 #ifdef CONFIG_PROC_DEVICETREE
 	proc_device_tree_init();
@@ -240,6 +244,7 @@ static const struct inode_operations proc_root_inode_operations = {
 /*
  * This is the root "inode" in the /proc tree..
  */
+// 2017-07-08
 struct proc_dir_entry proc_root = {
 	.low_ino	= PROC_ROOT_INO, 
 	.namelen	= 5, 

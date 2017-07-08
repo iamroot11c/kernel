@@ -92,6 +92,7 @@ static struct file_system_type **find_filesystem(const char *name, unsigned len)
 //        .kill_sb        = kill_anon_super,
 //};
 
+// 2017-07-08
 int register_filesystem(struct file_system_type * fs)
 {
 	int res = 0;

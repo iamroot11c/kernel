@@ -1,5 +1,17 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [135주차](http://bit.ly/2twtFHw) `2017.07.08`
+ - drive: 홍진우님
+ - fs/proc/root.c:proc_root_init() 진행 중
+ - fs/proc/generic.c::proc_symlink() 완료
+ - fs/proc/proc_net.c::proc_net_init() 완료
+    - net/core/net_namespace.c::register_pernet_subsys() 완료
+       - net/core/net_namespace.c::register_pernet_operations() 완료
+       - net/core/net_namespace.c::__register_pernet_operations() 완료
+       - net/core/net_namespace.c::ops_init() 완료
+       - net/core/net_namespace.c::net_assign_generic() 완료
+       - fs/proc/proc_net.c::proc_net_ns_init() 완료
+ - fs/proc/proc_tty.c::proc_tty_init() 진행 예정
 + [134주차](http://bit.ly/2twtFHw) `2017.07.01`
  - drive: 보름달님
  - fs/proc/root.c:proc_root_init() 진행중

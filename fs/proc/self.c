@@ -50,6 +50,7 @@ static const struct inode_operations proc_self_inode_operations = {
 	.put_link	= proc_self_put_link,
 };
 
+// 2017-07-08
 static unsigned self_inum;
 
 int proc_setup_self(struct super_block *s)
@@ -86,6 +87,7 @@ int proc_setup_self(struct super_block *s)
 	return 0;
 }
 
+// 2017-07-08
 void __init proc_self_init(void)
 {
 	proc_alloc_inum(&self_inum);

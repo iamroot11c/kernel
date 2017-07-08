@@ -76,6 +76,12 @@ static const struct inode_operations proc_file_inode_operations = {
  * returns the struct proc_dir_entry for "/proc/tty/driver", and
  * returns "serial" in residual.
  */
+// 2017-07-08
+// __xlate_proc_name(name, ret, residual)
+// name에 일치하는 directory entry 값과 name의 마지막 경로를 리턴한다.
+// ex) name == "tty/driver/serial"
+//	-> de : "driver" 이름을 가지는 directory entry
+//	-> regidual : "serial"
 static int __xlate_proc_name(const char *name, struct proc_dir_entry **ret,
 			     const char **residual)
 {
@@ -108,6 +114,12 @@ static int __xlate_proc_name(const char *name, struct proc_dir_entry **ret,
 	return 0;
 }
 
+// 2017-07-08
+// xlate_proc_name(name, parent, &fn)
+// name에 일치하는 directory entry 값과 name의 마지막 경로를 리턴한다.
+//    ex) name == "tty/driver/serial"
+//      -> de : "driver" 이름을 가지는 directory entry
+//      -> regidual : "serial"
 static int xlate_proc_name(const char *name, struct proc_dir_entry **ret,
 			   const char **residual)
 {
@@ -120,6 +132,7 @@ static int xlate_proc_name(const char *name, struct proc_dir_entry **ret,
 }
 
 // 2017-07-01
+// 2017-07-08
 static DEFINE_IDA(proc_inum_ida);
 static DEFINE_SPINLOCK(proc_inum_lock); /* protects the above */
 
@@ -131,6 +144,8 @@ static DEFINE_SPINLOCK(proc_inum_lock); /* protects the above */
  * 0xffffffff, or zero on failure.
  */
 // 2017-07-01
+// 2017-07-08
+// ida값을 할당한 후 인덱스 값을 전달한다.
 int proc_alloc_inum(unsigned int *inum)
 {
 	unsigned int i;
@@ -304,6 +319,10 @@ static const struct inode_operations proc_dir_inode_operations = {
 	.setattr	= proc_notify_change,
 };
 
+// 2017-07-08
+// proc_register(parent, ent)
+// 동작 : dp를 dir의 첫째 자식으로 설정한다.
+// (기존에 dir에 연결된 자식은 부모가 변경되지 않지만, 접근 우선순위가 낮아진다)
 static int proc_register(struct proc_dir_entry * dir, struct proc_dir_entry * dp)
 {
 	struct proc_dir_entry *tmp;
@@ -344,6 +363,10 @@ static int proc_register(struct proc_dir_entry * dir, struct proc_dir_entry * dp
 	return 0;
 }
 
+// 2017-07-08
+// __proc_create(&parent, name, (S_IFLNK | S_IRUGO | S_IWUGO | S_IXUGO),1);
+// 동작 : name경로에 일치하는 directory entry가 있다면
+// proc_dir_entry 정보를 초기화하여 리턴한다.
 static struct proc_dir_entry *__proc_create(struct proc_dir_entry **parent,
 					  const char *name,
 					  umode_t mode,
@@ -381,6 +404,13 @@ out:
 	return ent;
 }
 
+// 2017-07-08
+// proc_symlink("mounts", NULL, "self/mounts")
+// 동작 : 
+// 1) name 경로를 가지는 proc_dir_entry생성 및 초기화
+// 2) parent에 생성한 entry를 자식으로 등록
+// 3-1) 성공 시 등록한 proc_dir_entry 정보 반환
+// 3-2) 자식 등록 실패 또는 메모리 할당 실패 시 null 반환
 struct proc_dir_entry *proc_symlink(const char *name,
 		struct proc_dir_entry *parent, const char *dest)
 {
@@ -407,6 +437,8 @@ struct proc_dir_entry *proc_symlink(const char *name,
 }
 EXPORT_SYMBOL(proc_symlink);
 
+// 2017-07-08
+// proc 파일시스템에서 새로운 디렉토리 생성
 struct proc_dir_entry *proc_mkdir_data(const char *name, umode_t mode,
 		struct proc_dir_entry *parent, void *data)
 {
@@ -415,7 +447,11 @@ struct proc_dir_entry *proc_mkdir_data(const char *name, umode_t mode,
 	if (mode == 0)
 		mode = S_IRUGO | S_IXUGO;
 
-	ent = __proc_create(&parent, name, S_IFDIR | mode, 2);
+	ent = __proc_create(
+			&parent, 
+			name, 
+			S_IFDIR/*디렉토리 mode 추가?*/ | mode, 
+			2/*자기 자신 + 부모에 대한 ref count 설정*/);
 	if (ent) {
 		ent->data = data;
 		if (proc_register(parent, ent) < 0) {
@@ -434,6 +470,7 @@ struct proc_dir_entry *proc_mkdir_mode(const char *name, umode_t mode,
 }
 EXPORT_SYMBOL(proc_mkdir_mode);
 
+// 2017-07-08
 struct proc_dir_entry *proc_mkdir(const char *name,
 		struct proc_dir_entry *parent)
 {

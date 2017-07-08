@@ -24,6 +24,7 @@
  * accessed with the net_generic() call.
  */
 
+// 2017-07-08
 struct net_generic {
 	unsigned int len;
 	struct rcu_head rcu;
