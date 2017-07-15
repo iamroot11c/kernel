@@ -1,6 +1,6 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
-+ [136주차]() `2017.07.15`
++ [136주차](http://bit.ly/2ul2u3i) `2017.07.15`
  - drive: 보름달님
  - kernel/init/main.c::rest_init() 진행중
  - fs/proc/root.c:proc_root_init() 완료
