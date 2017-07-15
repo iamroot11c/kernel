@@ -1,5 +1,14 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [136주차]() `2017.07.15`
+ - drive: 보름달님
+ - kernel/init/main.c::rest_init() 진행중
+ - fs/proc/root.c:proc_root_init() 완료
+ - fs/proc/proc_tty.c::proc_tty_init() 완료
+ - fs/proc/root.c::proc_device_tree_init() 완료
+ - fs/proc/proc_sysctl.c::proc_sys_init() 완료
+ - arch/arm/include/asm/bugs.h::check_bugs() 완료
+
 + [135주차](https://goo.gl/KNSp2U) `2017.07.08`
  - drive: 홍진우님
  - fs/proc/root.c:proc_root_init() 진행 중
@@ -12,6 +21,7 @@
        - net/core/net_namespace.c::net_assign_generic() 완료
        - fs/proc/proc_net.c::proc_net_ns_init() 완료
  - fs/proc/proc_tty.c::proc_tty_init() 진행 예정
+
 + [134주차](http://bit.ly/2twtFHw) `2017.07.01`
  - drive: 보름달님
  - fs/proc/root.c:proc_root_init() 진행중

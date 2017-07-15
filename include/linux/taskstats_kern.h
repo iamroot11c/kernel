@@ -11,7 +11,7 @@
 #include <linux/sched.h>
 #include <linux/slab.h>
 
-#ifdef CONFIG_TASKSTATS
+#ifdef CONFIG_TASKSTATS // =n
 extern struct kmem_cache *taskstats_cache;
 extern struct mutex taskstats_exit_mutex;
 
@@ -29,6 +29,7 @@ static inline void taskstats_exit(struct task_struct *tsk, int group_dead)
 {}
 static inline void taskstats_tgid_free(struct signal_struct *sig)
 {}
+// 2017-07-15
 static inline void taskstats_init_early(void)
 {}
 #endif /* CONFIG_TASKSTATS */

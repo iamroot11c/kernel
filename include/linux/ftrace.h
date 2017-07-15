@@ -648,6 +648,7 @@ static inline void __ftrace_enabled_restore(int enabled)
 #ifdef CONFIG_FTRACE_MCOUNT_RECORD
 extern void ftrace_init(void);
 #else
+// 2017-07-15
 static inline void ftrace_init(void) { }
 #endif
 

@@ -27,6 +27,8 @@ extern struct proc_dir_entry *proc_create_data(const char *, umode_t,
 					       const struct file_operations *,
 					       void *);
 
+// 2017-07-15
+// proc_create("tty/ldiscs", 0, NULL, &tty_ldiscs_proc_fops);
 static inline struct proc_dir_entry *proc_create(
 	const char *name, umode_t mode, struct proc_dir_entry *parent,
 	const struct file_operations *proc_fops)

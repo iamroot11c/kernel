@@ -771,25 +771,34 @@ asmlinkage void __init start_kernel(void)
 	page_writeback_init();
 	// 2017-07-01, end
 	// 2017-07-01, 여기까지
+	// 2017-07-08, start
 #ifdef CONFIG_PROC_FS
+	// 2017-07-15
 	proc_root_init();
+	// 2017-07-15
 #endif
-	cgroup_init();
-	cpuset_init();
-	taskstats_init_early();
-	delayacct_init();
+	cgroup_init();	// NOP
+	cpuset_init();	// NOP
+	taskstats_init_early();	// NOP
+	delayacct_init();	// NOP
 
+	// 2017-07-15, start
+	// address alliasing 체크
 	check_bugs();
+	// 2017-07-15, end
 
+	// NOP
 	acpi_early_init(); /* before LAPIC and SMP init */
+	// NOP
 	sfi_init_late();
 
 	if (efi_enabled(EFI_RUNTIME_SERVICES)) {
-		efi_late_init();
-		efi_free_boot_services();
+		efi_late_init();	// NOP
+		efi_free_boot_services();	// NOP
 	}
 
-	ftrace_init();
+	ftrace_init();	// NOP
+	// 2017-07-15, 여기까지
 
 	/* Do the rest non-__init'ed, we're now alive */
 	rest_init();

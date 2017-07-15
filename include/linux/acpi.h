@@ -407,6 +407,7 @@ static inline bool acpi_driver_match_device(struct device *dev,
 
 #define acpi_disabled 1
 
+// 2017-07-15
 static inline void acpi_early_init(void) { }
 
 static inline int early_acpi_boot_init(void)

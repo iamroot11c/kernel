@@ -51,6 +51,7 @@ static inline void console_verbose(void)
 		console_loglevel = 15;
 }
 
+// 2017-07-15
 struct va_format {
 	const char *fmt;
 	va_list *va;

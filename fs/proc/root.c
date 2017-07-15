@@ -186,12 +186,19 @@ void __init proc_root_init(void)
 	proc_mkdir("openprom", NULL);
 #endif
 	// 2017-07-08 여기까지
+	// 2017-07-15, 시작
 	proc_tty_init();
+	// 2017-07-15, end
 #ifdef CONFIG_PROC_DEVICETREE
+	// 2017-07-15, start
 	proc_device_tree_init();
+	// 2017-07-15, end
 #endif
 	proc_mkdir("bus", NULL);
+	// 2017-07-15, start
 	proc_sys_init();
+	// 2017-07-15, end
+
 }
 
 static int proc_root_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat *stat
@@ -227,6 +234,7 @@ static int proc_root_readdir(struct file *file, struct dir_context *ctx)
  * <pid> directories. Thus we don't use the generic
  * directory handling functions for that..
  */
+// 2017-07-15
 static const struct file_operations proc_root_operations = {
 	.read		 = generic_read_dir,
 	.iterate	 = proc_root_readdir,
@@ -236,6 +244,7 @@ static const struct file_operations proc_root_operations = {
 /*
  * proc root can do almost nothing..
  */
+// 2017-07-15
 static const struct inode_operations proc_root_inode_operations = {
 	.lookup		= proc_root_lookup,
 	.getattr	= proc_root_getattr,
@@ -245,6 +254,7 @@ static const struct inode_operations proc_root_inode_operations = {
  * This is the root "inode" in the /proc tree..
  */
 // 2017-07-08
+// 2017-07-15
 struct proc_dir_entry proc_root = {
 	.low_ino	= PROC_ROOT_INO, 
 	.namelen	= 5, 
@@ -253,7 +263,7 @@ struct proc_dir_entry proc_root = {
 	.count		= ATOMIC_INIT(1),
 	.proc_iops	= &proc_root_inode_operations, 
 	.proc_fops	= &proc_root_operations,
-	.parent		= &proc_root,
+	.parent		= &proc_root,	// NULL이 아니라, 자기 자신
 	.name		= "/proc",
 };
 

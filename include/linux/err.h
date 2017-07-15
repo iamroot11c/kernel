@@ -13,6 +13,7 @@
  * This should be a per-architecture thing, to allow different
  * error and pointer decisions.
  */
+// 2017-07-15
 #define MAX_ERRNO	4095
 
 #ifndef __ASSEMBLY__
@@ -30,6 +31,7 @@ static inline long __must_check PTR_ERR(__force const void *ptr)
 	return (long) ptr;
 }
 
+// 2017-07-15
 static inline long __must_check IS_ERR(__force const void *ptr)
 {
 	return IS_ERR_VALUE((unsigned long)ptr);

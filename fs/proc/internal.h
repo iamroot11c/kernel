@@ -244,7 +244,7 @@ extern int proc_setup_self(struct super_block *);
 /*
  * proc_sysctl.c
  */
-#ifdef CONFIG_PROC_SYSCTL
+#ifdef CONFIG_PROC_SYSCTL   // y
 extern int proc_sys_init(void);
 extern void sysctl_head_put(struct ctl_table_header *);
 #else
@@ -256,6 +256,7 @@ static inline void sysctl_head_put(struct ctl_table_header *head) { }
  * proc_tty.c
  */
 #ifdef CONFIG_TTY
+// 2017-07-15
 extern void proc_tty_init(void);
 #else
 static inline void proc_tty_init(void) {}

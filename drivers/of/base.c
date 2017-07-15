@@ -500,6 +500,7 @@ EXPORT_SYMBOL(of_get_next_parent);
  *	Returns a node pointer with refcount incremented, use
  *	of_node_put() on it when done.
  */
+// 2017-07-15
 struct device_node *of_get_next_child(const struct device_node *node,
 	struct device_node *prev)
 {
@@ -513,6 +514,8 @@ struct device_node *of_get_next_child(const struct device_node *node,
 			break;
 	of_node_put(prev);
 	raw_spin_unlock_irqrestore(&devtree_lock, flags);
+	// next가 경우에 따라서, null이 될 수 있다.
+	// node->child가 null인 경우
 	return next;
 }
 EXPORT_SYMBOL(of_get_next_child);
@@ -577,6 +580,8 @@ EXPORT_SYMBOL(of_get_child_by_name);
  */
 // 2015-02-14
 // of_find_node_by_path("/chosen");
+// 2017-07-15
+// of_find_node_by_path("/");
 struct device_node *of_find_node_by_path(const char *path)
 {
 	struct device_node *np = of_allnodes;

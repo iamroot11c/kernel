@@ -30,6 +30,7 @@
 typedef u32 phandle;
 typedef u32 ihandle;
 
+// 2017-07-15
 struct property {
 	char	*name;
 	int	length;
@@ -45,10 +46,12 @@ struct of_irq_controller;
 
 // 2015-02-07
 // 2016-08-06
+// 2017-07-15
 struct device_node {
 	const char *name;
 	const char *type;
 	phandle phandle;
+    // 2017-07-15
 	const char *full_name;
 
 	struct	property *properties;
@@ -57,6 +60,7 @@ struct device_node {
 	struct	device_node *child;
 	struct	device_node *sibling;
 	struct	device_node *next;	/* next device of same type */
+    // 2017-07-15
 	struct	device_node *allnext;	/* next in list of all nodes */
 	struct	proc_dir_entry *pde;	/* this node's proc directory */
 	struct	kref kref;              // atomic_t refcount;
@@ -82,11 +86,13 @@ extern void of_node_put(struct device_node *node);
 #else /* CONFIG_OF_DYNAMIC */
 /* Dummy ref counting routines - to be implemented later */
 // 2015-02-14
+// 2017-07-15
 static inline struct device_node *of_node_get(struct device_node *node)
 {
 	return node;
 }
 // 2016-08-06
+// 2017-07-15
 static inline void of_node_put(struct device_node *node) { }
 #endif /* !CONFIG_OF_DYNAMIC */
 
@@ -154,6 +160,7 @@ static inline unsigned long of_read_ulong(const __be32 *cell, int size)
 #if !defined(of_compat_cmp)
 #define of_compat_cmp(s1, s2, l)	strcasecmp((s1), (s2))
 #define of_prop_cmp(s1, s2)		strcmp((s1), (s2))
+// 2017-07-15
 #define of_node_cmp(s1, s2)		strcasecmp((s1), (s2))
 #endif
 
@@ -206,6 +213,7 @@ static inline struct device_node *of_find_matching_node(
 #define for_each_matching_node_and_match(dn, matches, match) \
 	for (dn = of_find_matching_node_and_match(NULL, matches, match); \
 	     dn; dn = of_find_matching_node_and_match(dn, matches, match))
+// 2017-07-15
 extern struct device_node *of_find_node_by_path(const char *path);
 extern struct device_node *of_find_node_by_phandle(phandle handle);
 extern struct device_node *of_get_parent(const struct device_node *node);

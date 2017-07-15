@@ -28,7 +28,7 @@
 #define DELAYACCT_PF_SWAPIN	0x00000001	/* I am doing a swapin */
 #define DELAYACCT_PF_BLKIO	0x00000002	/* I am waiting on IO */
 
-#ifdef CONFIG_TASK_DELAY_ACCT
+#ifdef CONFIG_TASK_DELAY_ACCT   // =n
 
 extern int delayacct_on;	/* Delay accounting turned on/off */
 extern struct kmem_cache *delayacct_cache;

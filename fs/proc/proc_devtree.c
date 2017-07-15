@@ -18,6 +18,8 @@
 #include <asm/uaccess.h>
 #include "internal.h"
 
+// 2017-07-15
+// set_node_proc_entry(root, proc_device_tree)
 static inline void set_node_proc_entry(struct device_node *np,
 				       struct proc_dir_entry *de)
 {
@@ -26,6 +28,7 @@ static inline void set_node_proc_entry(struct device_node *np,
 #endif
 }
 
+// 2017-07-15
 static struct proc_dir_entry *proc_device_tree;
 
 /*
@@ -44,6 +47,7 @@ static int property_proc_open(struct inode *inode, struct file *file)
 	return single_open(file, property_proc_show, __PDE_DATA(inode));
 }
 
+// 2017-07-15
 static const struct file_operations property_proc_fops = {
 	.owner		= THIS_MODULE,
 	.open		= property_proc_open,
@@ -60,6 +64,7 @@ static const struct file_operations property_proc_fops = {
 /*
  * Add a property to a node
  */
+// 2017-07-15
 static struct proc_dir_entry *
 __proc_device_tree_add_prop(struct proc_dir_entry *de, struct property *pp,
 		const char *name)
@@ -124,7 +129,7 @@ void proc_device_tree_update_prop(struct proc_dir_entry *pde,
  * conflicting names. That's generally ok, except for exporting via /proc,
  * so munge names here to ensure they're unique.
  */
-
+// 2017-07-15
 static int duplicate_name(struct proc_dir_entry *de, const char *name)
 {
 	struct proc_dir_entry *ent;
@@ -144,6 +149,9 @@ static int duplicate_name(struct proc_dir_entry *de, const char *name)
 	return found;
 }
 
+// 2017-07-15
+// 이름 수정, heap을 사용하는 것을 기본으로 한다.
+// ex) "hello" -> "hello#x1" -> "hello#x2"
 static const char *fixup_name(struct device_node *np, struct proc_dir_entry *de,
 		const char *name)
 {
@@ -185,6 +193,8 @@ retry:
 /*
  * Process a node, adding entries for its children and its properties.
  */
+// 2017-07-15
+// proc_device_tree_add_node(root, proc_device_tree);
 void proc_device_tree_add_node(struct device_node *np,
 			       struct proc_dir_entry *de)
 {
@@ -204,10 +214,12 @@ void proc_device_tree_add_node(struct device_node *np,
 		ent = proc_mkdir(p, de);
 		if (ent == NULL)
 			break;
+		// 재귀, tree 순회를 이런 방법으로 하고 있는 것이다.
 		proc_device_tree_add_node(child, ent);
 	}
 	of_node_put(child);
 
+	// property 구성 완료
 	for (pp = np->properties; pp != NULL; pp = pp->next) {
 		p = pp->name;
 
@@ -226,6 +238,7 @@ void proc_device_tree_add_node(struct device_node *np,
 /*
  * Called on initialization to set up the /proc/device-tree subtree
  */
+// 2017-07-15
 void __init proc_device_tree_init(void)
 {
 	struct device_node *root;
@@ -233,6 +246,7 @@ void __init proc_device_tree_init(void)
 	proc_device_tree = proc_mkdir("device-tree", NULL);
 	if (proc_device_tree == NULL)
 		return;
+	//
 	root = of_find_node_by_path("/");
 	if (root == NULL) {
 		remove_proc_entry("device-tree", NULL);
@@ -240,5 +254,5 @@ void __init proc_device_tree_init(void)
 		return;
 	}
 	proc_device_tree_add_node(root, proc_device_tree);
-	of_node_put(root);
+	of_node_put(root);	// NOP
 }

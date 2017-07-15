@@ -119,6 +119,7 @@ static inline void set_mems_allowed(nodemask_t nodemask)
 
 #else /* !CONFIG_CPUSETS */
 
+// 2017-07-15
 static inline int cpuset_init(void) { return 0; }
 static inline void cpuset_init_smp(void) {}
 

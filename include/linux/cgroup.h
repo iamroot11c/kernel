@@ -22,7 +22,7 @@
 #include <linux/fs.h>
 #include <linux/percpu-refcount.h>
 
-#ifdef CONFIG_CGROUPS
+#ifdef CONFIG_CGROUPS   // =n
 
 struct cgroupfs_root;
 struct cgroup_subsys;
@@ -912,6 +912,7 @@ struct cgroup_subsys_state *css_from_dir(struct dentry *dentry,
 #else /* !CONFIG_CGROUPS */
 
 static inline int cgroup_init_early(void) { return 0; }
+// 2017-07-15
 static inline int cgroup_init(void) { return 0; }
 static inline void cgroup_fork(struct task_struct *p) {}
 static inline void cgroup_post_fork(struct task_struct *p) {}

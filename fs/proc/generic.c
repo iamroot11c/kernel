@@ -348,6 +348,7 @@ static int proc_register(struct proc_dir_entry * dir, struct proc_dir_entry * dp
 
 	spin_lock(&proc_subdir_lock);
 
+	// 중복 체크 후, warning log display
 	for (tmp = dir->subdir; tmp; tmp = tmp->next)
 		if (strcmp(tmp->name, dp->name) == 0) {
 			WARN(1, "proc_dir_entry '%s/%s' already registered\n",
@@ -380,6 +381,7 @@ static struct proc_dir_entry *__proc_create(struct proc_dir_entry **parent,
 	if (!name || !strlen(name))
 		goto out;
 
+	// parent 설정
 	if (xlate_proc_name(name, parent, &fn) != 0)
 		goto out;
 
@@ -478,6 +480,8 @@ struct proc_dir_entry *proc_mkdir(const char *name,
 }
 EXPORT_SYMBOL(proc_mkdir);
 
+// 2017-07-15
+// proc_create_data("tty/ldiscs", 0, NULL, &tty_ldiscs_proc_fops), NULL;
 struct proc_dir_entry *proc_create_data(const char *name, umode_t mode,
 					struct proc_dir_entry *parent,
 					const struct file_operations *proc_fops,
@@ -494,6 +498,9 @@ struct proc_dir_entry *proc_create_data(const char *name, umode_t mode,
 
 	if ((mode & S_IALLUGO) == 0)
 		mode |= S_IRUGO;
+	// 2017-07-15
+	// core logic
+	// parent에 NULL 전달되었음으로, proc_root로 parent 설정
 	pde = __proc_create(&parent, name, mode, 1);
 	if (!pde)
 		goto out;

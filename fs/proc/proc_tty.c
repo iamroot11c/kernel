@@ -18,6 +18,8 @@
 /*
  * The /proc/tty directory inodes...
  */
+// 2107-07-15
+// proc_tty_init() 시점에 초기화 된다.
 static struct proc_dir_entry *proc_tty_ldisc, *proc_tty_driver;
 
 /*
@@ -129,6 +131,7 @@ static int tty_drivers_open(struct inode *inode, struct file *file)
 	return seq_open(file, &tty_drivers_op);
 }
 
+// 2017-07-15
 static const struct file_operations proc_tty_drivers_operations = {
 	.open		= tty_drivers_open,
 	.read		= seq_read,
@@ -172,8 +175,12 @@ void proc_tty_unregister_driver(struct tty_driver *driver)
 /*
  * Called by proc_root_init() to initialize the /proc/tty subtree
  */
+// 2017-07-15
+// 아직까지, 폴더 구성이 된것은 아니고, 
+// /proc에 단위 엔트리로 정보 구성을 마친 상태이다.
 void __init proc_tty_init(void)
 {
+	// 폴더 구성이 된 것이 아니라, 단위 entry가 구성된 것이다.
 	if (!proc_mkdir("tty", NULL))
 		return;
 	proc_tty_ldisc = proc_mkdir("tty/ldisc", NULL);

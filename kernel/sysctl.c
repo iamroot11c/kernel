@@ -210,6 +210,7 @@ static int sysrq_sysctl_handler(ctl_table *table, int write,
 
 #endif
 
+// 2017-07-15
 static struct ctl_table kern_table[];
 static struct ctl_table vm_table[];
 static struct ctl_table fs_table[];
@@ -226,6 +227,7 @@ int sysctl_legacy_va_layout;
 
 /* The default sysctl tables: */
 
+// 2017-07-15
 static struct ctl_table sysctl_base_table[] = {
 	{
 		.procname	= "kernel",
@@ -1663,12 +1665,14 @@ static struct ctl_table dev_table[] = {
 	{ }
 };
 
+// 2017-07-15
 int __init sysctl_init(void)
 {
 	struct ctl_table_header *hdr;
 
+	// 2017-07-15
 	hdr = register_sysctl_table(sysctl_base_table);
-	kmemleak_not_leak(hdr);
+	kmemleak_not_leak(hdr);	// NOP
 	return 0;
 }
 

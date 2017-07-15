@@ -578,7 +578,9 @@ extern void efi_late_init(void);
 extern void efi_free_boot_services(void);
 extern efi_status_t efi_query_variable_store(u32 attributes, unsigned long size);
 #else
+// 2017-07-15
 static inline void efi_late_init(void) {}
+// 2017-07-15
 static inline void efi_free_boot_services(void) {}
 
 static inline efi_status_t efi_query_variable_store(u32 attributes, unsigned long size)
@@ -639,6 +641,7 @@ extern int __init efi_setup_pcdp_console(char *);
 # ifdef CONFIG_X86
 extern int efi_enabled(int facility);
 # else
+// 2017-07-15
 static inline int efi_enabled(int facility)
 {
 	return 1;

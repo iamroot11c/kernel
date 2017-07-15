@@ -25,6 +25,7 @@
 
 #include "mm.h"
 
+// 2017-07-15
 static pteval_t shared_pte_mask = L_PTE_MT_BUFFERABLE;
 
 #if __LINUX_ARM_ARCH__ < 6
@@ -213,10 +214,21 @@ void update_mmu_cache(struct vm_area_struct *vma, unsigned long addr,
  * we have several shared mappings of the same object in user
  * space.
  */
+// 2017-07-15
 static int __init check_writebuffer(unsigned long *p1, unsigned long *p2)
 {
+	// register라는 키워드를 사용했다.
 	register unsigned long zero = 0, one = 1, val;
 
+	// p1, p2가 서로 같은 메모리를 가르치고 있는지를 체크
+	// address aliasing이란, 서로 다른 메모리 pointer가 같은 메모리를
+	// 가르킬때를 애기한다.
+	//
+	// 예를 들어, 초기에 *p1 = 1을 할당했을 지라도
+	// *p2가 *p1의 가르키는 동일한 영역을 가르친다면
+	// *p1은 0이 될 것이고,
+	// val = *p1을 했을 때, 결과적으로 0이 될 것이다.
+	// 이는, address aliasing이 발생한 것으로 간주할 수 있다.
 	local_irq_disable();
 	mb();
 	*p1 = one;
@@ -229,6 +241,7 @@ static int __init check_writebuffer(unsigned long *p1, unsigned long *p2)
 	return val != zero;
 }
 
+// 2017-07-15, at glance
 void __init check_writebuffer_bugs(void)
 {
 	struct page *page;
