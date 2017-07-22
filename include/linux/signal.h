@@ -162,6 +162,7 @@ _SIG_SET_OP(signotset, _sig_not)
 #undef _SIG_SET_OP
 #undef _sig_not
 
+// 32/ 64bit 머신 여부에 따라 sigset 값 0으로 초기화
 static inline void sigemptyset(sigset_t *set)
 {
 	switch (_NSIG_WORDS) {
@@ -229,6 +230,8 @@ static inline void siginitsetinv(sigset_t *set, unsigned long mask)
 
 #endif /* __HAVE_ARCH_SIG_SETOPS */
 
+// 2017-07-22
+// sig->signal 값 0 초기화 및 list 초기화
 static inline void init_sigpending(struct sigpending *sig)
 {
 	sigemptyset(&sig->signal);

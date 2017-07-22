@@ -205,10 +205,11 @@ struct module_use {
 	struct module *source, *target;
 };
 
+// 2017-07-22
 enum module_state {
 	MODULE_STATE_LIVE,	/* Normal state. */
 	MODULE_STATE_COMING,	/* Full formed, running module_init. */
-	MODULE_STATE_GOING,	/* Going away. */
+	MODULE_STATE_GOING,	/* Going away. 모듈을 사용하지 않는 상태 값으로 보임 */
 	MODULE_STATE_UNFORMED,	/* Still setting it up. */
 };
 
@@ -226,8 +227,8 @@ struct module_ref {
 	unsigned long decs;
 } __attribute((aligned(2 * sizeof(unsigned long))));
 
-struct module
-{
+// 2017-07-22
+struct module {
 	enum module_state state;
 
 	/* Member of list of modules */
@@ -391,6 +392,7 @@ extern struct mutex module_mutex;
 /* FIXME: It'd be nice to isolate modules during init, too, so they
    aren't used before they (may) fail.  But presently too much code
    (IDE & SCSI) require entry into the module during init.*/
+// 2017-07-22
 static inline int module_is_live(struct module *mod)
 {
 	return mod->state != MODULE_STATE_GOING;

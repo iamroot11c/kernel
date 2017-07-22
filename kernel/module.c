@@ -979,6 +979,8 @@ void __module_get(struct module *module)
 EXPORT_SYMBOL(__module_get);
 
 // 2017-07-01
+// 2017-07-22
+// 모듈이 메모리에 올라가 있는 경우 ref_count를 증가, 참 리턴
 bool try_module_get(struct module *module)
 {
 	bool ret = true;

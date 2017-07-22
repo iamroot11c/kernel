@@ -759,6 +759,7 @@ static inline void unpause_graph_tracing(void)
 #define __irq_entry
 #define INIT_FTRACE_GRAPH
 
+// 2017-07-22
 static inline void ftrace_graph_init_task(struct task_struct *t) { }
 // 2016-12-24
 static inline void ftrace_graph_exit_task(struct task_struct *t) { }

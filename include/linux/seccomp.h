@@ -83,6 +83,7 @@ static inline void put_seccomp_filter(struct task_struct *tsk)
 {
 	return;
 }
+// 2017-07-22
 static inline void get_seccomp_filter(struct task_struct *tsk)
 {
 	return;

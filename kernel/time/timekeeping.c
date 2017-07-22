@@ -373,6 +373,8 @@ EXPORT_SYMBOL_GPL(ktime_get);
  * clock and the wall_to_monotonic offset and stores the result
  * in normalized timespec format in the variable pointed to by @ts.
  */
+// 2017-07-22
+// glance
 void ktime_get_ts(struct timespec *ts)
 {
 	struct timekeeper *tk = &timekeeper;

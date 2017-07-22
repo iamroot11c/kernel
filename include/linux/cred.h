@@ -210,6 +210,7 @@ static inline void validate_process_creds(void)
  * Get a reference on the specified set of new credentials.  The caller must
  * release the reference.
  */
+// 2017-07-22
 static inline struct cred *get_new_cred(struct cred *cred)
 {
 	atomic_inc(&cred->usage);

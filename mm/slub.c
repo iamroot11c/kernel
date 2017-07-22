@@ -2797,6 +2797,8 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
 // kmem_cache_alloc(kmem_cache, GFP_NOWAIT | __GFP_ZER)
 // 2016-07-26
 // kmem_cache_alloc(kmem_cache, GFP_KERNEL | __GFP_ZERO)
+// 2017-07-22
+// kmem_cache_alloc(s, flags)
 void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
 {
 	void *ret = slab_alloc(s, gfpflags, _RET_IP_);

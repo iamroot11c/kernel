@@ -328,6 +328,8 @@ static __always_inline void *__kmalloc_node(size_t size, gfp_t flags, int node)
 	return __kmalloc(size, flags);
 }
 
+// 2017-07-22
+// slab 공간에서 메모리 할당 및 리턴
 static __always_inline void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t flags, int node)
 {
 	return kmem_cache_alloc(s, flags);

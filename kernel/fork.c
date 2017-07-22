@@ -131,6 +131,7 @@ void __weak arch_release_task_struct(struct task_struct *tsk)
 // 2017-06-24
 static struct kmem_cache *task_struct_cachep;
 
+// 2017-07-22
 static inline struct task_struct *alloc_task_struct_node(int node)
 {
 	return kmem_cache_alloc_node(task_struct_cachep, GFP_KERNEL, node);
@@ -173,6 +174,7 @@ static inline void free_thread_info(struct thread_info *ti)
 # else
 static struct kmem_cache *thread_info_cache;
 
+// 2017-07-22
 static struct thread_info *alloc_thread_info_node(struct task_struct *tsk,
 						  int node)
 {
@@ -214,6 +216,8 @@ static struct kmem_cache *mm_cachep;
 
 // 2016-12-24
 // ti에 속한 zone의 NR_KERNEL_STACK 개수를 account만큼 감소
+// 2017-07-22
+// account_kernel_stack(ti, 1)
 static void account_kernel_stack(struct thread_info *ti, int account)
 {
 	struct zone *zone = page_zone(virt_to_page(ti));
@@ -310,6 +314,7 @@ void __init fork_init(unsigned long mempages)
 		init_task.signal->rlim[RLIMIT_NPROC/*6*/];
 }
 
+// 2017-07-22
 int __attribute__((weak)) arch_dup_task_struct(struct task_struct *dst,
 					       struct task_struct *src)
 {
@@ -317,35 +322,46 @@ int __attribute__((weak)) arch_dup_task_struct(struct task_struct *dst,
 	return 0;
 }
 
+// 2017-07-22
+// dup_task_struct(current)
+// orig task로부터 태스크 복사, thread_info 정보 구성 후 리턴
 static struct task_struct *dup_task_struct(struct task_struct *orig)
 {
 	struct task_struct *tsk;
 	struct thread_info *ti;
 	unsigned long *stackend;
+	// 2017-07-22
 	int node = tsk_fork_get_node(orig);
 	int err;
 
+	// 2017-07-22
 	tsk = alloc_task_struct_node(node);
 	if (!tsk)
 		return NULL;
 
+	// 2017-07-22
 	ti = alloc_thread_info_node(tsk, node);
 	if (!ti)
 		goto free_tsk;
 
+	// 2017-07-22
+	// *tsk = *orig
+	// task 복사
 	err = arch_dup_task_struct(tsk, orig);
 	if (err)
 		goto free_ti;
 
+	// 2017-07-22
+	// tsk->stack를 orig->stack으로 복사
 	tsk->stack = ti;
-
 	setup_thread_stack(tsk, orig);
-	clear_user_return_notifier(tsk);
-	clear_tsk_need_resched(tsk);
+	// 2017-07-22
+	clear_user_return_notifier(tsk); // NOP
+	clear_tsk_need_resched(tsk); // 리스케줄 대상에서 제외
 	stackend = end_of_stack(tsk);
 	*stackend = STACK_END_MAGIC;	/* for overflow detection */
 
-#ifdef CONFIG_CC_STACKPROTECTOR
+#ifdef CONFIG_CC_STACKPROTECTOR // not set
 	tsk->stack_canary = get_random_int();
 #endif
 
@@ -353,21 +369,23 @@ static struct task_struct *dup_task_struct(struct task_struct *orig)
 	 * One for us, one for whoever does the "release_task()" (usually
 	 * parent)
 	 */
+	// 2017-07-22
 	atomic_set(&tsk->usage, 2);
-#ifdef CONFIG_BLK_DEV_IO_TRACE
+#ifdef CONFIG_BLK_DEV_IO_TRACE // not set
 	tsk->btrace_seq = 0;
 #endif
 	tsk->splice_pipe = NULL;
 	tsk->task_frag.page = NULL;
 
+	// NR_KERNEL_STACK 개수를 1로 설정
 	account_kernel_stack(ti, 1);
 
 	return tsk;
 
 free_ti:
-	free_thread_info(ti);
+	free_thread_info(ti); // thread_info 관련 페이지 해제
 free_tsk:
-	free_task_struct(tsk);
+	free_task_struct(tsk); // tsk 해제
 	return NULL;
 }
 
@@ -1104,6 +1122,8 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	return 0;
 }
 
+// 2017-07-22
+// work queue 사용, 슈퍼 유저 권한 제거 / 실행 불가 플래그 세팅 
 static void copy_flags(unsigned long clone_flags, struct task_struct *p)
 {
 	unsigned long new_flags = p->flags;
@@ -1120,6 +1140,7 @@ SYSCALL_DEFINE1(set_tid_address, int __user *, tidptr)
 	return task_pid_vnr(current);
 }
 
+// 2017-07-22
 static void rt_mutex_init_task(struct task_struct *p)
 {
 	raw_spin_lock_init(&p->pi_lock);
@@ -1139,6 +1160,8 @@ void mm_init_owner(struct mm_struct *mm, struct task_struct *p)
 /*
  * Initialize POSIX timer handling for a single task.
  */
+// 2017-07-22
+// tsk->cputime_expires 초기화, cpu_timers 리스트 초기화
 static void posix_cpu_timers_init(struct task_struct *tsk)
 {
 	tsk->cputime_expires.prof_exp = 0;
@@ -1163,6 +1186,9 @@ init_task_pid(struct task_struct *task, enum pid_type type, struct pid *pid)
  * parts of the process environment (as per the clone
  * flags). The actual kick-off is left to the caller.
  */
+// 2017-07-22
+// copy_process(clone_flags, stack_start, stack_size, child_tidptr, NULL, trace);
+// clone_flags == CLONE_FS|CLONE_SIGHAND|CLONE_VM|CLONE_UNTRACED
 static struct task_struct *copy_process(unsigned long clone_flags,
 					unsigned long stack_start,
 					unsigned long stack_size,
@@ -1173,6 +1199,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 	int retval;
 	struct task_struct *p;
 
+	// 인자로 넘어온 clone_flags 값을 바탕으로 에러 리턴 여부만 확인
 	if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS))
 		return ERR_PTR(-EINVAL);
 
@@ -1216,24 +1243,27 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 			return ERR_PTR(-EINVAL);
 	}
 
-	retval = security_task_create(clone_flags);
+	// 2017-07-22
+	retval = security_task_create(clone_flags); // NOP
 	if (retval)
 		goto fork_out;
 
 	retval = -ENOMEM;
+	// 2017-07-22
 	p = dup_task_struct(current);
 	if (!p)
 		goto fork_out;
 
-	ftrace_graph_init_task(p);
-	get_seccomp_filter(p);
+	ftrace_graph_init_task(p); // NOP
+	get_seccomp_filter(p); // NOP
 
 	rt_mutex_init_task(p);
 
-#ifdef CONFIG_PROVE_LOCKING
+#ifdef CONFIG_PROVE_LOCKING // not set
 	DEBUG_LOCKS_WARN_ON(!p->hardirqs_enabled);
 	DEBUG_LOCKS_WARN_ON(!p->softirqs_enabled);
 #endif
+	// 2017-07-22 저녁 먹기 전
 	retval = -EAGAIN;
 	if (atomic_read(&p->real_cred->user->processes) >=
 			task_rlimit(p, RLIMIT_NPROC)) {
@@ -1241,8 +1271,15 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 		    !capable(CAP_SYS_RESOURCE) && !capable(CAP_SYS_ADMIN))
 			goto bad_fork_free;
 	}
+	// 2017-07-22
+	//  참고 : RLIMIT_NPROC    The maximum number of simultaneous processes for this user id
+	// http://manpages.courier-mta.org/htmlman2/execve.2.html
+	//     -> "If the resource limit was not still exceeded at the time of the execve() call (because other processes belonging to this real UID terminated between the set*uid() call and the execve() call), then the execve() call succeeds and the kernel clears the PF_NPROC_EXCEEDED process flag"
+	//
+	// 매뉴얼 페이지 내 위 문장을 기초로 유추해볼 때,현재 프로세스의 리소스 제한이 넘지 않는 상황이기 때문에 플래그를 해제
 	current->flags &= ~PF_NPROC_EXCEEDED;
 
+	// 2017-07-22
 	retval = copy_creds(p, clone_flags);
 	if (retval < 0)
 		goto bad_fork_free;
@@ -1253,29 +1290,36 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 	 * to stop root fork bombs.
 	 */
 	retval = -EAGAIN;
+	// nr_threads -> copy_process()가 성공했을 때 증가
+	// max_threads -> fork_init()함수 호출 시 설정
+	// 프로세스 복제를 시도하는 스레드가 많은 경우 실패
 	if (nr_threads >= max_threads)
 		goto bad_fork_cleanup_count;
 
+	// 현재 실행 중인 모듈의 레퍼런스 카운트 증가 
 	if (!try_module_get(task_thread_info(p)->exec_domain->module))
 		goto bad_fork_cleanup_count;
 
 	p->did_exec = 0;
-	delayacct_tsk_init(p);	/* Must remain after dup_task_struct() */
+	delayacct_tsk_init(p);	/* Must remain after dup_task_struct() */ // NOP
+	// 2017-07-22
 	copy_flags(clone_flags, p);
 	INIT_LIST_HEAD(&p->children);
 	INIT_LIST_HEAD(&p->sibling);
+	// 2017-07-22
 	rcu_copy_process(p);
 	p->vfork_done = NULL;
 	spin_lock_init(&p->alloc_lock);
 
+	// 2017-07-22
 	init_sigpending(&p->pending);
 
 	p->utime = p->stime = p->gtime = 0;
 	p->utimescaled = p->stimescaled = 0;
-#ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+#ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE // not set
 	p->prev_cputime.utime = p->prev_cputime.stime = 0;
 #endif
-#ifdef CONFIG_VIRT_CPU_ACCOUNTING_GEN
+#ifdef CONFIG_VIRT_CPU_ACCOUNTING_GEN // not set
 	seqlock_init(&p->vtime_seqlock);
 	p->vtime_snap = 0;
 	p->vtime_snap_whence = VTIME_SLEEPING;
@@ -1285,13 +1329,16 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 	memset(&p->rss_stat, 0, sizeof(p->rss_stat));
 #endif
 
+	// 2017-07-22
 	p->default_timer_slack_ns = current->timer_slack_ns;
 
-	task_io_accounting_init(&p->ioac);
-	acct_clear_integrals(p);
+	task_io_accounting_init(&p->ioac); // NOP
+	acct_clear_integrals(p); // NOP
 
+	// 2017-07-22
 	posix_cpu_timers_init(p);
 
+	// 2017-07-22 여기까지
 	do_posix_clock_monotonic_gettime(&p->start_time);
 	p->real_start_time = p->start_time;
 	monotonic_to_bootbased(&p->real_start_time);
@@ -1600,6 +1647,9 @@ struct task_struct *fork_idle(int cpu)
  * It copies the process, and if successful kick-starts
  * it and waits for it to finish using the VM if required.
  */
+// 2017-07-22
+//do_fork(CLONE_FS|CLONE_SIGHAND|CLONE_VM|CLONE_UNTRACED, (unsigned long)fn,
+//	                 (unsigned long)arg, NULL, NULL)
 long do_fork(unsigned long clone_flags,
 	      unsigned long stack_start,
 	      unsigned long stack_size,
@@ -1616,6 +1666,7 @@ long do_fork(unsigned long clone_flags,
 	 * requested, no event is reported; otherwise, report if the event
 	 * for the type of forking is enabled.
 	 */
+	// 2017-07-22 분석 당시는 CLONE_UNTRACED 플래그가 설정되어 아래 조건 확인 안함
 	if (!(clone_flags & CLONE_UNTRACED)) {
 		if (clone_flags & CLONE_VFORK)
 			trace = PTRACE_EVENT_VFORK;
@@ -1628,6 +1679,7 @@ long do_fork(unsigned long clone_flags,
 			trace = 0;
 	}
 
+	// 2017-07-22
 	p = copy_process(clone_flags, stack_start, stack_size,
 			 child_tidptr, NULL, trace);
 	/*
@@ -1669,6 +1721,8 @@ long do_fork(unsigned long clone_flags,
 /*
  * Create a kernel thread.
  */
+// 2017-07-22
+// kernel_thread(kernel_init, NULL, CLONE_FS | CLONE_SIGHAND)
 pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
 {
 	return do_fork(flags|CLONE_VM|CLONE_UNTRACED, (unsigned long)fn,

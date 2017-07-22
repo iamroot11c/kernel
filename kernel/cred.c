@@ -238,13 +238,15 @@ error:
  *
  * Call commit_creds() or abort_creds() to clean up.
  */
+// 2017-07-22
+// 현재 프로세스의 cred 복사 및 전체 usage_count 증가 후 cred 리턴
 struct cred *prepare_creds(void)
 {
 	struct task_struct *task = current;
 	const struct cred *old;
 	struct cred *new;
 
-	validate_process_creds();
+	validate_process_creds(); // NOP
 
 	new = kmem_cache_alloc(cred_jar, GFP_KERNEL);
 	if (!new)
@@ -255,26 +257,29 @@ struct cred *prepare_creds(void)
 	old = task->cred;
 	memcpy(new, old, sizeof(struct cred));
 
+	// credential의 usage count 설정 및 group_info, user등의 usage count 증가
+	// group_info, user등의 정보는 포인터 값이기 때문에
+	// usage_count 변경 시 이 포인터를 참조하는 전체 프로세스에 영향을 준다.
 	atomic_set(&new->usage, 1);
-	set_cred_subscribers(new, 0);
+	set_cred_subscribers(new, 0); // NOP
 	get_group_info(new->group_info);
 	get_uid(new->user);
 	get_user_ns(new->user_ns);
 
-#ifdef CONFIG_KEYS
+#ifdef CONFIG_KEYS // not set
 	key_get(new->session_keyring);
 	key_get(new->process_keyring);
 	key_get(new->thread_keyring);
 	key_get(new->request_key_auth);
 #endif
 
-#ifdef CONFIG_SECURITY
+#ifdef CONFIG_SECURITY // not set
 	new->security = NULL;
 #endif
 
-	if (security_prepare_creds(new, old, GFP_KERNEL) < 0)
+	if (security_prepare_creds(new, old, GFP_KERNEL) < 0) // NOP
 		goto error;
-	validate_creds(new);
+	validate_creds(new); // NOP
 	return new;
 
 error:
@@ -317,6 +322,10 @@ struct cred *prepare_exec_creds(void)
  * The new process gets the current process's subjective credentials as its
  * objective and subjective credentials
  */
+// 2017-07-22
+// 현재 태스크의 cred를 복제 및 p->cred, p->real_cred에 포인터 복사
+// (레퍼런스 카운트 증가)
+// (THREAD인 경우 자기 자신의 cred 포인터를 복사)
 int copy_creds(struct task_struct *p, unsigned long clone_flags)
 {
 	struct cred *new;
@@ -328,6 +337,7 @@ int copy_creds(struct task_struct *p, unsigned long clone_flags)
 #endif
 		clone_flags & CLONE_THREAD
 	    ) {
+		// THREAD 조건인 경우 자기 자신의 cred 복사 및 레퍼런스 카운트를 증가한다.
 		p->real_cred = get_cred(p->cred);
 		get_cred(p->cred);
 		alter_cred_subscribers(p->cred, 2);
@@ -338,17 +348,19 @@ int copy_creds(struct task_struct *p, unsigned long clone_flags)
 		return 0;
 	}
 
+	// 2017-07-22
 	new = prepare_creds();
 	if (!new)
 		return -ENOMEM;
 
+	// 2017-07-22 분석 시점에서는 해당 플레그가 세팅되어 있지 않아 넘어감
 	if (clone_flags & CLONE_NEWUSER) {
 		ret = create_user_ns(new);
 		if (ret < 0)
 			goto error_put;
 	}
 
-#ifdef CONFIG_KEYS
+#ifdef CONFIG_KEYS // not set
 	/* new threads get their own thread keyrings if their parent already
 	 * had one */
 	if (new->thread_keyring) {
@@ -367,10 +379,11 @@ int copy_creds(struct task_struct *p, unsigned long clone_flags)
 	}
 #endif
 
+	// 프로세스 개수 증가 및 cred 레퍼런스 카운트 증가
 	atomic_inc(&new->user->processes);
 	p->cred = p->real_cred = get_cred(new);
-	alter_cred_subscribers(new, 2);
-	validate_creds(new);
+	alter_cred_subscribers(new, 2); // NOP
+	validate_creds(new); // NOP
 	return 0;
 
 error_put:
@@ -494,6 +507,8 @@ EXPORT_SYMBOL(commit_creds);
  * Discard a set of credentials that were under construction and unlock the
  * current task.
  */
+// 2017-07-22
+// 로깅, 레퍼런스 카운트 감소, 사용자가 없는 경우 cred 제거
 void abort_creds(struct cred *new)
 {
 	kdebug("abort_creds(%p{%d,%d})", new,

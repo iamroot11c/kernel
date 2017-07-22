@@ -32,6 +32,7 @@ static inline void acct_update_integrals(struct task_struct *tsk)
 {}
 static inline void acct_account_cputime(struct task_struct *tsk)
 {}
+// 2017-07-22
 static inline void acct_clear_integrals(struct task_struct *tsk)
 {}
 #endif /* CONFIG_TASK_XACCT */

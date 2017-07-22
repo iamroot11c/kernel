@@ -1427,6 +1427,7 @@ struct task_struct {
 	/*
 	 * cache last used pipe for splice
 	 */
+    // 2017-07-22
 	struct pipe_inode_info *splice_pipe;
 
 	struct page_frag task_frag;
@@ -1839,14 +1840,16 @@ extern void task_clear_jobctl_pending(struct task_struct *task,
 #define RCU_READ_UNLOCK_BLOCKED (1 << 0) /* blocked while in RCU read-side. */
 #define RCU_READ_UNLOCK_NEED_QS (1 << 1) /* RCU core needs CPU response. */
 
+// 2017-07-22
+// rcu 관련 필드 초기화
 static inline void rcu_copy_process(struct task_struct *p)
 {
 	p->rcu_read_lock_nesting = 0;
 	p->rcu_read_unlock_special = 0;
-#ifdef CONFIG_TREE_PREEMPT_RCU
+#ifdef CONFIG_TREE_PREEMPT_RCU // set
 	p->rcu_blocked_node = NULL;
 #endif /* #ifdef CONFIG_TREE_PREEMPT_RCU */
-#ifdef CONFIG_RCU_BOOST
+#ifdef CONFIG_RCU_BOOST // not set
 	p->rcu_boost_mutex = NULL;
 #endif /* #ifdef CONFIG_RCU_BOOST */
 	INIT_LIST_HEAD(&p->rcu_node_entry);
@@ -2447,12 +2450,16 @@ static inline void threadgroup_unlock(struct task_struct *tsk) {}
 // fork.c에서 stack멤버 변수에 thread_info 구조체를 할당하여 저장한다.
 #define task_stack_page(task)	((task)->stack)
 
+// 2017-07-22
+// thread_info->stack 복사
 static inline void setup_thread_stack(struct task_struct *p, struct task_struct *org)
 {
 	*task_thread_info(p) = *task_thread_info(org);
 	task_thread_info(p)->task = p;
 }
 
+// 2017-07-22
+// (unsigned long*)(p->stack + 1)
 static inline unsigned long *end_of_stack(struct task_struct *p)
 {
 	return (unsigned long *)(task_thread_info(p) + 1);
@@ -2520,6 +2527,7 @@ static inline void set_tsk_need_resched(struct task_struct *tsk)
 	set_tsk_thread_flag(tsk,TIF_NEED_RESCHED);
 }
 
+// 2017-07-22
 static inline void clear_tsk_need_resched(struct task_struct *tsk)
 {
 	clear_tsk_thread_flag(tsk,TIF_NEED_RESCHED);

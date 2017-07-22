@@ -75,6 +75,8 @@ int cap_netlink_send(struct sock *sk, struct sk_buff *skb)
  */
 // 2016-02-13;
 // cap_capable(__task_cred(p), &init_user_ns, CAP_SYS_ADMIN/*21*/, SECURITY_CAP_NOAUDIT/*0*/)
+// 2017-07-22
+// cap_capable(cred, ns, cap, SECURITY_CAP_AUDIT)
 int cap_capable(const struct cred *cred, struct user_namespace *targ_ns,
 		int cap, int audit)
 {

@@ -1,5 +1,14 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [137주차](http://bit.ly/2ul2u3i) `2017.07.22`
+ - drive: 홍진우님
+ - kernel/init/main.c::rest_init() 진행중
+ - kernel/kernel/fork.c::kernel_thread() 진행중
+ - kernel/kernel/fork.c::do_fork() 진행중
+ - kernel/kernel/fork.c::copy_process() 진행중
+ - kernel/kernel/fork.c::do_posix_clock_monotonic_gettime() 진행중
+
+
 + [136주차](http://bit.ly/2ul2u3i) `2017.07.15`
  - drive: 보름달님
  - kernel/init/main.c::rest_init() 진행중

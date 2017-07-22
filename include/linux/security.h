@@ -1932,6 +1932,7 @@ static inline int security_capset(struct cred *new,
 	return cap_capset(new, old, effective, inheritable, permitted);
 }
 
+// 2017-07-22
 static inline int security_capable(const struct cred *cred,
 				   struct user_namespace *ns, int cap)
 {
@@ -2315,6 +2316,7 @@ static inline int security_file_open(struct file *file,
 	return 0;
 }
 
+// 2017-07-22
 static inline int security_task_create(unsigned long clone_flags)
 {
 	return 0;

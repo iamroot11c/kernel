@@ -216,6 +216,7 @@ static inline void set_cpu_numa_node(int cpu, int node)
 // raw_smp_processor_id() 함수의 결과값에 상관없이
 // 항상 0이 리턴됨
 // 2016-03-19
+// 2017-07-22
 static inline int numa_node_id(void)
 {
 	return cpu_to_node(raw_smp_processor_id());

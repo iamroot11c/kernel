@@ -42,6 +42,7 @@ static inline void propagate_user_return_notify(struct task_struct *prev,
 
 static inline void fire_user_return_notifiers(void) {}
 
+// 2017-07-22
 static inline void clear_user_return_notifier(struct task_struct *p) {}
 
 #endif

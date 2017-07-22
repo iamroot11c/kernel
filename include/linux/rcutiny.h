@@ -127,6 +127,7 @@ static inline void exit_rcu(void)
 extern int rcu_scheduler_active __read_mostly;
 extern void rcu_scheduler_starting(void);
 #else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
+// 2017-07-22 
 static inline void rcu_scheduler_starting(void)
 {
 }

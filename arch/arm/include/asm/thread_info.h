@@ -62,6 +62,7 @@ struct thread_info {
 	int			preempt_count;	/* 0 => preemptable, <0 => bug */
 	mm_segment_t		addr_limit;	/* address limit */
 	struct task_struct	*task;		/* main task structure */
+    // 2017-07-22
 	struct exec_domain	*exec_domain;	/* execution domain */
 	__u32			cpu;		/* cpu */
 	__u32			cpu_domain;	/* cpu domain */

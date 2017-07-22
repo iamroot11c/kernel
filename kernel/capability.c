@@ -381,6 +381,7 @@ bool has_capability_noaudit(struct task_struct *t, int cap)
  * This sets PF_SUPERPRIV on the task if the capability is available on the
  * assumption that it's about to be used.
  */
+// 2017-07-22
 bool ns_capable(struct user_namespace *ns, int cap)
 {
 	if (unlikely(!cap_valid(cap))) {
@@ -430,6 +431,7 @@ EXPORT_SYMBOL(file_ns_capable);
  * This sets PF_SUPERPRIV on the task if the capability is available on the
  * assumption that it's about to be used.
  */
+// 2017-07-22
 bool capable(int cap)
 {
 	return ns_capable(&init_user_ns, cap);

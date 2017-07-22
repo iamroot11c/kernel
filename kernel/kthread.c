@@ -210,12 +210,14 @@ static int kthread(void *_create)
 }
 
 /* called from do_fork() to get node information for about to be created task */
+// 2017-07-22
 int tsk_fork_get_node(struct task_struct *tsk)
 {
-#ifdef CONFIG_NUMA
+#ifdef CONFIG_NUMA // notset
 	if (tsk == kthreadd_task)
 		return tsk->pref_node_fork;
 #endif
+	// 현 분석 기준 0이 리턴
 	return numa_node_id();
 }
 

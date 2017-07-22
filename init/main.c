@@ -375,16 +375,19 @@ static void __init setup_command_line(char *command_line)
 
 static __initdata DECLARE_COMPLETION(kthreadd_done);
 
+// 2017-07-22
 static noinline void __init_refok rest_init(void)
 {
 	int pid;
 
-	rcu_scheduler_starting();
+	// 2017-07-22
+	rcu_scheduler_starting(); // NOP
 	/*
 	 * We need to spawn init first so that it obtains pid 1, however
 	 * the init task will end up wanting to create kthreads, which, if
 	 * we schedule it before we create kthreadd, will OOPS.
 	 */
+	// 2017-07-22
 	kernel_thread(kernel_init, NULL, CLONE_FS | CLONE_SIGHAND);
 	numa_default_policy();
 	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
@@ -800,6 +803,7 @@ asmlinkage void __init start_kernel(void)
 	ftrace_init();	// NOP
 	// 2017-07-15, 여기까지
 
+	// 2017-07-22 시작
 	/* Do the rest non-__init'ed, we're now alive */
 	rest_init();
 }
