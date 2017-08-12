@@ -71,6 +71,10 @@ static inline unsigned __read_seqcount_begin(const seqcount_t *s)
 	unsigned ret;
 
 repeat:
+// volatile 키워드는 컴파일러 최적화를 방지한다.
+// 이를 통해, 자연스럽게 메모리에 접근해서 읽어오는 효과가 발생한다.
+// #define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
+// (*(volatile unsigned int *)&(s->sequence)))
 	ret = ACCESS_ONCE(s->sequence);
 	if (unlikely(ret & 1)) {
 		cpu_relax();

@@ -220,14 +220,16 @@ static inline void __set_open_fd(int fd, struct fdtable *fdt)
 	__set_bit(fd, fdt->open_fds);
 }
 
+// 2017-08-12
 static inline void __clear_open_fd(int fd, struct fdtable *fdt)
 {
 	__clear_bit(fd, fdt->open_fds);
 }
 
+// 2017-07-12
 static int count_open_files(struct fdtable *fdt)
 {
-	int size = fdt->max_fds;
+	int size = fdt->max_fds;	// 32?
 	int i;
 
 	/* Find the last open fd */
@@ -235,6 +237,7 @@ static int count_open_files(struct fdtable *fdt)
 		if (fdt->open_fds[--i])
 			break;
 	}
+	// 최소 32개는 보장된다.
 	i = (i + 1) * BITS_PER_LONG;
 	return i;
 }
@@ -244,6 +247,8 @@ static int count_open_files(struct fdtable *fdt)
  * passed in files structure.
  * errorp will be valid only when the returned files_struct is NULL.
  */
+// 2017-08-12
+// newf = dup_fd(oldf, &error);
 struct files_struct *dup_fd(struct files_struct *oldf, int *errorp)
 {
 	struct files_struct *newf;
@@ -261,7 +266,7 @@ struct files_struct *dup_fd(struct files_struct *oldf, int *errorp)
 	spin_lock_init(&newf->file_lock);
 	newf->next_fd = 0;
 	new_fdt = &newf->fdtab;
-	new_fdt->max_fds = NR_OPEN_DEFAULT;
+	new_fdt->max_fds = NR_OPEN_DEFAULT/*32*/;
 	new_fdt->close_on_exec = newf->close_on_exec_init;
 	new_fdt->open_fds = newf->open_fds_init;
 	new_fdt->fd = &newf->fd_array[0];
@@ -308,9 +313,11 @@ struct files_struct *dup_fd(struct files_struct *oldf, int *errorp)
 	memcpy(new_fdt->open_fds, old_fdt->open_fds, open_files / 8);
 	memcpy(new_fdt->close_on_exec, old_fdt->close_on_exec, open_files / 8);
 
+	// 실제 복사
 	for (i = open_files; i != 0; i--) {
 		struct file *f = *old_fds++;
 		if (f) {
+			// ref count 증가
 			get_file(f);
 		} else {
 			/*
@@ -321,6 +328,7 @@ struct files_struct *dup_fd(struct files_struct *oldf, int *errorp)
 			 */
 			__clear_open_fd(open_files - i, new_fdt);
 		}
+		// core code
 		rcu_assign_pointer(*new_fds++, f);
 	}
 	spin_unlock(&oldf->file_lock);
@@ -328,6 +336,7 @@ struct files_struct *dup_fd(struct files_struct *oldf, int *errorp)
 	/* compute the remainder to be cleared */
 	size = (new_fdt->max_fds - open_files) * sizeof(struct file *);
 
+	// open_files의 범위를 넘어 선 것은, 0으로 채워둔다.
 	/* This is long word aligned thus could use a optimized version */
 	memset(new_fds, 0, size);
 

@@ -1368,13 +1368,16 @@ int __pte_alloc_kernel(pmd_t *pmd, unsigned long address);
  * The following ifdef needed to get the 4level-fixup.h header to work.
  * Remove it when 4level-fixup.h has been removed.
  */
-#if defined(CONFIG_MMU) && !defined(__ARCH_HAS_4LEVEL_HACK)
+#if defined(CONFIG_MMU) && !defined(__ARCH_HAS_4LEVEL_HACK) // y
+// 2017-08-12, pgd값을 그대로 리턴
+// pud_alloc(mm, new_pgd, 0);
 static inline pud_t *pud_alloc(struct mm_struct *mm, pgd_t *pgd, unsigned long address)
 {
 	return (unlikely(pgd_none(*pgd)) && __pud_alloc(mm, pgd, address))?
 		NULL: pud_offset(pgd, address);
 }
 
+// 2017-08-12, pgd값을 그대로 리턴
 static inline pmd_t *pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address)
 {
 	return (unlikely(pud_none(*pud)) && __pmd_alloc(mm, pud, address))?
@@ -1445,6 +1448,7 @@ static inline void pgtable_page_dtor(struct page *page)
 	pte_unmap(pte); /*no OP.*/					\ 
 } while (0)
 
+// 2017-08-12
 #define pte_alloc_map(mm, vma, pmd, address)				\
 	((unlikely(pmd_none(*(pmd))) && __pte_alloc(mm, vma,	\
 							pmd, address))?	\

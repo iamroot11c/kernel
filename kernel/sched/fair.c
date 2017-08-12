@@ -46,6 +46,7 @@
  * (to see the precise effective timeslice length of your workload,
  *  run vmstat and monitor the context-switches (cs) field)
  */
+// 2017-08-12
 unsigned int sysctl_sched_latency = 6000000ULL;
 unsigned int normalized_sysctl_sched_latency = 6000000ULL;
 
@@ -284,6 +285,7 @@ static inline struct task_struct *task_of(struct sched_entity *se)
 #define for_each_sched_entity(se) \
 		for (; se; se = se->parent)
 
+// 2017-08-12
 static inline struct cfs_rq *task_cfs_rq(struct task_struct *p)
 {
 	return p->se.cfs_rq;
@@ -1935,6 +1937,7 @@ static void check_spread(struct cfs_rq *cfs_rq, struct sched_entity *se)
 #endif
 }
 
+// 2017-08-12
 static void
 place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
 {
@@ -6547,9 +6550,12 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
  *  - child not yet on the tasklist
  *  - preemption disabled
  */
+// 2017-08-12
+// p->sched_entity의 vruntime 설정이 주된 기능
 static void task_fork_fair(struct task_struct *p)
 {
 	struct cfs_rq *cfs_rq;
+	// p->se가 주된 관심사 이다.
 	struct sched_entity *se = &p->se, *curr;
 	int this_cpu = smp_processor_id();
 	struct rq *rq = this_rq();
@@ -6576,6 +6582,7 @@ static void task_fork_fair(struct task_struct *p)
 
 	if (curr)
 		se->vruntime = curr->vruntime;
+	// 2017-08-12
 	place_entity(cfs_rq, se, 1);
 
 	if (sysctl_sched_child_runs_first && curr && entity_before(curr, se)) {
@@ -6958,6 +6965,7 @@ const struct sched_class fair_sched_class = {
 
 	.set_curr_task          = set_curr_task_fair,
 	.task_tick		= task_tick_fair,
+	// 2017-08-12
 	.task_fork		= task_fork_fair,
 
 	.prio_changed		= prio_changed_fair,

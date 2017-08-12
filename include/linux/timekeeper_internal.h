@@ -57,6 +57,7 @@ struct timekeeper {
 	 * - wall_to_monotonic is no longer the boot time, getboottime must be
 	 * used instead.
 	 */
+    // 2017-08-12
 	struct timespec		wall_to_monotonic;
 	/* Offset clock monotonic -> clock realtime */
 	ktime_t			offs_real;

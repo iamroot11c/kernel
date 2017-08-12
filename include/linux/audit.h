@@ -91,7 +91,7 @@ struct filename;
 
 extern void audit_log_session_info(struct audit_buffer *ab);
 
-#ifdef CONFIG_AUDITSYSCALL
+#ifdef CONFIG_AUDITSYSCALL  // =n
 /* These are defined in auditsc.c */
 				/* Public API */
 extern int  audit_alloc(struct task_struct *task);
@@ -300,6 +300,7 @@ static inline void audit_mmap_fd(int fd, int flags)
 extern int audit_n_rules;
 extern int audit_signals;
 #else /* CONFIG_AUDITSYSCALL */
+// 2017-08-12
 static inline int audit_alloc(struct task_struct *task)
 {
 	return 0;

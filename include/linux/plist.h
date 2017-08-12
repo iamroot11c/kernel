@@ -83,6 +83,7 @@ struct plist_head {
 };
 
 // 2017-04-22
+// 2017-08-12
 struct plist_node {
 	int			prio;
 	struct list_head	prio_list;
@@ -127,6 +128,8 @@ plist_head_init(struct plist_head *head)
  * @node:	&struct plist_node pointer
  * @prio:	initial node priority
  */
+// 2017-08-12
+// plist_node_init(&p->pushable_tasks, MAX_PRIO);
 static inline void plist_node_init(struct plist_node *node, int prio)
 {
 	node->prio = prio;

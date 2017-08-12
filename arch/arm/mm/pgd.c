@@ -23,6 +23,7 @@
 #define __pgd_alloc()	kmalloc(PTRS_PER_PGD * sizeof(pgd_t), GFP_KERNEL)
 #define __pgd_free(pgd)	kfree(pgd)
 #else
+// 2017-08-12, 16kb page
 #define __pgd_alloc()	(pgd_t *)__get_free_pages(GFP_KERNEL, 2)
 #define __pgd_free(pgd)	free_pages((unsigned long)pgd, 2)
 #endif
@@ -30,6 +31,8 @@
 /*
  * need to get a 16k page for level 1
  */
+// 2017-08-12
+// pgd, pud, pmd, pte 할당한다.
 pgd_t *pgd_alloc(struct mm_struct *mm)
 {
 	pgd_t *new_pgd, *init_pgd;
@@ -37,22 +40,23 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
 	pmd_t *new_pmd, *init_pmd;
 	pte_t *new_pte, *init_pte;
 
-	new_pgd = __pgd_alloc();
+	new_pgd = __pgd_alloc();	// 16kb page
 	if (!new_pgd)
 		goto no_pgd;
 
+	// pgd table 초기화
 	memset(new_pgd, 0, USER_PTRS_PER_PGD * sizeof(pgd_t));
 
 	/*
 	 * Copy over the kernel and IO PGD entries
 	 */
-	init_pgd = pgd_offset_k(0);
+	init_pgd = pgd_offset_k(0); // init_mm->pgd
 	memcpy(new_pgd + USER_PTRS_PER_PGD, init_pgd + USER_PTRS_PER_PGD,
-		       (PTRS_PER_PGD - USER_PTRS_PER_PGD) * sizeof(pgd_t));
+		       (PTRS_PER_PGD/*2048*/ - USER_PTRS_PER_PGD)/*520*/ * sizeof(pgd_t));
 
 	clean_dcache_area(new_pgd, PTRS_PER_PGD * sizeof(pgd_t));
 
-#ifdef CONFIG_ARM_LPAE
+#ifdef CONFIG_ARM_LPAE	// =n
 	/*
 	 * Allocate PMD table for modules and pkmap mappings.
 	 */
@@ -72,11 +76,11 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
 		 * contains the machine vectors. The vectors are always high
 		 * with LPAE.
 		 */
-		new_pud = pud_alloc(mm, new_pgd, 0);
+		new_pud = pud_alloc(mm, new_pgd, 0);	// return pgd
 		if (!new_pud)
 			goto no_pud;
 
-		new_pmd = pmd_alloc(mm, new_pud, 0);
+		new_pmd = pmd_alloc(mm, new_pud, 0);	// return pgd
 		if (!new_pmd)
 			goto no_pmd;
 

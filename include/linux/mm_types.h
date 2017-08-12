@@ -471,6 +471,7 @@ struct mm_struct {
 #define NUMA_PTE_SCAN_INIT	-1
 #define NUMA_PTE_SCAN_ACTIVE	-2
 
+// 2017-08-12
 static inline void mm_init_cpumask(struct mm_struct *mm)
 {
 #ifdef CONFIG_CPUMASK_OFFSTACK  // not set
@@ -508,6 +509,7 @@ static inline void set_tlb_flush_pending(struct mm_struct *mm)
 	smp_mb__before_spinlock();
 }
 /* Clearing is done after a TLB flush, which also provides a barrier. */
+// 2017-08-12
 static inline void clear_tlb_flush_pending(struct mm_struct *mm)
 {
 	barrier();

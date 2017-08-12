@@ -914,6 +914,7 @@ struct cgroup_subsys_state *css_from_dir(struct dentry *dentry,
 static inline int cgroup_init_early(void) { return 0; }
 // 2017-07-15
 static inline int cgroup_init(void) { return 0; }
+// 2017-08-12
 static inline void cgroup_fork(struct task_struct *p) {}
 static inline void cgroup_post_fork(struct task_struct *p) {}
 static inline void cgroup_exit(struct task_struct *p, int callbacks) {}

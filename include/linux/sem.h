@@ -23,7 +23,7 @@ struct sem_array {
 	int			complex_count;	/* pending complex operations */
 };
 
-#ifdef CONFIG_SYSVIPC
+#ifdef CONFIG_SYSVIPC   // =y
 
 struct sysv_sem {
 	struct sem_undo_list *undo_list;

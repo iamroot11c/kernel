@@ -384,6 +384,8 @@ extern int get_dumpable(struct mm_struct *mm);
 #define MMF_DUMP_FILTER_BITS	7
 #define MMF_DUMP_FILTER_MASK \
 	(((1 << MMF_DUMP_FILTER_BITS) - 1) << MMF_DUMP_FILTER_SHIFT)
+// 2017-08-12
+// MMF : mm flag
 #define MMF_DUMP_FILTER_DEFAULT \
 	((1 << MMF_DUMP_ANON_PRIVATE) |	(1 << MMF_DUMP_ANON_SHARED) |\
 	 (1 << MMF_DUMP_HUGETLB_PRIVATE) | MMF_DUMP_MASK_DEFAULT_ELF)
@@ -508,6 +510,7 @@ struct autogroup;
  */
 // 2016-03-05
 // 2017-06-24
+// 2017-08-12
 struct signal_struct {
 	atomic_t		sigcnt;
 	atomic_t		live;
@@ -1256,6 +1259,7 @@ struct task_struct {
 	unsigned long min_flt, maj_flt;
 
 	struct task_cputime cputime_expires;
+    // 2017-08-12
 	struct list_head cpu_timers[3];
 
 /* process credentials */
@@ -2008,6 +2012,7 @@ extern int proc_sched_autogroup_set_nice(struct task_struct *p, int nice);
 #else
 static inline void sched_autogroup_create_attach(struct task_struct *p) { }
 static inline void sched_autogroup_detach(struct task_struct *p) { }
+// 2017-08-12
 static inline void sched_autogroup_fork(struct signal_struct *sig) { }
 // 2016-12-24
 static inline void sched_autogroup_exit(struct signal_struct *sig) { }
@@ -2763,6 +2768,7 @@ static inline bool __must_check current_clr_polling_and_test(void)
 void thread_group_cputime(struct task_struct *tsk, struct task_cputime *times);
 void thread_group_cputimer(struct task_struct *tsk, struct task_cputime *times);
 
+// 2017-08-12
 static inline void thread_group_cputime_init(struct signal_struct *sig)
 {
 	raw_spin_lock_init(&sig->cputimer.lock);
@@ -2878,6 +2884,7 @@ static inline void mm_update_next_owner(struct mm_struct *mm)
 {
 }
 
+// 2017-08-12
 static inline void mm_init_owner(struct mm_struct *mm, struct task_struct *p)
 {
 }

@@ -1600,6 +1600,7 @@ SYSCALL_DEFINE4(semctl, int, semid, int, semnum, int, cmd, unsigned long, arg)
  *
  * This can block, so callers must hold no locks.
  */
+// 2017-08-12
 static inline int get_undo_list(struct sem_undo_list **undo_listp)
 {
 	struct sem_undo_list *undo_list;
@@ -1999,6 +2000,8 @@ SYSCALL_DEFINE3(semop, int, semid, struct sembuf __user *, tsops,
  * parent and child tasks.
  */
 
+// 2017-08-12
+// CLONE_FS|CLONE_SIGHAND|CLONE_VM|CLONE_UNTRACED
 int copy_semundo(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct sem_undo_list *undo_list;

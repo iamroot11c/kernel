@@ -832,6 +832,7 @@ struct file_handle {
 	unsigned char f_handle[0];
 };
 
+// 2017-08-12
 static inline struct file *get_file(struct file *f)
 {
 	atomic_long_inc(&f->f_count);

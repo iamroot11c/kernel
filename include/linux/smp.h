@@ -197,6 +197,7 @@ static inline void __smp_call_function_single(int cpuid,
 // 2015-11-14;
 #define get_cpu()		({ preempt_disable(); smp_processor_id(); })
 // 2015-08-29
+// 2017-08-12
 #define put_cpu()		preempt_enable()
 
 /*

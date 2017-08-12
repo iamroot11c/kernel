@@ -196,21 +196,25 @@ void thread_info_cache_init(void)
 #endif
 
 // 2017-06-24
+// 2017-08-12
 /* SLAB cache for signal_struct structures (tsk->signal) */
 static struct kmem_cache *signal_cachep;
 // 2017-06-24
 /* SLAB cache for sighand_struct structures (tsk->sighand) */
 struct kmem_cache *sighand_cachep;
 // 2017-06-24
+// 2017-08-12
 /* SLAB cache for files_struct structures (tsk->files) */
 struct kmem_cache *files_cachep;
 // 2017-06-24
 /* SLAB cache for fs_struct structures (tsk->fs) */
 struct kmem_cache *fs_cachep;
 // 2017-06-24
+// 2017-08-12
 /* SLAB cache for vm_area_struct structures */
 struct kmem_cache *vm_area_cachep;
 // 2017-06-24
+// 2017-08-12
 /* SLAB cache for mm_struct structures (tsk->mm) */
 static struct kmem_cache *mm_cachep;
 
@@ -390,6 +394,7 @@ free_tsk:
 }
 
 #ifdef CONFIG_MMU // defined
+// 2017-08-12
 static int dup_mmap(struct mm_struct *mm, struct mm_struct *oldmm)
 {
 	struct vm_area_struct *mpnt, *tmp, *prev, **pprev;
@@ -523,6 +528,7 @@ fail_nomem:
 	goto out;
 }
 
+// 2017-08-12
 static inline int mm_alloc_pgd(struct mm_struct *mm)
 {
 	mm->pgd = pgd_alloc(mm);
@@ -544,10 +550,12 @@ static inline void mm_free_pgd(struct mm_struct *mm)
 
 __cacheline_aligned_in_smp DEFINE_SPINLOCK(mmlist_lock);
 
+// 2017-08-12
 #define allocate_mm()	(kmem_cache_alloc(mm_cachep, GFP_KERNEL))
 // 2016-12-24
 #define free_mm(mm)	(kmem_cache_free(mm_cachep, (mm)))
 
+// 2017-08-12
 static unsigned long default_dump_filter = MMF_DUMP_FILTER_DEFAULT;
 
 static int __init coredump_filter_setup(char *s)
@@ -562,14 +570,16 @@ __setup("coredump_filter=", coredump_filter_setup);
 
 #include <linux/init_task.h>
 
+// 2017-08-12
 static void mm_init_aio(struct mm_struct *mm)
 {
-#ifdef CONFIG_AIO
+#ifdef CONFIG_AIO	// =y
 	spin_lock_init(&mm->ioctx_lock);
 	mm->ioctx_table = NULL;
 #endif
 }
 
+// 2017-08-12
 static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p)
 {
 	atomic_set(&mm->mm_users, 1);
@@ -586,9 +596,10 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p)
 	mm_init_owner(mm, p);
 	clear_tlb_flush_pending(mm);
 
+	// 2017-08-12
 	if (likely(!mm_alloc_pgd(mm))) {
 		mm->def_flags = 0;
-		mmu_notifier_mm_init(mm);
+		mmu_notifier_mm_init(mm);	// NOP
 		return mm;
 	}
 
@@ -685,6 +696,8 @@ void set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
 	mm->exe_file = new_exe_file;
 }
 
+// 2017-08-12
+// exe_file의 ref count 증가하는 기능
 struct file *get_mm_exe_file(struct mm_struct *mm)
 {
 	struct file *exe_file;
@@ -698,6 +711,8 @@ struct file *get_mm_exe_file(struct mm_struct *mm)
 	return exe_file;
 }
 
+// 2017-08-12
+// dup_mm_exe_file(oldmm, mm);
 static void dup_mm_exe_file(struct mm_struct *oldmm, struct mm_struct *newmm)
 {
 	/* It's safe to write the exe_file pointer without exe_file_lock because
@@ -852,6 +867,7 @@ void mm_release(struct task_struct *tsk, struct mm_struct *mm)
  * Allocate a new mm structure and copy contents from the
  * mm structure of the passed in task structure.
  */
+// 2017-08-12
 struct mm_struct *dup_mm(struct task_struct *tsk)
 {
 	struct mm_struct *mm, *oldmm = current->mm;
@@ -865,22 +881,27 @@ struct mm_struct *dup_mm(struct task_struct *tsk)
 		goto fail_nomem;
 
 	memcpy(mm, oldmm, sizeof(*mm));
-	mm_init_cpumask(mm);
+	mm_init_cpumask(mm);	// NOP
 
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+#ifdef CONFIG_TRANSPARENT_HUGEPAGE	// =n
 	mm->pmd_huge_pte = NULL;
 #endif
-#ifdef CONFIG_NUMA_BALANCING
+#ifdef CONFIG_NUMA_BALANCING		// =n
 	mm->first_nid = NUMA_PTE_SCAN_INIT;
 #endif
+	// 2017-08-12
 	if (!mm_init(mm, tsk))
 		goto fail_nomem;
 
+	// 2017-08-12
+// #define init_new_context(tsk,mm)    ({ atomic64_set(&mm->context.id, 0); 0; })
 	if (init_new_context(tsk, mm))
 		goto fail_nocontext;
 
+	// 2017-08-12
 	dup_mm_exe_file(oldmm, mm);
 
+	// 2017-08-12 여기까지
 	err = dup_mmap(mm, oldmm);
 	if (err)
 		goto free_pt;
@@ -911,6 +932,8 @@ fail_nocontext:
 	return NULL;
 }
 
+// 2017-08-12
+//  clone_flags == CLONE_FS|CLONE_SIGHAND|CLONE_VM|CLONE_UNTRACED
 static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct mm_struct *mm, *oldmm;
@@ -918,7 +941,7 @@ static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 
 	tsk->min_flt = tsk->maj_flt = 0;
 	tsk->nvcsw = tsk->nivcsw = 0;
-#ifdef CONFIG_DETECT_HUNG_TASK
+#ifdef CONFIG_DETECT_HUNG_TASK	// =y
 	tsk->last_switch_count = tsk->nvcsw + tsk->nivcsw;
 #endif
 
@@ -934,13 +957,19 @@ static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 	if (!oldmm)
 		return 0;
 
+	// thread 생성하는 경우, CLONE_VM flags가 설정된다.
+	// 이 경우, parent와 동일한 mm을 사용하면서, 
+	// Virtual Memory 공유하게 된다.
+	// process가 생성된다면, 새로운 mm이 할당될 것이다.
 	if (clone_flags & CLONE_VM) {
 		atomic_inc(&oldmm->mm_users);
 		mm = oldmm;
 		goto good_mm;
 	}
 
+	// new process 인 경우
 	retval = -ENOMEM;
+	// 2017-08-12
 	mm = dup_mm(tsk);
 	if (!mm)
 		goto fail_nomem;
@@ -954,9 +983,17 @@ fail_nomem:
 	return retval;
 }
 
+// 2017-08-12
+// clone_flags == CLONE_FS|CLONE_SIGHAND|CLONE_VM|CLONE_UNTRACED
 static int copy_fs(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct fs_struct *fs = current->fs;
+	// man clone, https://linux.die.net/man/2/clone
+	// CLONE_FS (since Linux 2.0)
+	// If CLONE_FS is set, the caller and the child process share 
+	// the same file system information. 
+	// This includes the root of the file system, 
+	// the current working directory, and the umask. 
 	if (clone_flags & CLONE_FS) {
 		/* tsk->fs is already what we want */
 		spin_lock(&fs->lock);
@@ -974,6 +1011,8 @@ static int copy_fs(unsigned long clone_flags, struct task_struct *tsk)
 	return 0;
 }
 
+// 2017-08-12
+// clone_flags == CLONE_FS|CLONE_SIGHAND|CLONE_VM|CLONE_UNTRACED
 static int copy_files(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct files_struct *oldf, *newf;
@@ -991,7 +1030,9 @@ static int copy_files(unsigned long clone_flags, struct task_struct *tsk)
 		goto out;
 	}
 
+	// 2017-08-12
 	newf = dup_fd(oldf, &error);
+	// 2017-08-12
 	if (!newf)
 		goto out;
 
@@ -1027,10 +1068,13 @@ static int copy_io(unsigned long clone_flags, struct task_struct *tsk)
 	return 0;
 }
 
+// 2017-08-12
+// clone_flags == CLONE_FS|CLONE_SIGHAND|CLONE_VM|CLONE_UNTRACED
 static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct sighand_struct *sig;
 
+	// 부모와 공유
 	if (clone_flags & CLONE_SIGHAND) {
 		atomic_inc(&current->sighand->count);
 		return 0;
@@ -1075,6 +1119,9 @@ static void posix_cpu_timers_init_group(struct signal_struct *sig)
 	INIT_LIST_HEAD(&sig->cpu_timers[2]);
 }
 
+// 2017-08-12
+// clone_flags == CLONE_FS|CLONE_SIGHAND|CLONE_VM|CLONE_UNTRACED
+// 기본 정보는, current를 기준으로 작성되어 진다.
 static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct signal_struct *sig;
@@ -1104,10 +1151,10 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 
 	posix_cpu_timers_init_group(sig);
 
-	tty_audit_fork(sig);
-	sched_autogroup_fork(sig);
+	tty_audit_fork(sig);	// NOP
+	sched_autogroup_fork(sig);	// NOP
 
-#ifdef CONFIG_CGROUPS
+#ifdef CONFIG_CGROUPS	// =n
 	init_rwsem(&sig->group_rwsem);
 #endif
 
@@ -1339,15 +1386,20 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 	posix_cpu_timers_init(p);
 
 	// 2017-07-22 여기까지
+	// 2017-08-12 여기부터
 	do_posix_clock_monotonic_gettime(&p->start_time);
+	// 2017-08-12 end
 	p->real_start_time = p->start_time;
+	// 2017-08-12
 	monotonic_to_bootbased(&p->real_start_time);
 	p->io_context = NULL;
 	p->audit_context = NULL;
+	// 2017-08-12
+	// THREAD인 경우
 	if (clone_flags & CLONE_THREAD)
-		threadgroup_change_begin(current);
-	cgroup_fork(p);
-#ifdef CONFIG_NUMA
+		threadgroup_change_begin(current);   // NOP
+	cgroup_fork(p);	// NOP
+#ifdef CONFIG_NUMA	// =n
 	p->mempolicy = mpol_dup(p->mempolicy);
 	if (IS_ERR(p->mempolicy)) {
 		retval = PTR_ERR(p->mempolicy);
@@ -1356,12 +1408,12 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 	}
 	mpol_fix_fork_child_flag(p);
 #endif
-#ifdef CONFIG_CPUSETS
+#ifdef CONFIG_CPUSETS	// =n
 	p->cpuset_mem_spread_rotor = NUMA_NO_NODE;
 	p->cpuset_slab_spread_rotor = NUMA_NO_NODE;
 	seqcount_init(&p->mems_allowed_seq);
 #endif
-#ifdef CONFIG_TRACE_IRQFLAGS
+#ifdef CONFIG_TRACE_IRQFLAGS	// n
 	p->irq_events = 0;
 	p->hardirqs_enabled = 0;
 	p->hardirq_enable_ip = 0;
@@ -1376,49 +1428,57 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 	p->hardirq_context = 0;
 	p->softirq_context = 0;
 #endif
-#ifdef CONFIG_LOCKDEP
+#ifdef CONFIG_LOCKDEP	// =n
 	p->lockdep_depth = 0; /* no locks held yet */
 	p->curr_chain_key = 0;
 	p->lockdep_recursion = 0;
 #endif
 
-#ifdef CONFIG_DEBUG_MUTEXES
+#ifdef CONFIG_DEBUG_MUTEXES	// =n
 	p->blocked_on = NULL; /* not blocked yet */
 #endif
-#ifdef CONFIG_MEMCG
+#ifdef CONFIG_MEMCG	// =n
 	p->memcg_batch.do_batch = 0;
 	p->memcg_batch.memcg = NULL;
 #endif
-#ifdef CONFIG_BCACHE
+#ifdef CONFIG_BCACHE	// =n
 	p->sequential_io	= 0;
 	p->sequential_io_avg	= 0;
 #endif
 
 	/* Perform scheduler related setup. Assign this task to a CPU. */
+	// 2017-08-12, start
 	sched_fork(p);
+	// 2017-08-12, end
 
-	retval = perf_event_init_task(p);
+	retval = perf_event_init_task(p);	// NOP
 	if (retval)
 		goto bad_fork_cleanup_policy;
-	retval = audit_alloc(p);
+	retval = audit_alloc(p);		// NOP
 	if (retval)
 		goto bad_fork_cleanup_policy;
+	// 2017-08-12
 	/* copy all the process information */
 	retval = copy_semundo(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_audit;
+	// 2017-08-12
 	retval = copy_files(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_semundo;
+	// 2017-08-12
 	retval = copy_fs(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_files;
+	// 2017-08-12
 	retval = copy_sighand(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_fs;
+	// 2017-08-12
 	retval = copy_signal(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_sighand;
+	// 2017-08-12
 	retval = copy_mm(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_signal;

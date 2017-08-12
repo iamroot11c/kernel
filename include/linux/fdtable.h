@@ -21,6 +21,7 @@
  */
 #define NR_OPEN_DEFAULT BITS_PER_LONG
 
+// 2017-08-12
 struct fdtable {
 	unsigned int max_fds;
 	struct file __rcu **fd;      /* current fd array */
@@ -43,6 +44,7 @@ static inline bool fd_is_open(int fd, const struct fdtable *fdt)
  * Open file table structure
  */
 // 2017-06-24
+// 2017-08-12
 struct files_struct {
   /*
    * read mostly part
@@ -60,12 +62,14 @@ struct files_struct {
 	struct file __rcu * fd_array[NR_OPEN_DEFAULT/*32*/];
 };
 
+// 2017-08-12
 #define rcu_dereference_check_fdtable(files, fdtfd) \
 	(rcu_dereference_check((fdtfd), \
 			       lockdep_is_held(&(files)->file_lock) || \
 			       atomic_read(&(files)->count) == 1 || \
 			       rcu_my_thread_group_empty()))
 
+// 2017-08-12
 #define files_fdtable(files) \
 		(rcu_dereference_check_fdtable((files), (files)->fdt))
 

@@ -22,6 +22,7 @@
 #define DEFAULT_PRIO		(MAX_RT_PRIO + 20)
 
 // 2016-06-13;
+// 2017-08-12
 static inline int rt_prio(int prio)
 {
 	if (unlikely(prio < MAX_RT_PRIO))

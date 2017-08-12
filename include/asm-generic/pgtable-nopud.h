@@ -41,6 +41,7 @@ static inline void pgd_clear(pgd_t *pgd)	{ }
 
 // 2015-08-22
 // 2016-12-24
+// 2017-08-12
 static inline pud_t * pud_offset(pgd_t * pgd, unsigned long address)
 {
 	// 전달받은 값을 그대로 리턴 

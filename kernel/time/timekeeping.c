@@ -33,6 +33,7 @@
 
 // 2016-08-13
 // 2016-09-24
+// 2017-08-12
 static struct timekeeper timekeeper;
 // 2016-08-13
 static DEFINE_RAW_SPINLOCK(timekeeper_lock);
@@ -42,6 +43,7 @@ static seqcount_t timekeeper_seq;
 static struct timekeeper shadow_timekeeper;
 
 /* flag for if timekeeping is suspended */
+// 2017-08-12
 int __read_mostly timekeeping_suspended;
 
 /* Flag for if there is a persistent clock on this platform */
@@ -172,6 +174,7 @@ u32 get_arch_timeoffset(void)
 static inline u32 get_arch_timeoffset(void) { return 0; }
 #endif
 
+// 2017-08-12
 static inline s64 timekeeping_get_ns(struct timekeeper *tk)
 {
 	cycle_t cycle_now, cycle_delta;
@@ -375,6 +378,10 @@ EXPORT_SYMBOL_GPL(ktime_get);
  */
 // 2017-07-22
 // glance
+// rebooting 없이, elapsed time을 얻기를 얻어오기 원한다면, 
+// monotonic clock을 사용하는 것이 besy way이다.
+// https://stackoverflow.com/questions/3523442/difference-between-clock-realtime-and-clock-monotonic
+// If you want to compute the elapsed time between two events observed on the one machine without an intervening reboot, CLOCK_MONOTONIC is the best option. 
 void ktime_get_ts(struct timespec *ts)
 {
 	struct timekeeper *tk = &timekeeper;
@@ -1556,6 +1563,7 @@ EXPORT_SYMBOL_GPL(ktime_get_boottime);
  * monotonic_to_bootbased - Convert the monotonic time to boot based.
  * @ts:		pointer to the timespec to be converted
  */
+// 2017-08-12
 void monotonic_to_bootbased(struct timespec *ts)
 {
 	struct timekeeper *tk = &timekeeper;

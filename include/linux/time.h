@@ -66,6 +66,7 @@ extern struct timespec timespec_add_safe(const struct timespec lhs,
 					 const struct timespec rhs);
 
 
+// 2017-08-12
 static inline struct timespec timespec_add(struct timespec lhs,
 						struct timespec rhs)
 {

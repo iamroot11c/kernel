@@ -198,6 +198,8 @@ extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
 
 /* to find an entry in a kernel page-table-directory */
 // 2015-09-19;
+// 2017-08-12
+// pgd_offset_k(0);
 #define pgd_offset_k(addr)	pgd_offset(&init_mm, addr)
 
 // return (pmd == 0)
@@ -226,6 +228,7 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 #define __pte_map(pmd)		pmd_page_vaddr(*(pmd))
 // 2015-08-22
 // 2015-09-19;
+// 2017-08-12
 #define __pte_unmap(pte)	do { } while (0)
 #else
 #define __pte_map(pmd)		(pte_t *)kmap_atomic(pmd_page(*(pmd)))
@@ -245,6 +248,7 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 // 2015-08-22
 // 2015-10-03
 // __pte_map(pmd)는 가상주소 + pte_index(addr)
+// 2017-08-12
 #define pte_offset_map(pmd,addr)	(__pte_map(pmd) + pte_index(addr))
 // 2015-08-22
 // 2015-11-07

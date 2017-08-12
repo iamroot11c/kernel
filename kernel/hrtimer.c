@@ -1241,6 +1241,8 @@ static void __hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
 //
 // 2016-09-10
 // hrtimer_init(hr, CLOCK_MONOTONIC, HRTIMER_MODE_REL_PINNED)
+// 2017-08-12
+// hrtimer_init(&sig->real_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 void hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
 		  enum hrtimer_mode mode)
 {

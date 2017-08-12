@@ -1,5 +1,48 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
+
++ [138주차]() `2017.08.12`
+ - drive: 보름달님
+ - kernel/init/main.c::rest_init() 진행중
+ - kernel/kernel/fork.c::kernel_thread() 진행중
+ - kernel/kernel/fork.c::do_fork() 진행중
+ - kernel/kernel/fork.c::copy_process() 진행중
+ - kernel/kernel/fork.c::do_posix_clock_monotonic_gettime() 진행완료
+ - kernel/time/timekeeping.c::monotonic_to_bootbased() 완료
+ - kernel/sched/core.c::sched_fork() 완료
+ - kernel/ipc/sem.c::copy_semundo() 완료
+ - kernel/kernel/fork.c::copy_files() 완료
+ - kernel/kernel/fork.c::copy_fs() 완료
+ - kernel/kernel/fork.c::copy_signad() 완료
+ - kernel/kernel/fork.c::copy_signal() 완료
+ - kernel/kernel/fork.c::copy_mm() 진행중
+ - kernel/kernel/fork.c::dup_mm() 진행중
+ - kernel/init/main.c::mm_init() 완료
+ - kernel/include/asm-generic/mmu_context.h::init_new_context() 완료
+ - kernel/kernel/fork.c::dup_mm_exe_file() 완료
+ - kernel/kernel/fork.c::dup_mmap() 진행중
+```
+monotonic clock : 절대로 역행하지 않는 개념의 clock(http://3dmpengines.tistory.com/1048)
+
+Difference between CLOCK_REALTIME and CLOCK_MONOTONIC?
+
+
+
+CLOCK_REALTIME represents the machine's best-guess as to the current wall-clock, time-of-day time. As Ignacio and MarkR say, this means that CLOCK_REALTIME can jump forwards and backwards as the system time-of-day clock is changed, including by NTP.
+
+CLOCK_MONOTONIC represents the absolute elapsed wall-clock time since some arbitrary, fixed point in the past. It isn't affected by changes in the system time-of-day clock.
+
+If you want to compute the elapsed time between two events observed on the one machine without an intervening reboot, CLOCK_MONOTONIC is the best option.
+
+
+https://stackoverflow.com/questions/3523442/difference-between-clock-realtime-and-clock-monotonic
+
+
+
+```
+
+
+
 + [137주차](https://goo.gl/ZgPxby) `2017.07.22`
  - drive: 홍진우님
  - kernel/init/main.c::rest_init() 진행중

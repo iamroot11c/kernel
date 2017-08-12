@@ -27,6 +27,7 @@ void __check_vmalloc_seq(struct mm_struct *mm);
 
 // 2016-12-10
 void check_and_switch_context(struct mm_struct *mm, struct task_struct *tsk);
+// 2017-08-12
 #define init_new_context(tsk,mm)	({ atomic64_set(&mm->context.id, 0); 0; })
 
 #ifdef CONFIG_ARM_ERRATA_798181 // not set
