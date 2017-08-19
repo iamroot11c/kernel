@@ -64,12 +64,13 @@ struct anon_vma {
  */
 // 2015-08-15
 // 2015-12-05;
+// 2017-08-19
 struct anon_vma_chain {
 	struct vm_area_struct *vma;
 	struct anon_vma *anon_vma;
 	struct list_head same_vma;   /* locked by mmap_sem & page_table_lock */
 	struct rb_node rb;			/* locked by anon_vma->rwsem */
-	unsigned long rb_subtree_last;
+	unsigned long rb_subtree_last; // rb_tree 삽입 시 키로 사용
 #ifdef CONFIG_DEBUG_VM_RB // not define
 	unsigned long cached_vma_start, cached_vma_last;
 #endif

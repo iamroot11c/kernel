@@ -237,6 +237,7 @@ struct vm_region {
 // 2015-08-15
 // 2017-01-07
 // 2017-04-15
+// 2017-08-19
 struct vm_area_struct {
 	/* The first cache line has the info for VMA tree walking. */
 
@@ -282,6 +283,7 @@ struct vm_area_struct {
 	 * can only be in the i_mmap tree.  An anonymous MAP_PRIVATE, stack
 	 * or brk vma (with NULL file) can only be in an anon_vma list.
 	 */
+    // 2017-08-19
 	struct list_head anon_vma_chain; /* Serialized by mmap_sem &
 					  * page_table_lock */
 	struct anon_vma *anon_vma;	/* Serialized by page_table_lock */
@@ -342,7 +344,9 @@ struct mm_rss_stat {
 
 struct kioctx_table;
 // 2015-08-15
+// 2017-08-19
 struct mm_struct {
+    // 2017-08-19
 	struct vm_area_struct * mmap;		/* list of VMAs */
 	struct rb_root mm_rb;
 	struct vm_area_struct * mmap_cache;	/* last find_vma result */

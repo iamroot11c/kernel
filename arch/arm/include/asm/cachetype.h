@@ -12,12 +12,13 @@
 extern unsigned int cacheid;
 
 // 2015-08-22
-#define cache_is_vivt()			cacheid_is(CACHEID_VIVT/*0*/)
+#define cache_is_vivt()			cacheid_is(CACHEID_VIVT/*1*/)
 #define cache_is_vipt()			cacheid_is(CACHEID_VIPT)
 // 2015-10-03
 // 2016-04-16
 #define cache_is_vipt_nonaliasing()	cacheid_is(CACHEID_VIPT_NONALIASING/*2*/)
 // 2015-08-22
+// 현 분석 기준 항상 참
 #define cache_is_vipt_aliasing()	cacheid_is(CACHEID_VIPT_ALIASING/*4*/)
 // 2015-08-22
 // 2015-12-26

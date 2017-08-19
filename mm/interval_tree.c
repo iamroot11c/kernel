@@ -16,6 +16,7 @@ static inline unsigned long vma_start_pgoff(struct vm_area_struct *v)
 	return v->vm_pgoff;
 }
 
+// 2017-08-19
 static inline unsigned long vma_last_pgoff(struct vm_area_struct *v)
 {
 	return v->vm_pgoff + ((v->vm_end - v->vm_start) >> PAGE_SHIFT) - 1;
@@ -25,7 +26,10 @@ INTERVAL_TREE_DEFINE(struct vm_area_struct, shared.linear.rb,
 		     unsigned long, shared.linear.rb_subtree_last,
 		     vma_start_pgoff, vma_last_pgoff,, vma_interval_tree)
 
+// 2017-08-19
 /* Insert node immediately after prev in the interval tree */
+// 1) prev에서 node를 삽입할 노드 주소를 찾아 삽입한다.
+// 2) node 정보를 root에 삽입한다.
 void vma_interval_tree_insert_after(struct vm_area_struct *node,
 				    struct vm_area_struct *prev,
 				    struct rb_root *root)
@@ -40,6 +44,7 @@ void vma_interval_tree_insert_after(struct vm_area_struct *node,
 		parent = prev;
 		link = &prev->shared.linear.rb.rb_right;
 	} else {
+		// 지금 동작은 parent 기준 가장 마지막 자식  왼 쪽 노드를 얻어오는 것으로 보임
 		parent = rb_entry(prev->shared.linear.rb.rb_right,
 				  struct vm_area_struct, shared.linear.rb);
 		if (parent->shared.linear.rb_subtree_last < last)
@@ -69,14 +74,18 @@ static inline unsigned long avc_last_pgoff(struct anon_vma_chain *avc)
 	return vma_last_pgoff(avc->vma);
 }
 
+// 2017-08-19
 INTERVAL_TREE_DEFINE(struct anon_vma_chain, rb, unsigned long, rb_subtree_last,
 		     avc_start_pgoff, avc_last_pgoff,
 		     static inline, __anon_vma_interval_tree)
 
+// 2017-08-19
+// root에 anon_vma_chain값을 삽입
+// 자세한 함수 구현은 INTERVAL_TREE_DEFINE 매크로 참조
 void anon_vma_interval_tree_insert(struct anon_vma_chain *node,
 				   struct rb_root *root)
 {
-#ifdef CONFIG_DEBUG_VM_RB
+#ifdef CONFIG_DEBUG_VM_RB // not set
 	node->cached_vma_start = avc_start_pgoff(node);
 	node->cached_vma_last = avc_last_pgoff(node);
 #endif

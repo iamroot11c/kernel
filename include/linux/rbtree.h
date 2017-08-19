@@ -94,6 +94,8 @@ extern void rb_replace_node(struct rb_node *victim, struct rb_node *new,
 // rb_link_node(&va->rb_node, parent, p)
 // 2016-11-12
 // rb_link_node(&se->run_node, parent, link);
+// 2017-08-16
+// rb_link 노드에 node, parent 값을 설정한다.
 static inline void rb_link_node(struct rb_node * node, struct rb_node * parent,
 				struct rb_node ** rb_link)
 {

@@ -85,6 +85,7 @@ pgprot_t vm_get_page_prot(unsigned long vm_flags)
 EXPORT_SYMBOL(vm_get_page_prot);
 
 int sysctl_overcommit_memory __read_mostly = OVERCOMMIT_GUESS;  /* heuristic overcommit */
+// 2017-08-19
 int sysctl_overcommit_ratio __read_mostly = 50;	/* default is 50% */
 int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
 unsigned long sysctl_user_reserve_kbytes __read_mostly = 1UL << 17; /* 128MB */
@@ -126,6 +127,10 @@ EXPORT_SYMBOL_GPL(vm_memory_committed);
  * Note this is a helper function intended to be used by LSMs which
  * wish to use this logic.
  */
+// 2017-08-19
+// __vm_enough_memory(mm, pages, 0)
+// pages 개수만큼 메모리 할당이 가능한지를 리턴한다. (내부 정책이 무엇인가에 따라, 검사 조건이 다름)
+// return : 0 -> 참 / NonZero -> 에러
 int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
 {
 	unsigned long free, allowed, reserve;
@@ -330,6 +335,8 @@ out:
 	return retval;
 }
 
+// 2017-08-19
+// vma->vm_start, rb_left->subtree_gap, rb_right->subtree_gap중 가장 큰 값을 반환
 static long vma_compute_subtree_gap(struct vm_area_struct *vma)
 {
 	unsigned long max, subtree_gap;
@@ -452,6 +459,8 @@ RB_DECLARE_CALLBACKS(static, vma_gap_callbacks, struct vm_area_struct, vm_rb,
  * vma->vm_prev->vm_end values changed, without modifying the vma's position
  * in the rbtree.
  */
+// 2017-08-19
+// 루트 노드까지 올라가면서, rb_subtree_gap 가중치를 변경한다.
 static void vma_gap_update(struct vm_area_struct *vma)
 {
 	/*
@@ -580,6 +589,8 @@ static unsigned long count_vma_pages_range(struct mm_struct *mm,
 	return nr_pages;
 }
 
+// 2017-08-19
+// __vma_link_rb(mm, tmp, rb_link, rb_parent)
 void __vma_link_rb(struct mm_struct *mm, struct vm_area_struct *vma,
 		struct rb_node **rb_link, struct rb_node *rb_parent)
 {
@@ -1170,7 +1181,10 @@ none:
 	return NULL;
 }
 
-#ifdef CONFIG_PROC_FS
+#ifdef CONFIG_PROC_FS // defined
+// 2017-08-19
+// mm_struct의 페이지 개수 업데이트
+// vm_stat_account(mm, mpnt->vm_flags, mpnt->vm_file, -vma_pages(mpnt))
 void vm_stat_account(struct mm_struct *mm, unsigned long flags,
 						struct file *file, long pages)
 {
@@ -1181,6 +1195,7 @@ void vm_stat_account(struct mm_struct *mm, unsigned long flags,
 
 	if (file) {
 		mm->shared_vm += pages;
+		// VM_EXEC set / VM_WRITE not set인 경우 참
 		if ((flags & (VM_EXEC|VM_WRITE)) == VM_EXEC)
 			mm->exec_vm += pages;
 	} else if (flags & stack_flags)

@@ -118,6 +118,7 @@ static inline void reset_vma_resv_huge_pages(struct vm_area_struct *vma)
 {
 }
 
+// 2017-08-19
 static inline unsigned long hugetlb_total_pages(void)
 {
 	return 0;

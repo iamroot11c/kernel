@@ -150,12 +150,14 @@ static inline void
 uprobe_munmap(struct vm_area_struct *vma, unsigned long start, unsigned long end)
 {
 }
+// 2017-08-19
 static inline void uprobe_start_dup_mmap(void)
 {
 }
 static inline void uprobe_end_dup_mmap(void)
 {
 }
+// 2017-08-19
 static inline void
 uprobe_dup_mmap(struct mm_struct *oldmm, struct mm_struct *newmm)
 {

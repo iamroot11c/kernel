@@ -58,14 +58,19 @@ static void flush_icache_alias(unsigned long pfn, unsigned long vaddr, unsigned 
 	flush_icache_range(to, to + len);
 }
 
+// 2017-08-19
 void flush_cache_mm(struct mm_struct *mm)
 {
-	if (cache_is_vivt()) {
+	if (cache_is_vivt()) { // 현 아키텍쳐 기준 false
 		vivt_flush_cache_mm(mm);
 		return;
 	}
 
 	if (cache_is_vipt_aliasing()) {
+		// mcr    p15, 0, %0, c7, c14, 0
+		//   -> 매뉴얼에 없음. 정황 상 cache invalidate로 추측
+		// mcr     p15, 0, %0, c7, c10, 4
+		//   -> Data sync Barrier
 		asm(	"mcr	p15, 0, %0, c7, c14, 0\n"
 		"	mcr	p15, 0, %0, c7, c10, 4"
 		    :
@@ -83,7 +88,7 @@ void flush_cache_range(struct vm_area_struct *vma, unsigned long start, unsigned
 
 	if (cache_is_vipt_aliasing()) {
 		asm(	"mcr	p15, 0, %0, c7, c14, 0\n"
-		"	mcr	p15, 0, %0, c7, c10, 4"
+		"	mcr	p15, 0, %0, c7, c10, 4" 
 		    :
 		    : "r" (0)
 		    : "cc");

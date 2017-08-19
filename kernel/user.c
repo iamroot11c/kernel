@@ -26,6 +26,7 @@
 // 이전에도 언급했지만, struct user_namespace는 64byte 1 cache line을 고려한 구조체
 // 2016-02-13;
 // 2017-07-01
+// 2017-08-19
 struct user_namespace init_user_ns = {
 	.uid_map = {
 		.nr_extents = 1,

@@ -271,7 +271,6 @@ vivt_flush_cache_page(struct vm_area_struct *vma, unsigned long user_addr, unsig
 #ifndef CONFIG_CPU_CACHE_VIPT       // set
 #define flush_cache_mm(mm) \
 		vivt_flush_cache_mm(mm)
-// 2017-04-14
 #define flush_cache_range(vma,start,end) \
 		vivt_flush_cache_range(vma,start,end)
 #define flush_cache_page(vma,addr,pfn) \
@@ -283,6 +282,7 @@ extern void flush_cache_range(struct vm_area_struct *vma, unsigned long start, u
 extern void flush_cache_page(struct vm_area_struct *vma, unsigned long user_addr, unsigned long pfn);
 #endif
 
+// 2017-08-19
 #define flush_cache_dup_mm(mm) flush_cache_mm(mm)
 
 /*
@@ -345,8 +345,10 @@ static inline void flush_anon_page(struct vm_area_struct *vma,
 #define ARCH_HAS_FLUSH_KERNEL_DCACHE_PAGE
 extern void flush_kernel_dcache_page(struct page *);
 
+// 2017-08-19
 #define flush_dcache_mmap_lock(mapping) \
 	spin_lock_irq(&(mapping)->tree_lock)
+// 2017-08-19
 #define flush_dcache_mmap_unlock(mapping) \
 	spin_unlock_irq(&(mapping)->tree_lock)
 

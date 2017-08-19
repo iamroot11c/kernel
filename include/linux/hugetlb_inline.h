@@ -13,6 +13,7 @@ static inline int is_vm_hugetlb_page(struct vm_area_struct *vma)
 #else
 
 // 2015-08-15
+// 2017-08-19
 static inline int is_vm_hugetlb_page(struct vm_area_struct *vma)
 {
 	return 0;

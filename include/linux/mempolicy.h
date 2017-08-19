@@ -241,6 +241,7 @@ mpol_shared_policy_lookup(struct shared_policy *sp, unsigned long idx)
 
 #define vma_policy(vma) NULL
 
+// 2017-08-19
 static inline int
 vma_dup_policy(struct vm_area_struct *src, struct vm_area_struct *dst)
 {

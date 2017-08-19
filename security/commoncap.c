@@ -77,6 +77,8 @@ int cap_netlink_send(struct sock *sk, struct sk_buff *skb)
 // cap_capable(__task_cred(p), &init_user_ns, CAP_SYS_ADMIN/*21*/, SECURITY_CAP_NOAUDIT/*0*/)
 // 2017-07-22
 // cap_capable(cred, ns, cap, SECURITY_CAP_AUDIT)
+// 2017-08-19
+// cap_capable(current_cred(), &init_user_ns, CAP_SYS_ADMIN, SECURITY_CAP_NOAUDIT)
 int cap_capable(const struct cred *cred, struct user_namespace *targ_ns,
 		int cap, int audit)
 {
@@ -961,6 +963,7 @@ error:
  * Determine whether the allocation of a new virtual mapping by the current
  * task is permitted, returning 0 if permission is granted, -ve if not.
  */
+// 2017-08-19
 int cap_vm_enough_memory(struct mm_struct *mm, long pages)
 {
 	int cap_sys_admin = 0;

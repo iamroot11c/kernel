@@ -66,6 +66,8 @@
 static struct kmem_cache *anon_vma_cachep;
 static struct kmem_cache *anon_vma_chain_cachep;
 
+// 2017-08-19
+// anon_vma 할당 및 ref_count 1 초기화
 static inline struct anon_vma *anon_vma_alloc(void)
 {
 	struct anon_vma *anon_vma;
@@ -120,6 +122,7 @@ static inline void anon_vma_free(struct anon_vma *anon_vma)
 	kmem_cache_free(anon_vma_cachep, anon_vma);
 }
 
+// 2017-08-19
 static inline struct anon_vma_chain *anon_vma_chain_alloc(gfp_t gfp)
 {
 	return kmem_cache_alloc(anon_vma_chain_cachep, gfp);
@@ -130,6 +133,8 @@ static void anon_vma_chain_free(struct anon_vma_chain *anon_vma_chain)
 	kmem_cache_free(anon_vma_chain_cachep, anon_vma_chain);
 }
 
+// 2017-08-19
+// anon_vma_chain_link(dst, avc, anon_vma)
 static void anon_vma_chain_link(struct vm_area_struct *vma,
 				struct anon_vma_chain *avc,
 				struct anon_vma *anon_vma)
@@ -223,10 +228,15 @@ int anon_vma_prepare(struct vm_area_struct *vma)
  * Such anon_vma's should have the same root, so you'd expect to see
  * just a single mutex_lock for the whole traversal.
  */
+// 2017-08-19
+// lock_anon_vma_root(root, anon_vma);
+// anon_vma에 대한 세마포어 잡기 동작
 static inline struct anon_vma *lock_anon_vma_root(struct anon_vma *root, struct anon_vma *anon_vma)
 {
 	struct anon_vma *new_root = anon_vma->root;
 	if (new_root != root) {
+		// 주석 내용으로 볼 때 anon_vma의 루트는 동일해야 하기 때문에
+		// null이 아닌 root가 온 경우, 워닝을 한 번 띄우고, 세마포어를 강제 풀기
 		if (WARN_ON_ONCE(root))
 			up_write(&root->rwsem);
 		root = new_root;
@@ -245,11 +255,17 @@ static inline void unlock_anon_vma_root(struct anon_vma *root)
  * Attach the anon_vmas from src to dst.
  * Returns 0 on success, -ENOMEM on failure.
  */
+// 2017-08-19
+// src->anon_vma_chain에 붙은 anon_vma 정보를 dst->anon_vma_chain 리스트, anon_vma->rb_root에 붙임
 int anon_vma_clone(struct vm_area_struct *dst, struct vm_area_struct *src)
 {
 	struct anon_vma_chain *avc, *pavc;
 	struct anon_vma *root = NULL;
 
+	//#define list_for_each_entry_reverse(pos, head, member)          \
+			for (pos = list_entry((head)->prev, typeof(*pos), member);  \
+		        &pos->member != (head);    \
+		        pos = list_entry(pos->member.prev, typeof(*pos), member))
 	list_for_each_entry_reverse(pavc, &src->anon_vma_chain, same_vma) {
 		struct anon_vma *anon_vma;
 
@@ -278,6 +294,9 @@ int anon_vma_clone(struct vm_area_struct *dst, struct vm_area_struct *src)
  * the corresponding VMA in the parent process is attached to.
  * Returns 0 on success, non-zero on failure.
  */
+// 2017-08-19
+// 부모 및 자기 자신에 대한 anon_vma 정보를 설정한다.
+// (얕은 복사가 일어나기 때문에, 부모의 정보는 그대로 유지된다)
 int anon_vma_fork(struct vm_area_struct *vma, struct vm_area_struct *pvma)
 {
 	struct anon_vma_chain *avc;
@@ -291,10 +310,13 @@ int anon_vma_fork(struct vm_area_struct *vma, struct vm_area_struct *pvma)
 	 * First, attach the new VMA to the parent VMA's anon_vmas,
 	 * so rmap can find non-COWed pages in child processes.
 	 */
+	// 2017-08-19
+	// 부모의 anon_vma 객체를 구성
 	if (anon_vma_clone(vma, pvma))
 		return -ENOMEM;
 
 	/* Then add our own anon_vma. */
+	// vma 자체에 대해 관리를 하기 위해, 관리 객체를 생성
 	anon_vma = anon_vma_alloc();
 	if (!anon_vma)
 		goto out_error;
@@ -306,6 +328,7 @@ int anon_vma_fork(struct vm_area_struct *vma, struct vm_area_struct *pvma)
 	 * The root anon_vma's spinlock is the lock actually used when we
 	 * lock any of the anon_vmas in this anon_vma tree.
 	 */
+	// anon_vma의 root를 부모의 root로 변경한다. 
 	anon_vma->root = pvma->anon_vma->root;
 	/*
 	 * With refcounts, an anon_vma can stay around longer than the
@@ -316,6 +339,7 @@ int anon_vma_fork(struct vm_area_struct *vma, struct vm_area_struct *pvma)
 	/* Mark this anon_vma as the one where our new (COWed) pages go. */
 	vma->anon_vma = anon_vma;
 	anon_vma_lock_write(anon_vma);
+	// 자기 자신에 대해 anon_vma 관리를 하기 위해 링크를 구성한다.
 	anon_vma_chain_link(vma, avc, anon_vma);
 	anon_vma_unlock_write(anon_vma);
 
