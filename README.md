@@ -1,7 +1,7 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
 
-+ [139주차](http://bit.ly/2wRWv3t) `2017.08.19`
++ [139주차](https://goo.gl/LoZeie) `2017.08.19`
  - drive: 홍진우님
  - kernel/init/main.c::rest_init() 진행중
  - kernel/kernel/fork.c::kernel_thread() 진행중
