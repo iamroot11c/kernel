@@ -511,10 +511,13 @@ static int dup_mmap(struct mm_struct *mm, struct mm_struct *oldmm)
 		__vma_link_rb(mm, tmp, rb_link, rb_parent);
 		// 2017-08-19 여기까지
 		// 2017-08-26에 트리 구성 관련 동작을 확인할 예정
+		// 2017-08-26 시작
 		rb_link = &tmp->vm_rb.rb_right;
 		rb_parent = &tmp->vm_rb;
 
 		mm->map_count++;
+		// 2017-08-26
+		// 시간이 많이 걸리는 동작으로 추측함
 		retval = copy_page_range(mm, oldmm, mpnt);
 
 		if (tmp->vm_ops && tmp->vm_ops->open)
@@ -522,15 +525,15 @@ static int dup_mmap(struct mm_struct *mm, struct mm_struct *oldmm)
 
 		if (retval)
 			goto out;
-	}
+	} // for
 	/* a new mm has just been created */
-	arch_dup_mmap(oldmm, mm);
+	arch_dup_mmap(oldmm, mm);	// NOP
 	retval = 0;
 out:
 	up_write(&mm->mmap_sem);
 	flush_tlb_mm(oldmm);
 	up_write(&oldmm->mmap_sem);
-	uprobe_end_dup_mmap();
+	uprobe_end_dup_mmap();	// NOP
 	return retval;
 fail_nomem_anon_vma_fork:
 	mpol_put(vma_policy(tmp));
@@ -917,6 +920,7 @@ struct mm_struct *dup_mm(struct task_struct *tsk)
 
 	// 2017-08-12 여기까지
 	err = dup_mmap(mm, oldmm);
+	// 2017-08-26 end
 	if (err)
 		goto free_pt;
 
@@ -1494,6 +1498,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 		goto bad_fork_cleanup_sighand;
 	// 2017-08-12
 	retval = copy_mm(clone_flags, p);
+	// 2017-08-26
 	if (retval)
 		goto bad_fork_cleanup_signal;
 	retval = copy_namespaces(clone_flags, p);

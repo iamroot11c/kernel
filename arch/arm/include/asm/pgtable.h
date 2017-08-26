@@ -313,6 +313,8 @@ extern void __sync_icache_dcache(pte_t pteval);
 // 2015-12-26
 // 2016-04-16
 // set_pte_at(&init_mm, addr, pte, mk_pte(page, prot))
+// 2017-08-26
+//  set_pte_at(mm, address, ptep, pte_wrprotect(old_pte));
 static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
 			      pte_t *ptep, pte_t pteval)
 {
@@ -331,6 +333,13 @@ static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
 static inline pte_t pte_##fn(pte_t pte) { pte_val(pte) op; return pte; }
 
 PTE_BIT_FUNC(wrprotect, |= L_PTE_RDONLY);  // pte_wrprotect();
+/*
+ * static inline pte_t pte_wrprotect(pte_t pte)
+ * {
+ *  pte_val(pte) |= L_PTE_RDONLY; 
+ *  return pte;
+ * }
+ */
 PTE_BIT_FUNC(mkwrite,   &= ~L_PTE_RDONLY); // pte_mkwrite();
 PTE_BIT_FUNC(mkclean,   &= ~L_PTE_DIRTY);  // pte_mkclean();
 PTE_BIT_FUNC(mkdirty,   |= L_PTE_DIRTY);   // pte_mkdirty();

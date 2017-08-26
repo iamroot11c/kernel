@@ -2647,6 +2647,7 @@ static inline void cond_resched_rcu(void)
  * task waiting?: (technically does not depend on CONFIG_PREEMPT,
  * but a general need for low latency)
  */
+// 2017-08-12
 static inline int spin_needbreak(spinlock_t *lock)
 {
 #ifdef CONFIG_PREEMPT

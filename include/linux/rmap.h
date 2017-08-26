@@ -190,6 +190,7 @@ void hugepage_add_anon_rmap(struct page *, struct vm_area_struct *,
 void hugepage_add_new_anon_rmap(struct page *, struct vm_area_struct *,
 				unsigned long);
 
+// 2017-08-26
 static inline void page_dup_rmap(struct page *page)
 {
 	atomic_inc(&page->_mapcount);

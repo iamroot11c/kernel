@@ -1453,7 +1453,7 @@ static inline void pgtable_page_dtor(struct page *page)
 	((unlikely(pmd_none(*(pmd))) && __pte_alloc(mm, vma,	\
 							pmd, address))?	\
 	 NULL: pte_offset_map(pmd, address))
-
+// 2017-08-12
 #define pte_alloc_map_lock(mm, pmd, address, ptlp)	\
 	((unlikely(pmd_none(*(pmd))) && __pte_alloc(mm, NULL,	\
 							pmd, address))?	\

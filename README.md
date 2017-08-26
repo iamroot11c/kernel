@@ -1,6 +1,16 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
 
++ [140주차]() `2017.08.26`
+ - drive: 보름달님
+ - kernel/init/main.c::rest_init() 진행중
+ - kernel/kernel/fork.c::kernel_thread() 진행중
+ - kernel/kernel/fork.c::do_fork() 진행중
+ - kernel/kernel/fork.c::copy_process() 진행중
+ - kernel/kernel/fork.c::copy_mm() 완료
+ - kernel/kernel/fork.c::dup_mmap() 완료
+ - kernel/mm/memory.c::copy_page_range() 완료
+
 + [139주차](https://goo.gl/LoZeie) `2017.08.19`
  - drive: 홍진우님
  - kernel/init/main.c::rest_init() 진행중

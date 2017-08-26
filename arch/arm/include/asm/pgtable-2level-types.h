@@ -31,11 +31,13 @@ typedef u32 pmdval_t;
 /*
  * These are used to make use of C type-checking..
  */
+// 2017-08-26
 typedef struct { pteval_t pte; } pte_t;
 typedef struct { pmdval_t pmd; } pmd_t;
 typedef struct { pmdval_t pgd[2]; } pgd_t;
 typedef struct { pteval_t pgprot; } pgprot_t;
 
+// 2017-08-26
 #define pte_val(x)      ((x).pte)
 #define pmd_val(x)      ((x).pmd)
 #define pgd_val(x)	((x).pgd[0])

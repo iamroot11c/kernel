@@ -159,6 +159,7 @@ struct mmu_notifier {
 	const struct mmu_notifier_ops *ops;
 };
 
+// 2017-08-26
 static inline int mm_has_notifiers(struct mm_struct *mm)
 {
 	return unlikely(mm->mmu_notifier_mm);
@@ -221,6 +222,7 @@ static inline void mmu_notifier_invalidate_page(struct mm_struct *mm,
 		__mmu_notifier_invalidate_page(mm, address);
 }
 
+// 2017-08-26
 static inline void mmu_notifier_invalidate_range_start(struct mm_struct *mm,
 				  unsigned long start, unsigned long end)
 {

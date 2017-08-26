@@ -472,6 +472,7 @@ static inline void __local_flush_tlb_mm(struct mm_struct *mm)
 	tlb_op(TLB_V6_I_ASID, "c8, c5, 2", asid);
 }
 
+// 2017-08-26
 static inline void local_flush_tlb_mm(struct mm_struct *mm)
 {
 	const int asid = ASID(mm);

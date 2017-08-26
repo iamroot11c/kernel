@@ -628,6 +628,7 @@ int __pte_alloc_kernel(pmd_t *pmd, unsigned long address)
 	return 0;
 }
 
+// 2017-08-27
 static inline void init_rss_vec(int *rss)
 {
 	memset(rss, 0, sizeof(int) * NR_MM_COUNTERS);
@@ -709,6 +710,7 @@ static void print_bad_pte(struct vm_area_struct *vma, unsigned long addr,
 	add_taint(TAINT_BAD_PAGE, LOCKDEP_NOW_UNRELIABLE);
 }
 
+// 2017-08-28
 static inline bool is_cow_mapping(vm_flags_t flags)
 {
 	return (flags & (VM_SHARED | VM_MAYWRITE)) == VM_MAYWRITE;
@@ -765,6 +767,8 @@ static inline bool is_cow_mapping(vm_flags_t flags)
 
 // 2015-10-17
 // 2017-04-14
+// 2017-08-26
+// vm_normal_page(vma, addr, pte)
 struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 				pte_t pte)
 {
@@ -821,6 +825,7 @@ out:
  * covered by this vma.
  */
 
+// 2017-08-12
 static inline unsigned long
 copy_one_pte(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 		pte_t *dst_pte, pte_t *src_pte, struct vm_area_struct *vma,
@@ -886,8 +891,11 @@ copy_one_pte(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 	 * If it's a shared mapping, mark it clean in
 	 * the child
 	 */
+	// 2017-08-26
+	// L_PTE_DIRTY 플래그 해제
 	if (vm_flags & VM_SHARED)
 		pte = pte_mkclean(pte);
+	// &= ~L_PTE_YOUNG
 	pte = pte_mkold(pte);
 
 	page = vm_normal_page(vma, addr, pte);
@@ -905,6 +913,7 @@ out_set_pte:
 	return 0;
 }
 
+// 2017-08-26
 int copy_pte_range(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 		   pmd_t *dst_pmd, pmd_t *src_pmd, struct vm_area_struct *vma,
 		   unsigned long addr, unsigned long end)
@@ -919,6 +928,7 @@ int copy_pte_range(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 again:
 	init_rss_vec(rss);
 
+	// dst locking start
 	dst_pte = pte_alloc_map_lock(dst_mm, dst_pmd, addr, &dst_ptl);
 	if (!dst_pte)
 		return -ENOMEM;
@@ -927,7 +937,7 @@ again:
 	spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
 	orig_src_pte = src_pte;
 	orig_dst_pte = dst_pte;
-	arch_enter_lazy_mmu_mode();
+	arch_enter_lazy_mmu_mode();	// NOP
 
 	do {
 		/*
@@ -944,6 +954,7 @@ again:
 			progress++;
 			continue;
 		}
+		// 성공인 경우, entry.val == 0
 		entry.val = copy_one_pte(dst_mm, src_mm, dst_pte, src_pte,
 							vma, addr, rss);
 		if (entry.val)
@@ -951,9 +962,9 @@ again:
 		progress += 8;
 	} while (dst_pte++, src_pte++, addr += PAGE_SIZE, addr != end);
 
-	arch_leave_lazy_mmu_mode();
+	arch_leave_lazy_mmu_mode();	// NOP
 	spin_unlock(src_ptl);
-	pte_unmap(orig_src_pte);
+	pte_unmap(orig_src_pte);	// NOP
 	add_mm_rss_vec(dst_mm, rss);
 	pte_unmap_unlock(orig_dst_pte, dst_ptl);
 	cond_resched();
@@ -968,6 +979,7 @@ again:
 	return 0;
 }
 
+// 2017-08-26
 static inline int copy_pmd_range(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 		pud_t *dst_pud, pud_t *src_pud, struct vm_area_struct *vma,
 		unsigned long addr, unsigned long end)
@@ -981,6 +993,7 @@ static inline int copy_pmd_range(struct mm_struct *dst_mm, struct mm_struct *src
 	src_pmd = pmd_offset(src_pud, addr);
 	do {
 		next = pmd_addr_end(addr, end);
+		// NOP
 		if (pmd_trans_huge(*src_pmd)) {
 			int err;
 			VM_BUG_ON(next-addr != HPAGE_PMD_SIZE);
@@ -992,6 +1005,7 @@ static inline int copy_pmd_range(struct mm_struct *dst_mm, struct mm_struct *src
 				continue;
 			/* fall through */
 		}
+		// ret: 0
 		if (pmd_none_or_clear_bad(src_pmd))
 			continue;
 		if (copy_pte_range(dst_mm, src_mm, dst_pmd, src_pmd,
@@ -1001,6 +1015,7 @@ static inline int copy_pmd_range(struct mm_struct *dst_mm, struct mm_struct *src
 	return 0;
 }
 
+// 2017-08-26
 static inline int copy_pud_range(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 		pgd_t *dst_pgd, pgd_t *src_pgd, struct vm_area_struct *vma,
 		unsigned long addr, unsigned long end)
@@ -1023,6 +1038,8 @@ static inline int copy_pud_range(struct mm_struct *dst_mm, struct mm_struct *src
 	return 0;
 }
 
+// 2017-08-26
+// retval = copy_page_range(mm, oldmm, mpnt);
 int copy_page_range(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 		struct vm_area_struct *vma)
 {
@@ -1047,6 +1064,7 @@ int copy_page_range(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 			return 0;
 	}
 
+	// NOP
 	if (is_vm_hugetlb_page(vma))
 		return copy_hugetlb_page_range(dst_mm, src_mm, vma);
 
@@ -1069,6 +1087,7 @@ int copy_page_range(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 	is_cow = is_cow_mapping(vma->vm_flags);
 	mmun_start = addr;
 	mmun_end   = end;
+
 	if (is_cow)
 		mmu_notifier_invalidate_range_start(src_mm, mmun_start,
 						    mmun_end);
@@ -1080,6 +1099,7 @@ int copy_page_range(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 		next = pgd_addr_end(addr, end);
 		if (pgd_none_or_clear_bad(src_pgd))
 			continue;
+		// 2017-08-26
 		if (unlikely(copy_pud_range(dst_mm, src_mm, dst_pgd, src_pgd,
 					    vma, addr, next))) {
 			ret = -ENOMEM;

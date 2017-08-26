@@ -198,6 +198,7 @@ static inline bool mpol_equal(struct mempolicy *a, struct mempolicy *b)
 	return true;
 }
 
+// 2017-08-26
 static inline void mpol_put(struct mempolicy *p)
 {
 }

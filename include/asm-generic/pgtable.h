@@ -152,10 +152,12 @@ extern pmd_t pmdp_clear_flush(struct vm_area_struct *vma,
 #endif
 
 #ifndef __HAVE_ARCH_PTEP_SET_WRPROTECT
+// 2017-08-26
 struct mm_struct;
 static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long address, pte_t *ptep)
 {
 	pte_t old_pte = *ptep;
+    // pte_wrprotect(old_pte)를 통해서, old_pte에 L_PTE_RDONLY 설정 
 	set_pte_at(mm, address, ptep, pte_wrprotect(old_pte));
 }
 #endif
@@ -251,6 +253,7 @@ static inline int pmd_same(pmd_t pmd_a, pmd_t pmd_b)
  */
 
 // PGDIR_SIZE단위로 addr 올림. 만약 해당 값이 end를 넘어가는 경우 강제 보정
+// 2017-08-26
 #define pgd_addr_end(addr, end)						\
 ({	unsigned long __boundary = ((addr) + PGDIR_SIZE) & PGDIR_MASK;	\
 	(__boundary - 1 < (end) - 1)? __boundary: (end);		\

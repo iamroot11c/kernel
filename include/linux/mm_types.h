@@ -374,7 +374,9 @@ struct mm_struct {
 						 */
 
 
+    // 2017-08-26
 	unsigned long hiwater_rss;	/* High-watermark of RSS usage */
+    // 2017-08-26
 	unsigned long hiwater_vm;	/* High-water virtual memory usage */
 
 	unsigned long total_vm;		/* Total pages mapped */
@@ -395,6 +397,7 @@ struct mm_struct {
 	 * Special counters, in some configurations protected by the
 	 * page_table_lock, in other configurations by being atomic.
 	 */
+    // 2017-08-26
 	struct mm_rss_stat rss_stat;
 
 	struct linux_binfmt *binfmt;

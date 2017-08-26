@@ -193,6 +193,7 @@ static inline void do_raw_spin_unlock(raw_spinlock_t *lock) __releases(lock)
 	 } while (0)
 #else
 // 2016-10-15
+// 2017-08-26
 # define raw_spin_lock_nested(lock, subclass)		_raw_spin_lock(lock)
 # define raw_spin_lock_nest_lock(lock, nest_lock)	_raw_spin_lock(lock)
 #endif
@@ -316,6 +317,7 @@ static inline int spin_trylock(spinlock_t *lock)
 	return raw_spin_trylock(&lock->rlock);
 }
 
+// 2017-08-26
 #define spin_lock_nested(lock, subclass)			\
 do {								\
 	raw_spin_lock_nested(spinlock_check(lock), subclass);	\
@@ -400,6 +402,7 @@ static inline int spin_is_locked(spinlock_t *lock)
 }
 
 // 2015-07-04;
+// 2017-08-26
 static inline int spin_is_contended(spinlock_t *lock)
 {
 	return raw_spin_is_contended(&lock->rlock);
