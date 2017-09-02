@@ -127,6 +127,7 @@ static void ioc_release_fn(struct work_struct *work)
  * Decrement reference count of @ioc and release it if the count reaches
  * zero.
  */
+// 2017-09-02
 void put_io_context(struct io_context *ioc)
 {
 	unsigned long flags;
@@ -232,6 +233,8 @@ void ioc_clear_queue(struct request_queue *q)
 	}
 }
 
+// 2017-09-02
+// task->io_context를 리턴. 현재 설정된 것이 없다면, 새로 할당 후 리턴
 int create_task_io_context(struct task_struct *task, gfp_t gfp_flags, int node)
 {
 	struct io_context *ioc;
@@ -285,12 +288,13 @@ int create_task_io_context(struct task_struct *task, gfp_t gfp_flags, int node)
  * This function always goes through task_lock() and it's better to use
  * %current->io_context + get_io_context() for %current.
  */
+// 2017-09-02
 struct io_context *get_task_io_context(struct task_struct *task,
 				       gfp_t gfp_flags, int node)
 {
 	struct io_context *ioc;
 
-	might_sleep_if(gfp_flags & __GFP_WAIT);
+	might_sleep_if(gfp_flags & __GFP_WAIT); // NOP
 
 	do {
 		task_lock(task);

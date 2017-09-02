@@ -1060,9 +1060,10 @@ out:
 	return error;
 }
 
+// 2107-09-02
 static int copy_io(unsigned long clone_flags, struct task_struct *tsk)
 {
-#ifdef CONFIG_BLOCK
+#ifdef CONFIG_BLOCK // set
 	struct io_context *ioc = current->io_context;
 	struct io_context *new_ioc;
 
@@ -1072,6 +1073,8 @@ static int copy_io(unsigned long clone_flags, struct task_struct *tsk)
 	 * Share io context with parent, if CLONE_IO is set
 	 */
 	if (clone_flags & CLONE_IO) {
+		// current의 ioc 레퍼런스 카운트 증가. 
+		// tsk에 ioc 세팅
 		ioc_task_link(ioc);
 		tsk->io_context = ioc;
 	} else if (ioprio_valid(ioc->ioprio)) {
@@ -1501,10 +1504,13 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 	// 2017-08-26
 	if (retval)
 		goto bad_fork_cleanup_signal;
+	// 2017-09-02
 	retval = copy_namespaces(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_mm;
+	// 2017-09-02
 	retval = copy_io(clone_flags, p);
+	// 2017-09-02 완료
 	if (retval)
 		goto bad_fork_cleanup_namespaces;
 	retval = copy_thread(clone_flags, stack_start, stack_size, p);

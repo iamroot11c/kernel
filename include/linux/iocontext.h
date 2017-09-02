@@ -94,6 +94,7 @@ struct io_cq {
  * I/O subsystem state of the associated processes.  It is refcounted
  * and kmalloc'ed. These could be shared between processes.
  */
+// 2017-09-02
 struct io_context {
 	atomic_long_t refcount;
 	atomic_t active_ref;
@@ -125,6 +126,7 @@ struct io_context {
  * acquires an active reference on @ioc.  The caller must already have an
  * active reference on @ioc.
  */
+// 2017-09-02
 static inline void get_io_context_active(struct io_context *ioc)
 {
 	WARN_ON_ONCE(atomic_long_read(&ioc->refcount) <= 0);
@@ -133,6 +135,7 @@ static inline void get_io_context_active(struct io_context *ioc)
 	atomic_inc(&ioc->active_ref);
 }
 
+// 2017-09-02
 static inline void ioc_task_link(struct io_context *ioc)
 {
 	get_io_context_active(ioc);
@@ -142,7 +145,7 @@ static inline void ioc_task_link(struct io_context *ioc)
 }
 
 struct task_struct;
-#ifdef CONFIG_BLOCK
+#ifdef CONFIG_BLOCK // set
 void put_io_context(struct io_context *ioc);
 void put_io_context_active(struct io_context *ioc);
 void exit_io_context(struct task_struct *task);
