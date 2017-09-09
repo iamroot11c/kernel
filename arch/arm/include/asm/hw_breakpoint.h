@@ -131,6 +131,7 @@ void hw_breakpoint_pmu_read(struct perf_event *bp);
 int hw_breakpoint_slots(int type);
 
 #else
+// 2017-09-09
 static inline void clear_ptrace_hw_breakpoint(struct task_struct *tsk) {}
 
 #endif	/* CONFIG_HAVE_HW_BREAKPOINT */

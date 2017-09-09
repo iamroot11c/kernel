@@ -29,6 +29,7 @@ void proc_comm_connector(struct task_struct *task);
 void proc_coredump_connector(struct task_struct *task);
 void proc_exit_connector(struct task_struct *task);
 #else
+// 2017-09-09
 static inline void proc_fork_connector(struct task_struct *task)
 {}
 

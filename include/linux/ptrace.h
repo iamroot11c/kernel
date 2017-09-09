@@ -239,6 +239,7 @@ static inline void user_enable_single_step(struct task_struct *task)
  * of those was ever called on @task, and even if arch_has_single_step()
  * returned zero.
  */
+// 2017-09-09
 static inline void user_disable_single_step(struct task_struct *task)
 {
 }
@@ -323,6 +324,7 @@ static inline void user_single_step_siginfo(struct task_struct *tsk,
 #define arch_ptrace_stop(code, info)		do { } while (0)
 #endif
 
+// 2017-09-09
 #ifndef current_pt_regs
 #define current_pt_regs() task_pt_regs(current)
 #endif

@@ -166,6 +166,7 @@ void recalc_sigpending_and_wake(struct task_struct *t)
 		signal_wake_up(t, 0);
 }
 
+// 2017-09-09
 void recalc_sigpending(void)
 {
 	if (!recalc_sigpending_tsk(current) && !freezing(current))

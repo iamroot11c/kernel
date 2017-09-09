@@ -78,6 +78,7 @@ static inline void set_ti_thread_flag(struct thread_info *ti, int flag)
 	set_bit(flag, (unsigned long *)&ti->flags);
 }
 
+// 2017-09-09
 static inline void clear_ti_thread_flag(struct thread_info *ti, int flag)
 {
 	clear_bit(flag, (unsigned long *)&ti->flags);
@@ -105,6 +106,7 @@ static inline int test_ti_thread_flag(struct thread_info *ti, int flag)
 // 2016-01-30
 #define set_thread_flag(flag) \
 	set_ti_thread_flag(current_thread_info(), flag)
+// 2017-09-09
 #define clear_thread_flag(flag) \
 	clear_ti_thread_flag(current_thread_info(), flag)
 #define test_and_set_thread_flag(flag) \

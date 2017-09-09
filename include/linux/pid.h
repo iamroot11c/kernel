@@ -3,6 +3,7 @@
 
 #include <linux/rcupdate.h>
 
+// 2017-09-09
 enum pid_type
 {
     // 2016-03-05
@@ -49,6 +50,7 @@ enum pid_type
  */
 
 // 2016-03-05
+// 2017-09-09
 struct upid {
 	/* Try to keep pid_chain in the same cacheline as nr for find_vpid */
 	int nr;
@@ -139,6 +141,7 @@ extern void disable_pid_allocation(struct pid_namespace *ns);
  */
 // 2016-03-05
 // ns : namespace
+// 2017-09-09
 static inline struct pid_namespace *ns_of_pid(struct pid *pid)
 {
 	struct pid_namespace *ns = NULL;
@@ -169,6 +172,7 @@ static inline bool is_child_reaper(struct pid *pid)
  * see also task_xid_nr() etc in include/linux/sched.h
  */
 
+// 2017-09-09
 static inline pid_t pid_nr(struct pid *pid)
 {
 	pid_t nr = 0;

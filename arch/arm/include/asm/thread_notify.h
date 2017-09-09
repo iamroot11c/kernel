@@ -29,6 +29,8 @@ static inline void thread_unregister_notifier(struct notifier_block *n)
 	atomic_notifier_chain_unregister(&thread_notify_head, n);
 }
 
+// 2017-09-09
+// thread_notify(THREAD_NOTIFY_COPY, thread);
 static inline void thread_notify(unsigned long rc, struct thread_info *thread)
 {
 	extern struct atomic_notifier_head thread_notify_head;

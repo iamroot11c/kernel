@@ -87,11 +87,13 @@
 /*
  * Protected counters by write_lock_irq(&tasklist_lock)
  */
+// 2017-09-09
 unsigned long total_forks;	/* Handle normal Linux uptimes. */
 int nr_threads;			/* The idle threads do not count.. */
 
 int max_threads;		/* tunable limit on nr_threads */
 
+// 2017-09-09
 DEFINE_PER_CPU(unsigned long, process_counts) = 0;
 
 // 2016-02-06;
@@ -1240,6 +1242,7 @@ static void posix_cpu_timers_init(struct task_struct *tsk)
 	INIT_LIST_HEAD(&tsk->cpu_timers[2]);
 }
 
+// 2017-09-09
 static inline void
 init_task_pid(struct task_struct *task, enum pid_type type, struct pid *pid)
 {
@@ -1513,34 +1516,42 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 	// 2017-09-02 완료
 	if (retval)
 		goto bad_fork_cleanup_namespaces;
+	
+	// 2017-09-09, 시작
 	retval = copy_thread(clone_flags, stack_start, stack_size, p);
 	if (retval)
 		goto bad_fork_cleanup_io;
 
+	// 2017-09-09, 식사전
+	// 2017-09-09, pid == NULL
 	if (pid != &init_struct_pid) {
 		retval = -ENOMEM;
+		// 2017-09-09, start
 		pid = alloc_pid(p->nsproxy->pid_ns_for_children);
+		// 2017-09-09, end
 		if (!pid)
 			goto bad_fork_cleanup_io;
 	}
 
+	// 2017-09-09, NULL 예상
 	p->set_child_tid = (clone_flags & CLONE_CHILD_SETTID) ? child_tidptr : NULL;
 	/*
 	 * Clear TID on mm_release()?
 	 */
+	// 2017-09-09, NULL 예상
 	p->clear_child_tid = (clone_flags & CLONE_CHILD_CLEARTID) ? child_tidptr : NULL;
-#ifdef CONFIG_BLOCK
+#ifdef CONFIG_BLOCK	// =y
 	p->plug = NULL;
 #endif
-#ifdef CONFIG_FUTEX
+#ifdef CONFIG_FUTEX	// =y
 	p->robust_list = NULL;
-#ifdef CONFIG_COMPAT
+#ifdef CONFIG_COMPAT	// =n
 	p->compat_robust_list = NULL;
 #endif
 	INIT_LIST_HEAD(&p->pi_state_list);
 	p->pi_state_cache = NULL;
 #endif
-	uprobe_copy_process(p);
+	uprobe_copy_process(p);	// NOP
 	/*
 	 * sigaltstack should be cleared when sharing the same VM
 	 */
@@ -1551,12 +1562,12 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 	 * Syscall tracing and stepping should be turned off in the
 	 * child regardless of CLONE_PTRACE.
 	 */
-	user_disable_single_step(p);
+	user_disable_single_step(p);	// NOP
 	clear_tsk_thread_flag(p, TIF_SYSCALL_TRACE);
-#ifdef TIF_SYSCALL_EMU
+#ifdef TIF_SYSCALL_EMU	// n
 	clear_tsk_thread_flag(p, TIF_SYSCALL_EMU);
 #endif
-	clear_all_latency_tracing(p);
+	clear_all_latency_tracing(p);	// NOP
 
 	/* ok, now we should be set up.. */
 	p->pid = pid_nr(pid);
@@ -1608,6 +1619,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 	 * A fatal signal pending means that current will exit, so the new
 	 * thread can't slip out of an OOM kill (or normal SIGKILL).
 	*/
+	// 2017-09-09
 	recalc_sigpending();
 	if (signal_pending(current)) {
 		spin_unlock(&current->sighand->siglock);
@@ -1616,6 +1628,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 		goto bad_fork_free_pid;
 	}
 
+	// 2017-09-09
 	if (likely(p->pid)) {
 		ptrace_init_task(p, (clone_flags & CLONE_PTRACE) || trace);
 
@@ -1624,8 +1637,10 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 			init_task_pid(p, PIDTYPE_PGID, task_pgrp(current));
 			init_task_pid(p, PIDTYPE_SID, task_session(current));
 
+			// init process
 			if (is_child_reaper(pid)) {
 				ns_of_pid(pid)->child_reaper = p;
+				// init은 kill할 수 없다.
 				p->signal->flags |= SIGNAL_UNKILLABLE;
 			}
 
@@ -1645,16 +1660,16 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 		}
 		attach_pid(p, PIDTYPE_PID);
 		nr_threads++;
-	}
+	} // if
 
 	total_forks++;
 	spin_unlock(&current->sighand->siglock);
 	write_unlock_irq(&tasklist_lock);
-	proc_fork_connector(p);
-	cgroup_post_fork(p);
+	proc_fork_connector(p);		// NOP
+	cgroup_post_fork(p);		// NOP
 	if (clone_flags & CLONE_THREAD)
 		threadgroup_change_end(current);
-	perf_event_fork(p);
+	perf_event_fork(p);	// NOP
 
 	trace_task_newtask(p, clone_flags);
 
@@ -1734,7 +1749,9 @@ struct task_struct *fork_idle(int cpu)
  */
 // 2017-07-22
 //do_fork(CLONE_FS|CLONE_SIGHAND|CLONE_VM|CLONE_UNTRACED, (unsigned long)fn,
-//	                 (unsigned long)arg, NULL, NULL)
+//	                 (unsigned long)arg, NULL, NULL);
+// stack_start: kernel_init
+// stack_size: NULL
 long do_fork(unsigned long clone_flags,
 	      unsigned long stack_start,
 	      unsigned long stack_size,
@@ -1767,6 +1784,8 @@ long do_fork(unsigned long clone_flags,
 	// 2017-07-22
 	p = copy_process(clone_flags, stack_start, stack_size,
 			 child_tidptr, NULL, trace);
+	// 2017-09-09, 여기까지
+	
 	/*
 	 * Do this prior waking up the new thread - the thread pointer
 	 * might get invalid after that point, if the thread exits quickly.

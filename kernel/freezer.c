@@ -37,6 +37,7 @@ static DEFINE_SPINLOCK(freezer_lock);
  * called under any context.  The freezers are responsible for ensuring the
  * target tasks see the updated state.
  */
+// 2017-09-09
 bool freezing_slow_path(struct task_struct *p)
 {
 	if (p->flags & (PF_NOFREEZE | PF_SUSPEND_TASK))

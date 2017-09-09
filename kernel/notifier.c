@@ -125,6 +125,9 @@ static int notifier_chain_unregister(struct notifier_block **nl,
 //                     #THREAD_NOTIFY_SWITCH/*2*/,
 //                     task_thread_info(next),
 //                     -1, NULL);
+//
+// 2017-09-09
+// notifier_call_chain(&nh->head, THREAD_NOTIFY_COPY, thread, -1, NULL);
 static int __kprobes notifier_call_chain(struct notifier_block **nl,
 					unsigned long val, void *v,
 					int nr_to_call,	int *nr_calls)
@@ -240,6 +243,9 @@ EXPORT_SYMBOL_GPL(atomic_notifier_chain_unregister);
 //                            #THREAD_NOTIFY_SWITCH/*2*/,
 //                            task_thread_info(next),
 //                            -1, NULL);
+//
+// 2017-09-09
+// __atomic_notifier_call_chain(thread_notify_head, THREAD_NOTIFY_COPY, thread, -1, NULL);
 int __kprobes __atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 					unsigned long val, void *v,
 					int nr_to_call, int *nr_calls)
@@ -257,6 +263,8 @@ EXPORT_SYMBOL_GPL(__atomic_notifier_call_chain);
 // atomic_notifier_call_chain(thread_notify_head, 
 //                            #THREAD_NOTIFY_SWITCH/*2*/,
 //                            task_thread_info(next));
+// 2017-09-09
+// atomic_notifier_call_chain(thread_notify_head, THREAD_NOTIFY_COPY, thread);
 int __kprobes atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 		unsigned long val, void *v)
 {

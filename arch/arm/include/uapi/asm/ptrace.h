@@ -49,6 +49,7 @@
 #define SVC_MODE	0x00000000
 #else
 #define USR_MODE	0x00000010
+// 2017-09-09
 #define SVC_MODE	0x00000013
 #endif
 #define FIQ_MODE	0x00000011
@@ -121,11 +122,13 @@
  * has to be a multiple of 8.
  */
 #ifndef __KERNEL__
+// 2017-09-09
 struct pt_regs {
 	long uregs[18];
 };
 #endif /* __KERNEL__ */
 
+// 2017-09-09
 #define ARM_cpsr	uregs[16]
 #define ARM_pc		uregs[15]
 #define ARM_lr		uregs[14]

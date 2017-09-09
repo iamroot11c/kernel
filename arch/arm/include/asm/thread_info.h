@@ -29,6 +29,7 @@ struct exec_domain;
 
 typedef unsigned long mm_segment_t;
 
+// 2017-09-09
 struct cpu_context_save {
 	__u32	r4;
 	__u32	r5;
@@ -183,6 +184,7 @@ extern int vfp_restore_user_hwstate(struct user_vfp __user *,
  *  TIF_USEDFPU		- FPU was used by this task this quantum (SMP)
  *  TIF_POLLING_NRFLAG	- true if poll_idle() is polling TIF_NEED_RESCHED
  */
+// 2017-09-09
 #define TIF_SIGPENDING		0
 #define TIF_NEED_RESCHED	1
 #define TIF_NOTIFY_RESUME	2	/* callback before returning to user */

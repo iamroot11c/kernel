@@ -673,6 +673,7 @@ struct signal_struct {
 #define SIGNAL_CLD_CONTINUED	0x00000020
 #define SIGNAL_CLD_MASK		(SIGNAL_CLD_STOPPED|SIGNAL_CLD_CONTINUED)
 
+// 2017-09-09
 #define SIGNAL_UNKILLABLE	0x00000040 /* for init: ignore fatal signals */
 
 /* If true, all threads except ->group_exit_task have pending SIGKILL */
@@ -1199,7 +1200,9 @@ struct task_struct {
     // 2016-11-26
 	unsigned sched_contributes_to_load:1;
 
+    // 2017-09-09
 	pid_t pid;
+    // 2017-09-09
 	pid_t tgid;
 
 #ifdef CONFIG_CC_STACKPROTECTOR
@@ -1231,6 +1234,7 @@ struct task_struct {
 
 	/* PID/PID hash table linkage. */
     // 2016-03-05
+    // 2017-09-09
 	struct pid_link pids[PIDTYPE_MAX/*3*/];
 	struct list_head thread_group;
 
@@ -1538,11 +1542,13 @@ static inline struct pid *task_tgid(struct task_struct *task)
  * the result of task_pgrp/task_session even if task == current,
  * we can race with another thread doing sys_setsid/sys_setpgid.
  */
+// 2017-09-09
 static inline struct pid *task_pgrp(struct task_struct *task)
 {
 	return task->group_leader->pids[PIDTYPE_PGID].pid;
 }
 
+// 2017-09-09
 static inline struct pid *task_session(struct task_struct *task)
 {
 	return task->group_leader->pids[PIDTYPE_SID].pid;
@@ -2307,6 +2313,7 @@ static inline int get_nr_threads(struct task_struct *tsk)
 	return tsk->signal->nr_threads;
 }
 
+// 2017-09-09
 static inline bool thread_group_leader(struct task_struct *p)
 {
 	return p->exit_signal >= 0;

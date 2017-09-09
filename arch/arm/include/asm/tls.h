@@ -51,7 +51,9 @@
 #define has_tls_reg		(elf_hwcap & HWCAP_TLS)
 #define switch_tls	switch_tls_v6
 #elif defined(CONFIG_CPU_32v6K) /* CONFIG_CPU_32v6K=y */
+// 2017-09-09
 #define tls_emu		0
+// 2017-09-09
 #define has_tls_reg		1
 /* 2016-12-17 */
 #define switch_tls	switch_tls_v6k
@@ -62,6 +64,7 @@
 #endif
 
 #ifndef __ASSEMBLY__
+// 2017-09-09
 static inline unsigned long get_tpuser(void)
 {
 	unsigned long reg = 0;

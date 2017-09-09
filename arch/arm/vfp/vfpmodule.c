@@ -129,6 +129,7 @@ static void vfp_thread_exit(struct thread_info *thread)
 	put_cpu();
 }
 
+// 2017-09-09
 static void vfp_thread_copy(struct thread_info *thread)
 {
 	struct thread_info *parent = current_thread_info();
@@ -202,6 +203,7 @@ static int vfp_notifier(struct notifier_block *self, unsigned long cmd, void *v)
 		vfp_thread_exit(thread);
 		break;
 
+	// 2017-09-09
 	case THREAD_NOTIFY_COPY:
 		vfp_thread_copy(thread);
 		break;

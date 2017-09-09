@@ -916,6 +916,7 @@ static inline int cgroup_init_early(void) { return 0; }
 static inline int cgroup_init(void) { return 0; }
 // 2017-08-12
 static inline void cgroup_fork(struct task_struct *p) {}
+// 2017-09-09
 static inline void cgroup_post_fork(struct task_struct *p) {}
 static inline void cgroup_exit(struct task_struct *p, int callbacks) {}
 

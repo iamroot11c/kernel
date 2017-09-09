@@ -344,6 +344,9 @@ void release_thread(struct task_struct *dead_task)
 
 asmlinkage void ret_from_fork(void) __asm__("ret_from_fork");
 
+// 2017-09-09
+// stack_start: kernel_init
+// stack_size: NULL
 int
 copy_thread(unsigned long clone_flags, unsigned long stack_start,
 	    unsigned long stk_sz, struct task_struct *p)
@@ -359,6 +362,7 @@ copy_thread(unsigned long clone_flags, unsigned long stack_start,
 		if (stack_start)
 			childregs->ARM_sp = stack_start;
 	} else {
+		// if kernel thread
 		memset(childregs, 0, sizeof(struct pt_regs));
 		thread->cpu_context.r4 = stk_sz;
 		thread->cpu_context.r5 = stack_start;
@@ -367,7 +371,7 @@ copy_thread(unsigned long clone_flags, unsigned long stack_start,
 	thread->cpu_context.pc = (unsigned long)ret_from_fork;
 	thread->cpu_context.sp = (unsigned long)childregs;
 
-	clear_ptrace_hw_breakpoint(p);
+	clear_ptrace_hw_breakpoint(p);	// NOP
 
 	if (clone_flags & CLONE_SETTLS)
 		thread->tp_value[0] = childregs->ARM_r3;

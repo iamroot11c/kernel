@@ -41,11 +41,13 @@
 
 #define pid_hashfn(nr, ns)	\
 	hash_long((unsigned long)nr + (unsigned long)ns, pidhash_shift)
+// 2017-09-09
 static struct hlist_head *pid_hash;
 static unsigned int pidhash_shift = 4;
+// 2017-09-09
 struct pid init_struct_pid = INIT_STRUCT_PID;
 
-// 2017-06-24
+// 2017-06-24, 32768
 int pid_max = PID_MAX_DEFAULT/*0x8000*/;
 
 // 2017-06-24
@@ -55,12 +57,15 @@ int pid_max = PID_MAX_DEFAULT/*0x8000*/;
 int pid_max_min = RESERVED_PIDS + 1;
 int pid_max_max = PID_MAX_LIMIT/*0x8000*/;
 
+// 2017-09-09
+// 우리 시스템의 경우, 그냥 offset 값이 리턴될 것으로 예상
 static inline int mk_pid(struct pid_namespace *pid_ns,
 		struct pidmap *map, int off)
 {
 	return (map - pid_ns->pidmap)*BITS_PER_PAGE + off;
 }
 
+// 2017-09-09
 #define find_next_offset(map, off)					\
 		find_next_zero_bit((map)->page, BITS_PER_PAGE, off)
 
@@ -102,6 +107,7 @@ EXPORT_SYMBOL_GPL(init_pid_ns);
  * For now it is easier to be safe than to prove it can't happen.
  */
 
+// 2017-09-09
 static  __cacheline_aligned_in_smp DEFINE_SPINLOCK(pidmap_lock);
 
 static void free_pidmap(struct upid *upid)
@@ -117,6 +123,8 @@ static void free_pidmap(struct upid *upid)
 /*
  * If we started walking pids at 'base', is 'a' seen before 'b'?
  */
+// 2017-09-09
+// ex) 300, 301, 301
 static int pid_before(int base, int a, int b)
 {
 	/*
@@ -143,6 +151,8 @@ static int pid_before(int base, int a, int b)
  *
  * 'pid' is the pid that we eventually found.
  */
+// 2017-09-09
+// set_last_pid(pid_ns, last, pid);
 static void set_last_pid(struct pid_namespace *pid_ns, int base, int pid)
 {
 	int prev;
@@ -153,22 +163,49 @@ static void set_last_pid(struct pid_namespace *pid_ns, int base, int pid)
 	} while ((prev != last_write) && (pid_before(base, last_write, pid)));
 }
 
+// 2017-09-09
 static int alloc_pidmap(struct pid_namespace *pid_ns)
 {
 	int i, offset, max_scan, pid, last = pid_ns->last_pid;
 	struct pidmap *map;
-
+	// 구조:
+	// map->page : 할당 가능한 pid에 대한 비트맵을 관리한다.
+	// offset : map->page에 접근할 인덱스를 의미한다. 실제 pid값과 동치이다.
+	//
+	// pid 할당 로직
+	// map->page[offset]에 비트가 설정되어있는지 확인한다.
+	//	-> 비트 설정 시 offset값을 pid로 리턴
+	//	-> 비트 미설정 시 할당 가능한 다음 offset을 find_next_offset()로 검사한다
+	//		-> 찾은 경우 offset값을 pid로 리턴
+	// ex)
+	// map->page :
+	//  --------------------------
+	//    0           1
+	//  --------------------------
+	//    ^           ^
+	// offset      newOffset
+	// -> offset 위치에 비트세팅이 되어 있지 않은 경우
+	// -> 다음 비트가 1인 offset을 찾는다.
+	//
+	// 마지막 값 + 1 할당
 	pid = last + 1;
 	if (pid >= pid_max)
-		pid = RESERVED_PIDS;
-	offset = pid & BITS_PER_PAGE_MASK;
-	map = &pid_ns->pidmap[pid/BITS_PER_PAGE];
+		pid = RESERVED_PIDS;	// 이미 RESERVED_PIDS를 사용하고 있다면?
+	offset = pid & BITS_PER_PAGE_MASK /* 0x7fff */;
+	map = &pid_ns->pidmap[pid/BITS_PER_PAGE]; // 32bit 기준 무조건 index 0이 예상된다.
 	/*
 	 * If last_pid points into the middle of the map->page we
 	 * want to scan this bitmap block twice, the second time
 	 * we start with offset == 0 (or RESERVED_PIDS).
 	 */
+	// NOTE: !offset은 부호 반전이 아니라,
+	// 해당 값을 boolen type으로 반대로 변경하는 기능이다.
+	// !offset == (offset == 0)
+	// ex) offset(7), !offset == 0
+	// ex) offset(0), !offset == 1
+	// 1 - 0 or 1 - 1
 	max_scan = DIV_ROUND_UP(pid_max, BITS_PER_PAGE) - !offset;
+	// loop는 최대 1번 혹은 , 2회 순회할 것으로 예상
 	for (i = 0; i <= max_scan; ++i) {
 		if (unlikely(!map->page)) {
 			void *page = kzalloc(PAGE_SIZE, GFP_KERNEL);
@@ -188,30 +225,46 @@ static int alloc_pidmap(struct pid_namespace *pid_ns)
 		}
 		if (likely(atomic_read(&map->nr_free))) {
 			for ( ; ; ) {
+				// 이전에 pid 설정이 되지 않은 경우 
 				if (!test_and_set_bit(offset, map->page)) {
 					atomic_dec(&map->nr_free);
 					set_last_pid(pid_ns, last, pid);
 					return pid;
 				}
+				// 이미 pid가 할당되어 있는 경우,
+				// 예를 들어, max값을 넘어서, 초기값인 300인 경우
+				//
+				// offset을 기준으로, 범위(BITS_PER_PAGE)만큼을 조사해서,
+				// 첫번째, 0인 비트를 구한다.
+				// find_next_zero_bit((map)->page, BITS_PER_PAGE, off)
+				// map->page는 pid의 bitmap을 구성한다.
 				offset = find_next_offset(map, offset);
+				// 이 값이, 범위를 넘어선 경우, break
 				if (offset >= BITS_PER_PAGE)
 					break;
+				// 정상적인 경우, make pid 한다.
 				pid = mk_pid(pid_ns, map, offset);
 				if (pid >= pid_max)
 					break;
 			}
 		}
+
+		// 비정상인 경우
 		if (map < &pid_ns->pidmap[(pid_max-1)/BITS_PER_PAGE]) {
 			++map;
 			offset = 0;
 		} else {
 			map = &pid_ns->pidmap[0];
 			offset = RESERVED_PIDS;
+			// 범위 내에서 모두 할당하고, 가장 마지막에 할당한,
+			// pid가 RESERVED_PIDS라면, 이미 빈자리가 없음이 확인되었으므로,
+			// 더 이상, scan해도 무의미한 것으로 간주하고 loop를 탈출한다.
+			// 더 이상, 할당 할 수 없음.
 			if (unlikely(last == offset))
 				break;
 		}
 		pid = mk_pid(pid_ns, map, offset);
-	}
+	} // for
 	return -1;
 }
 
@@ -296,6 +349,7 @@ void free_pid(struct pid *pid)
 	call_rcu(&pid->rcu, delayed_put_pid);
 }
 
+// 2017-09-09
 struct pid *alloc_pid(struct pid_namespace *ns)
 {
 	struct pid *pid;
@@ -311,10 +365,13 @@ struct pid *alloc_pid(struct pid_namespace *ns)
 	tmp = ns;
 	pid->level = ns->level;
 	for (i = ns->level; i >= 0; i--) {
+		// 2017-09-09
 		nr = alloc_pidmap(tmp);
 		if (nr < 0)
 			goto out_free;
 
+		// 로직상, 
+		// namespaces가 다르다면, 같은 pid도 할당 가능한 것으로 보인다.
 		pid->numbers[i].nr = nr;
 		pid->numbers[i].ns = tmp;
 		tmp = tmp->parent;
@@ -385,6 +442,7 @@ EXPORT_SYMBOL_GPL(find_vpid);
 /*
  * attach_pid() must be called with the tasklist_lock write-held.
  */
+// 2017-09-09
 void attach_pid(struct task_struct *task, enum pid_type type)
 {
 	struct pid_link *link = &task->pids[type];

@@ -10,13 +10,14 @@
 #include <linux/kref.h>
 
 // 2017-06-24
+// 2017-09-09
 struct pidmap {
        atomic_t nr_free;
        void *page;
 };
 
 #define BITS_PER_PAGE		(PAGE_SIZE * 8) // 4096 * 8 = 32768
-#define BITS_PER_PAGE_MASK	(BITS_PER_PAGE-1)   // 32767
+#define BITS_PER_PAGE_MASK	(BITS_PER_PAGE-1)   // 32767, 0x7fff
 #define PIDMAP_ENTRIES		((PID_MAX_LIMIT/*0x8000(32768)*/+BITS_PER_PAGE-1)/BITS_PER_PAGE) // (32768 + 32767) / 32768 = 1// 2^15
 
 struct bsd_acct_struct;
@@ -26,9 +27,11 @@ struct bsd_acct_struct;
 // 2017-06-24
 struct pid_namespace {
 	struct kref kref;
+    // 2017-09-09
 	struct pidmap pidmap[PIDMAP_ENTRIES/*1*/];
 	int last_pid;
 	unsigned int nr_hashed;
+    // 2017-09-09
 	struct task_struct *child_reaper;
 	struct kmem_cache *pid_cachep;
 	unsigned int level;
@@ -53,9 +56,11 @@ extern struct pid_namespace init_pid_ns;
 // 2017-06-24
 #define PIDNS_HASH_ADDING (1U << 31) // 0x1000_0000
 
-#ifdef CONFIG_PID_NS
+#ifdef CONFIG_PID_NS    // =y
+// 2017-09-09
 static inline struct pid_namespace *get_pid_ns(struct pid_namespace *ns)
 {
+    // ref count 증가
 	if (ns != &init_pid_ns)
 		kref_get(&ns->kref);
 	return ns;

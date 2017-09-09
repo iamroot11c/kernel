@@ -380,6 +380,7 @@ extern struct class *tty_class;
  *	go away
  */
 
+// 2017-09-09
 static inline struct tty_struct *tty_kref_get(struct tty_struct *tty)
 {
 	if (tty)

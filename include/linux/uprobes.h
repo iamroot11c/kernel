@@ -58,7 +58,7 @@ struct uprobe_consumer {
 	struct uprobe_consumer *next;
 };
 
-#ifdef CONFIG_UPROBES
+#ifdef CONFIG_UPROBES   // =n
 enum uprobe_task_state {
 	UTASK_RUNNING,
 	UTASK_SSTEP,
@@ -177,6 +177,7 @@ static inline unsigned long uprobe_get_swbp_addr(struct pt_regs *regs)
 static inline void uprobe_free_utask(struct task_struct *t)
 {
 }
+// 2017-09-09
 static inline void uprobe_copy_process(struct task_struct *t)
 {
 }
