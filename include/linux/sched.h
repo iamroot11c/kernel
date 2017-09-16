@@ -977,6 +977,7 @@ struct uts_namespace;
 
 // 2016-10-22
 // 2016-11-05
+// 2017-09-16
 struct load_weight {
     // http://egloos.zum.com/studyfoss/v/5326671
     // weight는 load 즉, 우선순위에 대한 가중치이고 inv_weight는 이의 역수(1/weight)에 해당하는 값이다.
@@ -1584,6 +1585,7 @@ static inline pid_t task_pid_nr_ns(struct task_struct *tsk,
 	return __task_pid_nr_ns(tsk, PIDTYPE_PID, ns);
 }
 
+// 2017-09-16
 static inline pid_t task_pid_vnr(struct task_struct *tsk)
 {
 	return __task_pid_nr_ns(tsk, PIDTYPE_PID, NULL);

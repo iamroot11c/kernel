@@ -322,12 +322,13 @@ int sysctl_sched_rt_runtime = 950000;
  * __task_rq_lock - lock the rq @p resides on.
  */
 // 2017-05-13
+// 2017-09-16
 static inline struct rq *__task_rq_lock(struct task_struct *p)
 	__acquires(rq->lock)
 {
 	struct rq *rq;
 
-	lockdep_assert_held(&p->pi_lock);
+	lockdep_assert_held(&p->pi_lock); // NOP
 
 	// 2017-05-13, infinite loop
 	for (;;) {
@@ -830,6 +831,7 @@ static void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 	sched_info_queued(p);
 	// 2016-11-05
 	// fair_sched_class기준 분석
+	// enqueue_task_fair()
 	p->sched_class->enqueue_task(rq, p, flags);
 }
 
@@ -1053,6 +1055,7 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 	const struct sched_class *class;
 
 	// fair_sched_class 기준 분석
+	// check_preempt_wakeup
 	if (p->sched_class == rq->curr->sched_class) {
 		rq->curr->sched_class->check_preempt_curr(rq, p, flags);
 	} else {
@@ -1080,6 +1083,7 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 #ifdef CONFIG_SMP // defined
 // 2016-11-05
 // set_task_cpu(p, env->dst_cpu); /*env->dst_cpu는 현재 수행 중인 cpu로 세팅*/
+// 2017-09-16
 void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
 {
 #ifdef CONFIG_SCHED_DEBUG // defined
@@ -1942,13 +1946,14 @@ void sched_fork(struct task_struct *p)
  * that must be done for every newly created context, then puts the task
  * on the runqueue and wakes it.
  */
+// 2017-09-16
 void wake_up_new_task(struct task_struct *p)
 {
 	unsigned long flags;
 	struct rq *rq;
 
 	raw_spin_lock_irqsave(&p->pi_lock, flags);
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // set
 	/*
 	 * Fork balancing, do it here and not earlier because:
 	 *  - cpus_allowed can change in the fork path
@@ -1960,11 +1965,15 @@ void wake_up_new_task(struct task_struct *p)
 	/* Initialize new task's runnable average */
 	init_task_runnable_average(p);
 	rq = __task_rq_lock(p);
+	// 새로 생성한 태스크 p를 스케줄러에 삽입한다.
+	// 런큐에 들어가 있기 때문에 on_rq도 1로 설정한다.
 	activate_task(rq, p, 0);
 	p->on_rq = 1;
 	trace_sched_wakeup_new(p, true);
+	// rq->curr보다 p의 우선 순위가 더 높은 경우, rq->curr를 리스케줄링한다.
 	check_preempt_curr(rq, p, WF_FORK);
 #ifdef CONFIG_SMP
+	// fair_sched_class 기준 null
 	if (p->sched_class->task_woken)
 		p->sched_class->task_woken(rq, p);
 #endif

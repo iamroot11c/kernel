@@ -1785,11 +1785,11 @@ long do_fork(unsigned long clone_flags,
 	p = copy_process(clone_flags, stack_start, stack_size,
 			 child_tidptr, NULL, trace);
 	// 2017-09-09, 여기까지
-	
+	// 2017-09-16. 시작	
 	/*
 	 * Do this prior waking up the new thread - the thread pointer
 	 * might get invalid after that point, if the thread exits quickly.
-	 */
+	 */ 
 	if (!IS_ERR(p)) {
 		struct completion vfork;
 
@@ -1806,7 +1806,9 @@ long do_fork(unsigned long clone_flags,
 			get_task_struct(p);
 		}
 
+		// 2017-09-16
 		wake_up_new_task(p);
+		// 2017-09-16 완료
 
 		/* forking complete and child started to run, tell ptracer */
 		if (unlikely(trace))

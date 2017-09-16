@@ -1,6 +1,15 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
 
++ [143주차](http://bit.ly/1GykIvK) `2017.09.16`
+ - drive: 홍진우님
+ - kernel/init/main.c::rest_init() 진행중
+ - kernel/kernel/fork.c::kernel_thread() 진행중
+ - kernel/kernel/fork.c::do_fork() 진행중
+ - kernel/kernel/pid.c::wake_up_new_task() 완료
+ - kernel/sched/core.c::activate_task() 복습
+ - kernel/sched/core.c::check_preempt_curr() 복습
+
 + [142주차](http://bit.ly/1GykIvK) `2017.09.09`
  - drive: 보름달님
  - kernel/init/main.c::rest_init() 진행중

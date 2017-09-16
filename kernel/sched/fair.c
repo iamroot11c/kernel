@@ -47,6 +47,7 @@
  *  run vmstat and monitor the context-switches (cs) field)
  */
 // 2017-08-12
+// 2017-09-16
 unsigned int sysctl_sched_latency = 6000000ULL;
 unsigned int normalized_sysctl_sched_latency = 6000000ULL;
 
@@ -72,6 +73,7 @@ unsigned int normalized_sysctl_sched_min_granularity = 750000ULL;
 /*
  * is kept at sysctl_sched_latency / sysctl_sched_min_granularity
  */
+// 2017-09-16
 static unsigned int sched_nr_latency = 8;
 
 /*
@@ -208,12 +210,14 @@ void sched_init_granularity(void)
 //
 // (7 + (1UL << (2 - 1))) >> 2
 // 2 = 9 >> 2
+// ret = (x + 2^(y-1)) / 2^y == x/2^y + 1/2
 #define SRR(x, y) (((x) + (1UL << ((y) - 1))) >> (y))
 
 /*
  * delta *= weight / lw
  */
 // 2016-10-22
+// 2017-09-16
 // calc_delta_mine(delta, NICE_0_LOAD, &se->load)
 static unsigned long
 calc_delta_mine(unsigned long delta_exec, unsigned long weight,
@@ -285,15 +289,12 @@ static inline struct task_struct *task_of(struct sched_entity *se)
 #define for_each_sched_entity(se) \
 		for (; se; se = se->parent)
 
-// 2017-08-12
 static inline struct cfs_rq *task_cfs_rq(struct task_struct *p)
 {
 	return p->se.cfs_rq;
 }
 
 /* runqueue on which this entity is (to be) queued */
-// 2016-10-15
-// 2016-10-22
 static inline struct cfs_rq *cfs_rq_of(struct sched_entity *se)
 {
 	return se->cfs_rq;
@@ -427,11 +428,13 @@ static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
 #define for_each_sched_entity(se) \
 		for (; se; se = NULL)
 
+// 2017-09-16
 static inline struct cfs_rq *task_cfs_rq(struct task_struct *p)
 {
 	return &task_rq(p)->cfs;
 }
 
+// 2017-09-16
 static inline struct cfs_rq *cfs_rq_of(struct sched_entity *se)
 {
 	struct task_struct *p = task_of(se);
@@ -698,6 +701,7 @@ calc_delta_fair(unsigned long delta, struct sched_entity *se)
  *
  * p = (nr <= nl) ? l : l*nr/nl
  */
+// 2017-09-16
 static u64 __sched_period(unsigned long nr_running)
 {
 	u64 period = sysctl_sched_latency;
@@ -717,10 +721,14 @@ static u64 __sched_period(unsigned long nr_running)
  *
  * s = p*P[w/rw]
  */
+// 2017-09-16
 static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 	u64 slice = __sched_period(cfs_rq->nr_running + !se->on_rq);
 
+	// #define for_each_sched_entity(se) \
+	//                  for (; se; se = NULL)
+	// 현재 schedule entity에 대해서만 수행
 	for_each_sched_entity(se) {
 		struct load_weight *load;
 		struct load_weight lw;
@@ -752,6 +760,7 @@ static u64 sched_vslice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 #ifdef CONFIG_SMP
 static inline void __update_task_entity_contrib(struct sched_entity *se);
 
+// 2017-09-16
 /* Give new task start runnable values to heavy its load in infant time */
 void init_task_runnable_average(struct task_struct *p)
 {
@@ -1570,6 +1579,7 @@ static inline void __update_group_entity_contrib(struct sched_entity *se) {}
 #endif
 
 // 2016-10-22
+// 2017-09-16
 static inline void __update_task_entity_contrib(struct sched_entity *se)
 {
 	u32 contrib;
@@ -1579,9 +1589,9 @@ static inline void __update_task_entity_contrib(struct sched_entity *se)
 	// 반대로 가중치가 작고 runnable_avg_period가 크면 작은 값이 나옴
 
 	/* avoid overflowing a 32-bit type w/ SCHED_LOAD_SCALE */
-	// contrib = se->avg.runnable_avg_sum * se->load.weight;
 	contrib = se->avg.runnable_avg_sum * scale_load_down(se->load.weight);
 	contrib /= (se->avg.runnable_avg_period + 1);
+	// contrib = avg_sum * load_weight / (avg_period + 1)
 	se->avg.load_avg_contrib = scale_load(contrib);
 }
 
@@ -4024,7 +4034,9 @@ static void set_skip_buddy(struct sched_entity *se)
 /*
  * Preempt the current task with a newly woken task if needed:
  */
+// current task를 새로 깨어난 프로세스처럼 재스케줄링 한다.(가능하다면..)
 // 2016-11-12
+// 2017-09-16
 static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_flags)
 {
 	struct task_struct *curr = rq->curr;
@@ -6944,6 +6956,7 @@ const struct sched_class fair_sched_class = {
 	.yield_to_task		= yield_to_task_fair,
 
 	// 2016-11-12
+	// 2017-09-16
 	.check_preempt_curr	= check_preempt_wakeup,
 	// 2016-11-19
 	.pick_next_task		= pick_next_task_fair,
