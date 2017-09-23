@@ -51,17 +51,22 @@ enum tick_nohz_mode {
  * @sleep_length:	Duration of the current idle sleep
  * @do_timer_lst:	CPU was the last one doing do_timer before going idle
  */
+// 2017-09-23
 struct tick_sched {
 	struct hrtimer			sched_timer;
 	unsigned long			check_clocks;
 	enum tick_nohz_mode		nohz_mode;
 	ktime_t				last_tick;
+    // 2017-09-23
 	int				inidle;
 	int				tick_stopped;
 	unsigned long			idle_jiffies;
+    // 2017-09-23
 	unsigned long			idle_calls;
 	unsigned long			idle_sleeps;
+    // 2017-09-23
 	int				idle_active;
+    // 2017-09-23
 	ktime_t				idle_entrytime;
 	ktime_t				idle_waketime;
 	ktime_t				idle_exittime;
@@ -125,7 +130,7 @@ static inline void tick_check_idle(int cpu) { }
 static inline int tick_oneshot_mode_active(void) { return 0; }
 #endif /* !CONFIG_GENERIC_CLOCKEVENTS */
 
-# ifdef CONFIG_NO_HZ_COMMON
+# ifdef CONFIG_NO_HZ_COMMON // =y
 DECLARE_PER_CPU(struct tick_sched, tick_cpu_sched);
 
 static inline int tick_nohz_tick_stopped(void)
@@ -133,7 +138,9 @@ static inline int tick_nohz_tick_stopped(void)
 	return __this_cpu_read(tick_cpu_sched.tick_stopped);
 }
 
+// 2017-09-23
 extern void tick_nohz_idle_enter(void);
+// 2017-09-23
 extern void tick_nohz_idle_exit(void);
 extern void tick_nohz_irq_exit(void);
 extern ktime_t tick_nohz_get_sleep_length(void);

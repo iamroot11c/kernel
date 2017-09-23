@@ -112,6 +112,8 @@
 // DEFINE_PER_CPU(int, __kmap_atomic_idx); 
 // 2016-08-13
 // DEFINE_PER_CPU(struct list_head [NR_SOFTIRQS], softirq_work_list);
+// 2017-09-23
+// DEFINE_PER_CPU(struct tick_sched, tick_cpu_sched);
 #define DEFINE_PER_CPU(type, name)					\
 	DEFINE_PER_CPU_SECTION(type, name, "")
 

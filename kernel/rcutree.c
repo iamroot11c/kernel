@@ -489,6 +489,7 @@ static void rcu_eqs_enter(bool user)
  * the possibility of usermode upcalls having messed up our count
  * of interrupt nesting level during the prior busy period.
  */
+// 2017-09-23
 void rcu_idle_enter(void)
 {
 	unsigned long flags;

@@ -34,6 +34,8 @@
 /*
  * Per cpu nohz control structure
  */
+// 2017-09-23, simply
+// struct tick_sched tick_cpu_sched;
 DEFINE_PER_CPU(struct tick_sched, tick_cpu_sched);
 
 /*
@@ -426,6 +428,7 @@ update_ts_time_stats(int cpu, struct tick_sched *ts, ktime_t now, u64 *last_upda
 
 }
 
+// 2017-09-23
 static void tick_nohz_stop_idle(int cpu, ktime_t now)
 {
 	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
@@ -436,13 +439,14 @@ static void tick_nohz_stop_idle(int cpu, ktime_t now)
 	sched_clock_idle_wakeup_event(0);
 }
 
+// 2017-09-23
 static ktime_t tick_nohz_start_idle(int cpu, struct tick_sched *ts)
 {
 	ktime_t now = ktime_get();
 
 	ts->idle_entrytime = now;
 	ts->idle_active = 1;
-	sched_clock_idle_sleep_event();
+	sched_clock_idle_sleep_event();		// NOP
 	return now;
 }
 
@@ -527,6 +531,7 @@ u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time)
 }
 EXPORT_SYMBOL_GPL(get_cpu_iowait_time_us);
 
+// 2017-09-23
 static ktime_t tick_nohz_stop_sched_tick(struct tick_sched *ts,
 					 ktime_t now, int cpu)
 {
@@ -696,6 +701,7 @@ static void tick_nohz_full_stop_tick(struct tick_sched *ts)
 #endif
 }
 
+// 2017-09-23
 static bool can_stop_idle_tick(int cpu, struct tick_sched *ts)
 {
 	/*
@@ -731,6 +737,7 @@ static bool can_stop_idle_tick(int cpu, struct tick_sched *ts)
 		return false;
 	}
 
+	// NOP, false
 	if (tick_nohz_full_enabled()) {
 		/*
 		 * Keep the tick alive to guarantee timekeeping progression
@@ -749,6 +756,7 @@ static bool can_stop_idle_tick(int cpu, struct tick_sched *ts)
 	return true;
 }
 
+// 2017-09-23
 static void __tick_nohz_idle_enter(struct tick_sched *ts)
 {
 	ktime_t now, expires;
@@ -756,6 +764,7 @@ static void __tick_nohz_idle_enter(struct tick_sched *ts)
 
 	now = tick_nohz_start_idle(cpu, ts);
 
+	// true
 	if (can_stop_idle_tick(cpu, ts)) {
 		int was_stopped = ts->tick_stopped;
 
@@ -784,6 +793,7 @@ static void __tick_nohz_idle_enter(struct tick_sched *ts)
  *  to sleep.
  * - rcu_idle_exit() before the first use of RCU after the CPU is woken up.
  */
+// 2017-09-23
 void tick_nohz_idle_enter(void)
 {
 	struct tick_sched *ts;
@@ -796,12 +806,14 @@ void tick_nohz_idle_enter(void)
  	 * State will be updated to busy during the first busy tick after
  	 * exiting idle.
  	 */
+	// 2017-09-23
 	set_cpu_sd_state_idle();
 
 	local_irq_disable();
 
 	ts = &__get_cpu_var(tick_cpu_sched);
 	ts->inidle = 1;
+	// 2017-09-23
 	__tick_nohz_idle_enter(ts);
 
 	local_irq_enable();
@@ -838,6 +850,7 @@ ktime_t tick_nohz_get_sleep_length(void)
 	return ts->sleep_length;
 }
 
+// 2017-09-23
 static void tick_nohz_restart(struct tick_sched *ts, ktime_t now)
 {
 	hrtimer_cancel(&ts->sched_timer);
@@ -864,6 +877,7 @@ static void tick_nohz_restart(struct tick_sched *ts, ktime_t now)
 	}
 }
 
+// 2017-09-23
 static void tick_nohz_restart_sched_tick(struct tick_sched *ts, ktime_t now)
 {
 	/* Update jiffies first */
@@ -881,6 +895,7 @@ static void tick_nohz_restart_sched_tick(struct tick_sched *ts, ktime_t now)
 	tick_nohz_restart(ts, now);
 }
 
+// 2017-09-23
 static void tick_nohz_account_idle_ticks(struct tick_sched *ts)
 {
 #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
@@ -909,6 +924,7 @@ static void tick_nohz_account_idle_ticks(struct tick_sched *ts)
  * This also exit the RCU extended quiescent state. The CPU
  * can use RCU again after this function is called.
  */
+// 2017-09-23
 void tick_nohz_idle_exit(void)
 {
 	int cpu = smp_processor_id();
@@ -919,6 +935,7 @@ void tick_nohz_idle_exit(void)
 
 	WARN_ON_ONCE(!ts->inidle);
 
+	// 0으로 
 	ts->inidle = 0;
 
 	if (ts->idle_active || ts->tick_stopped)

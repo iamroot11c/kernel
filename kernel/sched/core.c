@@ -2793,6 +2793,7 @@ asmlinkage void __sched schedule_user(void)
  *
  * Returns with preemption disabled. Note: preempt_count must be 1
  */
+// 2017-09-23
 void __sched schedule_preempt_disabled(void)
 {
 	sched_preempt_enable_no_resched();
@@ -2893,6 +2894,8 @@ EXPORT_SYMBOL(default_wake_function);
 // 2016-11-19
 // __wake_up_common(&x->wait, TASK_NORMAL, 1, 0, NULL);
 // 2017-06-03 시작
+// __wake_up_common(&x->wait, TASK_NORMAL, 1, 0, NULL);
+// 2017-09-23
 // __wake_up_common(&x->wait, TASK_NORMAL, 1, 0, NULL);
 static void __wake_up_common(wait_queue_head_t *q, unsigned int mode,
 			int nr_exclusive, int wake_flags, void *key)
@@ -3014,6 +3017,7 @@ EXPORT_SYMBOL_GPL(__wake_up_sync);	/* For internal use only */
  * changing the task state if and only if any tasks are woken up.
  */
 // 2016-11-19
+// 2017-09-23
 void complete(struct completion *x)
 {
 	unsigned long flags;
@@ -4533,6 +4537,7 @@ void show_state_filter(unsigned long state_filter)
 		debug_show_all_locks();
 }
 
+// 2017-09-23
 void init_idle_bootup_task(struct task_struct *idle)
 {
 	idle->sched_class = &idle_sched_class;
@@ -5507,6 +5512,7 @@ DEFINE_PER_CPU(struct sched_domain *, sd_llc);
 DEFINE_PER_CPU(int, sd_llc_size);
 // 2016-11-26
 DEFINE_PER_CPU(int, sd_llc_id);
+// 2017-09-23
 DEFINE_PER_CPU(struct sched_domain *, sd_busy);
 DEFINE_PER_CPU(struct sched_domain *, sd_asym);
 

@@ -133,6 +133,8 @@ EXPORT_SYMBOL_GPL(arm_pm_restart);
 
 void (*arm_pm_idle)(void);
 
+// 2017-09-23
+// cpu_do_idle()의 경우, wfi()를 이용해서 구현되어 있다.
 static void default_idle(void)
 {
 	if (arm_pm_idle)
@@ -142,19 +144,23 @@ static void default_idle(void)
 	local_irq_enable();
 }
 
+// 2017-09-23
 void arch_cpu_idle_prepare(void)
 {
 	local_fiq_enable();
 }
 
+// 2017-09-23
 void arch_cpu_idle_enter(void)
 {
+	// NOP
 	ledtrig_cpu(CPU_LED_IDLE_START);
 #ifdef CONFIG_PL310_ERRATA_769419
 	wmb();
 #endif
 }
 
+// 2017-09-23
 void arch_cpu_idle_exit(void)
 {
 	ledtrig_cpu(CPU_LED_IDLE_END);
@@ -170,6 +176,7 @@ void arch_cpu_idle_dead(void)
 /*
  * Called from the core idle loop.
  */
+// 2017-09-23
 void arch_cpu_idle(void)
 {
 	if (cpuidle_idle_call())
@@ -365,10 +372,12 @@ copy_thread(unsigned long clone_flags, unsigned long stack_start,
 		// if kernel thread
 		memset(childregs, 0, sizeof(struct pt_regs));
 		thread->cpu_context.r4 = stk_sz;
-		thread->cpu_context.r5 = stack_start;
-		childregs->ARM_cpsr = SVC_MODE;
+		thread->cpu_context.r5 = stack_start;	// function pointer
+		childregs->ARM_cpsr = SVC_MODE;		// supervisor mode
 	}
-	thread->cpu_context.pc = (unsigned long)ret_from_fork;
+
+	// 저장 시, pointer 값을 unsigned long 형태로 변경 
+	thread->cpu_context.pc = (unsigned long)ret_from_fork;	// asm function
 	thread->cpu_context.sp = (unsigned long)childregs;
 
 	clear_ptrace_hw_breakpoint(p);	// NOP

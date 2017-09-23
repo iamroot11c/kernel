@@ -1810,6 +1810,7 @@ long do_fork(unsigned long clone_flags,
 		wake_up_new_task(p);
 		// 2017-09-16 완료
 
+		// 2017-09-23
 		/* forking complete and child started to run, tell ptracer */
 		if (unlikely(trace))
 			ptrace_event(trace, nr);

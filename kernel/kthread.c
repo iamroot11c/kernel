@@ -22,6 +22,7 @@
 
 static DEFINE_SPINLOCK(kthread_create_lock);
 static LIST_HEAD(kthread_create_list);
+// 2017-09-23
 struct task_struct *kthreadd_task;
 
 struct kthread_create_info

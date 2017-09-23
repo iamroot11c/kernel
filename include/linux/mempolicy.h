@@ -254,6 +254,7 @@ static inline void numa_policy_init(void)
 {
 }
 
+// 2017-09-23
 static inline void numa_default_policy(void)
 {
 }

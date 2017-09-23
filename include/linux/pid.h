@@ -68,6 +68,7 @@ struct pid
 	/* lists of tasks that use this pid */
 	struct hlist_head tasks[PIDTYPE_MAX/*3*/];
 	struct rcu_head rcu;
+    // 2017-09-23
 	struct upid numbers[1];
 };
 

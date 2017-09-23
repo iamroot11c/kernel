@@ -269,6 +269,7 @@ struct gpio_led_platform_data {
 struct platform_device *gpio_led_register_device(
 		int id, const struct gpio_led_platform_data *pdata);
 
+// 2017-09-23
 enum cpu_led_event {
 	CPU_LED_IDLE_START,	/* CPU enters idle */
 	CPU_LED_IDLE_END,	/* CPU idle ends */
@@ -276,9 +277,10 @@ enum cpu_led_event {
 	CPU_LED_STOP,		/* Machine stops, especially suspend */
 	CPU_LED_HALTED,		/* Machine shutdown */
 };
-#ifdef CONFIG_LEDS_TRIGGER_CPU
+#ifdef CONFIG_LEDS_TRIGGER_CPU   // =n
 extern void ledtrig_cpu(enum cpu_led_event evt);
 #else
+// 2017-09-23
 static inline void ledtrig_cpu(enum cpu_led_event evt)
 {
 	return;

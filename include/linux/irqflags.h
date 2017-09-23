@@ -49,7 +49,9 @@
  extern void stop_critical_timings(void);
  extern void start_critical_timings(void);
 #else
+ // 2017-09-23
 # define stop_critical_timings() do { } while (0)
+ // 2017-09-23
 # define start_critical_timings() do { } while (0)
 #endif
 

@@ -6229,6 +6229,7 @@ unlock:
 	rcu_read_unlock();
 }
 
+// 2017-09-23
 void set_cpu_sd_state_idle(void)
 {
 	struct sched_domain *sd;
@@ -6239,6 +6240,7 @@ void set_cpu_sd_state_idle(void)
 
 	if (!sd || sd->nohz_idle)
 		goto unlock;
+	// nohz_idle을 1로 설정
 	sd->nohz_idle = 1;
 
 	atomic_dec(&sd->groups->sgp->nr_busy_cpus);

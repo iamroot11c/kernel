@@ -346,6 +346,7 @@ void getnstimeofday(struct timespec *ts)
 }
 EXPORT_SYMBOL(getnstimeofday);
 
+// 2017-09-23
 ktime_t ktime_get(void)
 {
 	struct timekeeper *tk = &timekeeper;

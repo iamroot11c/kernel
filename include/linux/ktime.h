@@ -150,6 +150,7 @@ static inline ktime_t timeval_to_ktime(struct timeval tv)
 // 2016-08-13
 static inline ktime_t ktime_set(const long secs, const unsigned long nsecs)
 {
+    // 암시적 형변환
 	return (ktime_t) { .tv = { .sec = secs, .nsec = nsecs } };
 }
 

@@ -88,6 +88,7 @@ static unsigned int get_rr_interval_idle(struct rq *rq, struct task_struct *task
  * Simple, special scheduling class for the per-CPU idle tasks:
  */
 // 2016-07-01
+// 2017-09-23
 const struct sched_class idle_sched_class = {
 	/* .next is NULL */
 	/* no enqueue/yield_task for idle tasks */

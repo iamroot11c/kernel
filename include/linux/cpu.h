@@ -248,6 +248,7 @@ static inline void enable_nonboot_cpus(void) {}
 
 enum cpuhp_state {
 	CPUHP_OFFLINE,
+    // 2017-09-23
 	CPUHP_ONLINE,
 };
 

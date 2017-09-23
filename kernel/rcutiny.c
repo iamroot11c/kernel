@@ -36,7 +36,7 @@
 #include <linux/cpu.h>
 #include <linux/prefetch.h>
 
-#ifdef CONFIG_RCU_TRACE
+#ifdef CONFIG_RCU_TRACE	// =n
 #include <trace/events/rcu.h>
 #endif /* #else #ifdef CONFIG_RCU_TRACE */
 

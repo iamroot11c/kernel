@@ -373,6 +373,9 @@ static void __init setup_command_line(char *command_line)
  * gcc-3.4 accidentally inlines this function, so use noinline.
  */
 
+// 2017-09-23
+// #define DECLARE_COMPLETION(work) \
+//	struct completion work = COMPLETION_INITIALIZER(work)
 static __initdata DECLARE_COMPLETION(kthreadd_done);
 
 // 2017-07-22
@@ -388,21 +391,28 @@ static noinline void __init_refok rest_init(void)
 	 * we schedule it before we create kthreadd, will OOPS.
 	 */
 	// 2017-07-22
+	// function은 cpu_context.r5에 저장하고 있다.
 	kernel_thread(kernel_init, NULL, CLONE_FS | CLONE_SIGHAND);
-	numa_default_policy();
+	// 2017-09-23, end
+	// 2017-09-23
+	numa_default_policy();	// NOP
 	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
 	rcu_read_lock();
 	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
 	rcu_read_unlock();
+	// kthreadd_done에 연결된 작업을 수행한다
 	complete(&kthreadd_done);
 
 	/*
 	 * The boot idle thread must execute schedule()
 	 * at least once to get things moving:
 	 */
+	// 2017-09-23
+	// current에 idle_sched_class 등록
 	init_idle_bootup_task(current);
 	schedule_preempt_disabled();
 	/* Call into cpu_idle with preempt disabled */
+	// 2017-0923
 	cpu_startup_entry(CPUHP_ONLINE);
 }
 

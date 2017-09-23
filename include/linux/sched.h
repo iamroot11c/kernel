@@ -256,7 +256,7 @@ extern void init_idle_bootup_task(struct task_struct *idle);
 
 extern int runqueue_is_locked(int cpu);
 
-#if defined(CONFIG_SMP) && defined(CONFIG_NO_HZ_COMMON)
+#if defined(CONFIG_SMP) && defined(CONFIG_NO_HZ_COMMON) // =y
 extern void nohz_balance_enter_idle(int cpu);
 extern void set_cpu_sd_state_idle(void);
 extern int get_nohz_timer_target(void);
@@ -865,6 +865,7 @@ struct sched_domain {
     // 2016-10-15
 	unsigned int smt_gain;
 
+    // 2017-09-23
 	int nohz_idle;			/* NOHZ IDLE status */
 	int flags;			/* See SD_* */
 	int level;
@@ -1936,15 +1937,17 @@ extern u64 sched_clock_cpu(int cpu);
 
 extern void sched_clock_init(void);
 
-#ifndef CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
+#ifndef CONFIG_HAVE_UNSTABLE_SCHED_CLOCK    // =n => y
 static inline void sched_clock_tick(void)
 {
 }
 
+// 2017-09-23
 static inline void sched_clock_idle_sleep_event(void)
 {
 }
 
+// 2017-09-23
 static inline void sched_clock_idle_wakeup_event(u64 delta_ns)
 {
 }
@@ -2702,7 +2705,7 @@ static inline void __current_clr_polling(void)
 
 static inline bool __must_check current_clr_polling_and_test(void)
 {
-	__current_clr_polling();
+	__current_clr_polling();    // NOP
 
 	/*
 	 * Polling state must be visible before we test NEED_RESCHED,
@@ -2743,6 +2746,7 @@ static inline void __current_clr_polling(void)
 	clear_thread_flag(TIF_POLLING_NRFLAG);
 }
 
+// 2017-09-23
 static inline bool __must_check current_clr_polling_and_test(void)
 {
 	__current_clr_polling();
@@ -2759,7 +2763,9 @@ static inline bool __must_check current_clr_polling_and_test(void)
 #else
 // 2016-10-01
 static inline int tsk_is_polling(struct task_struct *p) { return 0; }
+// 2017-09-23
 static inline void __current_set_polling(void) { }
+// 2017-09-23
 static inline void __current_clr_polling(void) { }
 
 static inline bool __must_check current_set_polling_and_test(void)

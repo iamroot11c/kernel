@@ -498,6 +498,7 @@ struct cpumask *tick_get_broadcast_oneshot_mask(void)
  * to avoid a deep idle transition as we are about to get the
  * broadcast IPI right away.
  */
+// 2017-09-23
 int tick_check_broadcast_expired(void)
 {
 	return cpumask_test_cpu(smp_processor_id(), tick_broadcast_force_mask);

@@ -662,6 +662,7 @@ struct sched_group_power {
 	/*
 	 * Number of busy cpus in this group.
 	 */
+    // 2017-09-23
 	atomic_t nr_busy_cpus;
 
 	unsigned long cpumask[0]; /* iteration mask */

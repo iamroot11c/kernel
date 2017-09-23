@@ -68,6 +68,7 @@ ENDPROC(cpu_v7_reset)
  *
  *	IRQs are already disabled.
  */
+// 2017-09-23
 ENTRY(cpu_v7_do_idle)
 	dsb					@ WFI may enter a low-power mode
 	wfi

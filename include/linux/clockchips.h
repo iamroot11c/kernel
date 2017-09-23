@@ -178,7 +178,7 @@ extern void tick_broadcast(const struct cpumask *mask);
 extern int tick_receive_broadcast(void);
 #endif
 
-#if defined(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST) && defined(CONFIG_TICK_ONESHOT)
+#if defined(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST/*=y*/) && defined(CONFIG_TICK_ONESHOT/*=y*/)
 extern int tick_check_broadcast_expired(void);
 #else
 static inline int tick_check_broadcast_expired(void) { return 0; }

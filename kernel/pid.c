@@ -42,6 +42,7 @@
 #define pid_hashfn(nr, ns)	\
 	hash_long((unsigned long)nr + (unsigned long)ns, pidhash_shift)
 // 2017-09-09
+// 2017-09-23
 static struct hlist_head *pid_hash;
 static unsigned int pidhash_shift = 4;
 // 2017-09-09
@@ -77,6 +78,7 @@ static inline int mk_pid(struct pid_namespace *pid_ns,
  */
 // 2015-03-07
 // 2017-06-24
+// 2017-09-23
 struct pid_namespace init_pid_ns = {
 	.kref = {
 		.refcount       = ATOMIC_INIT(2),
@@ -419,6 +421,7 @@ void disable_pid_allocation(struct pid_namespace *ns)
 	spin_unlock_irq(&pidmap_lock);
 }
 
+// 2017-09-23
 struct pid *find_pid_ns(int nr, struct pid_namespace *ns)
 {
 	struct upid *pnr;
@@ -506,6 +509,7 @@ EXPORT_SYMBOL(pid_task);
 /*
  * Must be called under rcu_read_lock().
  */
+// 2017-09-23
 struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns)
 {
 	rcu_lockdep_assert(rcu_read_lock_held(),
