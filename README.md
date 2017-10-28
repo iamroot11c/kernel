@@ -1,5 +1,15 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
+
++ [144주차](http://bit.ly/2ya9ItB) `2017.10.28
+ - drive: 홍진우님
+ - kernel/kernel/init/main.c::kernel_init() 진행
+ - kernel/kernel/init/main.c::kernel_init_freeable() 진행
+ - kernel/kernel/init/main.c::smp_prepare_cpus() 진행
+ - kernel/kernel/arch/arm/kernel/smp.c::init_cpu_topology() 완료
+ - kernel/kernel/arch/arm/kernel/smp.c::smp_store_cpu_info() 진행 예정
+
+
 + [144주차](http://bit.ly/2hnXB4J) `2017.09.23`
  - drive: 보름달님
  - kernel/init/main.c::rest_init() 완료
