@@ -413,11 +413,14 @@ void __init smp_prepare_boot_cpu(void)
 	set_my_cpu_offset(per_cpu_offset(smp_processor_id()));
 }
 
+// 2017-10-28
 void __init smp_prepare_cpus(unsigned int max_cpus)
 {
 	unsigned int ncores = num_possible_cpus();
 
+	// 2017-10-28
 	init_cpu_topology();
+	// 2017-10-28 여기까지
 
 	smp_store_cpu_info(smp_processor_id());
 
@@ -600,8 +603,12 @@ void handle_IPI(int ipinr, struct pt_regs *regs)
 // 2016-03-05
 // 2016-10-01
 // 2016-10-26
+// 2017-10-28
 void smp_send_reschedule(int cpu)
 {
+	// 전역함수로 설정된 smp_cross_call 콜백 함수를 호출한다.
+	// 어떤 함수가 설정되었는지는 알 수 없지만
+	// 네이밍 및 함수 호출 위치만으로 추정할 때, cpu migration 시 후처리를 위한 함수로 추정
 	smp_cross_call(cpumask_of(cpu), IPI_RESCHEDULE); // ???
 }
 

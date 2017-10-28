@@ -343,6 +343,7 @@ static inline struct rq *__task_rq_lock(struct task_struct *p)
 /*
  * task_rq_lock - lock p->pi_lock and lock the rq @p resides on.
  */
+// 2017-10-28
 static struct rq *task_rq_lock(struct task_struct *p, unsigned long *flags)
 	__acquires(p->pi_lock)
 	__acquires(rq->lock)
@@ -549,6 +550,7 @@ static inline void init_hrtick(void)
 // 다른 cpu에서 실행될 조건일 때,  smp_send_reschedule() 수행
 // 2016-11-19
 // resched_task(cpu_curr(cpu));
+// 함수 분석 시 cpu migration 시 후처리를 위해 불려지는 함수로 추정
 void resched_task(struct task_struct *p)
 {
 	int cpu;
@@ -1050,6 +1052,11 @@ static inline void check_class_changed(struct rq *rq, struct task_struct *p,
 }
 
 // 2016-10-01
+// 2017-10-28
+// runqueue와 수행할 태스크가 같은 스케줄 정책을 사용하는지 확인한다.
+//	1. 만약 같은 정책을 수행한다면 해당 정책의 check_preempt_curr 함수를 호출
+//	2. 다른 정책을 수행하면서, 태스크가 런큐보다 높은 우선 순위의 스케줄 정책을 사용하는 경우
+//		2-1. cpu 변경에 대한 콜백 함수를 호출한다.
 void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 {
 	const struct sched_class *class;
@@ -4601,12 +4608,16 @@ void init_idle(struct task_struct *idle, int cpu)
 
 #ifdef CONFIG_SMP
 // 2016-07-01
+// 2017-10-28
+// cpu 허용 정보 비트맵, 사용 가능 개수 등이 세팅된다.
 void do_set_cpus_allowed(struct task_struct *p, const struct cpumask *new_mask)
 {
+	// fair_sched_class 기준 set_cpus_allowed 함수가 설정되지 않아 넘어감.
 	if (p->sched_class && p->sched_class->set_cpus_allowed)
 		p->sched_class->set_cpus_allowed(p, new_mask);
 
 	cpumask_copy(&p->cpus_allowed, new_mask);
+	// 현재 cpu_mask에 설정된, 사용 가능 cpu 개수를 얻어온다.
 	p->nr_cpus_allowed = cpumask_weight(new_mask);
 }
 
@@ -4633,6 +4644,8 @@ void do_set_cpus_allowed(struct task_struct *p, const struct cpumask *new_mask)
  * task must not exit() & deallocate itself prematurely. The
  * call is not atomic; no spinlocks may be held.
  */
+// 2017-10-28
+// set_cpus_allowed_ptr(current, cpu_all_mask)
 int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask)
 {
 	unsigned long flags;
@@ -4642,26 +4655,35 @@ int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask)
 
 	rq = task_rq_lock(p, &flags);
 
+	// 허용된 cpu가 있으면 빠져나옴
 	if (cpumask_equal(&p->cpus_allowed, new_mask))
 		goto out;
-
+	
+	// 활성화된 cpu가 없으면 빠져나옴
 	if (!cpumask_intersects(new_mask, cpu_active_mask)) {
 		ret = -EINVAL;
 		goto out;
 	}
 
+	// cpumask 등의 정보 설정
 	do_set_cpus_allowed(p, new_mask);
 
 	/* Can the task run on the task's current CPU? If so, we're done */
+	// 현재 태스크의 cpu가 new_mask에 설정되어 있다면 migration이 필요하지 않기 때문에 빠져나온다.
 	if (cpumask_test_cpu(task_cpu(p), new_mask))
 		goto out;
 
+	// cpu_active_mask, new_mask 둘 다 설정된 가장 빠른 순번의 cpu 번호를 얻어온다.
 	dest_cpu = cpumask_any_and(cpu_active_mask, new_mask);
 	if (p->on_rq) {
 		struct migration_arg arg = { p, dest_cpu };
 		/* Need help from migration thread: drop lock and wait. */
 		task_rq_unlock(rq, p, &flags);
+		// thread가 런큐 안에 들어가 있는 경우, lock을 해제 후 stop_one_cpu 함수를 호출한다.
+		// stop_one_cpu의 동작은 특정 태스크를 현재 런큐 -> 대상 cpu의 런큐로 옮기는 것이다.
 		stop_one_cpu(cpu_of(rq), migration_cpu_stop, &arg);
+
+		// NOP
 		tlb_migrate_finish(p->mm);
 		return 0;
 	}
@@ -4683,6 +4705,7 @@ EXPORT_SYMBOL_GPL(set_cpus_allowed_ptr);
  *
  * Returns non-zero if task was successfully migrated.
  */
+// 2017-10-28
 static int __migrate_task(struct task_struct *p, int src_cpu, int dest_cpu)
 {
 	struct rq *rq_dest, *rq_src;
@@ -4726,6 +4749,7 @@ fail:
  * and performs thread migration by bumping thread off CPU then
  * 'pushing' onto another runqueue.
  */
+// 2017-10-28
 static int migration_cpu_stop(void *data)
 {
 	struct migration_arg *arg = data;
@@ -4735,6 +4759,7 @@ static int migration_cpu_stop(void *data)
 	 * be on another cpu but it doesn't matter.
 	 */
 	local_irq_disable();
+	// 현재 cpu -> 대상 cpu의 런큐로 태스크를 이동 시도
 	__migrate_task(arg->task, raw_smp_processor_id(), arg->dest_cpu);
 	local_irq_enable();
 	return 0;

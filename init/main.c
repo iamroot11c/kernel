@@ -392,6 +392,7 @@ static noinline void __init_refok rest_init(void)
 	 */
 	// 2017-07-22
 	// function은 cpu_context.r5에 저장하고 있다.
+	// 2017-10-28 kernel_init 함수 분석 시작
 	kernel_thread(kernel_init, NULL, CLONE_FS | CLONE_SIGHAND);
 	// 2017-09-23, end
 	// 2017-09-23
@@ -985,6 +986,7 @@ static int run_init_process(const char *init_filename)
 
 static noinline void __init kernel_init_freeable(void);
 
+// 2017-10-28
 static int __ref kernel_init(void *unused)
 {
 	kernel_init_freeable();
@@ -1025,6 +1027,7 @@ static int __ref kernel_init(void *unused)
 	      "See Linux Documentation/init.txt for guidance.");
 }
 
+// 2017-10-28
 static noinline void __init kernel_init_freeable(void)
 {
 	/*
@@ -1038,14 +1041,18 @@ static noinline void __init kernel_init_freeable(void)
 	/*
 	 * init can allocate pages on any node
 	 */
+	// NOP
 	set_mems_allowed(node_states[N_MEMORY]);
 	/*
 	 * init can run on any cpu.
 	 */
+	// CPU 정보 설정 및 현재 태스크를 목적지 cpu의 런큐로 이동
+	// 이동 완료가 된 이후 함수가 리턴되는 것을 보장 (즉 현재와 다른 CPU에서 수행되는 함수에 대해 태스크를 수행)
 	set_cpus_allowed_ptr(current, cpu_all_mask);
 
 	cad_pid = task_pid(current);
 
+	// 2017-10-28 시작
 	smp_prepare_cpus(setup_max_cpus);
 
 	do_pre_smp_initcalls();

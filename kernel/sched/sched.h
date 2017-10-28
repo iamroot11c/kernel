@@ -1319,6 +1319,7 @@ static inline void double_unlock_balance(struct rq *this_rq, struct rq *busiest)
  * you need to do so manually before calling.
  */
 // 2016-10-15
+// 2017-10-28
 static inline void double_rq_lock(struct rq *rq1, struct rq *rq2)
 	__acquires(rq1->lock)
 	__acquires(rq2->lock)

@@ -91,6 +91,9 @@ unsigned long middle_capacity = 1;
  * 'average' CPU is of middle power. Also see the comments near
  * table_efficiency[] and update_cpu_power().
  */
+// 2017-10-28
+// 모든 cpu에 대해 cpu에 매칭되는 device_node에서
+// frequency 설정 값을 얻어와 middle_capacity값을 계산
 static void __init parse_dt_topology(void)
 {
 	struct cpu_efficiency *cpu_eff;
@@ -274,6 +277,8 @@ void store_cpu_topology(unsigned int cpuid)
  * init_cpu_topology is called at boot when only one cpu is running
  * which prevent simultaneous write access to cpu_topology array
  */
+// 2017-10-28
+// cpu와 연관된 cpu 토폴로지 정보를 일괄 초기화
 void __init init_cpu_topology(void)
 {
 	unsigned int cpu;

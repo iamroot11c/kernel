@@ -205,6 +205,8 @@ static void __init exynos_smp_init_cpus(void)
 		set_cpu_possible(i, true);
 }
 
+// 2017-10-28
+// 전체 cpu에 대해 지정된 boot_reg 주소에 boot_addr 주소를 설정
 static void __init exynos_smp_prepare_cpus(unsigned int max_cpus)
 {
 	int i;
@@ -221,6 +223,7 @@ static void __init exynos_smp_prepare_cpus(unsigned int max_cpus)
 	 * Try using firmware operation first and fall back to
 	 * boot register if it fails.
 	 */
+	// 특정 entrypoint 주소에 boot_addr 함수 포인터를 모든 cpu에 대해 설정
 	for (i = 1; i < max_cpus; ++i) {
 		unsigned long phys_cpu;
 		unsigned long boot_addr;
@@ -228,11 +231,14 @@ static void __init exynos_smp_prepare_cpus(unsigned int max_cpus)
 		phys_cpu = cpu_logical_map(i);
 		boot_addr = virt_to_phys(exynos4_secondary_startup);
 
+		// exynos 전용 set_cpu_boot_addr 함수를 실행
+		// 만약 함수가 존재하지 않는다면 cpu_boot_reg(phys_cpu)주소에 boot_addr값을 설정
 		if (call_firmware_op(set_cpu_boot_addr, phys_cpu, boot_addr))
 			__raw_writel(boot_addr, cpu_boot_reg(phys_cpu));
 	}
 }
 
+// 2017-10-28
 struct smp_operations exynos_smp_ops __initdata = {
 	.smp_init_cpus		= exynos_smp_init_cpus,
 	.smp_prepare_cpus	= exynos_smp_prepare_cpus,

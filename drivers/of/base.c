@@ -311,6 +311,7 @@ static bool __of_find_n_match_cpu_property(struct device_node *cpun,
  *
  * Returns a node pointer for the logical cpu if found, else NULL.
  */
+// 2017-10-28
 struct device_node *of_get_cpu_node(int cpu, unsigned int *thread)
 {
 	struct device_node *cpun, *cpus;
@@ -340,6 +341,7 @@ EXPORT_SYMBOL(of_get_cpu_node);
 /** Checks if the given "compat" string matches one of the strings in
  * the device's "compatible" property
  */
+// 2017-10-28
 static int __of_device_is_compatible(const struct device_node *device,
 				     const char *compat)
 {
@@ -363,6 +365,7 @@ static int __of_device_is_compatible(const struct device_node *device,
 /** Checks if the given "compat" string matches one of the strings in
  * the device's "compatible" property
  */
+// 2017-10-28
 int of_device_is_compatible(const struct device_node *device,
 		const char *compat)
 {

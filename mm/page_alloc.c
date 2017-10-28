@@ -124,6 +124,7 @@ unsigned long dirty_balance_reserve __read_mostly;
 
 int percpu_pagelist_fraction;
 // 2015-12-12
+// 2017-10-28
 gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
                                        // (__GFP_BITS_MASK & ~(__GFP_WAIT|__GFP_IO|__GFP_FS))
 				       // __GFP_WAIT, __GFP_IO, __GFP_FS 비트를 클리어

@@ -95,6 +95,7 @@ struct smp_operations {
 	/*
 	 * Initialize cpu_possible map, and enable coherency
 	 */
+    // 현 분석 기준 exynos_smp_prepare_cpus 함수 호출
 	void (*smp_prepare_cpus)(unsigned int max_cpus);
 
 	/*

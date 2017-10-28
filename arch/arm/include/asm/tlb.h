@@ -27,7 +27,8 @@
 
 #include <asm-generic/tlb.h>
 
-#else /* !CONFIG_MMU */
+#else /* !CONFIG_MMU */ 
+// CONFIG_MMU == y
 
 #include <linux/swap.h>
 #include <asm/pgalloc.h>

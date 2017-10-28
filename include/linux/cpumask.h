@@ -93,6 +93,7 @@ extern const struct cpumask *const cpu_active_mask;
 #define num_online_cpus()	cpumask_weight(cpu_online_mask)
 // 2015-02-28
 // 2017-06-24
+// 2017-10-28
 #define num_possible_cpus()	cpumask_weight(cpu_possible_mask)
 #define num_present_cpus()	cpumask_weight(cpu_present_mask)
 #define num_active_cpus()	cpumask_weight(cpu_active_mask)
@@ -185,6 +186,7 @@ static inline unsigned int cpumask_first(const struct cpumask *srcp)
 // 2015-08-29
 // 2015-09-12
 // 2016-01-23;
+// 2017-10-28
 static inline unsigned int cpumask_next(int n, const struct cpumask *srcp)
 {
 	/* -1 is a legal arg here. */
@@ -317,6 +319,8 @@ static inline void cpumask_clear_cpu(int cpu, struct cpumask *dstp)
  */
 // 2015-08-29
 // 2016-10-08
+// 2017-10-28
+// cpumask_test_cpu(task_cpu(p), new_mask)
 #define cpumask_test_cpu(cpu, cpumask) \
 	test_bit(cpumask_check(cpu), cpumask_bits((cpumask)))
 
@@ -588,6 +592,7 @@ static inline void cpumask_copy(struct cpumask *dstp,
 // cpumask_first_and(mask, cpu_online_mask);
 // 2016-01-23
 // cpumask_first_and(mask, cpu_online_mask)
+// src1p, src2p 둘 다 set된 비트 위치를 얻어온다.
 #define cpumask_first_and(src1p, src2p) cpumask_next_and(-1, (src1p), (src2p))
 
 /**

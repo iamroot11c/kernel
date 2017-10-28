@@ -85,8 +85,10 @@ static inline void __raw_writeb(u8 val, volatile void __iomem *addr)
 		     : "r" (val));
 }
 
+// 2017-10-28
 static inline void __raw_writel(u32 val, volatile void __iomem *addr)
 {
+    //-> *addr = val
 	asm volatile("str %1, %0"
 		     : "+Qo" (*(volatile u32 __force *)addr)
 		     : "r" (val));

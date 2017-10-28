@@ -78,6 +78,7 @@ struct completion {
  * structure.
  */
 // 2017-04-22
+// 2017-10-28
 static inline void init_completion(struct completion *x)
 {
 	x->done = 0;

@@ -194,6 +194,7 @@ static inline void do_raw_spin_unlock(raw_spinlock_t *lock) __releases(lock)
 #else
 // 2016-10-15
 // 2017-08-26
+// 2017-10-28
 # define raw_spin_lock_nested(lock, subclass)		_raw_spin_lock(lock)
 # define raw_spin_lock_nest_lock(lock, nest_lock)	_raw_spin_lock(lock)
 #endif

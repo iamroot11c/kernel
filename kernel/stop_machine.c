@@ -48,6 +48,7 @@ static DEFINE_PER_CPU(struct cpu_stopper, cpu_stopper);
 static DEFINE_PER_CPU(struct task_struct *, cpu_stopper_task);
 static bool stop_machine_initialized = false;
 
+// 2017-10-28
 static void cpu_stop_init_done(struct cpu_stop_done *done, unsigned int nr_todo)
 {
 	memset(done, 0, sizeof(*done));
@@ -76,6 +77,7 @@ static void cpu_stop_signal_done(struct cpu_stop_done *done, bool executed)
 /* queue @work to @stopper.  if offline, @work is completed immediately */
 // 2016-11-19
 // fn=active_load_balance_cpu_stop, arg=busiest
+// 2017-10-28
 static void cpu_stop_queue_work(unsigned int cpu, struct cpu_stop_work *work)
 {
 	struct cpu_stopper *stopper = &per_cpu(cpu_stopper, cpu);
@@ -122,6 +124,9 @@ static void cpu_stop_queue_work(unsigned int cpu, struct cpu_stop_work *work)
  * -ENOENT if @fn(@arg) was not executed because @cpu was offline;
  * otherwise, the return value of @fn.
  */
+// 2017-10-28
+// 특정 cpu에 대한 stop 요청 (멈출 때 수행 동작을 cpu_stop_work로 전달하며, 중단 요청에 대한 별도 테스크를 실행)
+// 중단 요청이 완료될 때까지 함수 대기
 int stop_one_cpu(unsigned int cpu, cpu_stop_fn_t fn, void *arg)
 {
 	struct cpu_stop_done done;

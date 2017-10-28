@@ -48,6 +48,9 @@ extern const struct firmware_ops *firmware_ops;
  * Checks if firmware operation is present and calls it,
  * otherwise returns -ENOSYS
  */
+// 2017-10-28
+// call_firmware_op(set_cpu_boot_addr, phys_cpu, boot_addr)
+//  -> exynos_set_cpu_boot_addr 호출
 #define call_firmware_op(op, ...)					\
 	((firmware_ops->op) ? firmware_ops->op(__VA_ARGS__) : (-ENOSYS))
 

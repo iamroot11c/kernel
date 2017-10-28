@@ -226,6 +226,7 @@ static inline void cpuset_print_task_mems_allowed(struct task_struct *p)
 {
 }
 
+// 2017-10-28
 static inline void set_mems_allowed(nodemask_t nodemask)
 {
 }

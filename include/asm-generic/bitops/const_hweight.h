@@ -31,6 +31,8 @@
 #define hweight16(w) (__builtin_constant_p(w) ? __const_hweight16(w) : __arch_hweight16(w))
 // 2015-08-29
 // w : 0b11, 2
+// 2017-10-28
+// 0~31까지 세팅된 비트 개수를 얻어옴.
 #define hweight32(w) (__builtin_constant_p(w) ? __const_hweight32(w) : __arch_hweight32(w))
 #define hweight64(w) (__builtin_constant_p(w) ? __const_hweight64(w) : __arch_hweight64(w))
 
