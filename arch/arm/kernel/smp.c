@@ -322,6 +322,7 @@ void __ref cpu_die(void)
  * Called by both boot and secondaries to move global data into
  * per-processor storage.
  */
+// 2017-11-04
 static void smp_store_cpu_info(unsigned int cpuid)
 {
 	struct cpuinfo_arm *cpu_info = &per_cpu(cpu_data, cpuid);
@@ -422,6 +423,7 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
 	init_cpu_topology();
 	// 2017-10-28 여기까지
 
+	// 2017-11-04
 	smp_store_cpu_info(smp_processor_id());
 
 	/*
@@ -436,6 +438,7 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
 		 * re-initialize the map in the platforms smp_prepare_cpus()
 		 * if present != possible (e.g. physical hotplug).
 		 */
+		// 2017-11-04
 		init_cpu_present(cpu_possible_mask);
 
 		/*

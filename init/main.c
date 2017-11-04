@@ -200,6 +200,7 @@ static int __init obsolete_checksetup(char *line)
  * still work even if initially too large, it will just take slightly longer
  */
 // 2017-06-17
+// 2017-11-04
 unsigned long loops_per_jiffy = (1<<12);
 
 EXPORT_SYMBOL(loops_per_jiffy);
@@ -830,6 +831,7 @@ static void __init do_ctors(void)
 #endif
 }
 
+// 2017-11-04
 bool initcall_debug;
 core_param(initcall_debug, initcall_debug, bool, 0644);
 
@@ -851,6 +853,7 @@ static int __init_or_module do_one_initcall_debug(initcall_t fn)
 	return ret;
 }
 
+// 2017-11-04
 int __init_or_module do_one_initcall(initcall_t fn)
 {
 	int count = preempt_count();
@@ -957,8 +960,10 @@ static void __init do_basic_setup(void)
 	random_int_secret_init();
 }
 
+// 2017-11-04
 static void __init do_pre_smp_initcalls(void)
 {
+	// 함수 포인터의 포인터 type
 	initcall_t *fn;
 
 	for (fn = __initcall_start; fn < __initcall0_start; fn++)
@@ -1054,10 +1059,15 @@ static noinline void __init kernel_init_freeable(void)
 
 	// 2017-10-28 시작
 	smp_prepare_cpus(setup_max_cpus);
+	// 2017-11-04, end
 
+	// 2017-11-04, start
 	do_pre_smp_initcalls();
-	lockup_detector_init();
+	// 2017-11-04, end
+	// 2017-11-04, start
+	lockup_detector_init();	// NOP
 
+	// 2017-11-04
 	smp_init();
 	sched_init_smp();
 

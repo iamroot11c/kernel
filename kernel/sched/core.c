@@ -1039,10 +1039,12 @@ inline int task_curr(const struct task_struct *p)
 	return cpu_curr(task_cpu(p)) == p;
 }
 
+// 2017-11-04
 static inline void check_class_changed(struct rq *rq, struct task_struct *p,
 				       const struct sched_class *prev_class,
 				       int oldprio)
 {
+	// idle_sched_class, fair_sched_class
 	if (prev_class != p->sched_class) {
 		if (prev_class->switched_from)
 			prev_class->switched_from(rq, p);
@@ -3649,6 +3651,8 @@ static bool check_same_owner(struct task_struct *p)
 	return match;
 }
 
+// 2017-11-04
+// __sched_setscheduler(create.result, SCHED_NORMAL, &param, false)
 static int __sched_setscheduler(struct task_struct *p, int policy,
 				const struct sched_param *param, bool user)
 {
@@ -3723,6 +3727,7 @@ recheck:
 			return -EPERM;
 	}
 
+	// 2017-11-04, user == false
 	if (user) {
 		retval = security_task_setscheduler(p);
 		if (retval)
@@ -3755,7 +3760,7 @@ recheck:
 		return 0;
 	}
 
-#ifdef CONFIG_RT_GROUP_SCHED
+#ifdef CONFIG_RT_GROUP_SCHED	// =n
 	if (user) {
 		/*
 		 * Do not allow realtime tasks into groups that have no runtime
@@ -3780,6 +3785,7 @@ recheck:
 	running = task_current(rq, p);
 	if (on_rq)
 		dequeue_task(rq, p, 0);
+	// idle_sched_class
 	if (running)
 		p->sched_class->put_prev_task(rq, p);
 
@@ -3787,8 +3793,11 @@ recheck:
 
 	oldprio = p->prio;
 	prev_class = p->sched_class;
+	// 2017-11-04, start
 	__setscheduler(rq, p, policy, param->sched_priority);
+	// 2017-11-04, end
 
+	// fair_sched_class
 	if (running)
 		p->sched_class->set_curr_task(rq);
 	if (on_rq)
@@ -3832,6 +3841,8 @@ EXPORT_SYMBOL_GPL(sched_setscheduler);
  *
  * Return: 0 on success. An error code otherwise.
  */
+// 2017-11-04
+// sched_setscheduler_nocheck(create.result, SCHED_NORMAL, &param);
 int sched_setscheduler_nocheck(struct task_struct *p, int policy,
 			       const struct sched_param *param)
 {
@@ -4598,6 +4609,7 @@ void init_idle(struct task_struct *idle, int cpu)
 	/*
 	 * The idle tasks have their own, simple scheduling class:
 	 */
+	// idle_sched_class로 설정
 	idle->sched_class = &idle_sched_class;
 	ftrace_graph_init_idle_task(idle, cpu); // no op
 	vtime_init_idle(idle, cpu); // no op

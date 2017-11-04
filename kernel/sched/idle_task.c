@@ -56,6 +56,7 @@ dequeue_task_idle(struct rq *rq, struct task_struct *p, int flags)
 	raw_spin_lock_irq(&rq->lock);
 }
 
+// 2017-11-04
 static void put_prev_task_idle(struct rq *rq, struct task_struct *prev)
 {
 }

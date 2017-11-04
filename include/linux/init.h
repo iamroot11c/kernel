@@ -134,6 +134,7 @@
 /*
  * Used for initialization calls..
  */
+// 2017-11-04
 typedef int (*initcall_t)(void);
 typedef void (*exitcall_t)(void);
 

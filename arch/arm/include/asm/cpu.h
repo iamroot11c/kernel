@@ -13,6 +13,7 @@
 #include <linux/percpu.h>
 #include <linux/cpu.h>
 
+// 2017-11-04
 struct cpuinfo_arm {
 	struct cpu	cpu;
 	u32		cpuid;

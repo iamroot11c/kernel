@@ -140,6 +140,7 @@ static void rt_mutex_adjust_prio(struct task_struct *task)
 /*
  * Max number of times we'll walk the boosting chain:
  */
+// 2017-11-04
 int max_lock_depth = 1024;
 
 /*
@@ -160,6 +161,8 @@ int max_lock_depth = 1024;
  *
  * Returns 0 or -EDEADLK.
  */
+// 2017-11-04
+// rt_mutex_adjust_prio_chain(task, 0, NULL, NULL, task);
 static int rt_mutex_adjust_prio_chain(struct task_struct *task,
 				      int deadlock_detect,
 				      struct rt_mutex *orig_lock,
@@ -557,6 +560,7 @@ static void remove_waiter(struct rt_mutex *lock,
  *
  * Called from sched_setscheduler
  */
+// 2017-11-04
 void rt_mutex_adjust_pi(struct task_struct *task)
 {
 	struct rt_mutex_waiter *waiter;

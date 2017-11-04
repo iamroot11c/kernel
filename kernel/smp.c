@@ -530,6 +530,7 @@ EXPORT_SYMBOL(smp_call_function);
 #endif /* USE_GENERIC_SMP_HELPERS */
 
 /* Setup configured maximum number of CPUs to activate */
+// 2017-11-04
 unsigned int setup_max_cpus = NR_CPUS;
 EXPORT_SYMBOL(setup_max_cpus);
 
@@ -599,11 +600,15 @@ void __init setup_nr_cpu_ids(void)
 }
 
 /* Called by boot processor to activate the rest. */
+// 2017-11-04
 void __init smp_init(void)
 {
 	unsigned int cpu;
 
+	// 2017-11-04, start
 	idle_threads_init();
+	// 2017-11-04, end
+
 
 	/* FIXME: This should be done in userspace --RR */
 	for_each_present_cpu(cpu) {

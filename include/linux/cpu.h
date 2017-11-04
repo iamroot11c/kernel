@@ -19,6 +19,7 @@
 
 struct device;
 
+// 2017-11-04
 struct cpu {
 	int node_id;		/* The node which contains the CPU */
 	int hotpluggable;	/* creates sysfs control file if hotpluggable */

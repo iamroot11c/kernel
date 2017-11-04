@@ -5,6 +5,7 @@
 
 #include <linux/cpumask.h>
 
+// 2017-11-04
 struct cputopo_arm {
 	int thread_id;
 	int core_id;
@@ -25,6 +26,7 @@ extern struct cputopo_arm cpu_topology[NR_CPUS];
 
 // 2017-10-28
 void init_cpu_topology(void);
+// 2017-11-04
 void store_cpu_topology(unsigned int cpuid);
 const struct cpumask *cpu_coregroup_mask(int cpu);
 

@@ -20,11 +20,14 @@
 #include <linux/uaccess.h>
 #include <trace/events/sched.h>
 
+// 2017-11-04
 static DEFINE_SPINLOCK(kthread_create_lock);
+// 2017-11-04
 static LIST_HEAD(kthread_create_list);
 // 2017-09-23
 struct task_struct *kthreadd_task;
 
+// 2017-11-04
 struct kthread_create_info
 {
 	/* Information passed to kthread() from kthreadd. */
@@ -259,6 +262,7 @@ static void create_kthread(struct kthread_create_info *create)
  *
  * Returns a task_struct or ERR_PTR(-ENOMEM).
  */
+// kthread_create_on_node(smpboot_thread_fn, data, 0, namefmt, cpu);
 struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
 					   void *data, int node,
 					   const char namefmt[],
@@ -266,9 +270,10 @@ struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
 {
 	struct kthread_create_info create;
 
+	// smpboot_thread_fn
 	create.threadfn = threadfn;
 	create.data = data;
-	create.node = node;
+	create.node = node;	// 0
 	init_completion(&create.done);
 
 	spin_lock(&kthread_create_lock);
@@ -290,7 +295,9 @@ struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
 		 * root may have changed our (kthreadd's) priority or CPU mask.
 		 * The kernel thread should not inherit these properties.
 		 */
+		// 2017-11-04
 		sched_setscheduler_nocheck(create.result, SCHED_NORMAL, &param);
+		// 2017-11-04
 		set_cpus_allowed_ptr(create.result, cpu_all_mask);
 	}
 	return create.result;
@@ -335,6 +342,8 @@ EXPORT_SYMBOL(kthread_bind);
  * Description: This helper function creates and names a kernel thread
  * The thread will be woken and put into park mode.
  */
+// tsk = kthread_create_on_cpu(smpboot_thread_fn, td, cpu,
+//                                     ht->thread_comm);
 struct task_struct *kthread_create_on_cpu(int (*threadfn)(void *data),
 					  void *data, unsigned int cpu,
 					  const char *namefmt)

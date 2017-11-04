@@ -41,6 +41,7 @@
  * during this sequence.
  */
 // 2016-10-15
+// 2017-11-04
 static DEFINE_PER_CPU(unsigned long, cpu_scale);
 
 // 2016-10-15
@@ -51,6 +52,7 @@ unsigned long arch_scale_freq_power(struct sched_domain *sd, int cpu)
 	return per_cpu(cpu_scale, cpu);
 }
 
+// 2017-11-04
 static void set_power_scale(unsigned int cpu, unsigned long power)
 {
 	per_cpu(cpu_scale, cpu) = power;
@@ -78,6 +80,7 @@ struct cpu_efficiency table_efficiency[] = {
 	{NULL, },
 };
 
+// 2017-11-04, dt parse_dt_topology 후에 설정된다.
 unsigned long *__cpu_capacity;
 #define cpu_capacity(cpu)	__cpu_capacity[cpu]
 
@@ -165,6 +168,7 @@ static void __init parse_dt_topology(void)
  * boot. The update of all CPUs is in O(n^2) for heteregeneous system but the
  * function returns directly for SMP system.
  */
+// 2017-11-04
 void update_cpu_power(unsigned int cpu)
 {
 	if (!cpu_capacity(cpu))
@@ -184,6 +188,7 @@ static inline void update_cpu_power(unsigned int cpuid) {}
  /*
  * cpu topology table
  */
+// 2017-11-04
 struct cputopo_arm cpu_topology[NR_CPUS];
 EXPORT_SYMBOL_GPL(cpu_topology);
 
@@ -192,11 +197,13 @@ const struct cpumask *cpu_coregroup_mask(int cpu)
 	return &cpu_topology[cpu].core_sibling;
 }
 
+// 2017-11-04
 void update_siblings_masks(unsigned int cpuid)
 {
 	struct cputopo_arm *cpu_topo, *cpuid_topo = &cpu_topology[cpuid];
 	int cpu;
 
+	// 2017-11-04, bitmap 설정
 	/* update core and thread sibling masks */
 	for_each_possible_cpu(cpu) {
 		cpu_topo = &cpu_topology[cpu];
@@ -223,6 +230,7 @@ void update_siblings_masks(unsigned int cpuid)
  * and with the mutex cpu_hotplug.lock locked, when several cpus have booted,
  * which prevents simultaneous write access to cpu_topology array
  */
+// 2017-11-04
 void store_cpu_topology(unsigned int cpuid)
 {
 	struct cputopo_arm *cpuid_topo = &cpu_topology[cpuid];
@@ -235,6 +243,8 @@ void store_cpu_topology(unsigned int cpuid)
 	mpidr = read_cpuid_mpidr();
 
 	/* create cpu topology mapping */
+	// 2017-11-04, 우리는 아래 조건을 충족할 것으로 예상한다
+	// ref: http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0388e/CIHEBGFG.html
 	if ((mpidr & MPIDR_SMP_BITMASK) == MPIDR_SMP_VALUE) {
 		/*
 		 * This is a multiprocessor system
@@ -247,6 +257,7 @@ void store_cpu_topology(unsigned int cpuid)
 			cpuid_topo->core_id = MPIDR_AFFINITY_LEVEL(mpidr, 1);
 			cpuid_topo->socket_id = MPIDR_AFFINITY_LEVEL(mpidr, 2);
 		} else {
+			// 2017-11-04, here
 			/* largely independent cores */
 			cpuid_topo->thread_id = -1;
 			cpuid_topo->core_id = MPIDR_AFFINITY_LEVEL(mpidr, 0);
@@ -263,8 +274,10 @@ void store_cpu_topology(unsigned int cpuid)
 		cpuid_topo->socket_id = -1;
 	}
 
+	// 2017-11-04
 	update_siblings_masks(cpuid);
 
+	// 2017-11-04
 	update_cpu_power(cpuid);
 
 	printk(KERN_INFO "CPU%u: thread %d, cpu %d, socket %d, mpidr %x\n",

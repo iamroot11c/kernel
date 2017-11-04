@@ -44,6 +44,7 @@ extern void schedule_rt_mutex_test(struct rt_mutex *lock);
  * @pi_list_entry:	pi node to enqueue into the mutex owner waiters list
  * @task:		task reference to the blocked task
  */
+// 2017-11-04
 struct rt_mutex_waiter {
 	struct plist_node	list_entry;
 	struct plist_node	pi_list_entry;
@@ -64,6 +65,7 @@ static inline int rt_mutex_has_waiters(struct rt_mutex *lock)
 	return !plist_head_empty(&lock->wait_list);
 }
 
+// 2017-11-04
 static inline struct rt_mutex_waiter *
 rt_mutex_top_waiter(struct rt_mutex *lock)
 {

@@ -1,7 +1,24 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
 
-+ [144주차](http://bit.ly/2ya9ItB) `2017.10.28
++ [146주차]() `2017.11.04
+ - drive: 보름달님
+ - kernel/kernel/init/main.c::kernel_init() 진행
+ - kernel/kernel/init/main.c::kernel_init_freeable() 진행
+ - kernel/kernel/init/main.c::smp_prepare_cpus() 진행
+ - kernel/kernel/arch/arm/kernel/smp.c::init_cpu_topology() 완료
+ - kernel/kernel/arch/arm/kernel/smp.c::smp_store_cpu_info() 완료
+ - kernel/init/main.c::do_pre_smp_initcalls() 완료
+ - kernel/smp.c::smp_init() 진행중
+ - kernel/smpboot.c::idle_threads_init() 완료
+ - kernel/cpu.c::cpu_up() 진행중
+ - kernel/cpu.c::_cpu_up() 진행중
+ - kernel/smpboot.c::smpboot_create_threads() 진행중
+ - kernel/smpboot.c::__smpboot_create_thread() 진행중
+ - kernel/kthread.c::kthread_create_on_cpu() 진행중
+ - kernel/smpboot.c::smpboot_thread_fn() 진행 예정
+
++ [145주차](http://bit.ly/2ya9ItB) `2017.10.28
  - drive: 홍진우님
  - kernel/kernel/init/main.c::kernel_init() 진행
  - kernel/kernel/init/main.c::kernel_init_freeable() 진행

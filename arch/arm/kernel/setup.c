@@ -150,6 +150,7 @@ const struct machine_desc *machine_desc __initdata;
 static union { char c[4]; unsigned long l; } endian_test __initdata = { { 'l', '?', '?', 'b' } };
 #define ENDIANNESS ((char)endian_test.l)
 
+// 2017-11-04
 DEFINE_PER_CPU(struct cpuinfo_arm, cpu_data);
 
 /*

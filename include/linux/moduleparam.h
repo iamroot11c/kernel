@@ -279,6 +279,8 @@ static inline void __kernel_param_unlock(void)
  * with __setup(), and it makes sense as truly core parameters aren't
  * tied to the particular file they're in.
  */
+// 2017-11-04
+// core_param(initcall_debug, initcall_debug, bool, 0644)
 #define core_param(name, var, type, perm)				\
 	param_check_##type(name, &(var));				\
 	__module_param_call("", name, &param_ops_##type, &var, perm, -1)

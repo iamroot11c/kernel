@@ -37,7 +37,7 @@ static inline int rt_task(struct task_struct *p)
 	return rt_prio(p->prio);
 }
 
-#ifdef CONFIG_RT_MUTEXES
+#ifdef CONFIG_RT_MUTEXES    // =y
 extern int rt_mutex_getprio(struct task_struct *p);
 extern void rt_mutex_setprio(struct task_struct *p, int prio);
 extern void rt_mutex_adjust_pi(struct task_struct *p);

@@ -408,6 +408,8 @@ EXPORT_SYMBOL(cpu_down);
 #endif /*CONFIG_HOTPLUG_CPU*/
 
 /* Requires cpu_add_remove_lock to be held */
+// 2017-11-04
+// _cpu_up(cpu, 0);
 static int _cpu_up(unsigned int cpu, int tasks_frozen)
 {
 	int ret, nr_calls = 0;
@@ -428,6 +430,7 @@ static int _cpu_up(unsigned int cpu, int tasks_frozen)
 		goto out;
 	}
 
+	// 2017-11-04
 	ret = smpboot_create_threads(cpu);
 	if (ret)
 		goto out;
@@ -461,11 +464,12 @@ out:
 	return ret;
 }
 
+// 2017-11-04
 int cpu_up(unsigned int cpu)
 {
 	int err = 0;
 
-#ifdef	CONFIG_MEMORY_HOTPLUG
+#ifdef	CONFIG_MEMORY_HOTPLUG // = n
 	int nid;
 	pg_data_t	*pgdat;
 #endif
@@ -480,7 +484,7 @@ int cpu_up(unsigned int cpu)
 		return -EINVAL;
 	}
 
-#ifdef	CONFIG_MEMORY_HOTPLUG
+#ifdef	CONFIG_MEMORY_HOTPLUG	// =n
 	nid = cpu_to_node(cpu);
 	if (!node_online(nid)) {
 		err = mem_online_node(nid);
@@ -509,6 +513,7 @@ int cpu_up(unsigned int cpu)
 		goto out;
 	}
 
+	// 2017-11-04
 	err = _cpu_up(cpu, 0);
 
 out:
@@ -729,6 +734,7 @@ static DECLARE_BITMAP(cpu_online_bits, CONFIG_NR_CPUS) __read_mostly;
 const struct cpumask *const cpu_online_mask = to_cpumask(cpu_online_bits);
 EXPORT_SYMBOL(cpu_online_mask);
 
+// 2017-11-02
 static DECLARE_BITMAP(cpu_present_bits, CONFIG_NR_CPUS) __read_mostly;
 const struct cpumask *const cpu_present_mask = to_cpumask(cpu_present_bits);
 EXPORT_SYMBOL(cpu_present_mask);
@@ -772,6 +778,7 @@ void set_cpu_active(unsigned int cpu, bool active)
 		cpumask_clear_cpu(cpu, to_cpumask(cpu_active_bits));
 }
 
+// 2017-11-04
 void init_cpu_present(const struct cpumask *src)
 {
 	cpumask_copy(to_cpumask(cpu_present_bits), src);

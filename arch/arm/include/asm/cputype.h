@@ -58,6 +58,7 @@
 
 // 2015-02-28;
 // MPIDR_AFFINITY_LEVEL(mask/*0*/, i)
+// 2017-11-04
 #define MPIDR_AFFINITY_LEVEL(mpidr, level) \
 	((mpidr >> (MPIDR_LEVEL_BITS * level)) & MPIDR_LEVEL_MASK)	//하위 1byte값을 추출
 									//20140712
@@ -86,6 +87,7 @@ extern unsigned int processor_id;
 			//20140712
 // 2015-02-14; Main ID Register를 읽음
 // 2015-10-03
+// 2017-11-04
 // reg(1) cachetype인 경우 : 0x8444C004 
 //
 #define read_cpuid(reg)							\
@@ -161,6 +163,8 @@ static inline unsigned int __attribute_const__ read_cpuid_ext(unsigned offset)
  * rather than directly reading processor_id or read_cpuid() directly.
  */
 // 2015-02-28;
+// 2017-11-04
+// read from cp15
 static inline unsigned int __attribute_const__ read_cpuid_id(void)
 {
 	return read_cpuid(CPUID_ID);
@@ -208,6 +212,7 @@ static inline unsigned int __attribute_const__ read_cpuid_tcmstatus(void)
 	return read_cpuid(CPUID_TCM); // CPUID_TCM = 2
 }
 
+// 2017-11-04
 static inline unsigned int __attribute_const__ read_cpuid_mpidr(void)
 {
 	return read_cpuid(CPUID_MPIDR);	//CPUID_MPIDR 문자열로 치환됨.

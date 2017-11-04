@@ -4,6 +4,7 @@
 #include <uapi/linux/sched.h>
 
 
+// 2017-11-04
 struct sched_param {
 	int sched_priority;
 };
@@ -313,6 +314,7 @@ static inline void touch_softlockup_watchdog_sync(void)
 static inline void touch_all_softlockup_watchdogs(void)
 {
 }
+// 2017-11-04
 static inline void lockup_detector_init(void)
 {
 }
@@ -1337,6 +1339,7 @@ struct task_struct {
 	/* PI waiters blocked on a rt_mutex held by this task */
 	struct plist_head pi_waiters;
 	/* Deadlock detection and priority inheritance handling */
+    // 2017-11-04
 	struct rt_mutex_waiter *pi_blocked_on;
 #endif
 

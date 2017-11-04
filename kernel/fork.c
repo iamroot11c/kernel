@@ -1719,6 +1719,7 @@ fork_out:
 	return ERR_PTR(retval);
 }
 
+// 2017-11-04
 static inline void init_idle_pids(struct pid_link *links)
 {
 	enum pid_type type;
@@ -1729,12 +1730,16 @@ static inline void init_idle_pids(struct pid_link *links)
 	}
 }
 
+// 2017-11-04
 struct task_struct *fork_idle(int cpu)
 {
 	struct task_struct *task;
+	// CLONE_VM, create thread
 	task = copy_process(CLONE_VM, 0, 0, NULL, &init_struct_pid, 0);
 	if (!IS_ERR(task)) {
+		// 2017-11-04
 		init_idle_pids(task->pids);
+		// 2017-11-04
 		init_idle(task, cpu);
 	}
 

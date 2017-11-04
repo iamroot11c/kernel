@@ -17,11 +17,12 @@
 
 #ifdef CONFIG_SMP
 
-#ifdef CONFIG_GENERIC_SMP_IDLE_THREAD
+#ifdef CONFIG_GENERIC_SMP_IDLE_THREAD	// =y
 /*
  * For the hotplug case we keep the task structs around and reuse
  * them.
  */
+// 2017-11-04
 static DEFINE_PER_CPU(struct task_struct *, idle_threads);
 
 struct task_struct *idle_thread_get(unsigned int cpu)
@@ -47,11 +48,13 @@ void __init idle_thread_set_boot_cpu(void)
  *
  * Creates the thread if it does not exist.
  */
+// 2017-11-04
 static inline void idle_init(unsigned int cpu)
 {
 	struct task_struct *tsk = per_cpu(idle_threads, cpu);
 
 	if (!tsk) {
+		// 2017-11-04
 		tsk = fork_idle(cpu);
 		if (IS_ERR(tsk))
 			pr_err("SMP: fork_idle() failed for CPU %u\n", cpu);
@@ -63,12 +66,14 @@ static inline void idle_init(unsigned int cpu)
 /**
  * idle_threads_init - Initialize idle threads for all cpus
  */
+// 2017-11-04
 void __init idle_threads_init(void)
 {
 	unsigned int cpu, boot_cpu;
 
 	boot_cpu = smp_processor_id();
 
+	// 모든 cpu에 대해서 idle thread 생성 및 정의 
 	for_each_possible_cpu(cpu) {
 		if (cpu != boot_cpu)
 			idle_init(cpu);
@@ -78,9 +83,12 @@ void __init idle_threads_init(void)
 
 #endif /* #ifdef CONFIG_SMP */
 
+// 2017-11-04
 static LIST_HEAD(hotplug_threads);
+// 2017-11-04
 static DEFINE_MUTEX(smpboot_threads_lock);
 
+// 2017-11-04
 struct smpboot_thread_data {
 	unsigned int			cpu;
 	unsigned int			status;
@@ -164,6 +172,7 @@ static int smpboot_thread_fn(void *data)
 	}
 }
 
+// 2017-11-04
 static int
 __smpboot_create_thread(struct smp_hotplug_thread *ht, unsigned int cpu)
 {
@@ -179,8 +188,11 @@ __smpboot_create_thread(struct smp_hotplug_thread *ht, unsigned int cpu)
 	td->cpu = cpu;
 	td->ht = ht;
 
+	// 2017-11-04
 	tsk = kthread_create_on_cpu(smpboot_thread_fn, td, cpu,
 				    ht->thread_comm);
+	// 2017-11-04, 여기까지
+	// 차주는 smpboot_thread_fn부터 
 	if (IS_ERR(tsk)) {
 		kfree(td);
 		return PTR_ERR(tsk);
@@ -202,6 +214,7 @@ __smpboot_create_thread(struct smp_hotplug_thread *ht, unsigned int cpu)
 	return 0;
 }
 
+// 2017-11-04
 int smpboot_create_threads(unsigned int cpu)
 {
 	struct smp_hotplug_thread *cur;
@@ -209,6 +222,7 @@ int smpboot_create_threads(unsigned int cpu)
 
 	mutex_lock(&smpboot_threads_lock);
 	list_for_each_entry(cur, &hotplug_threads, list) {
+		// 2017-11-04
 		ret = __smpboot_create_thread(cur, cpu);
 		if (ret)
 			break;
