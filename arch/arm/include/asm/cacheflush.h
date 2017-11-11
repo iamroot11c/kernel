@@ -444,11 +444,13 @@ static inline void __sync_cache_range_w(volatile void *p, size_t size)
  * discard data simultaneously written by another CPU, hence the
  * usage of flush rather than invalidate operations.
  */
+// 2017-11-11
+// glance
 static inline void __sync_cache_range_r(volatile void *p, size_t size)
 {
 	char *_p = (char *)p;
 
-#ifdef CONFIG_OUTER_CACHE
+#ifdef CONFIG_OUTER_CACHE // y
 	if (outer_cache.flush_range) {
 		/*
 		 * Ensure dirty data migrated from other CPUs into our cache
@@ -466,6 +468,7 @@ static inline void __sync_cache_range_r(volatile void *p, size_t size)
 }
 
 #define sync_cache_w(ptr) __sync_cache_range_w(ptr, sizeof *(ptr))
+// 2017-11-11
 #define sync_cache_r(ptr) __sync_cache_range_r(ptr, sizeof *(ptr))
 
 #endif

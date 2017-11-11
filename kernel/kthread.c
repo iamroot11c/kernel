@@ -47,7 +47,7 @@ struct kthread {
 	unsigned long flags;
 	unsigned int cpu;
 	void *data; // 이 데이터는 workqueue.c:wq_worker_sleeping에서 struct worker* 타입으로 캐스팅되어 사용됨
-	struct completion parked;
+	struct completion parked; // 2017-11-11
 	struct completion exited;
 };
 
@@ -64,6 +64,8 @@ enum KTHREAD_BITS {
 
 // 2016-10-01
 // k->vfork_done를 포함하는 kthread 구조체를 얻어온다.
+// 즉 태스크 k와 연관된 스레드 정보를 얻어온다.
+// 2017-11-11
 static inline struct kthread *to_kthread(struct task_struct *k)
 {
 	return __to_kthread(k->vfork_done);
@@ -84,6 +86,7 @@ static struct kthread *to_live_kthread(struct task_struct *k)
  * and this will return true.  You should then return, and your return
  * value will be passed through to kthread_stop().
  */
+// 2017-11-11
 bool kthread_should_stop(void)
 {
 	return test_bit(KTHREAD_SHOULD_STOP, &to_kthread(current)->flags);
@@ -101,6 +104,8 @@ EXPORT_SYMBOL(kthread_should_stop);
  * and in a park position. kthread_unpark() "restarts" the thread and
  * calls the thread function again.
  */
+// 2017-11-11
+// 일시 정지?
 bool kthread_should_park(void)
 {
 	return test_bit(KTHREAD_SHOULD_PARK, &to_kthread(current)->flags);
@@ -164,11 +169,14 @@ void *probe_kthread_data(struct task_struct *task)
 	return data;
 }
 
+// 2017-11-11
+// self->parked에 등록된 작업이 있다면, 작업 수행 및 리스케줄링 후 빠져나온다.
 static void __kthread_parkme(struct kthread *self)
 {
 	__set_current_state(TASK_PARKED);
 	while (test_bit(KTHREAD_SHOULD_PARK, &self->flags)) {
 		if (!test_and_set_bit(KTHREAD_IS_PARKED, &self->flags))
+			// self->flags에 KTHREAD_IS_PARKED비트가 설정되어 있지 않은 경우
 			complete(&self->parked);
 		schedule();
 		__set_current_state(TASK_PARKED);
@@ -177,6 +185,7 @@ static void __kthread_parkme(struct kthread *self)
 	__set_current_state(TASK_RUNNING);
 }
 
+// 2017-11-11
 void kthread_parkme(void)
 {
 	__kthread_parkme(to_kthread(current));
@@ -303,7 +312,8 @@ struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
 	return create.result;
 }
 EXPORT_SYMBOL(kthread_create_on_node);
-
+// 2017-11-11
+// __kthread_bind(k, kthread->cpu, TASK_PARKED)
 static void __kthread_bind(struct task_struct *p, unsigned int cpu, long state)
 {
 	/* Must have done schedule() in kthread() before we set_task_cpu */
@@ -361,6 +371,7 @@ struct task_struct *kthread_create_on_cpu(int (*threadfn)(void *data),
 	return p;
 }
 
+// 2017-11-11
 static void __kthread_unpark(struct task_struct *k, struct kthread *kthread)
 {
 	clear_bit(KTHREAD_SHOULD_PARK, &kthread->flags);
@@ -385,6 +396,7 @@ static void __kthread_unpark(struct task_struct *k, struct kthread *kthread)
  * waits for it to return. If the thread is marked percpu then its
  * bound to the cpu again.
  */
+// 2017-11-11
 void kthread_unpark(struct task_struct *k)
 {
 	struct kthread *kthread = to_live_kthread(k);

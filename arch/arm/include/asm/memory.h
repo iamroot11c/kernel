@@ -157,7 +157,7 @@
  * does not fully accomodate the 40-bit addressing capability of ARM LPAE, but
  * gives us about 38-bits or so.
  */
-#ifdef CONFIG_ARM_LPAE
+#ifdef CONFIG_ARM_LPAE // n
 #define ARCH_PGD_SHIFT		L1_CACHE_SHIFT
 #else
 #define ARCH_PGD_SHIFT		0

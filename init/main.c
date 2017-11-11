@@ -1069,6 +1069,7 @@ static noinline void __init kernel_init_freeable(void)
 
 	// 2017-11-04
 	smp_init();
+	// 2017-11-11 완료
 	sched_init_smp();
 
 	do_basic_setup();

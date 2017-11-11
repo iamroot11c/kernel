@@ -615,6 +615,7 @@ void __init smp_init(void)
 		if (num_online_cpus() >= setup_max_cpus)
 			break;
 		if (!cpu_online(cpu))
+			// 2017-11-04
 			cpu_up(cpu);
 	}
 

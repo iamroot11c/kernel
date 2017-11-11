@@ -1,6 +1,16 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
 
++ [147주차](http://bit.ly/2iYDJWr) `2017.11.11
+ - drive: 홍진우님
+ - kernel/kernel/init/main.c::kernel_init() 진행
+ - kernel/kernel/init/main.c::kernel_init_freeable() 진행
+ - kernel/kernel/init/main.c::smp_prepare_cpus() 진행
+ - kernel/kernel/sched/core.c::sched_init_smp() 진행
+ - kernel/kernel/sched/core.c::init_sched_domains() 진행
+ - kernel/kernel/sched/core.c::build_sched_domains() 진행 (503 line)
+ - 
+ 
 + [146주차](http://bit.ly/2iYDJWr) `2017.11.04
  - drive: 보름달님
  - kernel/kernel/init/main.c::kernel_init() 진행

@@ -391,6 +391,7 @@ static inline void cpumask_clear(struct cpumask *dstp)
 // 2016-01-23
 // cpumask_and(cfd->cpumask, mask, cpu_online_mask);
 // *cfd->cpumask = (*mask & *cpu_online_mask)
+// 2017-11-11
 static inline int cpumask_and(struct cpumask *dstp,
 			       const struct cpumask *src1p,
 			       const struct cpumask *src2p)
@@ -434,6 +435,8 @@ static inline void cpumask_xor(struct cpumask *dstp,
  *
  * If *@dstp is empty, returns 0, else returns 1
  */
+// 2017-11-11
+// cpumask_andnot(doms_cur[0], cpu_map, cpu_isolated_map)
 static inline int cpumask_andnot(struct cpumask *dstp,
 				  const struct cpumask *src1p,
 				  const struct cpumask *src2p)
@@ -760,6 +763,7 @@ void free_bootmem_cpumask_var(cpumask_var_t mask);
 typedef struct cpumask cpumask_var_t[1];
 
 // 2016-08-06
+// 2017-11-11
 static inline bool alloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
 {
 	return true;

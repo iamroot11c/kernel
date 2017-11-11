@@ -79,6 +79,7 @@ static struct {
 // 2016-07-09
 // refcount 증가하는 기능
 // 2017-06-03
+// 2017-11-11
 void get_online_cpus(void)
 {
 	might_sleep();	// NOP
@@ -145,6 +146,7 @@ void cpu_hotplug_begin(void)
 	}
 }
 
+// 2017-11-11
 void cpu_hotplug_done(void)
 {
 	cpu_hotplug.active_writer = NULL;
@@ -210,17 +212,23 @@ int __ref register_cpu_notifier(struct notifier_block *nb)
 	return ret;
 }
 
+// 2017-11-11
+// __cpu_notify(CPU_UP_PREPARE | mod, hcpu, -1, &nr_calls);
+// __cpu_notify(val, v, -1, NULL)
+// return : 정상 수행 : 0 / 비정상 동작 : < 0 인 값 리턴
 static int __cpu_notify(unsigned long val, void *v, int nr_to_call,
 			int *nr_calls)
 {
 	int ret;
 
+	// cpu_chain에 연결된 notifier_call 콜백을 일괄 호출
 	ret = __raw_notifier_call_chain(&cpu_chain, val, v, nr_to_call,
 					nr_calls);
 
 	return notifier_to_errno(ret);
 }
 
+// 2017-11-11
 static int cpu_notify(unsigned long val, void *v)
 {
 	return __cpu_notify(val, v, -1, NULL);
@@ -432,9 +440,11 @@ static int _cpu_up(unsigned int cpu, int tasks_frozen)
 
 	// 2017-11-04
 	ret = smpboot_create_threads(cpu);
+	// 2017-11-11 완료
 	if (ret)
 		goto out;
 
+	// 2017-11-11
 	ret = __cpu_notify(CPU_UP_PREPARE | mod, hcpu, -1, &nr_calls);
 	if (ret) {
 		nr_calls--;
@@ -444,12 +454,14 @@ static int _cpu_up(unsigned int cpu, int tasks_frozen)
 	}
 
 	/* Arch-specific enabling code. */
+	// 2017-11-11
 	ret = __cpu_up(cpu, idle);
 	if (ret != 0)
 		goto out_notify;
 	BUG_ON(!cpu_online(cpu));
 
 	/* Wake the per cpu threads */
+	// 2017-11-11
 	smpboot_unpark_threads(cpu);
 
 	/* Now call notifier in preparation. */
@@ -515,6 +527,7 @@ int cpu_up(unsigned int cpu)
 
 	// 2017-11-04
 	err = _cpu_up(cpu, 0);
+	// 2017-11-11
 
 out:
 	cpu_maps_update_done();

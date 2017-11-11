@@ -51,6 +51,7 @@
  * so we need some other way of telling a new secondary core
  * where to place its SVC stack
  */
+// 2017-11-11
 struct secondary_data secondary_data;
 
 /*
@@ -91,6 +92,7 @@ void __init smp_set_ops(struct smp_operations *ops)
 		smp_ops = *ops;
 };
 
+// 2017-11-11
 static unsigned long get_arch_pgd(pgd_t *pgd)
 {
 	phys_addr_t pgdir = virt_to_phys(pgd);
@@ -98,6 +100,7 @@ static unsigned long get_arch_pgd(pgd_t *pgd)
 	return pgdir >> ARCH_PGD_SHIFT;
 }
 
+// 2017-11-11
 int __cpu_up(unsigned int cpu, struct task_struct *idle)
 {
 	int ret;
@@ -115,12 +118,14 @@ int __cpu_up(unsigned int cpu, struct task_struct *idle)
 	secondary_data.pgdir = get_arch_pgd(idmap_pgd);
 	secondary_data.swapper_pg_dir = get_arch_pgd(swapper_pg_dir);
 #endif
+	// secondary_data 메모리에 flush
 	__cpuc_flush_dcache_area(&secondary_data, sizeof(secondary_data));
 	outer_clean_range(__pa(&secondary_data), __pa(&secondary_data + 1));
 
 	/*
 	 * Now bring the CPU into our world.
 	 */
+	// 내부적으로 exynos_boot_secondary 함수 수행
 	ret = boot_secondary(cpu, idle);
 	if (ret == 0) {
 		/*
@@ -139,6 +144,7 @@ int __cpu_up(unsigned int cpu, struct task_struct *idle)
 	}
 
 
+	// secondary_data 초기화
 	memset(&secondary_data, 0, sizeof(secondary_data));
 	return ret;
 }
@@ -151,8 +157,10 @@ void __init smp_init_cpus(void)
 		smp_ops.smp_init_cpus(); // exynos_smp_init_cpus() 함수 호출
 }
 
+// 2017-11-11
 int boot_secondary(unsigned int cpu, struct task_struct *idle)
 {
+	// secondary 프로세서 부팅 시 필요한 작업을 수행
 	if (smp_ops.smp_boot_secondary)
 		return smp_ops.smp_boot_secondary(cpu, idle);
 	return -ENOSYS;
@@ -397,6 +405,7 @@ asmlinkage void secondary_start_kernel(void)
 	cpu_startup_entry(CPUHP_ONLINE);
 }
 
+// 2017-11-11
 void __init smp_cpus_done(unsigned int max_cpus)
 {
 	printk(KERN_INFO "SMP: Total of %d processors activated.\n",

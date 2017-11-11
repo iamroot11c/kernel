@@ -91,6 +91,7 @@ static void exynos_secondary_init(unsigned int cpu)
 	spin_unlock(&boot_lock);
 }
 
+// 2017-11-11
 static int exynos_boot_secondary(unsigned int cpu, struct task_struct *idle)
 {
 	unsigned long timeout;
@@ -239,6 +240,7 @@ static void __init exynos_smp_prepare_cpus(unsigned int max_cpus)
 }
 
 // 2017-10-28
+// 2017-11-11
 struct smp_operations exynos_smp_ops __initdata = {
 	.smp_init_cpus		= exynos_smp_init_cpus,
 	.smp_prepare_cpus	= exynos_smp_prepare_cpus,

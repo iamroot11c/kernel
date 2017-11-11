@@ -72,6 +72,7 @@ static inline void ____atomic_change_bit(unsigned int bit, volatile unsigned lon
 	raw_local_irq_restore(flags);
 }
 
+// 2017-11-11
 static inline int
 ____atomic_test_and_set_bit(unsigned int bit, volatile unsigned long *p)
 {
@@ -200,6 +201,8 @@ extern int _find_next_bit_be(const unsigned long *p, int size, int offset);
 // _test_and_set_bit(nr, p)
 // 2016-03-26
 // test_and_set_bit(PG_locked, &page->flags)
+// ->  ____atomic_test_and_set_bit(PG_locked, &page->flags)
+// 1) nr 번째 비트를 p에 세팅 2) 세팅되기 이전, 해당 비트가 설정되어 있었는지를 반환
 #define test_and_set_bit(nr,p)		ATOMIC_BITOP(test_and_set_bit,nr,p)
 // 2014-12-13
 // _test_and_clear_bit(nr, p)

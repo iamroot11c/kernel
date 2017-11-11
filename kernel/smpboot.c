@@ -111,6 +111,7 @@ enum {
  *
  * Returns 1 when the thread should exit, 0 otherwise.
  */
+// 2017-11-11
 static int smpboot_thread_fn(void *data)
 {
 	struct smpboot_thread_data *td = data;
@@ -120,6 +121,7 @@ static int smpboot_thread_fn(void *data)
 		set_current_state(TASK_INTERRUPTIBLE);
 		preempt_disable();
 		if (kthread_should_stop()) {
+			// 스레드를 종료해야 하는 경우
 			set_current_state(TASK_RUNNING);
 			preempt_enable();
 			if (ht->cleanup)
@@ -129,6 +131,7 @@ static int smpboot_thread_fn(void *data)
 		}
 
 		if (kthread_should_park()) {
+			// 스레드를 일시 정지하는 경우?
 			__set_current_state(TASK_RUNNING);
 			preempt_enable();
 			if (ht->park && td->status == HP_THREAD_ACTIVE) {
@@ -173,6 +176,8 @@ static int smpboot_thread_fn(void *data)
 }
 
 // 2017-11-04
+// smpboot와 관련된 스레드 생성 및 create 콜백을 호출한다.
+// 만약 기존에 생성된 스레드가 있다면 무시한다.
 static int
 __smpboot_create_thread(struct smp_hotplug_thread *ht, unsigned int cpu)
 {
@@ -193,6 +198,8 @@ __smpboot_create_thread(struct smp_hotplug_thread *ht, unsigned int cpu)
 				    ht->thread_comm);
 	// 2017-11-04, 여기까지
 	// 차주는 smpboot_thread_fn부터 
+	// 2017-11-11 smpboot_thread_fn 분석 완료
+	// 2017-11-11 시작
 	if (IS_ERR(tsk)) {
 		kfree(td);
 		return PTR_ERR(tsk);
@@ -206,6 +213,7 @@ __smpboot_create_thread(struct smp_hotplug_thread *ht, unsigned int cpu)
 		 * callback. At least the migration thread callback
 		 * requires that the task is off the runqueue.
 		 */
+		// tsk가 수행되고 있지 않고, 수행가능하지도 않은 경우에만 create콜백 호출 가능
 		if (!wait_task_inactive(tsk, TASK_PARKED))
 			WARN_ON(1);
 		else
@@ -224,13 +232,18 @@ int smpboot_create_threads(unsigned int cpu)
 	list_for_each_entry(cur, &hotplug_threads, list) {
 		// 2017-11-04
 		ret = __smpboot_create_thread(cur, cpu);
-		if (ret)
+		if (ret) {
+			// ret != 0인 경우, 메모리 부족, 스레드 생성 실패 시 발생한다.
+			// 이 경우, 재차 시도할 때도 동일 이슈가 발생할 가능성이 높기 때문에
+			// 빠져 나오는 것으로 추측
 			break;
+		}
 	}
 	mutex_unlock(&smpboot_threads_lock);
 	return ret;
 }
 
+// 2017-11-11
 static void smpboot_unpark_thread(struct smp_hotplug_thread *ht, unsigned int cpu)
 {
 	struct task_struct *tsk = *per_cpu_ptr(ht->store, cpu);
@@ -240,6 +253,7 @@ static void smpboot_unpark_thread(struct smp_hotplug_thread *ht, unsigned int cp
 	kthread_unpark(tsk);
 }
 
+// 2017-11-11
 void smpboot_unpark_threads(unsigned int cpu)
 {
 	struct smp_hotplug_thread *cur;

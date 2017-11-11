@@ -892,9 +892,10 @@ static int __init meminfo_cmp(const void *_a, const void *_b)
 	return cmp < 0 ? -1 : cmp > 0 ? 1 : 0;
 }
 
+// 2017-11-11
 void __init hyp_mode_check(void)
 {
-#ifdef CONFIG_ARM_VIRT_EXT
+#ifdef CONFIG_ARM_VIRT_EXT // y
 	sync_boot_mode();
 
 	if (is_hyp_mode_available()) {

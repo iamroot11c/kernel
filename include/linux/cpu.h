@@ -160,6 +160,7 @@ void notify_cpu_starting(unsigned int cpu);
 // SMP 상에서 의미를 가진다.
 // 실제 동작은 Mutex Lock, Unlock임
 extern void cpu_maps_update_begin(void);
+// 2017-11-11
 extern void cpu_maps_update_done(void);
 
 #else	/* CONFIG_SMP */

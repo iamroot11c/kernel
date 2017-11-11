@@ -39,7 +39,7 @@ struct outer_cache_fns {
 
 extern struct outer_cache_fns outer_cache;
 
-#ifdef CONFIG_OUTER_CACHE
+#ifdef CONFIG_OUTER_CACHE // y
 
 static inline void outer_inv_range(phys_addr_t start, phys_addr_t end)
 {
@@ -49,6 +49,7 @@ static inline void outer_inv_range(phys_addr_t start, phys_addr_t end)
 
 // 2015-02-28;
 // outer_clean_range(__pa(_p), __pa(_p + size));
+// 2017-11-11
 static inline void outer_clean_range(phys_addr_t start, phys_addr_t end)
 {
     // Exynos5440 아키텍쳐에서는 아래의 함수가 정의 되어 있지 않음

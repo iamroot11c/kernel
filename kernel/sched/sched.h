@@ -833,6 +833,9 @@ static __always_inline bool static_branch_##name(struct static_key *key) \
 
 // 2016-10-08
 extern struct static_key sched_feat_keys[__SCHED_FEAT_NR];
+// 2017-11-11
+// sched_feat(FORCE_SD_OVERLAP)
+//  -> (static_branch_FORCE_SD_OVERLAP(&sched_feat_keys[__SCHED_FEAT_FORCE_SD_OVERLAP]))
 #define sched_feat(x) (static_branch_##x(&sched_feat_keys[__SCHED_FEAT_##x]))
 #else /* !(SCHED_DEBUG && HAVE_JUMP_LABEL) */
 // 2016-09-24
@@ -878,6 +881,7 @@ static inline int task_current(struct rq *rq, struct task_struct *p)
 }
 
 // 2016-10-15
+// 2017-11-11
 static inline int task_running(struct rq *rq, struct task_struct *p)
 {
 #ifdef CONFIG_SMP

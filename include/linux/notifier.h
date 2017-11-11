@@ -204,6 +204,7 @@ static inline int notifier_from_errno(int err)
 }
 
 /* Restore (negative) errno value from notify return value. */
+// 2017-11-11
 static inline int notifier_to_errno(int ret)
 {
 	ret &= ~NOTIFY_STOP_MASK;

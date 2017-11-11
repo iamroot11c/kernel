@@ -78,6 +78,7 @@
 #define smp_read_barrier_depends()	do { } while(0)
 
 // 2015-06-20
+// 2017-11-11
 #define set_mb(var, value)	do { var = value; smp_mb(); } while (0)
 
 #endif /* !__ASSEMBLY__ */

@@ -127,6 +127,7 @@ static int notifier_chain_unregister(struct notifier_block **nl,
 //                     -1, NULL);
 //
 // 2017-09-09
+// 2017-11-11
 // notifier_call_chain(&nh->head, THREAD_NOTIFY_COPY, thread, -1, NULL);
 static int __kprobes notifier_call_chain(struct notifier_block **nl,
 					unsigned long val, void *v,
@@ -135,6 +136,7 @@ static int __kprobes notifier_call_chain(struct notifier_block **nl,
 	int ret = NOTIFY_DONE;
 	struct notifier_block *nb, *next_nb;
 
+	// == nb = *nl;
 	nb = rcu_dereference_raw(*nl);
 
 	// 초기 : nr_to_call(-1)
@@ -502,6 +504,8 @@ EXPORT_SYMBOL_GPL(raw_notifier_chain_unregister);
  *	Otherwise the return value is the return value
  *	of the last notifier function called.
  */
+// 2017-11-11
+// __raw_notifier_call_chain(&cpu_chain, val, v, nr_to_call, nr_calls)
 int __raw_notifier_call_chain(struct raw_notifier_head *nh,
 			      unsigned long val, void *v,
 			      int nr_to_call, int *nr_calls)

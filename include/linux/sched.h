@@ -223,6 +223,7 @@ extern char ___assert_task_state[1 - 2*!!(
 // 2015-06-20
 // 2015-07-04; set_current_state(TASK_UNINTERRUPTIBLE);
 // 2015-07-25; set_current_state(TASK_UNINTERRUPTIBLE);
+// 2017-11-11; set_current_state(TASK_INTERRUPTIBLE);
 // 직렬화를 고려하고 사용할 때, 사용
 #define set_current_state(state_value)		\
 	set_mb(current->state, (state_value))
@@ -1886,7 +1887,7 @@ static inline void tsk_restore_flags(struct task_struct *task,
 	task->flags |= orig_flags & flags;
 }
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // y
 extern void do_set_cpus_allowed(struct task_struct *p,
 			       const struct cpumask *new_mask);
 

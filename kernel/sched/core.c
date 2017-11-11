@@ -1159,6 +1159,7 @@ static int migration_cpu_stop(void *data);
  * smp_call_function() if an IPI is sent by the same process we are
  * waiting to become inactive.
  */
+// 2017-11-11
 unsigned long wait_task_inactive(struct task_struct *p, long match_state)
 {
 	unsigned long flags;
@@ -1798,6 +1799,7 @@ int wake_up_process(struct task_struct *p)
 EXPORT_SYMBOL(wake_up_process);
 
 // 2016-03-05
+// 2017-11-11
 // wake_up_state(t, 1 | TASK_INTERRUPTIBLE)
 int wake_up_state(struct task_struct *p, unsigned int state)
 {
@@ -4621,6 +4623,7 @@ void init_idle(struct task_struct *idle, int cpu)
 #ifdef CONFIG_SMP
 // 2016-07-01
 // 2017-10-28
+// 2017-11-11
 // cpu 허용 정보 비트맵, 사용 가능 개수 등이 세팅된다.
 void do_set_cpus_allowed(struct task_struct *p, const struct cpumask *new_mask)
 {
@@ -5182,7 +5185,7 @@ static int __init migration_init(void)
 early_initcall(migration_init);
 #endif
 
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // y
 
 static cpumask_var_t sched_domains_tmpmask; /* sched_domains_mutex */
 
@@ -5427,6 +5430,7 @@ static void rq_attach_root(struct rq *rq, struct root_domain *rd)
 }
 
 // 2016-06-25 시작
+// 2017-11-11
 static int init_rootdomain(struct root_domain *rd)
 {
 	memset(rd, 0, sizeof(*rd));
@@ -5471,6 +5475,7 @@ static void init_defrootdomain(void)
 	atomic_set(&def_root_domain.refcount, 1);
 }
 
+// 2017-11-11
 static struct root_domain *alloc_rootdomain(void)
 {
 	struct root_domain *rd;
@@ -5934,6 +5939,7 @@ SD_INIT_FUNC(CPU)
 #endif
 
 static int default_relax_domain_level = -1;
+// 2017-11-11
 int sched_domain_level_max;
 
 static int __init setup_relax_domain_level(char *str)
@@ -5945,6 +5951,7 @@ static int __init setup_relax_domain_level(char *str)
 }
 __setup("relax_domain_level=", setup_relax_domain_level);
 
+// 2017-11-11
 static void set_domain_attribute(struct sched_domain *sd,
 				 struct sched_domain_attr *attr)
 {
@@ -5985,6 +5992,7 @@ static void __free_domain_allocs(struct s_data *d, enum s_alloc what,
 	}
 }
 
+// 2017-11-11
 static enum s_alloc __visit_domain_allocation_hell(struct s_data *d,
 						   const struct cpumask *cpu_map)
 {
@@ -6031,13 +6039,13 @@ static const struct cpumask *cpu_smt_mask(int cpu)
  * Topology list, bottom-up.
  */
 static struct sched_domain_topology_level default_topology[] = {
-#ifdef CONFIG_SCHED_SMT
+#ifdef CONFIG_SCHED_SMT // not set
 	{ sd_init_SIBLING, cpu_smt_mask, },
 #endif
-#ifdef CONFIG_SCHED_MC
+#ifdef CONFIG_SCHED_MC // not set
 	{ sd_init_MC, cpu_coregroup_mask, },
 #endif
-#ifdef CONFIG_SCHED_BOOK
+#ifdef CONFIG_SCHED_BOOK // not set
 	{ sd_init_BOOK, cpu_book_mask, },
 #endif
 	{ sd_init_CPU, cpu_cpu_mask, },
@@ -6329,6 +6337,7 @@ static int sched_domains_numa_masks_update(struct notifier_block *nfb,
 	return NOTIFY_OK;
 }
 #else
+// 2017-11-11
 static inline void sched_init_numa(void)
 {
 }
@@ -6341,11 +6350,14 @@ static int sched_domains_numa_masks_update(struct notifier_block *nfb,
 }
 #endif /* CONFIG_NUMA */
 
+// 2017-11-11
+// 모든 sd_topology에 대해 per_cpu 할당 및 초기화
 static int __sdt_alloc(const struct cpumask *cpu_map)
 {
 	struct sched_domain_topology_level *tl;
 	int j;
 
+	// for (tl = sched_domain_topology; tl->init; tl++)
 	for_each_sd_topology(tl) {
 		struct sd_data *sdd = &tl->data;
 
@@ -6361,6 +6373,7 @@ static int __sdt_alloc(const struct cpumask *cpu_map)
 		if (!sdd->sgp)
 			return -ENOMEM;
 
+		// cpu_map에 존재하는 cpu 순회
 		for_each_cpu(j, cpu_map) {
 			struct sched_domain *sd;
 			struct sched_group *sg;
@@ -6426,11 +6439,13 @@ static void __sdt_free(const struct cpumask *cpu_map)
 	}
 }
 
+// 2017-11-11
+// build_sched_domain(tl, cpu_map, attr, sd, i)
 struct sched_domain *build_sched_domain(struct sched_domain_topology_level *tl,
 		const struct cpumask *cpu_map, struct sched_domain_attr *attr,
 		struct sched_domain *child, int cpu)
 {
-	struct sched_domain *sd = tl->init(tl, cpu);
+  	struct sched_domain *sd = tl->init(tl, cpu);
 	if (!sd)
 		return child;
 
@@ -6450,6 +6465,8 @@ struct sched_domain *build_sched_domain(struct sched_domain_topology_level *tl,
  * Build sched domains for a given set of cpus and attach the sched domains
  * to the individual cpus
  */
+// 2017-11-11
+// build_sched_domains(doms_cur[0], NULL)
 static int build_sched_domains(const struct cpumask *cpu_map,
 			       struct sched_domain_attr *attr)
 {
@@ -6458,10 +6475,12 @@ static int build_sched_domains(const struct cpumask *cpu_map,
 	struct s_data d;
 	int i, ret = -ENOMEM;
 
+	// 2017-11-11
 	alloc_state = __visit_domain_allocation_hell(&d, cpu_map);
 	if (alloc_state != sa_rootdomain)
 		goto error;
 
+	// 2017-11-11
 	/* Set up domains for cpus specified by the cpu_map. */
 	for_each_cpu(i, cpu_map) {
 		struct sched_domain_topology_level *tl;
@@ -6471,6 +6490,7 @@ static int build_sched_domains(const struct cpumask *cpu_map,
 			sd = build_sched_domain(tl, cpu_map, attr, sd, i);
 			if (tl == sched_domain_topology)
 				*per_cpu_ptr(d.sd, i) = sd;
+			// FORCE_SD_OVERLAP 는 꺼져있음. features.h 참조
 			if (tl->flags & SDTL_OVERLAP || sched_feat(FORCE_SD_OVERLAP))
 				sd->flags |= SD_OVERLAP;
 			if (cpumask_equal(cpu_map, sched_domain_span(sd)))
@@ -6478,6 +6498,7 @@ static int build_sched_domains(const struct cpumask *cpu_map,
 		}
 	}
 
+	// 2017-11-11 여기까지
 	/* Build the groups for the domains */
 	for_each_cpu(i, cpu_map) {
 		for (sd = *per_cpu_ptr(d.sd, i); sd; sd = sd->parent) {
@@ -6534,11 +6555,13 @@ static cpumask_var_t fallback_doms;
  * cpu core maps. It is supposed to return 1 if the topology changed
  * or 0 if it stayed the same.
  */
+// 2017-11-11
 int __attribute__((weak)) arch_update_cpu_topology(void)
 {
 	return 0;
 }
 
+// 2017-11-11
 cpumask_var_t *alloc_sched_domains(unsigned int ndoms)
 {
 	int i;
@@ -6548,6 +6571,7 @@ cpumask_var_t *alloc_sched_domains(unsigned int ndoms)
 	if (!doms)
 		return NULL;
 	for (i = 0; i < ndoms; i++) {
+		// alloc_cpumask_var : NOP / 항상 true 리턴
 		if (!alloc_cpumask_var(&doms[i], GFP_KERNEL)) {
 			free_sched_domains(doms, i);
 			return NULL;
@@ -6569,15 +6593,18 @@ void free_sched_domains(cpumask_var_t doms[], unsigned int ndoms)
  * For now this just excludes isolated cpus, but could be used to
  * exclude other special cases in the future.
  */
+// 2017-11-11
 static int init_sched_domains(const struct cpumask *cpu_map)
 {
 	int err;
 
+	// NOP
 	arch_update_cpu_topology();
 	ndoms_cur = 1;
 	doms_cur = alloc_sched_domains(ndoms_cur);
 	if (!doms_cur)
 		doms_cur = &fallback_doms;
+	// doms_cur[0] = *cpu_map & ~*cpu_isolated_map
 	cpumask_andnot(doms_cur[0], cpu_map, cpu_isolated_map);
 	err = build_sched_domains(doms_cur[0], NULL);
 	register_sched_domain_sysctl();
@@ -6766,17 +6793,22 @@ static int cpuset_cpu_inactive(struct notifier_block *nfb, unsigned long action,
 	return NOTIFY_OK;
 }
 
+// 2017-11-11
 void __init sched_init_smp(void)
 {
 	cpumask_var_t non_isolated_cpus;
 
+	// NOP
 	alloc_cpumask_var(&non_isolated_cpus, GFP_KERNEL);
 	alloc_cpumask_var(&fallback_doms, GFP_KERNEL);
 
+	// NOP
 	sched_init_numa();
 
+	// 2017-11-11
 	get_online_cpus();
 	mutex_lock(&sched_domains_mutex);
+	// 2017-11-11
 	init_sched_domains(cpu_active_mask);
 	cpumask_andnot(non_isolated_cpus, cpu_possible_mask, cpu_isolated_map);
 	if (cpumask_empty(non_isolated_cpus))

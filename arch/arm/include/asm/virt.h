@@ -42,6 +42,7 @@
  */
 extern int __boot_cpu_mode;
 
+// 2017-11-11
 static inline void sync_boot_mode(void)
 {
 	/*
