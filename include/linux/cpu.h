@@ -205,6 +205,11 @@ extern void cpu_hotplug_enable(void);
 // hotcpu_notifier(radix_tree_callback, 0);
 // 2017-06-24
 // hotcpu_notifier(buffer_cpu_notify, 0)
+// 2017-12-09
+// hotcpu_notifier(sched_domains_numa_masks_update, CPU_PRI_SCHED_ACTIVE);
+// hotcpu_notifier(cpuset_cpu_active, CPU_PRI_CPUSET_ACTIVE);
+// hotcpu_notifier(cpuset_cpu_inactive, CPU_PRI_CPUSET_INACTIVE);
+// hotcpu_notifier(hotplug_hrtick, 0);
 #define hotcpu_notifier(fn, pri)	cpu_notifier(fn, pri)
 // 2016-08-13
 // register_hotcpu_notifier(&remote_softirq_cpu_notifier);

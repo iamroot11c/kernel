@@ -1411,6 +1411,7 @@ static struct task_struct *pick_highest_pushable_task(struct rq *rq, int cpu)
 	return NULL;
 }
 
+// 2017-12-09
 static DEFINE_PER_CPU(cpumask_var_t, local_cpu_mask);
 
 static int find_lowest_rq(struct task_struct *task)
@@ -1840,6 +1841,7 @@ static void switched_from_rt(struct rq *rq, struct task_struct *p)
 		resched_task(rq->curr);
 }
 
+// 2017-12-09
 void init_sched_rt_class(void)
 {
 	unsigned int i;

@@ -631,6 +631,7 @@ static inline u64 rq_clock_task(struct rq *rq)
  *
  * Returns the highest sched_domain of a cpu which contains the given flag.
  */
+// 2017-12-09
 static inline struct sched_domain *highest_flag_domain(int cpu, int flag)
 {
 	struct sched_domain *sd, *hsd = NULL;

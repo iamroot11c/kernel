@@ -60,6 +60,7 @@ unsigned int normalized_sysctl_sched_latency = 6000000ULL;
  * SCHED_TUNABLESCALING_LOG - scaled logarithmical, *1+ilog(ncpus)
  * SCHED_TUNABLESCALING_LINEAR - scaled linear, *ncpus
  */
+// 2017-12-09
 enum sched_tunable_scaling sysctl_sched_tunable_scaling
 	= SCHED_TUNABLESCALING_LOG;
 
@@ -153,6 +154,7 @@ static inline void update_load_set(struct load_weight *lw, unsigned long w)
  *
  * This idea comes from the SD scheduler of Con Kolivas:
  */
+// 2017-12-09
 static int get_update_sysctl_factor(void)
 {
 	unsigned int cpus = min_t(int, num_online_cpus(), 8);
@@ -174,18 +176,23 @@ static int get_update_sysctl_factor(void)
 	return factor;
 }
 
+// 2017-12-09
 static void update_sysctl(void)
 {
 	unsigned int factor = get_update_sysctl_factor();
 
 #define SET_SYSCTL(name) \
 	(sysctl_##name = (factor) * normalized_sysctl_##name)
+	// sysctl_sched_min_granularity = (factor) * normalized_sysctl_sched_min_granularity;
+	// sysctl_sched_latency = (factor) * normalized_sysctl_sched_latency;
+	// sysctl_sched_wakeup_granularity = (factor) * normalized_sysctl_sched_wakeup_granularity;
 	SET_SYSCTL(sched_min_granularity);
 	SET_SYSCTL(sched_latency);
 	SET_SYSCTL(sched_wakeup_granularity);
 #undef SET_SYSCTL
 }
 
+// 2017-12-09
 void sched_init_granularity(void)
 {
 	update_sysctl();

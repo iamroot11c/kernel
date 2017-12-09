@@ -38,6 +38,7 @@ static struct ctl_table root_table[] = {
 };
 
 // 2017-07-15
+// 2017-12-09
 static struct ctl_table_root sysctl_table_root = {
 	.default_set.dir.header = {
 		{{.count = 1,
@@ -1502,6 +1503,7 @@ err_register_leaves:
  * See __register_sysctl_paths for more details.
  */
 // 2017-07-15
+// 2017-12-09
 struct ctl_table_header *register_sysctl_paths(const struct ctl_path *path,
 						struct ctl_table *table)
 {

@@ -484,6 +484,7 @@ hotplug_hrtick(struct notifier_block *nfb, unsigned long action, void *hcpu)
 	return NOTIFY_DONE;
 }
 
+// 2017-12-09
 static __init void init_hrtick(void)
 {
 	hotcpu_notifier(hotplug_hrtick, 0);
@@ -4869,8 +4870,9 @@ static void migrate_tasks(unsigned int dead_cpu)
 
 #endif /* CONFIG_HOTPLUG_CPU */
 
-#if defined(CONFIG_SCHED_DEBUG) && defined(CONFIG_SYSCTL)
+#if defined(CONFIG_SCHED_DEBUG) && defined(CONFIG_SYSCTL)	// =y
 
+// 2017-12-09
 static struct ctl_table sd_ctl_dir[] = {
 	{
 		.procname	= "sched_domain",
@@ -4879,6 +4881,7 @@ static struct ctl_table sd_ctl_dir[] = {
 	{}
 };
 
+// 2017-12-09
 static struct ctl_table sd_ctl_root[] = {
 	{
 		.procname	= "kernel",
@@ -4888,6 +4891,7 @@ static struct ctl_table sd_ctl_root[] = {
 	{}
 };
 
+// 2017-12-09
 static struct ctl_table *sd_alloc_ctl_entry(int n)
 {
 	struct ctl_table *entry =
@@ -4920,6 +4924,7 @@ static void sd_free_ctl_entry(struct ctl_table **tablep)
 static int min_load_idx = 0;
 static int max_load_idx = CPU_LOAD_IDX_MAX-1;
 
+// 2017-12-09
 static void
 set_table_entry(struct ctl_table *entry,
 		const char *procname, void *data, int maxlen,
@@ -4938,6 +4943,7 @@ set_table_entry(struct ctl_table *entry,
 	}
 }
 
+// 2017-12-09
 static struct ctl_table *
 sd_alloc_ctl_domain_table(struct sched_domain *sd)
 {
@@ -4976,6 +4982,7 @@ sd_alloc_ctl_domain_table(struct sched_domain *sd)
 	return table;
 }
 
+// 2017-12-09
 static struct ctl_table *sd_alloc_ctl_cpu_table(int cpu)
 {
 	struct ctl_table *entry, *table;
@@ -4985,6 +4992,7 @@ static struct ctl_table *sd_alloc_ctl_cpu_table(int cpu)
 
 	for_each_domain(cpu, sd)
 		domain_num++;
+
 	entry = table = sd_alloc_ctl_entry(domain_num + 1);
 	if (table == NULL)
 		return NULL;
@@ -5001,13 +5009,16 @@ static struct ctl_table *sd_alloc_ctl_cpu_table(int cpu)
 	return table;
 }
 
+// 2017-12-09
 static struct ctl_table_header *sd_sysctl_header;
+// 2017-12-09
 static void register_sched_domain_sysctl(void)
 {
 	int i, cpu_num = num_possible_cpus();
 	struct ctl_table *entry = sd_alloc_ctl_entry(cpu_num + 1);
 	char buf[32];
 
+	// "sched_domain"
 	WARN_ON(sd_ctl_dir[0].child);
 	sd_ctl_dir[0].child = entry;
 
@@ -5324,6 +5335,7 @@ static inline bool sched_debug(void)
 }
 #endif /* CONFIG_SCHED_DEBUG */
 
+// 2017-12-09
 static int sd_degenerate(struct sched_domain *sd)
 {
 	if (cpumask_weight(sched_domain_span(sd)) == 1)
@@ -5347,6 +5359,7 @@ static int sd_degenerate(struct sched_domain *sd)
 	return 1;
 }
 
+// 2017-12-09
 static int
 sd_parent_degenerate(struct sched_domain *sd, struct sched_domain *parent)
 {
@@ -5376,6 +5389,7 @@ sd_parent_degenerate(struct sched_domain *sd, struct sched_domain *parent)
 	return 1;
 }
 
+// 2017-12-09
 static void free_rootdomain(struct rcu_head *rcu)
 {
 	struct root_domain *rd = container_of(rcu, struct root_domain, rcu);
@@ -5415,6 +5429,7 @@ static void rq_attach_root(struct rq *rq, struct root_domain *rd)
 			old_rd = NULL;
 	}
 
+	// attach
 	atomic_inc(&rd->refcount);
 	rq->rd = rd;
 
@@ -5528,11 +5543,13 @@ static void free_sched_domain(struct rcu_head *rcu)
 	kfree(sd);
 }
 
+// 2017-12-09
 static void destroy_sched_domain(struct sched_domain *sd, int cpu)
 {
 	call_rcu(&sd->rcu, free_sched_domain);
 }
 
+// 2017-12-09
 static void destroy_sched_domains(struct sched_domain *sd, int cpu)
 {
 	for (; sd; sd = sd->parent)
@@ -5556,8 +5573,10 @@ DEFINE_PER_CPU(int, sd_llc_size);
 DEFINE_PER_CPU(int, sd_llc_id);
 // 2017-09-23
 DEFINE_PER_CPU(struct sched_domain *, sd_busy);
+// 2017-12-09
 DEFINE_PER_CPU(struct sched_domain *, sd_asym);
 
+// 2017-12-09
 static void update_top_cache_domain(int cpu)
 {
 	struct sched_domain *sd;
@@ -5571,6 +5590,7 @@ static void update_top_cache_domain(int cpu)
 		size = cpumask_weight(sched_domain_span(sd));
 		busy_sd = sd->parent; /* sd_busy */
 	}
+	// set for per cpu global
 	rcu_assign_pointer(per_cpu(sd_busy, cpu), busy_sd);
 
 	rcu_assign_pointer(per_cpu(sd_llc, cpu), sd);
@@ -5585,6 +5605,7 @@ static void update_top_cache_domain(int cpu)
  * Attach the domain 'sd' to 'cpu' as its base domain. Callers must
  * hold the hotplug lock.
  */
+// 2017-12-09
 static void
 cpu_attach_domain(struct sched_domain *sd, struct root_domain *rd, int cpu)
 {
@@ -5592,6 +5613,7 @@ cpu_attach_domain(struct sched_domain *sd, struct root_domain *rd, int cpu)
 	struct sched_domain *tmp;
 
 	/* Remove the sched domains which do not contribute to scheduling. */
+	// tmp가 자식이 없는 root domain으로 설정되게 한다.
 	for (tmp = sd; tmp; ) {
 		struct sched_domain *parent = tmp->parent;
 		if (!parent)
@@ -5623,14 +5645,17 @@ cpu_attach_domain(struct sched_domain *sd, struct root_domain *rd, int cpu)
 
 	sched_domain_debug(sd, cpu);
 
+	// rq에 attach 하게 된다.
 	rq_attach_root(rq, rd);
 	tmp = rq->sd;
 	rcu_assign_pointer(rq->sd, sd);
 	destroy_sched_domains(tmp, cpu);
 
+	// cache 값들 갱신
 	update_top_cache_domain(cpu);
 }
 
+// 2017-12-09
 /* cpus with isolated domains */
 static cpumask_var_t cpu_isolated_map;
 
@@ -5660,6 +5685,7 @@ struct s_data {
 	struct root_domain	*rd;
 };
 
+// 2017-12-09
 enum s_alloc {
 	sa_rootdomain,
 	sa_sd,
@@ -5715,6 +5741,7 @@ static void build_group_mask(struct sched_domain *sd, struct sched_group *sg)
  * Return the canonical balance cpu for this group, this is the first cpu
  * of this group that's also in the iteration mask.
  */
+// 2017-12-09
 int group_balance_cpu(struct sched_group *sg)
 {
 	return cpumask_first_and(sched_group_cpus(sg), sched_group_mask(sg));
@@ -5797,6 +5824,7 @@ fail:
 	return -ENOMEM;
 }
 
+// 2017-12-09
 static int get_group(int cpu, struct sd_data *sdd, struct sched_group **sg)
 {
 	struct sched_domain *sd = *per_cpu_ptr(sdd->sd, cpu);
@@ -5805,9 +5833,13 @@ static int get_group(int cpu, struct sd_data *sdd, struct sched_group **sg)
 	if (child)
 		cpu = cpumask_first(sched_domain_span(child));
 
+	// sg설정
 	if (sg) {
+		// sched_group
 		*sg = *per_cpu_ptr(sdd->sg, cpu);
+		// sched_group_power
 		(*sg)->sgp = *per_cpu_ptr(sdd->sgp, cpu);
+		// set ref count
 		atomic_set(&(*sg)->sgp->ref, 1); /* for claim_allocations */
 	}
 
@@ -5821,6 +5853,7 @@ static int get_group(int cpu, struct sd_data *sdd, struct sched_group **sg)
  *
  * Assumes the sched_domain tree is fully constructed
  */
+// 2017-12-09
 static int
 build_sched_groups(struct sched_domain *sd, int cpu)
 {
@@ -5830,13 +5863,14 @@ build_sched_groups(struct sched_domain *sd, int cpu)
 	struct cpumask *covered;
 	int i;
 
+	// 2017-12-09
 	get_group(cpu, sdd, &sd->groups);
 	atomic_inc(&sd->groups->ref);
 
 	if (cpu != cpumask_first(span))
 		return 0;
 
-	lockdep_assert_held(&sched_domains_mutex);
+	lockdep_assert_held(&sched_domains_mutex);	// NOP
 	covered = sched_domains_tmpmask;
 
 	cpumask_clear(covered);
@@ -5848,8 +5882,10 @@ build_sched_groups(struct sched_domain *sd, int cpu)
 		if (cpumask_test_cpu(i, covered))
 			continue;
 
+		// group = cpu
 		group = get_group(i, sdd, &sg);
 		cpumask_clear(sched_group_cpus(sg));
+		// cpu_power to 0
 		sg->sgp->power = 0;
 		cpumask_setall(sched_group_mask(sg));
 
@@ -5857,6 +5893,7 @@ build_sched_groups(struct sched_domain *sd, int cpu)
 			if (get_group(j, sdd, NULL) != group)
 				continue;
 
+			// cpumask set
 			cpumask_set_cpu(j, covered);
 			cpumask_set_cpu(j, sched_group_cpus(sg));
 		}
@@ -5867,6 +5904,7 @@ build_sched_groups(struct sched_domain *sd, int cpu)
 			last->next = sg;
 		last = sg;
 	}
+	// for circular
 	last->next = first;
 
 	return 0;
@@ -5882,12 +5920,14 @@ build_sched_groups(struct sched_domain *sd, int cpu)
  * having more cpu_power will pickup more load compared to the group having
  * less cpu_power.
  */
+// 2017-12-09
 static void init_sched_groups_power(int cpu, struct sched_domain *sd)
 {
 	struct sched_group *sg = sd->groups;
 
 	WARN_ON(!sg);
 
+	// use circular
 	do {
 		sg->group_weight = cpumask_weight(sched_group_cpus(sg));
 		sg = sg->next;
@@ -5896,6 +5936,7 @@ static void init_sched_groups_power(int cpu, struct sched_domain *sd)
 	if (cpu != group_balance_cpu(sg))
 		return;
 
+	// sched_domain
 	update_group_power(sd, cpu);
 	atomic_set(&sg->sgp->nr_busy_cpus, sg->group_weight);
 }
@@ -5976,6 +6017,7 @@ static void set_domain_attribute(struct sched_domain *sd,
 static void __sdt_free(const struct cpumask *cpu_map);
 static int __sdt_alloc(const struct cpumask *cpu_map);
 
+// 2017-12-09
 static void __free_domain_allocs(struct s_data *d, enum s_alloc what,
 				 const struct cpumask *cpu_map)
 {
@@ -6014,16 +6056,20 @@ static enum s_alloc __visit_domain_allocation_hell(struct s_data *d,
  * sched_group structure so that the subsequent __free_domain_allocs()
  * will not free the data we're using.
  */
+// 2017-12-09
 static void claim_allocations(int cpu, struct sched_domain *sd)
 {
 	struct sd_data *sdd = sd->private;
 
 	WARN_ON_ONCE(*per_cpu_ptr(sdd->sd, cpu) != sd);
+	// sched_domain
 	*per_cpu_ptr(sdd->sd, cpu) = NULL;
 
+	// sched_group
 	if (atomic_read(&(*per_cpu_ptr(sdd->sg, cpu))->ref))
 		*per_cpu_ptr(sdd->sg, cpu) = NULL;
 
+	// sched_group_power
 	if (atomic_read(&(*per_cpu_ptr(sdd->sgp, cpu))->ref))
 		*per_cpu_ptr(sdd->sgp, cpu) = NULL;
 }
@@ -6038,6 +6084,7 @@ static const struct cpumask *cpu_smt_mask(int cpu)
 /*
  * Topology list, bottom-up.
  */
+// 2017-12-09
 static struct sched_domain_topology_level default_topology[] = {
 #ifdef CONFIG_SCHED_SMT // not set
 	{ sd_init_SIBLING, cpu_smt_mask, },
@@ -6052,6 +6099,7 @@ static struct sched_domain_topology_level default_topology[] = {
 	{ NULL, },
 };
 
+// 2017-12-09
 static struct sched_domain_topology_level *sched_domain_topology = default_topology;
 
 #define for_each_sd_topology(tl)			\
@@ -6487,6 +6535,7 @@ static int build_sched_domains(const struct cpumask *cpu_map,
 
 		sd = NULL;
 		for_each_sd_topology(tl) {
+			// 2017-12-09
 			sd = build_sched_domain(tl, cpu_map, attr, sd, i);
 			if (tl == sched_domain_topology)
 				*per_cpu_ptr(d.sd, i) = sd;
@@ -6497,22 +6546,26 @@ static int build_sched_domains(const struct cpumask *cpu_map,
 				break;
 		}
 	}
-
 	// 2017-11-11 여기까지
+	
+	// 2017-12-09, 시작
 	/* Build the groups for the domains */
 	for_each_cpu(i, cpu_map) {
 		for (sd = *per_cpu_ptr(d.sd, i); sd; sd = sd->parent) {
 			sd->span_weight = cpumask_weight(sched_domain_span(sd));
 			if (sd->flags & SD_OVERLAP) {
+				// 2017-12-09
 				if (build_overlap_sched_groups(sd, i))
 					goto error;
 			} else {
+				// 기본 동작
 				if (build_sched_groups(sd, i))
 					goto error;
 			}
 		}
 	}
 
+	// 2017-12-09
 	/* Calculate CPU power for physical packages and nodes */
 	for (i = nr_cpumask_bits-1; i >= 0; i--) {
 		if (!cpumask_test_cpu(i, cpu_map))
@@ -6606,7 +6659,9 @@ static int init_sched_domains(const struct cpumask *cpu_map)
 		doms_cur = &fallback_doms;
 	// doms_cur[0] = *cpu_map & ~*cpu_isolated_map
 	cpumask_andnot(doms_cur[0], cpu_map, cpu_isolated_map);
+	// 2017-11-11
 	err = build_sched_domains(doms_cur[0], NULL);
+	// 2017-12-09
 	register_sched_domain_sysctl();
 
 	return err;
@@ -6806,10 +6861,12 @@ void __init sched_init_smp(void)
 	sched_init_numa();
 
 	// 2017-11-11
-	get_online_cpus();
+	get_online_cpus();	// ref count 증가
 	mutex_lock(&sched_domains_mutex);
 	// 2017-11-11
 	init_sched_domains(cpu_active_mask);
+	// 2017-12-09
+
 	cpumask_andnot(non_isolated_cpus, cpu_possible_mask, cpu_isolated_map);
 	if (cpumask_empty(non_isolated_cpus))
 		cpumask_set_cpu(smp_processor_id(), non_isolated_cpus);
@@ -6826,8 +6883,9 @@ void __init sched_init_smp(void)
 	if (set_cpus_allowed_ptr(current, non_isolated_cpus) < 0)
 		BUG();
 	sched_init_granularity();
-	free_cpumask_var(non_isolated_cpus);
+	free_cpumask_var(non_isolated_cpus);	// NOP
 
+	// 2017-12-09
 	init_sched_rt_class();
 }
 #else

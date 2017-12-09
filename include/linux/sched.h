@@ -915,6 +915,7 @@ struct sched_domain {
 	char *name;
 #endif
 	union {
+        // 2017-12-09
 		void *private;		/* used during construction */
 		struct rcu_head rcu;	/* used during destruction */
 	};
