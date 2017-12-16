@@ -1,7 +1,7 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
 
-+ [149주차](http://bit.ly/1GykIvK) `2017.12.16
++ [149주차](http://bit.ly/2BwZncg) `2017.12.16
  - drive: 홍진우님
  - kernel/kernel/init/main.c::kernel_init() 진행
  - kernel/kernel/init/main.c::kernel_init_freeable() 진행
