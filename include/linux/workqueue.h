@@ -249,6 +249,7 @@ static inline unsigned int work_static(struct work_struct *work) { return 0; }
 #endif
 
 // 2016-05-28
+// 2017-12-16
 // INIT_WORK(&p->wq, free_work);
 #define INIT_WORK(_work, _func)						\
 	do {								\
@@ -418,7 +419,7 @@ static inline struct workqueue_struct * __deprecated __system_nrt_freezable_wq(v
 /* equivlalent to system_wq and system_freezable_wq, deprecated */
 #define system_nrt_wq			__system_nrt_wq()
 #define system_nrt_freezable_wq		__system_nrt_freezable_wq()
-
+// 2017-12-16
 extern struct workqueue_struct *
 __alloc_workqueue_key(const char *fmt, unsigned int flags, int max_active,
 	struct lock_class_key *key, const char *lock_name, ...) __printf(1, 6);
@@ -454,6 +455,7 @@ __alloc_workqueue_key(const char *fmt, unsigned int flags, int max_active,
 			      &__key, __lock_name, ##args);		\
 })
 #else
+// 2017-12-16
 #define alloc_workqueue(fmt, flags, max_active, args...)		\
 	__alloc_workqueue_key((fmt), (flags), (max_active),		\
 			      NULL, NULL, ##args)
@@ -480,6 +482,7 @@ __alloc_workqueue_key(const char *fmt, unsigned int flags, int max_active,
 #define create_freezable_workqueue(name)				\
 	alloc_workqueue("%s", WQ_FREEZABLE | WQ_UNBOUND | WQ_MEM_RECLAIM, \
 			1, (name))
+// 2017-12-16
 #define create_singlethread_workqueue(name)				\
 	alloc_workqueue("%s", WQ_UNBOUND | WQ_MEM_RECLAIM, 1, (name))
 

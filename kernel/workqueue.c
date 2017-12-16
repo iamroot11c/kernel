@@ -267,6 +267,7 @@ struct workqueue_struct {
 	// 2017-06-10
 	struct pool_workqueue __percpu *cpu_pwqs; /* I: per-cpu pwqs */
 	// 2017-06-10
+	// dynamic array
 	struct pool_workqueue __rcu *numa_pwq_tbl[]; /* FR: unbound pwqs indexed by node */
 };
 
@@ -532,6 +533,7 @@ static inline void debug_work_deactivate(struct work_struct *work) { }
 #endif
 
 /* allocate ID and assign it to @pool */
+// 2017-12-16
 static int worker_pool_assign_id(struct worker_pool *pool)
 {
 	int ret;
@@ -647,14 +649,16 @@ static void clear_work_data(struct work_struct *work)
 	set_work_data(work, WORK_STRUCT_NO_POOL, 0);
 }
 
+// 2017-12-16
 static struct pool_workqueue *get_work_pwq(struct work_struct *work)
 {
+	// 초기화 시점에서는 data값이 항상 null이다.
 	unsigned long data = atomic_long_read(&work->data);
 
 	if (data & WORK_STRUCT_PWQ)
 		return (void *)(data & WORK_STRUCT_WQ_DATA_MASK);
 	else
-		return NULL;
+		return NULL; // 초기화 시점 시 리턴 값
 }
 
 /**
@@ -743,6 +747,7 @@ static bool __need_more_worker(struct worker_pool *pool)
  * function will always return %true for unbound pools as long as the
  * worklist isn't empty.
  */
+// 2017-12-16
 static bool need_more_worker(struct worker_pool *pool)
 {
 	return !list_empty(&pool->worklist) && __need_more_worker(pool);
@@ -755,6 +760,7 @@ static bool may_start_working(struct worker_pool *pool)
 }
 
 /* Do I need to keep working?  Called from currently running workers. */
+// 2017-12-16
 static bool keep_working(struct worker_pool *pool)
 {
 	return !list_empty(&pool->worklist) &&
@@ -816,6 +822,7 @@ static struct worker *first_worker(struct worker_pool *pool)
  * spin_lock_irq(pool->lock).
  */
 // 2017-06-10
+// 2017-12-16
 static void wake_up_worker(struct worker_pool *pool)
 {
 	struct worker *worker = first_worker(pool);
@@ -955,6 +962,7 @@ static inline void worker_set_flags(struct worker *worker, unsigned int flags,
  * CONTEXT:
  * spin_lock_irq(pool->lock)
  */
+// 2017-12-16
 static inline void worker_clr_flags(struct worker *worker, unsigned int flags)
 {
 	struct worker_pool *pool = worker->pool;
@@ -1042,6 +1050,8 @@ static struct worker *find_worker_executing_work(struct worker_pool *pool,
  * CONTEXT:
  * spin_lock_irq(pool->lock).
  */
+// 2017-12-16
+// move_linked_works(work, &pwq->pool->worklist, NULL);
 static void move_linked_works(struct work_struct *work, struct list_head *head,
 			      struct work_struct **nextp)
 {
@@ -1051,6 +1061,11 @@ static void move_linked_works(struct work_struct *work, struct list_head *head,
 	 * Linked worklist will always end before the end of the list,
 	 * use NULL for list head.
 	 */
+	// list_for_each_entry_safe_from(pos, n, head, member)             \
+	//     for (n = list_entry(pos->member.next, typeof(*pos), member);        \
+			&pos->member != (head);                        \
+			pos = n, n = list_entry(n->member.next, typeof(*n), member))
+	// work에 연결된 링크드리스트를 파라미터로 넘어온 head로 옮김
 	list_for_each_entry_safe_from(work, n, NULL, entry) {
 		list_move_tail(&work->entry, head);
 		if (!(*work_data_bits(work) & WORK_STRUCT_LINKED))
@@ -1126,16 +1141,19 @@ static void put_pwq_unlocked(struct pool_workqueue *pwq)
 	}
 }
 
+// 2017-12-16
 static void pwq_activate_delayed_work(struct work_struct *work)
 {
 	struct pool_workqueue *pwq = get_work_pwq(work);
 
 	trace_workqueue_activate_work(work);
+	// pwq->pool->worklist에 링크드리스트로 연결된 work의 작업을 옮김
 	move_linked_works(work, &pwq->pool->worklist, NULL);
 	__clear_bit(WORK_STRUCT_DELAYED_BIT, work_data_bits(work));
 	pwq->nr_active++;
 }
 
+// 2017-12-16
 static void pwq_activate_first_delayed(struct pool_workqueue *pwq)
 {
 	struct work_struct *work = list_first_entry(&pwq->delayed_works,
@@ -1614,6 +1632,7 @@ EXPORT_SYMBOL_GPL(mod_delayed_work_on);
  * LOCKING:
  * spin_lock_irq(pool->lock).
  */
+// 2017-12-16
 static void worker_enter_idle(struct worker *worker)
 {
 	struct worker_pool *pool = worker->pool;
@@ -1654,6 +1673,7 @@ static void worker_enter_idle(struct worker *worker)
  * LOCKING:
  * spin_lock_irq(pool->lock).
  */
+// 2017-12-16
 static void worker_leave_idle(struct worker *worker)
 {
 	struct worker_pool *pool = worker->pool;
@@ -1729,6 +1749,7 @@ __acquires(&pool->lock)
 	}
 }
 
+// 2017-12-16
 static struct worker *alloc_worker(void)
 {
 	struct worker *worker;
@@ -1757,6 +1778,7 @@ static struct worker *alloc_worker(void)
  * Return:
  * Pointer to the newly created worker.
  */
+// 2017-12-16
 static struct worker *create_worker(struct worker_pool *pool)
 {
 	struct worker *worker = NULL;
@@ -1792,6 +1814,7 @@ static struct worker *create_worker(struct worker_pool *pool)
 	else
 		snprintf(id_buf, sizeof(id_buf), "u%d:%d", pool->id, id);
 
+	// 2017-12-16 worker_thread 진행 중
 	worker->task = kthread_create_on_node(worker_thread, worker, pool->node,
 					      "kworker/%s", id_buf);
 	if (IS_ERR(worker->task))
@@ -1841,6 +1864,7 @@ fail:
  * CONTEXT:
  * spin_lock_irq(pool->lock).
  */
+// 2017-12-16
 static void start_worker(struct worker *worker)
 {
 	worker->flags |= WORKER_STARTED;
@@ -1857,6 +1881,7 @@ static void start_worker(struct worker *worker)
  *
  * Return: 0 on success. A negative error code otherwise.
  */
+// 2017-12-16
 static int create_and_start_worker(struct worker_pool *pool)
 {
 	struct worker *worker;
@@ -1884,6 +1909,7 @@ static int create_and_start_worker(struct worker_pool *pool)
  * CONTEXT:
  * spin_lock_irq(pool->lock) which is released and regrabbed.
  */
+// 2017-12-16
 static void destroy_worker(struct worker *worker)
 {
 	struct worker_pool *pool = worker->pool;
@@ -2011,6 +2037,7 @@ static void pool_mayday_timeout(unsigned long __pool)
  * %false if no action was taken and pool->lock stayed locked, %true
  * otherwise.
  */
+// 2017-12-16
 static bool maybe_create_worker(struct worker_pool *pool)
 __releases(&pool->lock)
 __acquires(&pool->lock)
@@ -2068,6 +2095,7 @@ restart:
  * %false if no action was taken and pool->lock stayed locked, %true
  * otherwise.
  */
+// 2017-12-16
 static bool maybe_destroy_workers(struct worker_pool *pool)
 {
 	bool ret = false;
@@ -2080,6 +2108,7 @@ static bool maybe_destroy_workers(struct worker_pool *pool)
 		expires = worker->last_active + IDLE_WORKER_TIMEOUT;
 
 		if (time_before(jiffies, expires)) {
+			// 아직 대기 시간이 지나지 않았을 때
 			mod_timer(&pool->idle_timer, expires);
 			break;
 		}
@@ -2182,6 +2211,8 @@ static bool manage_workers(struct worker *worker)
  * CONTEXT:
  * spin_lock_irq(pool->lock) which is released and regrabbed.
  */
+// 2017-12-16
+// glance
 static void process_one_work(struct worker *worker, struct work_struct *work)
 __releases(&pool->lock)
 __acquires(&pool->lock)
@@ -2336,6 +2367,7 @@ static void process_scheduled_works(struct worker *worker)
  *
  * Return: 0
  */
+// 2017-12-16
 static int worker_thread(void *__worker)
 {
 	struct worker *worker = __worker;
@@ -2381,12 +2413,14 @@ recheck:
 	worker_clr_flags(worker, WORKER_PREP | WORKER_REBOUND);
 
 	do {
+		// 가장 최근의 리스트를 얻어온다.
 		struct work_struct *work =
 			list_first_entry(&pool->worklist,
 					 struct work_struct, entry);
 
 		if (likely(!(*work_data_bits(work) & WORK_STRUCT_LINKED))) {
 			/* optimization path, not strictly necessary */
+			// 2017-12-16 여기까지
 			process_one_work(worker, work);
 			if (unlikely(!list_empty(&worker->scheduled)))
 				process_scheduled_works(worker);
@@ -3494,6 +3528,7 @@ void free_workqueue_attrs(struct workqueue_attrs *attrs)
  *
  * Return: The allocated new workqueue_attr on success. %NULL on failure.
  */
+// 2017-12-16
 struct workqueue_attrs *alloc_workqueue_attrs(gfp_t gfp_mask)
 {
 	struct workqueue_attrs *attrs;
@@ -3501,9 +3536,10 @@ struct workqueue_attrs *alloc_workqueue_attrs(gfp_t gfp_mask)
 	attrs = kzalloc(sizeof(*attrs), gfp_mask);
 	if (!attrs)
 		goto fail;
-	if (!alloc_cpumask_var(&attrs->cpumask, gfp_mask))
+	if (!alloc_cpumask_var(&attrs->cpumask, gfp_mask)) // NOP. always true
 		goto fail;
 
+       // 전역으로 관리하는 cpu mask값을 복사	
 	cpumask_copy(attrs->cpumask, cpu_possible_mask);
 	return attrs;
 fail:
@@ -3511,6 +3547,7 @@ fail:
 	return NULL;
 }
 
+// 2017-12-16
 static void copy_workqueue_attrs(struct workqueue_attrs *to,
 				 const struct workqueue_attrs *from)
 {
@@ -3556,6 +3593,7 @@ static bool wqattrs_equal(const struct workqueue_attrs *a,
  * inside @pool proper are initialized and put_unbound_pool() can be called
  * on @pool safely to release it.
  */
+// 2017-12-16
 static int init_worker_pool(struct worker_pool *pool)
 {
 	spin_lock_init(&pool->lock);
@@ -3666,6 +3704,7 @@ static void put_unbound_pool(struct worker_pool *pool)
  * Return: On success, a worker_pool with the same attributes as @attrs.
  * On failure, %NULL.
  */
+// 2017-12-16
 static struct worker_pool *get_unbound_pool(const struct workqueue_attrs *attrs)
 {
 	u32 hash = wqattrs_hash(attrs);
@@ -3710,10 +3749,12 @@ static struct worker_pool *get_unbound_pool(const struct workqueue_attrs *attrs)
 		}
 	}
 
+	// 2017-12-16
 	if (worker_pool_assign_id(pool) < 0)
 		goto fail;
 
 	/* create and start the initial worker */
+	// 2017-12-16 진행 중
 	if (create_and_start_worker(pool) < 0)
 		goto fail;
 
@@ -3782,6 +3823,7 @@ static void pwq_unbound_release_workfn(struct work_struct *work)
  * workqueue's saved_max_active and activate delayed work items
  * accordingly.  If @pwq is freezing, clear @pwq->max_active to zero.
  */
+// 2017-12-16
 static void pwq_adjust_max_active(struct pool_workqueue *pwq)
 {
 	struct workqueue_struct *wq = pwq->wq;
@@ -3816,13 +3858,14 @@ static void pwq_adjust_max_active(struct pool_workqueue *pwq)
 }
 
 /* initialize newly alloced @pwq which is associated with @wq and @pool */
+// 2017-12-16
 static void init_pwq(struct pool_workqueue *pwq, struct workqueue_struct *wq,
 		     struct worker_pool *pool)
 {
 	BUG_ON((unsigned long)pwq & WORK_STRUCT_FLAG_MASK);
 
+	// pwq 초기화 (초기화 대상이 아닌 값은 null(ex. pwq->data))
 	memset(pwq, 0, sizeof(*pwq));
-
 	pwq->pool = pool;
 	pwq->wq = wq;
 	pwq->flush_color = -1;
@@ -3830,15 +3873,17 @@ static void init_pwq(struct pool_workqueue *pwq, struct workqueue_struct *wq,
 	INIT_LIST_HEAD(&pwq->delayed_works);
 	INIT_LIST_HEAD(&pwq->pwqs_node);
 	INIT_LIST_HEAD(&pwq->mayday_node);
+	// unbound_release_work 필드 함수 포인터 세팅 및 디폴트 값 초기화
 	INIT_WORK(&pwq->unbound_release_work, pwq_unbound_release_workfn);
 }
 
 /* sync @pwq with the current state of its associated wq and link it */
+// 2017-12-16
 static void link_pwq(struct pool_workqueue *pwq)
 {
 	struct workqueue_struct *wq = pwq->wq;
 
-	lockdep_assert_held(&wq->mutex);
+	lockdep_assert_held(&wq->mutex); // NOP
 
 	/* may be called multiple times, ignore if already linked */
 	if (!list_empty(&pwq->pwqs_node))
@@ -3857,6 +3902,7 @@ static void link_pwq(struct pool_workqueue *pwq)
 	list_add_rcu(&pwq->pwqs_node, &wq->pwqs);
 }
 
+// 2017-12-16
 /* obtain a pool matching @attr and create a pwq associating the pool and @wq */
 static struct pool_workqueue *alloc_unbound_pwq(struct workqueue_struct *wq,
 					const struct workqueue_attrs *attrs)
@@ -3866,6 +3912,7 @@ static struct pool_workqueue *alloc_unbound_pwq(struct workqueue_struct *wq,
 
 	lockdep_assert_held(&wq_pool_mutex);
 
+	// 2017-12-16
 	pool = get_unbound_pool(attrs);
 	if (!pool)
 		return NULL;
@@ -3969,6 +4016,7 @@ static struct pool_workqueue *numa_pwq_tbl_install(struct workqueue_struct *wq,
  *
  * Return: 0 on success and -errno on failure.
  */
+// 2017-12-16
 int apply_workqueue_attrs(struct workqueue_struct *wq,
 			  const struct workqueue_attrs *attrs)
 {
@@ -4015,6 +4063,7 @@ int apply_workqueue_attrs(struct workqueue_struct *wq,
 	 * the default pwq covering whole @attrs->cpumask.  Always create
 	 * it even if we don't use it immediately.
 	 */
+	// 2017-12-16
 	dfl_pwq = alloc_unbound_pwq(wq, new_attrs);
 	if (!dfl_pwq)
 		goto enomem_pwq;
@@ -4171,6 +4220,7 @@ out_unlock:
 	put_pwq_unlocked(old_pwq);
 }
 
+// 2017-12-16
 static int alloc_and_link_pwqs(struct workqueue_struct *wq)
 {
 	bool highpri = wq->flags & WQ_HIGHPRI;
@@ -4187,6 +4237,7 @@ static int alloc_and_link_pwqs(struct workqueue_struct *wq)
 			struct worker_pool *cpu_pools =
 				per_cpu(cpu_worker_pools, cpu);
 
+			// pool work queue를 초기화한다.(wq, &cpu_pools[highpri] 정보 삽입)
 			init_pwq(pwq, wq, &cpu_pools[highpri]);
 
 			mutex_lock(&wq->mutex);
@@ -4202,10 +4253,12 @@ static int alloc_and_link_pwqs(struct workqueue_struct *wq)
 		     "ordering guarantee broken for workqueue %s\n", wq->name);
 		return ret;
 	} else {
+		// 2017-12-16
 		return apply_workqueue_attrs(wq, unbound_std_wq_attrs[highpri]);
 	}
 }
 
+// 2017-12-16
 static int wq_clamp_max_active(int max_active, unsigned int flags,
 			       const char *name)
 {
@@ -4218,6 +4271,9 @@ static int wq_clamp_max_active(int max_active, unsigned int flags,
 	return clamp_val(max_active, 1, lim);
 }
 
+// 2017-12-16
+// alloc_workqueue("%s", WQ_UNBOUND | WQ_MEM_RECLAIM, 1, (name))
+//     __alloc_workqueue_key("%s", WQ_UNBOUND | WQ_MEM_RECLAIM, 1, NULL, NULL, "khelper") 
 struct workqueue_struct *__alloc_workqueue_key(const char *fmt,
 					       unsigned int flags,
 					       int max_active,
@@ -4242,6 +4298,7 @@ struct workqueue_struct *__alloc_workqueue_key(const char *fmt,
 		return NULL;
 
 	if (flags & WQ_UNBOUND) {
+		// work queue 어트리뷰트 할당
 		wq->unbound_attrs = alloc_workqueue_attrs(GFP_KERNEL);
 		if (!wq->unbound_attrs)
 			goto err_free_wq;
@@ -4264,9 +4321,10 @@ struct workqueue_struct *__alloc_workqueue_key(const char *fmt,
 	INIT_LIST_HEAD(&wq->flusher_overflow);
 	INIT_LIST_HEAD(&wq->maydays);
 
-	lockdep_init_map(&wq->lockdep_map, lock_name, key, 0);
+	lockdep_init_map(&wq->lockdep_map, lock_name, key, 0); // NOP
 	INIT_LIST_HEAD(&wq->list);
 
+	// 2017-12-16
 	if (alloc_and_link_pwqs(wq) < 0)
 		goto err_free_wq;
 

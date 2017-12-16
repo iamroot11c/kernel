@@ -272,6 +272,7 @@ static void create_kthread(struct kthread_create_info *create)
  * Returns a task_struct or ERR_PTR(-ENOMEM).
  */
 // kthread_create_on_node(smpboot_thread_fn, data, 0, namefmt, cpu);
+// 2017-12-16
 struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
 					   void *data, int node,
 					   const char namefmt[],
@@ -289,6 +290,7 @@ struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
 	list_add_tail(&create.list, &kthread_create_list);
 	spin_unlock(&kthread_create_lock);
 
+	// rest_init()에서 설정한 kthreadd_task 태스크 시작
 	wake_up_process(kthreadd_task);
 	wait_for_completion(&create.done);
 

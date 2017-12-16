@@ -850,7 +850,7 @@ void init_cpu_online(const struct cpumask *src);
 //to_cpumask(cpu_possible_bits);
 // 2015-08-15, to_cpumask(cpu_online_bits)
 // 2015-09-12, to_cpumask(sd->span);
-// 2016-01-23, to_cpumask(cpu_possible_bits)
+// 2016-01-23,2017-12-16, to_cpumask(cpu_possible_bits)
 // 2016-04-09
 // == (struct* cpumask*) (bitmap)
 #define to_cpumask(bitmap)						\

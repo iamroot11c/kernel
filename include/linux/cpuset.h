@@ -121,6 +121,7 @@ static inline void set_mems_allowed(nodemask_t nodemask)
 
 // 2017-07-15
 static inline int cpuset_init(void) { return 0; }
+// 2017-12-16
 static inline void cpuset_init_smp(void) {}
 
 static inline void cpuset_update_active_cpus(bool cpu_online)

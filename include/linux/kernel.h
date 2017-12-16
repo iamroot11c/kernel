@@ -825,6 +825,7 @@ static inline void ftrace_dump(enum ftrace_dump_mode oops_dump_mode) { }
  * type and min and max are literals that will otherwise be assigned a signed
  * integer type.
  */
+// 2017-12-16
 #define clamp_val(val, min, max) ({		\
 	typeof(val) __val = (val);		\
 	typeof(val) __min = (min);		\

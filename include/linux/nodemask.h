@@ -514,6 +514,7 @@ static inline int node_random(const nodemask_t *mask)
 #define node_online(node)	node_state((node), N_ONLINE/*1*/)
 #define node_possible(node)	node_state((node), N_POSSIBLE)
 
+// 2017-12-16
 #define for_each_node(node)	   for_each_node_state(node, N_POSSIBLE)
 #define for_each_online_node(node) for_each_node_state(node, N_ONLINE) // N_ONLINE = 1;
 

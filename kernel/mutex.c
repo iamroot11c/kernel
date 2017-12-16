@@ -44,6 +44,7 @@
  */
 #define	MUTEX_SHOW_NO_WAITER(mutex)	(atomic_read(&(mutex)->count) >= 0)
 
+// 2017-12-16 
 void
 __mutex_init(struct mutex *lock, const char *name, struct lock_class_key *key)
 {

@@ -726,6 +726,7 @@ static DECLARE_BITMAP(cpu_possible_bits, CONFIG_NR_CPUS) __read_mostly
 // http://egloos.zum.com/furmuwon/v/11004261
 // 비트수를 32로 나누어 총 몇 바이트가 필요한지 계산하여 배열을 생성
 // 2016-01-16
+// 2017-12-16
 static DECLARE_BITMAP(cpu_possible_bits, CONFIG_NR_CPUS/*2*/) __read_mostly;
 // static unsigned long cpu_possible_bits[BITS_TO_LONGS(CONFIG_NR_CPUS)];
 #endif

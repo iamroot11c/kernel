@@ -947,8 +947,10 @@ static void __init do_initcalls(void)
  *
  * Now we can finally start doing some real work..
  */
+// 2017-12-16
 static void __init do_basic_setup(void)
 {
+	// NOP
 	cpuset_init_smp();
 	usermodehelper_init();
 	shmem_init();
@@ -1075,6 +1077,7 @@ static noinline void __init kernel_init_freeable(void)
 	// 2017-12-09, end
 	// 2017-12-09 여기까지
 
+	// 2017-12-16 시작
 	do_basic_setup();
 
 	/* Open the /dev/console on the rootfs, this should never fail */

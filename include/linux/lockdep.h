@@ -408,6 +408,7 @@ static inline void lockdep_on(void)
 		do { (void)(key); (void)(name); } while (0)
 #define lockdep_set_class_and_subclass(lock, key, sub) \
 		do { (void)(key); } while (0)
+// 2017-12-16
 #define lockdep_set_subclass(lock, sub)		do { } while (0)
 
 #define lockdep_set_novalidate_class(lock) do { } while (0)
@@ -430,6 +431,7 @@ struct lock_class_key { };
 #define lockdep_depth(tsk)	(0)
 
 // 2016-10-01 NOP
+// 2017-12-16
 #define lockdep_assert_held(l)			do { (void)(l); } while (0)
 
 #define lockdep_recursing(tsk)			(0)

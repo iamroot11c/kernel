@@ -1,6 +1,25 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
 
++ [149주차](http://bit.ly/1GykIvK) `2017.12.16
+ - drive: 홍진우님
+ - kernel/kernel/init/main.c::kernel_init() 진행
+ - kernel/kernel/init/main.c::kernel_init_freeable() 진행
+ - kernel/kernel/init/main.c::do_basic_setup() 진행
+ - kernel/kernel/init/main.c::cpuset_init_smp() 완료
+ - kernel/kernel/init/main.c::usermodehelper_init() 진행
+ - kernel/kernel/include/linux/workqueue.h::alloc_workqueue() 진행
+ - kernel/kernel/include/linux/workqueue.c::__alloc_workqueue_key() 진행
+ - kernel/kernel/include/linux/workqueue.c::alloc_and_link_pwqs() 진행
+ - kernel/kernel/include/linux/workqueue.c::apply_workqueue_attrs() 진행
+ - kernel/kernel/include/linux/workqueue.c::alloc_unbound_pwq() 진행
+ - kernel/kernel/include/linux/workqueue.c::get_unbound_pool() 진행
+ - kernel/kernel/include/linux/workqueue.c::create_and_start_worker() 진행
+ - kernel/kernel/include/linux/workqueue.c::create_worker() 진행
+ - kernel/kernel/include/linux/workqueue.c::kthread_create_on_node()진행
+ - kernel/kernel/include/linux/workqueue.c::worker_thread()진행
+
+
 + [148주차](http://bit.ly/1GykIvK) `2017.12.09
  - drive: 보름달님
  - kernel/kernel/init/main.c::kernel_init() 진행
