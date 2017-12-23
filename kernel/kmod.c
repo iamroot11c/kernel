@@ -45,6 +45,8 @@
 
 extern int max_threads;
 
+// 2017-12-23
+// usermodehelper_ini()에서 초기화
 static struct workqueue_struct *khelper_wq;
 
 /*
@@ -749,5 +751,6 @@ struct ctl_table usermodehelper_table[] = {
 void __init usermodehelper_init(void)
 {
 	khelper_wq = create_singlethread_workqueue("khelper");
+	// 2017-12-23, end
 	BUG_ON(!khelper_wq);
 }

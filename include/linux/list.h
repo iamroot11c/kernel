@@ -644,6 +644,7 @@ static inline void hlist_del_init(struct hlist_node *n)
 	}
 }
 
+// 2017-12-23
 static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
 {
 	struct hlist_node *first = h->first;

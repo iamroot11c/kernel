@@ -3446,6 +3446,8 @@ out_unlock:
 	__task_rq_unlock(rq);
 }
 #endif
+
+// 2017-12-23
 void set_user_nice(struct task_struct *p, long nice)
 {
 	int old_prio, delta, on_rq;

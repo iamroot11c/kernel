@@ -52,6 +52,7 @@ static inline void __hash_init(struct hlist_head *ht, unsigned int sz)
  * @node: the &struct hlist_node of the object to be added
  * @key: the key of the object to be added
  */
+// 2017-12-23
 #define hash_add(hashtable, node, key)						\
 	hlist_add_head(node, &hashtable[hash_min(key, HASH_BITS(hashtable))])
 

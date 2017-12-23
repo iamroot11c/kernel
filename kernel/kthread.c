@@ -273,6 +273,8 @@ static void create_kthread(struct kthread_create_info *create)
  */
 // kthread_create_on_node(smpboot_thread_fn, data, 0, namefmt, cpu);
 // 2017-12-16
+// 2017-12-23
+//  kthread_create_on_node(rescuer_thread, rescuer, -1, "%s", wq->name)
 struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
 					   void *data, int node,
 					   const char namefmt[],
@@ -287,6 +289,7 @@ struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
 	init_completion(&create.done);
 
 	spin_lock(&kthread_create_lock);
+	// add
 	list_add_tail(&create.list, &kthread_create_list);
 	spin_unlock(&kthread_create_lock);
 

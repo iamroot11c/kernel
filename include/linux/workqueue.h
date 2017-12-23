@@ -84,7 +84,7 @@ enum {
 	 * indicate that no pool is associated.
 	 */
 	WORK_OFFQ_FLAG_BITS	= 1,
-	WORK_OFFQ_POOL_SHIFT	= WORK_OFFQ_FLAG_BASE + WORK_OFFQ_FLAG_BITS,
+	WORK_OFFQ_POOL_SHIFT	= WORK_OFFQ_FLAG_BASE/*5*/ + WORK_OFFQ_FLAG_BITS/*1*/,
 	WORK_OFFQ_LEFT		= BITS_PER_LONG - WORK_OFFQ_POOL_SHIFT,
 	WORK_OFFQ_POOL_BITS	= WORK_OFFQ_LEFT <= 31 ? WORK_OFFQ_LEFT : 31,
 	WORK_OFFQ_POOL_NONE	= (1LU << WORK_OFFQ_POOL_BITS) - 1,
@@ -535,6 +535,8 @@ extern void print_worker_info(const char *log_lvl, struct task_struct *task);
  */
 // 2017-06-10
 // queue_work(khelper_wq, &sub_info->work);
+// 2017-12-23
+// queue_work(system_wq, work);
 static inline bool queue_work(struct workqueue_struct *wq,
 			      struct work_struct *work)
 {
@@ -596,6 +598,7 @@ static inline bool schedule_work_on(int cpu, struct work_struct *work)
  * queued and leaves it in the same position on the kernel-global
  * workqueue otherwise.
  */
+// 2017-12-23
 static inline bool schedule_work(struct work_struct *work)
 {
 	return queue_work(system_wq, work);

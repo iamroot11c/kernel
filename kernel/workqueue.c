@@ -76,7 +76,9 @@ enum {
 	WORKER_STARTED		= 1 << 0,	/* started */
 	WORKER_DIE		= 1 << 1,	/* die die die */
 	WORKER_IDLE		= 1 << 2,	/* is idle */
+	// 2017-12-23
 	WORKER_PREP		= 1 << 3,	/* preparing to run works */
+	// 2017-12-23
 	WORKER_CPU_INTENSIVE	= 1 << 6,	/* cpu intensive */
 	WORKER_UNBOUND		= 1 << 7,	/* worker is unbound */
 	WORKER_REBOUND		= 1 << 8,	/* worker was rebound */
@@ -205,6 +207,7 @@ struct pool_workqueue {
 	int			max_active;	/* L: max active works */
 	struct list_head	delayed_works;	/* L: delayed works */
 	struct list_head	pwqs_node;	/* WR: node on wq->pwqs */
+	// 2017-12-23
 	struct list_head	mayday_node;	/* MD: node on wq->maydays */
 
 	/*
@@ -297,6 +300,7 @@ static struct workqueue_attrs *wq_update_unbound_numa_attrs_buf;
 static DEFINE_MUTEX(wq_pool_mutex);	/* protects pools and workqueues list */
 static DEFINE_SPINLOCK(wq_mayday_lock);	/* protects wq->maydays list */
 
+// 2017-12-23
 static LIST_HEAD(workqueues);		/* PL: list of all workqueues */
 static bool workqueue_freezing;		/* PL: have wqs started freezing? */
 
@@ -308,8 +312,13 @@ static DEFINE_PER_CPU_SHARED_ALIGNED(struct worker_pool [NR_STD_WORKER_POOLS],
 //  struct idr worker_pool_idr = IDR_INIT(worker_pool_idr);
 static DEFINE_IDR(worker_pool_idr);	/* PR: idr of all pools */
 
+// 2017-12-23
+// #define DEFINE_HASHTABLE(name, bits)                        
+//     struct hlist_head name[1 << (bits)] =                  
+//           { [0 ... ((1 << (bits)) - 1)] = HLIST_HEAD_INIT }
 /* PL: hash of all unbound pools keyed by pool->attrs */
 static DEFINE_HASHTABLE(unbound_pool_hash, UNBOUND_POOL_HASH_ORDER);
+// static struct hlist_head unbound_pool_hash[1 << UNBOUND_POOL_HASH_ORDER];
 
 /* I: attributes used when instantiating standard unbound pools on demand */
 static struct workqueue_attrs *unbound_std_wq_attrs[NR_STD_WORKER_POOLS];
@@ -317,6 +326,7 @@ static struct workqueue_attrs *unbound_std_wq_attrs[NR_STD_WORKER_POOLS];
 /* I: attributes used when instantiating ordered pools on demand */
 static struct workqueue_attrs *ordered_wq_attrs[NR_STD_WORKER_POOLS];
 
+// 2017-12-23
 struct workqueue_struct *system_wq __read_mostly;
 EXPORT_SYMBOL(system_wq);
 struct workqueue_struct *system_highpri_wq __read_mostly;
@@ -573,10 +583,11 @@ static unsigned int work_color_to_flags(int color)
 	return color << WORK_STRUCT_COLOR_SHIFT/*5*/;
 }
 
+// 2017-12-23
 static int get_work_color(struct work_struct *work)
 {
 	return (*work_data_bits(work) >> WORK_STRUCT_COLOR_SHIFT) &
-		((1 << WORK_STRUCT_COLOR_BITS) - 1);
+		((1 << WORK_STRUCT_COLOR_BITS/*4*/) - 1);
 }
 
 static int work_next_color(int color)
@@ -630,6 +641,7 @@ static void set_work_pool_and_keep_pending(struct work_struct *work,
 		      WORK_STRUCT_PENDING);
 }
 
+// 2017-12-23
 static void set_work_pool_and_clear_pending(struct work_struct *work,
 					    int pool_id)
 {
@@ -640,7 +652,7 @@ static void set_work_pool_and_clear_pending(struct work_struct *work,
 	 * owner.
 	 */
 	smp_wmb();
-	set_work_data(work, (unsigned long)pool_id << WORK_OFFQ_POOL_SHIFT, 0);
+	set_work_data(work, (unsigned long)pool_id << WORK_OFFQ_POOL_SHIFT/*6*/, 0);
 }
 
 static void clear_work_data(struct work_struct *work)
@@ -1107,6 +1119,7 @@ static void get_pwq(struct pool_workqueue *pwq)
 static void put_pwq(struct pool_workqueue *pwq)
 {
 	lockdep_assert_held(&pwq->pool->lock);
+	// ref count 감소
 	if (likely(--pwq->refcnt))
 		return;
 	if (WARN_ON_ONCE(!(pwq->wq->flags & WQ_UNBOUND)))
@@ -1119,6 +1132,7 @@ static void put_pwq(struct pool_workqueue *pwq)
 	 * avoid lockdep warning, unbound pool->locks are given lockdep
 	 * subclass of 1 in get_unbound_pool().
 	 */
+	// wakeup task
 	schedule_work(&pwq->unbound_release_work);
 }
 
@@ -1128,6 +1142,7 @@ static void put_pwq(struct pool_workqueue *pwq)
  *
  * put_pwq() with locking.  This function also allows %NULL @pwq.
  */
+// 2017-12-23
 static void put_pwq_unlocked(struct pool_workqueue *pwq)
 {
 	if (pwq) {
@@ -1173,6 +1188,7 @@ static void pwq_activate_first_delayed(struct pool_workqueue *pwq)
  * CONTEXT:
  * spin_lock_irq(pool->lock).
  */
+// 2017-12-23
 static void pwq_dec_nr_in_flight(struct pool_workqueue *pwq, int color)
 {
 	/* uncolored work items don't participate in flushing or nr_active */
@@ -1188,6 +1204,7 @@ static void pwq_dec_nr_in_flight(struct pool_workqueue *pwq, int color)
 			pwq_activate_first_delayed(pwq);
 	}
 
+	// 대부분은 여기서 out_put으로 
 	/* is flush in progress and are we at the flushing tip? */
 	if (likely(pwq->flush_color != color))
 		goto out_put;
@@ -1483,6 +1500,8 @@ retry:
  */
 // 2017-06-10
 // queue_work(khelper_wq, &sub_info->work);
+// 2017-12-23
+// queue_work(system_wq, work);
 bool queue_work_on(int cpu, struct workqueue_struct *wq,
 		   struct work_struct *work)
 {
@@ -1717,6 +1736,7 @@ static void worker_leave_idle(struct worker *worker)
  * %true if the associated pool is online (@worker is successfully
  * bound), %false if offline.
  */
+// 2017-12-23
 static bool worker_maybe_bind_and_lock(struct worker_pool *pool)
 __acquires(&pool->lock)
 {
@@ -1815,6 +1835,7 @@ static struct worker *create_worker(struct worker_pool *pool)
 		snprintf(id_buf, sizeof(id_buf), "u%d:%d", pool->id, id);
 
 	// 2017-12-16 worker_thread 진행 중
+	// 2017-12-23, worker_thread 완료
 	worker->task = kthread_create_on_node(worker_thread, worker, pool->node,
 					      "kworker/%s", id_buf);
 	if (IS_ERR(worker->task))
@@ -1889,6 +1910,7 @@ static int create_and_start_worker(struct worker_pool *pool)
 	mutex_lock(&pool->manager_mutex);
 
 	worker = create_worker(pool);
+	// 2017-12-23, end
 	if (worker) {
 		spin_lock_irq(&pool->lock);
 		start_worker(worker);
@@ -2212,7 +2234,7 @@ static bool manage_workers(struct worker *worker)
  * spin_lock_irq(pool->lock) which is released and regrabbed.
  */
 // 2017-12-16
-// glance
+// 2017-12-23 시작
 static void process_one_work(struct worker *worker, struct work_struct *work)
 __releases(&pool->lock)
 __acquires(&pool->lock)
@@ -2222,7 +2244,7 @@ __acquires(&pool->lock)
 	bool cpu_intensive = pwq->wq->flags & WQ_CPU_INTENSIVE;
 	int work_color;
 	struct worker *collision;
-#ifdef CONFIG_LOCKDEP
+#ifdef CONFIG_LOCKDEP	// =n
 	/*
 	 * It is permissible to free the struct work_struct from
 	 * inside the function that is called from it, this we need to
@@ -2257,12 +2279,15 @@ __acquires(&pool->lock)
 
 	/* claim and dequeue */
 	debug_work_deactivate(work);
+	// add
 	hash_add(pool->busy_hash, &worker->hentry, (unsigned long)work);
+	// current setting
 	worker->current_work = work;
 	worker->current_func = work->func;
 	worker->current_pwq = pwq;
 	work_color = get_work_color(work);
 
+	// remove
 	list_del_init(&work->entry);
 
 	/*
@@ -2289,9 +2314,10 @@ __acquires(&pool->lock)
 
 	spin_unlock_irq(&pool->lock);
 
-	lock_map_acquire_read(&pwq->wq->lockdep_map);
-	lock_map_acquire(&lockdep_map);
+	lock_map_acquire_read(&pwq->wq->lockdep_map);	// NOP
+	lock_map_acquire(&lockdep_map);			// NOP
 	trace_workqueue_execute_start(work);
+	// callback execution
 	worker->current_func(work);
 	/*
 	 * While we must be careful to not use "work" after this, the trace
@@ -2326,6 +2352,7 @@ __acquires(&pool->lock)
 		worker_clr_flags(worker, WORKER_CPU_INTENSIVE);
 
 	/* we're done with it, release */
+	// release worker resources
 	hash_del(&worker->hentry);
 	worker->current_work = NULL;
 	worker->current_func = NULL;
@@ -2346,6 +2373,7 @@ __acquires(&pool->lock)
  * spin_lock_irq(pool->lock) which may be released and regrabbed
  * multiple times.
  */
+// 2017-12-23
 static void process_scheduled_works(struct worker *worker)
 {
 	while (!list_empty(&worker->scheduled)) {
@@ -2422,6 +2450,7 @@ recheck:
 			/* optimization path, not strictly necessary */
 			// 2017-12-16 여기까지
 			process_one_work(worker, work);
+			// 2017-12-23, end
 			if (unlikely(!list_empty(&worker->scheduled)))
 				process_scheduled_works(worker);
 		} else {
@@ -2470,6 +2499,7 @@ sleep:
  *
  * Return: 0
  */
+// 2017-12-23
 static int rescuer_thread(void *__rescuer)
 {
 	struct worker *rescuer = __rescuer;
@@ -3917,12 +3947,14 @@ static struct pool_workqueue *alloc_unbound_pwq(struct workqueue_struct *wq,
 	if (!pool)
 		return NULL;
 
+	// 2017-12-23
 	pwq = kmem_cache_alloc_node(pwq_cache, GFP_KERNEL, pool->node);
 	if (!pwq) {
 		put_unbound_pool(pool);
 		return NULL;
 	}
 
+	// 2017-12-23
 	init_pwq(pwq, wq, pool);
 	return pwq;
 }
@@ -3960,6 +3992,7 @@ static void free_unbound_pwq(struct pool_workqueue *pwq)
  * Return: %true if the resulting @cpumask is different from @attrs->cpumask,
  * %false if equal.
  */
+// 2017-12-23
 static bool wq_calc_node_cpumask(const struct workqueue_attrs *attrs, int node,
 				 int cpu_going_down, cpumask_t *cpumask)
 {
@@ -3984,6 +4017,7 @@ use_dfl:
 }
 
 /* install @pwq into @wq's numa_pwq_tbl[] for @node and return the old pwq */
+// 2017-12-23
 static struct pool_workqueue *numa_pwq_tbl_install(struct workqueue_struct *wq,
 						   int node,
 						   struct pool_workqueue *pwq)
@@ -4065,6 +4099,7 @@ int apply_workqueue_attrs(struct workqueue_struct *wq,
 	 */
 	// 2017-12-16
 	dfl_pwq = alloc_unbound_pwq(wq, new_attrs);
+	// 2017-12-23
 	if (!dfl_pwq)
 		goto enomem_pwq;
 
@@ -4084,6 +4119,7 @@ int apply_workqueue_attrs(struct workqueue_struct *wq,
 	/* all pwqs have been created successfully, let's install'em */
 	mutex_lock(&wq->mutex);
 
+	// copy
 	copy_workqueue_attrs(wq->unbound_attrs, new_attrs);
 
 	/* save the previous pwq and install the new one */
@@ -4255,6 +4291,7 @@ static int alloc_and_link_pwqs(struct workqueue_struct *wq)
 	} else {
 		// 2017-12-16
 		return apply_workqueue_attrs(wq, unbound_std_wq_attrs[highpri]);
+		// 2017-12-23
 	}
 }
 
@@ -4327,11 +4364,13 @@ struct workqueue_struct *__alloc_workqueue_key(const char *fmt,
 	// 2017-12-16
 	if (alloc_and_link_pwqs(wq) < 0)
 		goto err_free_wq;
+	// 2017-12-23
 
 	/*
 	 * Workqueues which may be used during memory reclaim should
 	 * have a rescuer to guarantee forward progress.
 	 */
+	// 2017-12-23
 	if (flags & WQ_MEM_RECLAIM) {
 		struct worker *rescuer;
 
@@ -4340,6 +4379,8 @@ struct workqueue_struct *__alloc_workqueue_key(const char *fmt,
 			goto err_destroy;
 
 		rescuer->rescue_wq = wq;
+		// 2017-12-23
+		// cf. kernel_thread
 		rescuer->task = kthread_create(rescuer_thread, rescuer, "%s",
 					       wq->name);
 		if (IS_ERR(rescuer->task)) {

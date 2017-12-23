@@ -1,6 +1,26 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
 
++ [150주차]() `2017.12.23
+ - drive: 보름달님
+ - kernel/kernel/init/main.c::kernel_init() 진행
+ - kernel/kernel/init/main.c::kernel_init_freeable() 진행
+ - kernel/kernel/init/main.c::do_basic_setup() 진행
+ - kernel/kernel/init/main.c::cpuset_init_smp() 완료
+ - kernel/kernel/init/main.c::usermodehelper_init() 완료
+ - kernel/kernel/include/linux/workqueue.h::alloc_workqueue() 완료
+ - kernel/kernel/workqueue.c::__alloc_workqueue_key() 완료
+ - kernel/kernel/workqueue.c::alloc_and_link_pwqs() 완료
+ - kernel/kernel/workqueue.c::apply_workqueue_attrs() 완료
+ - kernel/kernel/workqueue.c::alloc_unbound_pwq() 완료
+ - kernel/kernel/workqueue.c::get_unbound_pool() 완료
+ - kernel/kernel/workqueue.c::create_and_start_worker() 완료
+ - kernel/kernel/workqueue.c::create_worker() 완료
+ - kernel/kernel/workqueue.c::kthread_create_on_node()완료
+ - kernel/kernel/workqueue.c::worker_thread()완료
+ - mm/shmem.c::shmem_init() 완료
+ - drivers/base/init.c::driver_init() 진행중
+
 + [149주차](http://bit.ly/2BwZncg) `2017.12.16
  - drive: 홍진우님
  - kernel/kernel/init/main.c::kernel_init() 진행

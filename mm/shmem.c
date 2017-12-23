@@ -2825,6 +2825,7 @@ int __init shmem_init(void)
 	int error;
 
 	/* If rootfs called this, don't re-init */
+	// 2017-12-23, 여기서 리턴
 	if (shmem_inode_cachep)
 		return 0;
 

@@ -4,12 +4,17 @@
 #include <linux/err.h>
 #include <linux/sched.h>
 
+// 2017-12-23
+// kthread_create_on_node(rescuer_threa, rescuer, -1, "%s", wq->name)
 __printf(4, 5)
 struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
 					   void *data,
 					   int node,
 					   const char namefmt[], ...);
 
+// 2017-12-23
+// kthread_create(rescuer_thread, rescuer, "%s", wq->name);
+// kthread_create_on_node(rescuer_threa, rescuer, -1, "%s", wq->name)
 #define kthread_create(threadfn, data, namefmt, arg...) \
 	kthread_create_on_node(threadfn, data, -1, namefmt, ##arg)
 

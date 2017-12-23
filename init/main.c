@@ -953,7 +953,12 @@ static void __init do_basic_setup(void)
 	// NOP
 	cpuset_init_smp();
 	usermodehelper_init();
+	// 2017-12-23, end
+	// 2017-12-23, start
 	shmem_init();
+	// 2017-12-23, end
+	// 2017-12-23, start
+	// 2017-12-23, 여기까지
 	driver_init();
 	init_irq_proc();
 	do_ctors();
