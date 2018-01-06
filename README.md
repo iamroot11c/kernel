@@ -4,7 +4,7 @@
 TODO
  - https://www.kernel.org/doc/Documentation/x86/exception-tables.txt 152주차 정독
 
-+ [151주차]() `2018.01.06
++ [151주차](http://bit.ly/2Cyb8MN) `2018.01.06
  - drive: 홍진우님
  - kernel/kernel/init/main.c::kernel_init() 진행
  - kernel/kernel/init/main.c::kernel_init_freeable() 진행
