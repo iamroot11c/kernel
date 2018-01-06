@@ -145,6 +145,7 @@ static DEFINE_SPINLOCK(proc_inum_lock); /* protects the above */
  */
 // 2017-07-01
 // 2017-07-08
+// 2018-01-06
 // ida값을 할당한 후 인덱스 값을 전달한다.
 int proc_alloc_inum(unsigned int *inum)
 {

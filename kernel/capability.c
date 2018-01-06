@@ -382,6 +382,7 @@ bool has_capability_noaudit(struct task_struct *t, int cap)
  * assumption that it's about to be used.
  */
 // 2017-07-22
+// 2018-01-06
 bool ns_capable(struct user_namespace *ns, int cap)
 {
 	if (unlikely(!cap_valid(cap))) {

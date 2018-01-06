@@ -21,6 +21,7 @@
 void __init driver_init(void)
 {
 	/* These are the core pieces */
+	// 2018-01-06
 	devtmpfs_init();
 	devices_init();
 	buses_init();

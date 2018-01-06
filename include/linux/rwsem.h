@@ -72,6 +72,8 @@ extern void __init_rwsem(struct rw_semaphore *sem, const char *name,
 
 // 2017-06-24
 // init_rwsem(&namespace_sem)
+// 2018-01-06
+// init_rwsem(&ids->rwsem)
 #define init_rwsem(sem)						\
 do {								\
 	static struct lock_class_key __key;			\

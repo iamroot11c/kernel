@@ -328,6 +328,7 @@ static void rcu_process_callbacks(struct softirq_action *unused)
  * But we want to make this a static inline later.  The cond_resched()
  * currently makes this problematic.
  */
+// 2018-01-06
 void synchronize_sched(void)
 {
 	rcu_lockdep_assert(!lock_is_held(&rcu_bh_lock_map) &&

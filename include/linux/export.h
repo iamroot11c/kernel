@@ -10,16 +10,18 @@
  */
 
 /* Some toolchains use a `_' prefix for all user symbols. */
-#ifdef CONFIG_HAVE_UNDERSCORE_SYMBOL_PREFIX
+#ifdef CONFIG_HAVE_UNDERSCORE_SYMBOL_PREFIX // not set
 #define __VMLINUX_SYMBOL(x) _##x
 #define __VMLINUX_SYMBOL_STR(x) "_" #x
 #else
+// 2018-01-06
 #define __VMLINUX_SYMBOL(x) x
 #define __VMLINUX_SYMBOL_STR(x) #x
 #endif
 
 /* Indirect, so macros are expanded before pasting. */
 #define VMLINUX_SYMBOL(x) __VMLINUX_SYMBOL(x)
+// 2018-01-06
 #define VMLINUX_SYMBOL_STR(x) __VMLINUX_SYMBOL_STR(x)
 
 #ifndef __ASSEMBLY__

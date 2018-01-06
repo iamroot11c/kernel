@@ -16,6 +16,7 @@
 
 #include "util.h"
 
+// 2018-01-06
 static struct ipc_namespace *create_ipc_ns(struct user_namespace *user_ns,
 					   struct ipc_namespace *old_ns)
 {
@@ -33,7 +34,7 @@ static struct ipc_namespace *create_ipc_ns(struct user_namespace *user_ns,
 	}
 
 	atomic_set(&ns->count, 1);
-	err = mq_init_ns(ns);
+	err = mq_init_ns(ns); // NOP
 	if (err) {
 		proc_free_inum(ns->proc_inum);
 		kfree(ns);
@@ -58,6 +59,7 @@ static struct ipc_namespace *create_ipc_ns(struct user_namespace *user_ns,
 	return ns;
 }
 
+// 2018-01-06
 struct ipc_namespace *copy_ipcs(unsigned long flags,
 	struct user_namespace *user_ns, struct ipc_namespace *ns)
 {

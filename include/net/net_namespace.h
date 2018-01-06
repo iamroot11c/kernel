@@ -137,7 +137,7 @@ struct net {
 /* Init's network namespace */
 extern struct net init_net;
 
-#ifdef CONFIG_NET_NS
+#ifdef CONFIG_NET_NS // y
 extern struct net *copy_net_ns(unsigned long flags,
 	struct user_namespace *user_ns, struct net *old_net);
 

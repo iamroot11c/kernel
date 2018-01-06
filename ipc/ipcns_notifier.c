@@ -53,6 +53,7 @@ static int ipcns_callback(struct notifier_block *self,
 	return NOTIFY_OK;
 }
 
+// 2018-01-06
 int register_ipcns_notifier(struct ipc_namespace *ns)
 {
 	int rc;
@@ -86,6 +87,7 @@ void unregister_ipcns_notifier(struct ipc_namespace *ns)
 	ns->auto_msgmni = 0;
 }
 
+// 2018-01-06
 int ipcns_notify(unsigned long val)
 {
 	return blocking_notifier_call_chain(&ipcns_chain, val, NULL);

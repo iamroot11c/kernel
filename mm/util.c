@@ -206,6 +206,7 @@ EXPORT_SYMBOL(kzfree);
  * @s: The string to duplicate
  * @n: Maximum number of bytes to copy, including the trailing NUL.
  */
+// 2018-01-06
 char *strndup_user(const char __user *s, long n)
 {
 	char *p;

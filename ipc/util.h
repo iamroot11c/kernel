@@ -29,7 +29,7 @@ static inline void mq_clear_sbinfo(struct ipc_namespace *ns) { }
 static inline void mq_put_mnt(struct ipc_namespace *ns) { }
 #endif
 
-#ifdef CONFIG_SYSVIPC
+#ifdef CONFIG_SYSVIPC // y
 void sem_init_ns(struct ipc_namespace *ns);
 void msg_init_ns(struct ipc_namespace *ns);
 void shm_init_ns(struct ipc_namespace *ns);

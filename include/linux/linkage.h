@@ -23,11 +23,17 @@
 		 VMLINUX_SYMBOL_STR(sys_ni_syscall))
 #endif
 
+// 2018-01-06
 #ifndef SYSCALL_ALIAS
+// SYSCALL_ALIAS(sys_unshare, SyS_unshare);
+// 1. alias 함수를 사용할 수 있도록 링커에 등록 / 2. alias함수를 name함수로 연결
 #define SYSCALL_ALIAS(alias, name) asm(			\
 	".globl " VMLINUX_SYMBOL_STR(alias) "\n\t"	\
 	".set   " VMLINUX_SYMBOL_STR(alias) ","		\
 		  VMLINUX_SYMBOL_STR(name))
+/*
+ * asm(".global " "sys_unshare" "\n\t" ".set " "sys_unshare" "," "SyS_unshare")
+ * */
 #endif
 
 #define __page_aligned_data	__section(.data..page_aligned) __aligned(PAGE_SIZE)

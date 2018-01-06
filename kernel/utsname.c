@@ -32,6 +32,7 @@ static struct uts_namespace *create_uts_ns(void)
  * @old_ns: namespace to clone
  * Return ERR_PTR(-ENOMEM) on error (failure to kmalloc), new ns otherwise
  */
+// 2018-01-06
 static struct uts_namespace *clone_uts_ns(struct user_namespace *user_ns,
 					  struct uts_namespace *old_ns)
 {
@@ -61,6 +62,7 @@ static struct uts_namespace *clone_uts_ns(struct user_namespace *user_ns,
  * utsname of this process won't be seen by parent, and vice
  * versa.
  */
+// 2018-01-06
 struct uts_namespace *copy_utsname(unsigned long flags,
 	struct user_namespace *user_ns, struct uts_namespace *old_ns)
 {

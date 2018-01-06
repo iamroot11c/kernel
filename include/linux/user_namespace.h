@@ -34,7 +34,7 @@ struct user_namespace {
 
 extern struct user_namespace init_user_ns;
 
-#ifdef CONFIG_USER_NS
+#ifdef CONFIG_USER_NS // not set
 
 static inline struct user_namespace *get_user_ns(struct user_namespace *ns)
 {
@@ -73,6 +73,7 @@ static inline int create_user_ns(struct cred *new)
 	return -EINVAL;
 }
 
+// 2018-01-06
 static inline int unshare_userns(unsigned long unshare_flags,
 				 struct cred **new_cred)
 {

@@ -103,7 +103,7 @@ struct sigaltstack;
 #define __SC_ARGS(t, a)	a
 #define __SC_TEST(t, a) (void)BUILD_BUG_ON_ZERO(!__TYPE_IS_LL(t) && sizeof(t) > sizeof(long))
 
-#ifdef CONFIG_FTRACE_SYSCALLS
+#ifdef CONFIG_FTRACE_SYSCALLS // not set
 #define __SC_STR_ADECL(t, a)	#a
 #define __SC_STR_TDECL(t, a)	#t
 
@@ -171,6 +171,8 @@ extern struct trace_event_functions exit_syscall_print_funcs;
 	SYSCALL_METADATA(_##sname, 0);				\
 	asmlinkage long sys_##sname(void)
 
+// 2018-01-06
+// SYSCALL_DEFINE1(unshare, unsigned long, unshare_flags) 
 #define SYSCALL_DEFINE1(name, ...) SYSCALL_DEFINEx(1, _##name, __VA_ARGS__)
 #define SYSCALL_DEFINE2(name, ...) SYSCALL_DEFINEx(2, _##name, __VA_ARGS__)
 #define SYSCALL_DEFINE3(name, ...) SYSCALL_DEFINEx(3, _##name, __VA_ARGS__)
@@ -178,11 +180,20 @@ extern struct trace_event_functions exit_syscall_print_funcs;
 #define SYSCALL_DEFINE5(name, ...) SYSCALL_DEFINEx(5, _##name, __VA_ARGS__)
 #define SYSCALL_DEFINE6(name, ...) SYSCALL_DEFINEx(6, _##name, __VA_ARGS__)
 
+// 2018-01-06
+// SYSCALL_DEFINEx(1, unshare, unsigned long, unshare_flags) 
 #define SYSCALL_DEFINEx(x, sname, ...)				\
 	SYSCALL_METADATA(sname, x, __VA_ARGS__)			\
 	__SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
 
 #define __PROTECT(...) asmlinkage_protect(__VA_ARGS__)
+// __SYSCALL_DEFINEx(1, _unshare, unsigned long, unshare_flags)
+//    asmlinkage long sys##name(__MAP(x,__SC_DECL,__VA_ARGS__));
+//    == asmlinkage long sys_unshare(__MAP(x,__SC_DECL,__VA_ARGS__));
+//    == asmlinkage long sys_unshare(__MAP(1, __SC_DECL, __VA_ARGS__));
+//    == asmlinkage long sys_unshare(__MAP1(__SC_DECL, __VA_ARGS__));
+//    == asmlinkage long sys_unshare(__SC_DECL(unsigned long, unshare_flags));
+//    == asmlinkage long sys_unshare(unsigned long unshare_flags);
 #define __SYSCALL_DEFINEx(x, name, ...)					\
 	asmlinkage long sys##name(__MAP(x,__SC_DECL,__VA_ARGS__));	\
 	static inline long SYSC##name(__MAP(x,__SC_DECL,__VA_ARGS__));	\
@@ -195,7 +206,7 @@ extern struct trace_event_functions exit_syscall_print_funcs;
 		return ret;						\
 	}								\
 	SYSCALL_ALIAS(sys##name, SyS##name);				\
-	static inline long SYSC##name(__MAP(x,__SC_DECL,__VA_ARGS__))
+	static inline long SYSC##name(__MAP(x,__SC_DECL,__VA_ARGS__)) /*프로토타입 선언이 아니라는 것을 주목. __SYSCALL_DEFINEx()매크로 함수를 부른 쪽에 구현부가 있다.*/
 
 asmlinkage long sys_time(time_t __user *tloc);
 asmlinkage long sys_stime(time_t __user *tptr);

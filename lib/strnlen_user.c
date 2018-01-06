@@ -24,6 +24,8 @@
  * if it fits in a aligned 'long'. The caller needs to check
  * the return value against "> max".
  */
+// 2018-01-06
+// glance
 static inline long do_strnlen_user(const char __user *src, unsigned long count, unsigned long max)
 {
 	const struct word_at_a_time constants = WORD_AT_A_TIME_CONSTANTS;
@@ -45,10 +47,12 @@ static inline long do_strnlen_user(const char __user *src, unsigned long count, 
 	src -= align;
 	max += align;
 
+	// 2018-01-06
 	if (unlikely(__get_user(c,(unsigned long __user *)src)))
 		return 0;
 	c |= aligned_byte_mask(align);
 
+	// 2018-01-06 완료
 	for (;;) {
 		unsigned long data;
 		if (has_zero(c, &data, &constants)) {
@@ -92,6 +96,7 @@ static inline long do_strnlen_user(const char __user *src, unsigned long count, 
  * If the string is too long, returns 'count+1'.
  * On exception (or invalid count), returns 0.
  */
+// 2018-01-06
 long strnlen_user(const char __user *str, long count)
 {
 	unsigned long max_addr, src_addr;

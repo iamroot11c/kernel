@@ -222,6 +222,7 @@ static inline void set_fs(mm_segment_t fs)
 
 #define access_ok(type,addr,size)	(__range_ok(addr,size) == 0)
 
+// 유저 스페이스의 최대 주소 번지를 받는다
 #define user_addr_max() \
 	(segment_eq(get_fs(), USER_DS) ? TASK_SIZE : ~0UL)
 
@@ -234,6 +235,10 @@ static inline void set_fs(mm_segment_t fs)
  * error occurs, and leave it unchanged on success.  Note that these
  * versions are void (ie, don't return a value as such).
  */
+// 2018-01-06
+// 자세한 원리는 파악하지 못했지만.. 유저 영역 주소의 값을 읽어온다
+// 실패 시 0이 아닌 값이 리턴된다.
+// https://www.kernel.org/doc/Documentation/x86/exception-tables.txt 참고
 #define __get_user(x,ptr)						\
 ({									\
 	long __gu_err = 0;						\
@@ -247,6 +252,7 @@ static inline void set_fs(mm_segment_t fs)
 	(void) 0;							\
 })
 
+// 2018-01-06
 #define __get_user_err(x,ptr,err)					\
 do {									\
 	unsigned long __gu_addr = (unsigned long)(ptr);			\
@@ -298,6 +304,7 @@ do {									\
 })
 #endif
 
+// 2018-01-06
 #define __get_user_asm_word(x,addr,err)				\
 	__asm__ __volatile__(					\
 	"1:	" TUSER(ldr) "	%1,[%2],#0\n"			\

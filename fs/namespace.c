@@ -2281,6 +2281,8 @@ int copy_mount_options(const void __user * data, unsigned long *where)
 	return 0;
 }
 
+// 2018-01-06
+// copy_mount_string("devtmpfs", &kernel_type);  
 int copy_mount_string(const void __user *data, char **where)
 {
 	char *tmp;
@@ -2428,6 +2430,7 @@ static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns)
  * Allocate a new namespace structure and populate it with contents
  * copied from the namespace of the passed in task structure.
  */
+// 2018-01-06
 static struct mnt_namespace *dup_mnt_ns(struct mnt_namespace *mnt_ns,
 		struct user_namespace *user_ns, struct fs_struct *fs)
 {
@@ -2494,6 +2497,7 @@ static struct mnt_namespace *dup_mnt_ns(struct mnt_namespace *mnt_ns,
 	return new_ns;
 }
 
+// 2018-01-06
 struct mnt_namespace *copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
 		struct user_namespace *user_ns, struct fs_struct *new_fs)
 {
@@ -2560,6 +2564,8 @@ struct dentry *mount_subtree(struct vfsmount *mnt, const char *name)
 }
 EXPORT_SYMBOL(mount_subtree);
 
+// 2018-01-06
+// sys_mount("devtmpfs", "/", "devtmpfs", MS_SILENT, options)
 SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
 		char __user *, type, unsigned long, flags, void __user *, data)
 {
@@ -2817,6 +2823,7 @@ void __init mnt_init(void)
 	init_mount_tree();
 }
 
+// 2018-01-06
 void put_mnt_ns(struct mnt_namespace *ns)
 {
 	if (!atomic_dec_and_test(&ns->count))

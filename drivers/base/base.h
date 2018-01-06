@@ -148,7 +148,7 @@ static inline void module_add_driver(struct module *mod,
 static inline void module_remove_driver(struct device_driver *drv) { }
 #endif
 
-#ifdef CONFIG_DEVTMPFS
+#ifdef CONFIG_DEVTMPFS // y
 extern int devtmpfs_init(void);
 #else
 static inline int devtmpfs_init(void) { return 0; }

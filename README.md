@@ -1,9 +1,27 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
 
+TODO
+ - https://www.kernel.org/doc/Documentation/x86/exception-tables.txt 152주차 정독
 
-
-+ [150주차]() `2017.12.23
++ [151주차]() `2018.01.06
+ - drive: 홍진우님
+ - kernel/kernel/init/main.c::kernel_init() 진행
+ - kernel/kernel/init/main.c::kernel_init_freeable() 진행
+ - kernel/kernel/init/main.c::do_basic_setup() 진행
+ - drivers/base/init.c::driver_init() 진행중
+ - drivers/base/devtmpfs.c::devtmpfs_init() 진행중
+ - drivers/base/devtmpfs.c::devtmpfsd() 진행중
+ - kernel/kernel/init/fork.c::sys_unshare() 완료
+    - SYSCALL_DEFINE1(unshare, unsigned long, unshare_flags)()
+ - kernel/fs/namespace.c::sys_mount() 진행
+    - SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *,dir_name,                      char __user *, type, unsigned long, flags, void __user *, data)
+ - kernel/fs/namespace.c::copy_mount_string() 진행
+ - kernel/mm/util.c::strnup_user() 진행
+ - kernel/lib/strnlen_user.c::strnlen_user() 진행
+ - kernel/lib/strnlen_user.c::do_strnlen_user() 진행 
+ 
++ [150주차](http://bit.ly/2kKBUKY) `2017.12.23
  - drive: 보름달님
  - kernel/kernel/init/main.c::kernel_init() 진행
  - kernel/kernel/init/main.c::kernel_init_freeable() 진행

@@ -209,6 +209,7 @@ struct kmem_cache *sighand_cachep;
 /* SLAB cache for files_struct structures (tsk->files) */
 struct kmem_cache *files_cachep;
 // 2017-06-24
+// 2018-01-06
 /* SLAB cache for fs_struct structures (tsk->fs) */
 struct kmem_cache *fs_cachep;
 // 2017-06-24
@@ -1936,6 +1937,7 @@ void __init proc_caches_init(void)
 /*
  * Check constraints on flags passed to the unshare system call.
  */
+// 2018-01-06
 static int check_unshare_flags(unsigned long unshare_flags)
 {
 	if (unshare_flags & ~(CLONE_THREAD|CLONE_FS|CLONE_NEWNS|CLONE_SIGHAND|
@@ -1960,6 +1962,7 @@ static int check_unshare_flags(unsigned long unshare_flags)
 /*
  * Unshare the filesystem structure if it is being shared
  */
+// 2018-01-06
 static int unshare_fs(unsigned long unshare_flags, struct fs_struct **new_fsp)
 {
 	struct fs_struct *fs = current->fs;
@@ -1981,6 +1984,7 @@ static int unshare_fs(unsigned long unshare_flags, struct fs_struct **new_fsp)
 /*
  * Unshare file descriptor table if it is being shared
  */
+// 2018-01-04
 static int unshare_fd(unsigned long unshare_flags, struct files_struct **new_fdp)
 {
 	struct files_struct *fd = current->files;
@@ -2004,6 +2008,14 @@ static int unshare_fd(unsigned long unshare_flags, struct files_struct **new_fdp
  * constructed. Here we are modifying the current, active,
  * task_struct.
  */
+// sys_unshare(CLONE_NEWNS)
+// 2018-01-06
+// sys_unshare() 시스템 콜을 사용할 때 호출되는 구현부
+// static inline long SYSC_unshare(unsigned long unshare_flags) 
+// 현재 프로세스가 가지고 있는 리소스(ex. file system 등..) 중
+// 다른 프로세스와 공유하고 있는 리소스의 연결을 끊는다. 
+// (구체적으로, 1. 해당 리소스 복제 2. 기존 리소스를 복제한 리소스로 교체
+// 3. 기존 리소스의 레퍼런스 카운트 감소)
 SYSCALL_DEFINE1(unshare, unsigned long, unshare_flags)
 {
 	struct fs_struct *fs, *new_fs = NULL;
@@ -2066,6 +2078,7 @@ SYSCALL_DEFINE1(unshare, unsigned long, unshare_flags)
 			exit_sem(current);
 		}
 
+		// 2018-01-06
 		if (new_nsproxy)
 			switch_task_namespaces(current, new_nsproxy);
 
@@ -2083,6 +2096,7 @@ SYSCALL_DEFINE1(unshare, unsigned long, unshare_flags)
 		}
 
 		if (new_fd) {
+			// current->files <-> new_fd swap
 			fd = current->files;
 			current->files = new_fd;
 			new_fd = fd;

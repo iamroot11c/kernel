@@ -28,7 +28,7 @@ struct uts_namespace {
 };
 extern struct uts_namespace init_uts_ns;
 
-#ifdef CONFIG_UTS_NS
+#ifdef CONFIG_UTS_NS // y
 static inline void get_uts_ns(struct uts_namespace *ns)
 {
 	kref_get(&ns->kref);

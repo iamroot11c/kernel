@@ -245,6 +245,7 @@ extern int _cond_resched(void);
 #if defined(CONFIG_PROVE_LOCKING) || defined(CONFIG_DEBUG_ATOMIC_SLEEP)
 void might_fault(void);
 #else
+// 2018-01-06
 static inline void might_fault(void) { }
 #endif
 

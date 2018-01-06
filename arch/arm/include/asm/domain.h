@@ -103,6 +103,7 @@ static inline void modify_domain(unsigned dom, unsigned type)	{ }
 #ifdef CONFIG_CPU_USE_DOMAINS
 #define TUSER(instr)	instr ## t
 #else
+// 2018-01-06
 #define TUSER(instr)	instr
 #endif
 

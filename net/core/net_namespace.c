@@ -257,6 +257,7 @@ void net_drop_ns(void *p)
 		net_free(ns);
 }
 
+// 2018-01-06
 struct net *copy_net_ns(unsigned long flags,
 			struct user_namespace *user_ns, struct net *old_net)
 {

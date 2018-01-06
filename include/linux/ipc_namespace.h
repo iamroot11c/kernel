@@ -28,6 +28,7 @@ struct ipc_ids {
 };
 
 // 2015-03-07
+// 2018-01-06
 struct ipc_namespace {
 	atomic_t	count;
 	struct ipc_ids	ids[3];
@@ -78,7 +79,7 @@ extern atomic_t nr_ipc_ns;
 
 extern spinlock_t mq_lock;
 
-#ifdef CONFIG_SYSVIPC
+#ifdef CONFIG_SYSVIPC // y
 extern int register_ipcns_notifier(struct ipc_namespace *);
 extern int cond_register_ipcns_notifier(struct ipc_namespace *);
 extern void unregister_ipcns_notifier(struct ipc_namespace *);
@@ -130,10 +131,11 @@ extern int mq_init_ns(struct ipc_namespace *ns);
 #define DFLT_MSGSIZEMAX		     8192
 #define HARD_MSGSIZEMAX	    (16*1024*1024)
 #else
+// 2018-01-06
 static inline int mq_init_ns(struct ipc_namespace *ns) { return 0; }
 #endif
 
-#if defined(CONFIG_IPC_NS)
+#if defined(CONFIG_IPC_NS) // y
 extern struct ipc_namespace *copy_ipcs(unsigned long flags,
 	struct user_namespace *user_ns, struct ipc_namespace *ns);
 

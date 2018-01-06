@@ -91,6 +91,12 @@ static struct file_system_type **find_filesystem(const char *name, unsigned len)
 //        .mount          = bd_mount,
 //        .kill_sb        = kill_anon_super,
 //};
+//
+//static struct file_system_type dev_fs_type = {
+//	         .name = "devtmpfs",
+//	         .mount = dev_mount,
+//	         .kill_sb = kill_litter_super,
+//	     };
 
 // 2017-07-08
 int register_filesystem(struct file_system_type * fs)

@@ -3,6 +3,7 @@
 #include <linux/poll.h>
 
 // 2015-03-07
+// 2018-01-06
 struct mnt_namespace {
 	atomic_t		count;
 	unsigned int		proc_inum;

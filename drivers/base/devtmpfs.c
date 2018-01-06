@@ -384,6 +384,7 @@ static int handle(const char *name, umode_t mode, kuid_t uid, kgid_t gid,
 		return handle_remove(name, dev);
 }
 
+// 2018-01-06
 static int devtmpfsd(void *p)
 {
 	char options[] = "mode=0755";
@@ -428,6 +429,7 @@ out:
  * Create devtmpfs instance, driver-core devices will add their device
  * nodes here.
  */
+// 2018-01-06
 int __init devtmpfs_init(void)
 {
 	int err = register_filesystem(&dev_fs_type);
@@ -437,6 +439,7 @@ int __init devtmpfs_init(void)
 		return err;
 	}
 
+	// 2018-01-06 devtmpfsd 함수 분석 진행
 	thread = kthread_run(devtmpfsd, &err, "kdevtmpfs");
 	if (!IS_ERR(thread)) {
 		wait_for_completion(&setup_done);
