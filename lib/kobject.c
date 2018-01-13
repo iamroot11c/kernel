@@ -160,6 +160,7 @@ static void kobject_init_internal(struct kobject *kobj)
 }
 
 // 2017-06-24 시작
+// 2018-01-13
 static int kobject_add_internal(struct kobject *kobj)
 {
 	int error = 0;
@@ -253,6 +254,7 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
  * kobject to the system, you must call kobject_rename() in order to
  * change the name of the kobject.
  */
+// 2018-01-13
 int kobject_set_name(struct kobject *kobj, const char *fmt, ...)
 {
 	va_list vargs;
@@ -725,6 +727,7 @@ EXPORT_SYMBOL_GPL(kobject_create_and_add);
  * kset_init - initialize a kset for use
  * @k: kset
  */
+// 2018-01-13
 void kset_init(struct kset *k)
 {
 	kobject_init_internal(&k->kobj);
@@ -757,6 +760,7 @@ static ssize_t kobj_attr_store(struct kobject *kobj, struct attribute *attr,
 	return ret;
 }
 
+// 2018-01-13
 const struct sysfs_ops kobj_sysfs_ops = {
 	.show	= kobj_attr_show,
 	.store	= kobj_attr_store,
@@ -766,6 +770,7 @@ const struct sysfs_ops kobj_sysfs_ops = {
  * kset_register - initialize and add a kset.
  * @k: kset.
  */
+// 2018-01-13
 int kset_register(struct kset *k)
 {
 	int err;
@@ -774,9 +779,11 @@ int kset_register(struct kset *k)
 		return -EINVAL;
 
 	kset_init(k);
+	// 2018-01-13
 	err = kobject_add_internal(&k->kobj);
 	if (err)
 		return err;
+	// 2018-01-13 여기까지
 	kobject_uevent(&k->kobj, KOBJ_ADD);
 	return 0;
 }
@@ -827,6 +834,7 @@ static void kset_release(struct kobject *kobj)
 	kfree(kset);
 }
 
+// 2018-01-13
 static struct kobj_type kset_ktype = {
 	.sysfs_ops	= &kobj_sysfs_ops,
 	.release = kset_release,
@@ -847,6 +855,8 @@ static struct kobj_type kset_ktype = {
  *
  * If the kset was not able to be created, NULL will be returned.
  */
+// 2018-01-13
+// devices_kset = kset_create_and_add("devices", &device_uevent_ops, NULL);
 static struct kset *kset_create(const char *name,
 				const struct kset_uevent_ops *uevent_ops,
 				struct kobject *parent_kobj)
@@ -857,13 +867,14 @@ static struct kset *kset_create(const char *name,
 	kset = kzalloc(sizeof(*kset), GFP_KERNEL);
 	if (!kset)
 		return NULL;
+	// "devices"
 	retval = kobject_set_name(&kset->kobj, "%s", name);
 	if (retval) {
 		kfree(kset);
 		return NULL;
 	}
 	kset->uevent_ops = uevent_ops;
-	kset->kobj.parent = parent_kobj;
+	kset->kobj.parent = parent_kobj;	// NULL
 
 	/*
 	 * The kobject of this kset will have a type of kset_ktype and belong to
@@ -890,6 +901,8 @@ static struct kset *kset_create(const char *name,
  *
  * If the kset was not able to be created, NULL will be returned.
  */
+// 2018-01-13
+// devices_kset = kset_create_and_add("devices", &device_uevent_ops, NULL);
 struct kset *kset_create_and_add(const char *name,
 				 const struct kset_uevent_ops *uevent_ops,
 				 struct kobject *parent_kobj)
@@ -897,9 +910,11 @@ struct kset *kset_create_and_add(const char *name,
 	struct kset *kset;
 	int error;
 
+	// 2018-01-13
 	kset = kset_create(name, uevent_ops, parent_kobj);
 	if (!kset)
 		return NULL;
+	// 2018-01-13
 	error = kset_register(kset);
 	if (error) {
 		kfree(kset);

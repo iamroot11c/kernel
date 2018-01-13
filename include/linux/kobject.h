@@ -49,6 +49,7 @@ extern u64 uevent_seqnum;
  * kobject_uevent_env(kobj, KOBJ_CHANGE, env) with additional event
  * specific variables added to the event environment.
  */
+// 2018-01-13
 enum kobject_action {
 	KOBJ_ADD,
 	KOBJ_REMOVE,
@@ -167,6 +168,7 @@ struct sock;
  * desired.
  */
 // 2017-05-12
+// 2018-01-13
 struct kset {
 	struct list_head list;
 	spinlock_t list_lock;

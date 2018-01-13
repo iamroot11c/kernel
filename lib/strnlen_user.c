@@ -25,7 +25,6 @@
  * the return value against "> max".
  */
 // 2018-01-06
-// glance
 static inline long do_strnlen_user(const char __user *src, unsigned long count, unsigned long max)
 {
 	const struct word_at_a_time constants = WORD_AT_A_TIME_CONSTANTS;
@@ -50,6 +49,8 @@ static inline long do_strnlen_user(const char __user *src, unsigned long count, 
 	// 2018-01-06
 	if (unlikely(__get_user(c,(unsigned long __user *)src)))
 		return 0;
+
+	// 2018-01-13 시작
 	c |= aligned_byte_mask(align);
 
 	// 2018-01-06 완료

@@ -364,6 +364,7 @@ static int dev_uevent(struct kset *kset, struct kobject *kobj,
 	return retval;
 }
 
+// 2018-01-13
 static const struct kset_uevent_ops device_uevent_ops = {
 	.filter =	dev_uevent_filter,
 	.name =		dev_uevent_name,
@@ -625,6 +626,7 @@ static ssize_t dev_show(struct device *dev, struct device_attribute *attr,
 static DEVICE_ATTR_RO(dev);
 
 /* /sys/devices/ */
+// 2018-01-13
 struct kset *devices_kset;
 
 /**
@@ -1533,8 +1535,10 @@ struct device *device_find_child(struct device *parent, void *data,
 }
 EXPORT_SYMBOL_GPL(device_find_child);
 
+// 2018-01-13
 int __init devices_init(void)
 {
+	// 2018-01-13
 	devices_kset = kset_create_and_add("devices", &device_uevent_ops, NULL);
 	if (!devices_kset)
 		return -ENOMEM;

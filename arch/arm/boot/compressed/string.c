@@ -93,6 +93,7 @@ int strcmp(const char *cs, const char *ct)
 	return res;
 }
 
+// 2018-01-13
 void *memchr(const void *s, int c, size_t count)
 {
 	const unsigned char *p = s;

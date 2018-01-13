@@ -1,8 +1,33 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
 
-TODO
- - https://www.kernel.org/doc/Documentation/x86/exception-tables.txt 152주차 정독
++ [152주차]() `2018.01.13
+ - drive: 홍진우님
+ - kernel/kernel/init/main.c::kernel_init() 진행
+ - kernel/kernel/init/main.c::kernel_init_freeable() 진행
+ - kernel/kernel/init/main.c::do_basic_setup() 진행
+ - drivers/base/init.c::driver_init() 진행중
+ - drivers/base/devtmpfs.c::devtmpfs_init() 진행 완료
+ - drivers/base/devtmpfs.c::devtmpfsd() 진행 완료
+ - kernel/kernel/init/fork.c::sys_unshare() 완료
+    - SYSCALL_DEFINE1(unshare, unsigned long, unshare_flags)()
+ - kernel/fs/namespace.c::sys_mount() 진행 완료
+    - SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *,dir_name,                      char __user *, type, unsigned long, flags, void __user *, data)
+ - kernel/fs/namespace.c::copy_mount_string() 진행 완료
+ - kernel/mm/util.c::strnup_user() 진행 완료
+ - kernel/lib/strnlen_user.c::strnlen_user() 진행 완료
+ - kernel/lib/strnlen_user.c::do_strnlen_user() 진행 완료
+ - drivers/base/core.c::devices_init(); 진행중
+ - lib/kobject.c::kset_create_and_add() 진행중
+ - lib/kobject.c::kset_create() 완료
+ - lib/kobject.c::kset_register() 진행중
+ - lib/kobject.c::kobject_add_internal() 완료
+ - lib/kobject_uevent.c::kobject_uevent() 진행중
+ - https://www.kernel.org/doc/Documentation/x86/exception-tables.txt 152주차 정독 완료
+
+exception table 관련 내용:
+http://blog.daum.net/tlos6733/171
+
 
 + [151주차](http://bit.ly/2Cyb8MN) `2018.01.06
  - drive: 홍진우님

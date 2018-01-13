@@ -2020,6 +2020,7 @@ unlock:
  * create a new mount for userspace and request it to be added into the
  * namespace's tree
  */
+// 2018-01-13
 static int do_new_mount(struct path *path, const char *fstype, int flags,
 			int mnt_flags, const char *name, void *data)
 {
@@ -2226,6 +2227,7 @@ static void shrink_submounts(struct mount *mnt)
  * Note that this function differs from copy_from_user() in that it will oops
  * on bad values of `to', rather than returning a short copy.
  */
+// 2018-01-13
 static long exact_copy_from_user(void *to, const void __user * from,
 				 unsigned long n)
 {
@@ -2248,6 +2250,7 @@ static long exact_copy_from_user(void *to, const void __user * from,
 	return n;
 }
 
+// 2018-01-13
 int copy_mount_options(const void __user * data, unsigned long *where)
 {
 	int i;
@@ -2270,6 +2273,7 @@ int copy_mount_options(const void __user * data, unsigned long *where)
 	if (size > PAGE_SIZE)
 		size = PAGE_SIZE;
 
+	// 2018-01-13
 	i = size - exact_copy_from_user((void *)page, data, size);
 	if (!i) {
 		free_page(page);
@@ -2314,6 +2318,7 @@ int copy_mount_string(const void __user *data, char **where)
  * Therefore, if this magic number is present, it carries no information
  * and must be discarded.
  */
+// 2018-01-13
 long do_mount(const char *dev_name, const char *dir_name,
 		const char *type_page, unsigned long flags, void *data_page)
 {
@@ -2379,6 +2384,7 @@ long do_mount(const char *dev_name, const char *dir_name,
 	else if (flags & MS_MOVE)
 		retval = do_move_mount(&path, dev_name);
 	else
+		// 2018-01-13
 		retval = do_new_mount(&path, type_page, flags, mnt_flags,
 				      dev_name, data_page);
 dput_out:
@@ -2593,6 +2599,7 @@ SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
 	if (ret < 0)
 		goto out_data;
 
+	// 2018-01-13
 	ret = do_mount(kernel_dev, kernel_dir->name, kernel_type, flags,
 		(void *) data_page);
 

@@ -133,6 +133,7 @@ static int kobj_usermode_filter(struct kobject *kobj)
  */
 // 2017-06-03 
 // kobject_uevent_env(&dev->kobj, KOBJ_REMOVE, NULL);
+// kobject_uevent(&k->kobj, KOBJ_ADD);
 int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 		       char *envp_ext[])
 {
@@ -340,6 +341,8 @@ EXPORT_SYMBOL_GPL(kobject_uevent_env);
  */
 // 2017-06-03 
 // kobject_uevent(&dev->kobj, KOBJ_REMOVE);
+// 2018-01-13
+// kobject_uevent(&k->kobj, KOBJ_ADD);
 int kobject_uevent(struct kobject *kobj, enum kobject_action action)
 {
 	// 2017-06-03 시작 

@@ -129,6 +129,8 @@ void final_putname(struct filename *name)
 
 #define EMBEDDED_NAME_MAX	(PATH_MAX - sizeof(struct filename))
 
+// 2018-01-13
+//  getname_flags(filename, 0, NULL);
 static struct filename *
 getname_flags(const char __user *filename, int flags, int *empty)
 {
@@ -204,6 +206,7 @@ error:
 	return err;
 }
 
+// 2018-01-13
 struct filename *
 getname(const char __user * filename)
 {
@@ -599,6 +602,7 @@ static inline int d_revalidate(struct dentry *dentry, unsigned int flags)
  * success, -error on failure.  In case of failure caller does not
  * need to drop nd->path.
  */
+// 2018-01-13
 static int complete_walk(struct nameidata *nd)
 {
 	struct dentry *dentry = nd->path.dentry;
@@ -1843,6 +1847,7 @@ static int link_path_walk(const char *name, struct nameidata *nd)
 	return err;
 }
 
+// 2018-01-13
 static int path_init(int dfd, const char *name, unsigned int flags,
 		     struct nameidata *nd, struct file **fp)
 {
@@ -1940,6 +1945,7 @@ static inline int lookup_last(struct nameidata *nd, struct path *path)
 }
 
 /* Returns 0 and nd will be valid on success; Retuns error, otherwise. */
+// 2018-01-13
 static int path_lookupat(int dfd, const char *name,
 				unsigned int flags, struct nameidata *nd)
 {
@@ -1986,6 +1992,7 @@ static int path_lookupat(int dfd, const char *name,
 		}
 	}
 
+	// 2018-01-13
 	if (!err)
 		err = complete_walk(nd);
 
@@ -2006,6 +2013,7 @@ static int path_lookupat(int dfd, const char *name,
 	return err;
 }
 
+// 2018-01-13
 static int filename_lookup(int dfd, struct filename *name,
 				unsigned int flags, struct nameidata *nd)
 {
@@ -2021,6 +2029,7 @@ static int filename_lookup(int dfd, struct filename *name,
 	return retval;
 }
 
+// 2018-01-13
 static int do_path_lookup(int dfd, const char *name,
 				unsigned int flags, struct nameidata *nd)
 {
@@ -2052,6 +2061,7 @@ struct dentry *kern_path_locked(const char *name, struct path *path)
 	return d;
 }
 
+// 2018-01-13
 int kern_path(const char *name, unsigned int flags, struct path *path)
 {
 	struct nameidata nd;

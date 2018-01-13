@@ -2022,6 +2022,7 @@ static inline int break_lease(struct inode *inode, unsigned int mode)
 
 /* fs/open.c */
 struct audit_names;
+// 2018-01-13
 struct filename {
 	const char		*name;	/* pointer to actual string */
 	const __user char	*uptr;	/* original userland pointer */
@@ -2062,10 +2063,13 @@ extern int ioctl_preallocate(struct file *filp, void __user *argp);
 extern void __init vfs_caches_init_early(void);
 extern void __init vfs_caches_init(unsigned long);
 
+// 2018-01-13
 extern struct kmem_cache *names_cachep;
 
 extern void final_putname(struct filename *name);
 
+// 2018-01-13
+// cachep로부터 메모리 할당을 하는 기능
 #define __getname()		kmem_cache_alloc(names_cachep, GFP_KERNEL)
 #define __putname(name)		kmem_cache_free(names_cachep, (void *)(name))
 #ifndef CONFIG_AUDITSYSCALL

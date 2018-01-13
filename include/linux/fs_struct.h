@@ -27,6 +27,7 @@ extern struct fs_struct *copy_fs_struct(struct fs_struct *);
 extern void free_fs_struct(struct fs_struct *);
 extern int unshare_fs_struct(void);
 
+// 2018-01-13
 static inline void get_fs_root(struct fs_struct *fs, struct path *root)
 {
 	spin_lock(&fs->lock);

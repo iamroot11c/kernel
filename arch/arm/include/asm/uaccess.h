@@ -83,6 +83,7 @@ static inline void set_fs(mm_segment_t fs)
 		: "cc"); \
 	(flag == 0); })
 
+// 2018-01-13
 /* We use 33-bit arithmetic here... */
 #define __range_ok(addr,size) ({ \
 	unsigned long flag, roksum; \
@@ -220,6 +221,7 @@ static inline void set_fs(mm_segment_t fs)
 
 #endif /* CONFIG_MMU */
 
+// 2018-01-13
 #define access_ok(type,addr,size)	(__range_ok(addr,size) == 0)
 
 // 유저 스페이스의 최대 주소 번지를 받는다
@@ -431,7 +433,7 @@ do {									\
 	: "cc")
 
 
-#ifdef CONFIG_MMU
+#ifdef CONFIG_MMU   // =y
 extern unsigned long __must_check __copy_from_user(void *to, const void __user *from, unsigned long n);
 extern unsigned long __must_check __copy_to_user(void __user *to, const void *from, unsigned long n);
 extern unsigned long __must_check __copy_to_user_std(void __user *to, const void *from, unsigned long n);
@@ -443,8 +445,10 @@ extern unsigned long __must_check __clear_user_std(void __user *addr, unsigned l
 #define __clear_user(addr,n)		(memset((void __force *)addr, 0, n), 0)
 #endif
 
+// 2018-01-13
 static inline unsigned long __must_check copy_from_user(void *to, const void __user *from, unsigned long n)
 {
+    // 2018-01-13
 	if (access_ok(VERIFY_READ, from, n))
 		n = __copy_from_user(to, from, n);
 	else /* security hole - plug it */

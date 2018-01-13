@@ -88,6 +88,7 @@ EXPORT_SYMBOL(kmemdup);
  *
  * Returns an ERR_PTR() on failure.
  */
+// 2018-01-13
 void *memdup_user(const void __user *src, size_t len)
 {
 	void *p;
@@ -101,6 +102,7 @@ void *memdup_user(const void __user *src, size_t len)
 	if (!p)
 		return ERR_PTR(-ENOMEM);
 
+	// 2018-01-13
 	if (copy_from_user(p, src, len)) {
 		kfree(p);
 		return ERR_PTR(-EFAULT);
@@ -220,6 +222,7 @@ char *strndup_user(const char __user *s, long n)
 	if (length > n)
 		return ERR_PTR(-EINVAL);
 
+	// copy from user
 	p = memdup_user(s, length);
 
 	if (IS_ERR(p))

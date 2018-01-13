@@ -26,6 +26,7 @@ struct mountpoint {
 	int m_count;
 };
 
+// 2018-01-13
 struct mount {
 	struct list_head mnt_hash;
 	struct mount *mnt_parent;

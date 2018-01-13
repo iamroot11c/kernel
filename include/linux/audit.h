@@ -140,6 +140,7 @@ static inline void audit_syscall_exit(void *pt_regs)
 		__audit_syscall_exit(success, return_code);
 	}
 }
+
 static inline struct filename *audit_reusename(const __user char *name)
 {
 	if (unlikely(!audit_dummy_context()))
@@ -317,10 +318,12 @@ static inline int audit_dummy_context(void)
 {
 	return 1;
 }
+// 2018-01-13
 static inline struct filename *audit_reusename(const __user char *name)
 {
 	return NULL;
 }
+// 2018-01-13
 static inline void audit_getname(struct filename *name)
 { }
 static inline void audit_putname(struct filename *name)
@@ -333,6 +336,7 @@ static inline void __audit_inode_child(const struct inode *parent,
 					const struct dentry *dentry,
 					const unsigned char type)
 { }
+// 2018-01-13
 static inline void audit_inode(struct filename *name,
 				const struct dentry *dentry,
 				unsigned int parent)

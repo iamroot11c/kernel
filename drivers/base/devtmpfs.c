@@ -373,8 +373,10 @@ int devtmpfs_mount(const char *mntdir)
 	return err;
 }
 
+// 2018-01-13
 static DECLARE_COMPLETION(setup_done);
 
+// 2018-01-13
 static int handle(const char *name, umode_t mode, kuid_t uid, kgid_t gid,
 		  struct device *dev)
 {

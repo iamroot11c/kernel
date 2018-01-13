@@ -10,6 +10,7 @@ struct vfsmount;
 
 enum { MAX_NESTED_LINKS = 8 };
 
+// 2018-01-13
 struct nameidata {
 	struct path	path;
 	struct qstr	last;
