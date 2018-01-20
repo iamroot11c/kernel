@@ -131,7 +131,8 @@ static int kobj_usermode_filter(struct kobject *kobj)
  * Returns 0 if kobject_uevent_env() is completed with success or the
  * corresponding error when it fails.
  */
-// 2017-06-03 
+// 2017-06-03
+// 2018-01-20 
 // kobject_uevent_env(&dev->kobj, KOBJ_REMOVE, NULL);
 // kobject_uevent(&k->kobj, KOBJ_ADD);
 int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
@@ -248,6 +249,7 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 	 * the core, if not already done by the caller.
 	 */
 	if (action == KOBJ_ADD)
+		// 2018-01-20
 		kobj->state_add_uevent_sent = 1;
 	else if (action == KOBJ_REMOVE)
 		// 2017-06-03
@@ -279,6 +281,7 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 
 			/* add header */
 			scratch = skb_put(skb, len);
+			// ex. add@/devices/platform/...
 			sprintf(scratch, "%s@%s", action_string, devpath);
 
 			/* copy keys to our continuous event payload buffer */
@@ -289,6 +292,7 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 			}
 
 			NETLINK_CB(skb).dst_group = 1;
+			// 2018-01-20
 			retval = netlink_broadcast_filtered(uevent_sock, skb,
 							    0, 1, GFP_KERNEL,
 							    kobj_bcast_filter,
@@ -359,6 +363,7 @@ EXPORT_SYMBOL_GPL(kobject_uevent);
  * if no space was available.
  */
 // 2017-06-03
+// 2018-01-20
 // add_uevent_var(env, "ACTION=%s", action_string)
 // add_uevent_var(env, "DEVPATH=%s", devpath)
 // add_uevent_var(env, "SUBSYSTEM=%s", subsystem)

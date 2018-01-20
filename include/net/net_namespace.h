@@ -244,13 +244,14 @@ static inline void release_net(struct net *net)
 }
 #endif
 
-#ifdef CONFIG_NET_NS
+#ifdef CONFIG_NET_NS // y
 
 static inline void write_pnet(struct net **pnet, struct net *net)
 {
 	*pnet = net;
 }
 
+// 2018-01-20
 static inline struct net *read_pnet(struct net * const *pnet)
 {
 	return *pnet;

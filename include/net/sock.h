@@ -703,8 +703,9 @@ static inline bool sock_flag(const struct sock *sk, enum sock_flags flag)
 	return test_bit(flag, &sk->sk_flags);
 }
 
-#ifdef CONFIG_NET
+#ifdef CONFIG_NET // y
 extern struct static_key memalloc_socks;
+// 2018-01-20
 static inline int sk_memalloc_socks(void)
 {
 	return static_key_false(&memalloc_socks);

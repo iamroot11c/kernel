@@ -85,6 +85,7 @@ extern int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
 				  va_list vargs);
 
 // 2017-04-22
+// 2018-01-20
 static inline const char *kobject_name(const struct kobject *kobj)
 {
 	return kobj->name;

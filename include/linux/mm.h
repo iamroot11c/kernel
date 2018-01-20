@@ -340,6 +340,7 @@ unsigned long vmalloc_to_pfn(const void *addr);
  * is no special casing required.
  */
 // 2015-09-19;
+// 2018-01-20
 static inline int is_vmalloc_addr(const void *x)
 {
 #ifdef CONFIG_MMU // defined

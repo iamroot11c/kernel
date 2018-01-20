@@ -134,6 +134,7 @@ static __always_inline void jump_label_init(void)
 {
 }
 
+// 2018-01-20
 static __always_inline bool static_key_false(struct static_key *key)
 {
 	if (unlikely(atomic_read(&key->enabled)) > 0)

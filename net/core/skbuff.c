@@ -193,6 +193,7 @@ out:
  *	Buffers may only be allocated from interrupts using a @gfp_mask of
  *	%GFP_ATOMIC.
  */
+// 2018-01-20
 struct sk_buff *__alloc_skb(unsigned int size, gfp_t gfp_mask,
 			    int flags, int node)
 {
@@ -581,6 +582,7 @@ static void skb_release_all(struct sk_buff *skb)
  *	always call kfree_skb
  */
 
+// 2018-01-20
 void __kfree_skb(struct sk_buff *skb)
 {
 	skb_release_all(skb);
@@ -647,6 +649,7 @@ EXPORT_SYMBOL(skb_tx_error);
  *	Functions identically to kfree_skb, but kfree_skb assumes that the frame
  *	is being dropped after a failure and notes that
  */
+// 2018-01-20
 void consume_skb(struct sk_buff *skb)
 {
 	if (unlikely(!skb))
@@ -718,6 +721,9 @@ static void __copy_skb_header(struct sk_buff *new, const struct sk_buff *old)
  * You should not add any new code to this function.  Add it to
  * __copy_skb_header above instead.
  */
+// 2018-01-20
+// 얕은 복사로 새로운 소켓 버퍼 객체를 만든다.
+// end 포인터가 얕은 복사로 전달되었기 때문에, dataref 값은 공유될 것이다.
 static struct sk_buff *__skb_clone(struct sk_buff *n, struct sk_buff *skb)
 {
 #define C(x) n->x = skb->x
@@ -840,6 +846,7 @@ EXPORT_SYMBOL_GPL(skb_copy_ubufs);
  *	%GFP_ATOMIC.
  */
 
+// 2018-01-20
 struct sk_buff *skb_clone(struct sk_buff *skb, gfp_t gfp_mask)
 {
 	struct sk_buff *n;
@@ -1014,6 +1021,8 @@ EXPORT_SYMBOL(__pskb_copy);
  *	reloaded after call to this function.
  */
 
+// 2018-01-20
+// pskb_expand_head(skb, 0, -delta, allocation)
 int pskb_expand_head(struct sk_buff *skb, int nhead, int ntail,
 		     gfp_t gfp_mask)
 {
@@ -1234,6 +1243,7 @@ EXPORT_SYMBOL(skb_pad);
  *	exceed the total buffer size the kernel will panic. A pointer to the
  *	first byte of the extra data is returned.
  */
+// 2018-01-20
 unsigned char *skb_put(struct sk_buff *skb, unsigned int len)
 {
 	unsigned char *tmp = skb_tail_pointer(skb);

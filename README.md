@@ -1,5 +1,20 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [153주차](http://bit.ly/2AVCgn5) `2018.01.20
+ - drive: 보름달님
+ - kernel/kernel/init/main.c::kernel_init() 진행
+ - kernel/kernel/init/main.c::kernel_init_freeable() 진행
+ - kernel/kernel/init/main.c::do_basic_setup() 진행
+ - drivers/base/init.c::driver_init() 진행중
+ - drivers/base/core.c::devices_init(); 진행중
+ - lib/kobject.c::kset_create_and_add() 진행중
+ - lib/kobject.c::kset_register() 진행중
+ - lib/kobject_uevent.c::kobject_uevent() 진행중
+ - lib/kobject_uevent.c::kobject_uevent_env() 진행 중
+ - lib/kobject_uevent.c::add_uevent_var() 진행 완료
+ - include/linux/skbuff.h::alloc_skb() 진행 완료
+ - net/netlink/af_netlink.c::netlink_broadcast_filtered() 진행 중
+ - net/netlink/af_netlink.c::netlink_trim() 진행 완료
 
 + [152주차](http://bit.ly/2AVCgn5) `2018.01.13
  - drive: 보름달님

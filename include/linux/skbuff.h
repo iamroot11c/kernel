@@ -639,6 +639,7 @@ extern bool skb_try_coalesce(struct sk_buff *to, struct sk_buff *from,
 extern struct sk_buff *__alloc_skb(unsigned int size,
 				   gfp_t priority, int flags, int node);
 extern struct sk_buff *build_skb(void *data, unsigned int frag_size);
+// 2018-01-20
 static inline struct sk_buff *alloc_skb(unsigned int size,
 					gfp_t priority)
 {
@@ -728,11 +729,13 @@ static inline unsigned int skb_end_offset(const struct sk_buff *skb)
 	return skb->end;
 }
 #else
+// 2018-01-20
 static inline unsigned char *skb_end_pointer(const struct sk_buff *skb)
 {
 	return skb->end;
 }
 
+// 2018-01-20
 static inline unsigned int skb_end_offset(const struct sk_buff *skb)
 {
 	return skb->end - skb->head;
@@ -1389,6 +1392,7 @@ static inline void skb_set_tail_pointer(struct sk_buff *skb, const int offset)
 }
 
 #else /* NET_SKBUFF_DATA_USES_OFFSET */
+// 2018-01-20
 static inline unsigned char *skb_tail_pointer(const struct sk_buff *skb)
 {
 	return skb->tail;

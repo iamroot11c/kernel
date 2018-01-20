@@ -824,6 +824,7 @@ static void netlink_ring_set_copied(struct sock *sk, struct sk_buff *skb)
 }
 
 #else /* CONFIG_NETLINK_MMAP */
+// 2018-01-20
 #define netlink_skb_is_mmaped(skb)	false
 #define netlink_rx_is_mmaped(sk)	false
 #define netlink_tx_is_mmaped(sk)	false
@@ -1663,12 +1664,14 @@ void netlink_detachskb(struct sock *sk, struct sk_buff *skb)
 	sock_put(sk);
 }
 
+// 2018-01-20
+// 소켓 버퍼의 크기를 재조정
 static struct sk_buff *netlink_trim(struct sk_buff *skb, gfp_t allocation)
 {
 	int delta;
 
 	WARN_ON(skb->sk != NULL);
-	if (netlink_skb_is_mmaped(skb))
+	if (netlink_skb_is_mmaped(skb)) // == false
 		return skb;
 
 	delta = skb->end - skb->tail;
@@ -1683,6 +1686,7 @@ static struct sk_buff *netlink_trim(struct sk_buff *skb, gfp_t allocation)
 		skb = nskb;
 	}
 
+	// 2018-01-20
 	if (!pskb_expand_head(skb, 0, -delta, allocation))
 		skb->truesize -= delta;
 
@@ -1813,6 +1817,7 @@ out:
 }
 EXPORT_SYMBOL_GPL(netlink_alloc_skb);
 
+// 2018-01-20
 int netlink_has_listeners(struct sock *sk, unsigned int group)
 {
 	int res = 0;
@@ -1921,6 +1926,7 @@ out:
 	return 0;
 }
 
+// 2018-01-20
 int netlink_broadcast_filtered(struct sock *ssk, struct sk_buff *skb, u32 portid,
 	u32 group, gfp_t allocation,
 	int (*filter)(struct sock *dsk, struct sk_buff *skb, void *data),
@@ -1930,7 +1936,9 @@ int netlink_broadcast_filtered(struct sock *ssk, struct sk_buff *skb, u32 portid
 	struct netlink_broadcast_data info;
 	struct sock *sk;
 
+	// 2018-01-20
 	skb = netlink_trim(skb, allocation);
+	// 2018-01-20 여기까지
 
 	info.exclude_sk = ssk;
 	info.net = net;

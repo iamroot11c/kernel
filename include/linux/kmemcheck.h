@@ -162,6 +162,7 @@ static inline bool kmemcheck_is_obj_initialized(unsigned long addr, size_t size)
 
 #define kmemcheck_bitfield_begin(name)
 #define kmemcheck_bitfield_end(name)
+// 2018-01-20
 #define kmemcheck_annotate_bitfield(ptr, name)	\
 	do {					\
 	} while (0)
