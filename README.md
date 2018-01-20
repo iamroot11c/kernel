@@ -1,6 +1,6 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
-+ [153주차](http://bit.ly/2AVCgn5) `2018.01.20
++ [153주차](http://bit.ly/2Cyb8MN) `2018.01.20
  - drive: 보름달님
  - kernel/kernel/init/main.c::kernel_init() 진행
  - kernel/kernel/init/main.c::kernel_init_freeable() 진행
