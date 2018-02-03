@@ -318,6 +318,7 @@ static int kobject_add_varg(struct kobject *kobj, struct kobject *parent,
 {
 	int retval;
 
+	// 이름 설정
 	retval = kobject_set_name_vargs(kobj, fmt, vargs);
 	if (retval) {
 		printk(KERN_ERR "kobject: can not set name properly!\n");
@@ -701,6 +702,8 @@ struct kobject *kobject_create(void)
  */
 // 2017-06-24 시작
 // kobject_create_and_add("fs", NULL)
+// 2018-02-03
+// kobject_create_and_add("dev", NULL);
 struct kobject *kobject_create_and_add(const char *name, struct kobject *parent)
 {
 	struct kobject *kobj;
@@ -785,6 +788,7 @@ int kset_register(struct kset *k)
 		return err;
 	// 2018-01-13 여기까지
 	kobject_uevent(&k->kobj, KOBJ_ADD);
+	// 2018-02-03
 	return 0;
 }
 

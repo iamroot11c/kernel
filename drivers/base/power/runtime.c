@@ -1359,6 +1359,7 @@ EXPORT_SYMBOL_GPL(__pm_runtime_use_autosuspend);
  * pm_runtime_init - Initialize runtime PM fields in given device object.
  * @dev: Device object to initialize.
  */
+// 2018-02-03
 void pm_runtime_init(struct device *dev)
 {
 	dev->power.runtime_status = RPM_SUSPENDED;

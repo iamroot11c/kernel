@@ -304,6 +304,7 @@ struct sock {
 #define sk_reuse		__sk_common.skc_reuse
 #define sk_reuseport		__sk_common.skc_reuseport
 #define sk_bound_dev_if		__sk_common.skc_bound_dev_if
+// 2018-02-03
 #define sk_bind_node		__sk_common.skc_bind_node
 #define sk_prot			__sk_common.skc_prot
 #define sk_net			__sk_common.skc_net
@@ -354,6 +355,7 @@ struct sock {
 	int			sk_sndbuf;
 	struct sk_buff_head	sk_write_queue;
 	kmemcheck_bitfield_begin(flags);
+    // 2018-02-03
 	unsigned int		sk_shutdown  : 2,
 				sk_no_check  : 2,
 				sk_userlocks : 4,
@@ -532,7 +534,7 @@ static inline bool __sk_del_node_init(struct sock *sk)
    or a list and the lookup is made under lock preventing hash table
    modifications.
  */
-
+// 2018-02-03
 static inline void sock_hold(struct sock *sk)
 {
 	atomic_inc(&sk->sk_refcnt);
@@ -634,6 +636,7 @@ static inline void sk_add_bind_node(struct sock *sk,
 		hlist_nulls_for_each_entry_from(__sk, node, sk_nulls_node)
 #define sk_for_each_safe(__sk, tmp, list) \
 	hlist_for_each_entry_safe(__sk, tmp, list, sk_node)
+// 2018-02-03
 #define sk_for_each_bound(__sk, list) \
 	hlist_for_each_entry(__sk, list, sk_bind_node)
 
@@ -647,6 +650,7 @@ static inline struct user_namespace *sk_user_ns(struct sock *sk)
 }
 
 /* Sock flags */
+// 2018-02-03
 enum sock_flags {
 	SOCK_DEAD,
 	SOCK_DONE,
@@ -891,6 +895,7 @@ static inline void sk_prot_clear_nulls(struct sock *sk, int size)
  * socket layer -> transport layer interface
  * transport -> network interface is defined by struct inet_proto
  */
+// 2018-02-03
 struct proto {
 	void			(*close)(struct sock *sk,
 					long timeout);
@@ -1383,6 +1388,7 @@ static inline int sk_mem_pages(int amt)
 	return (amt + SK_MEM_QUANTUM - 1) >> SK_MEM_QUANTUM_SHIFT;
 }
 
+// 2018-02-03
 static inline bool sk_has_account(struct sock *sk)
 {
 	/* return true if protocol supports memory accounting */
@@ -1423,6 +1429,7 @@ static inline void sk_mem_reclaim_partial(struct sock *sk)
 		__sk_mem_reclaim(sk);
 }
 
+// 2018-02-03
 static inline void sk_mem_charge(struct sock *sk, int size)
 {
 	if (!sk_has_account(sk))
@@ -1671,6 +1678,7 @@ static inline void sk_filter_charge(struct sock *sk, struct sk_filter *fp)
  *   use separate SMP lock, so that they are prone too.
  */
 
+// 2018-02-03
 /* Ungrab socket and destroy it, if it was the last reference. */
 static inline void sock_put(struct sock *sk)
 {

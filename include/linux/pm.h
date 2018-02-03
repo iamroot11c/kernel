@@ -491,6 +491,7 @@ enum rpm_status {
  * RPM_REQ_RESUME	Run the device bus type's ->runtime_resume() callback
  */
 
+// 2018-02-03
 enum rpm_request {
 	RPM_REQ_NONE = 0,
 	RPM_REQ_IDLE,
@@ -517,6 +518,7 @@ struct pm_subsys_data {
 #endif
 };
 
+// 2018-02-03
 struct dev_pm_info {
 	pm_message_t		power_state;
 	unsigned int		can_wakeup:1;

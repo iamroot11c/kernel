@@ -1287,6 +1287,7 @@ out_free:
 	return NULL;
 }
 
+// 2018-02-03
 static void sk_prot_free(struct proto *prot, struct sock *sk)
 {
 	struct kmem_cache *slab;
@@ -1358,6 +1359,7 @@ struct sock *sk_alloc(struct net *net, int family, gfp_t priority,
 }
 EXPORT_SYMBOL(sk_alloc);
 
+// 2018-02-03
 static void __sk_free(struct sock *sk)
 {
 	struct sk_filter *filter;
@@ -1372,6 +1374,7 @@ static void __sk_free(struct sock *sk)
 		RCU_INIT_POINTER(sk->sk_filter, NULL);
 	}
 
+	// 2018-02-03
 	sock_disable_timestamp(sk, SK_FLAGS_TIMESTAMP);
 
 	if (atomic_read(&sk->sk_omem_alloc))
@@ -1385,6 +1388,7 @@ static void __sk_free(struct sock *sk)
 	sk_prot_free(sk->sk_prot_creator, sk);
 }
 
+// 2018-02-03
 void sk_free(struct sock *sk)
 {
 	/*
@@ -1598,6 +1602,7 @@ EXPORT_SYMBOL(skb_orphan_partial);
 /*
  * Read buffer destructor automatically called from kfree_skb.
  */
+// 2018-02-03
 void sock_rfree(struct sk_buff *skb)
 {
 	struct sock *sk = skb->sk;

@@ -29,6 +29,7 @@
 /* For automatically allocated device IDs */
 static DEFINE_IDA(platform_devid_ida);
 
+// 2018-02-03
 struct device platform_bus = {
 	.init_name	= "platform",
 };
@@ -893,6 +894,7 @@ static const struct dev_pm_ops platform_dev_pm_ops = {
 	USE_PLATFORM_PM_SLEEP_OPS
 };
 
+// 2018-02-03
 struct bus_type platform_bus_type = {
 	.name		= "platform",
 	.dev_groups	= platform_dev_groups,
@@ -902,15 +904,18 @@ struct bus_type platform_bus_type = {
 };
 EXPORT_SYMBOL_GPL(platform_bus_type);
 
+// 2018-02-03
 int __init platform_bus_init(void)
 {
 	int error;
 
 	early_platform_cleanup();
 
+	// 2018-02-03
 	error = device_register(&platform_bus);
 	if (error)
 		return error;
+	// 2018-02-03, 여기까지
 	error =  bus_register(&platform_bus_type);
 	if (error)
 		device_unregister(&platform_bus);
@@ -940,6 +945,7 @@ EXPORT_SYMBOL_GPL(dma_get_required_mask);
 #endif
 
 static __initdata LIST_HEAD(early_platform_driver_list);
+// 2018-02-03
 static __initdata LIST_HEAD(early_platform_device_list);
 
 /**
@@ -1212,6 +1218,7 @@ int __init early_platform_driver_probe(char *class_str,
 /**
  * early_platform_cleanup - clean up early platform code
  */
+// 2018-02-03
 void __init early_platform_cleanup(void)
 {
 	struct platform_device *pd, *pd2;

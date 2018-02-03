@@ -40,6 +40,7 @@
  * to dirty as few cache lines as possible in __dst_free().
  * As this is not a very strong hint, we dont force an alignment on SMP.
  */
+// 2018-02-03
 static struct {
 	spinlock_t		lock;
 	struct dst_entry	*list;
@@ -214,6 +215,7 @@ static void ___dst_free(struct dst_entry *dst)
 	dst->obsolete = DST_OBSOLETE_DEAD;
 }
 
+// 2018-02-03
 void __dst_free(struct dst_entry *dst)
 {
 	spin_lock_bh(&dst_garbage.lock);
@@ -246,6 +248,7 @@ again:
 		dst->ops->destroy(dst);
 	if (dst->dev)
 		dev_put(dst->dev);
+	// 2018-02-03, resource release 시점
 	kmem_cache_free(dst->ops->kmem_cachep, dst);
 
 	dst = child;
@@ -267,11 +270,13 @@ again:
 }
 EXPORT_SYMBOL(dst_destroy);
 
+// 2018-02-03
 void dst_release(struct dst_entry *dst)
 {
 	if (dst) {
 		int newrefcnt;
 
+		// 2018-02-03
 		newrefcnt = atomic_dec_return(&dst->__refcnt);
 		WARN_ON(newrefcnt < 0);
 		if (unlikely(dst->flags & DST_NOCACHE) && !newrefcnt) {

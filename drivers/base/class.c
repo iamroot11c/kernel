@@ -96,6 +96,7 @@ static struct kobj_type class_ktype = {
 };
 
 /* Hotplug events for classes go to the class subsys */
+// 2018-02-03
 static struct kset *class_kset;
 
 
@@ -592,8 +593,10 @@ void class_compat_remove_link(struct class_compat *cls, struct device *dev,
 }
 EXPORT_SYMBOL_GPL(class_compat_remove_link);
 
+// 2018-02-03
 int __init classes_init(void)
 {
+	// /sys/class
 	class_kset = kset_create_and_add("class", NULL, NULL);
 	if (!class_kset)
 		return -ENOMEM;

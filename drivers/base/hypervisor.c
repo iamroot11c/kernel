@@ -16,8 +16,10 @@
 struct kobject *hypervisor_kobj;
 EXPORT_SYMBOL_GPL(hypervisor_kobj);
 
+// 2018-02-03
 int __init hypervisor_init(void)
 {
+	// /sys/hypervisor/
 	hypervisor_kobj = kobject_create_and_add("hypervisor", NULL);
 	if (!hypervisor_kobj)
 		return -ENOMEM;

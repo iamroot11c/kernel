@@ -26,14 +26,20 @@ void __init driver_init(void)
 	// 2018-01-13, end
 	// 2018-01-13, start
 	devices_init();
+	// 2018-02-03, end
+	// 2018-02-03, start
 	buses_init();
+	// 2018-02-03
 	classes_init();
+	// 2018-02-03
 	firmware_init();
+	// 2018-02-03
 	hypervisor_init();
 
 	/* These are also core pieces, but must come after the
 	 * core core pieces.
 	 */
+	// 2018-02-03
 	platform_bus_init();
 	cpu_dev_init();
 	memory_dev_init();

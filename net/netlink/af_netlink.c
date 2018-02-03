@@ -72,9 +72,11 @@ struct listeners {
 	unsigned long		masks[0];
 };
 
+// 2018-02-03
 /* state bits */
 #define NETLINK_CONGESTED	0x0
 
+// 2018-02-03
 /* flags */
 #define NETLINK_KERNEL_SOCKET	0x1
 #define NETLINK_RECV_PKTINFO	0x2
@@ -86,9 +88,11 @@ static inline int netlink_is_kernel(struct sock *sk)
 	return nlk_sk(sk)->flags & NETLINK_KERNEL_SOCKET;
 }
 
+// 2018-02-03
 struct netlink_table *nl_table;
 EXPORT_SYMBOL_GPL(nl_table);
 
+// 2018-02-03
 static DECLARE_WAIT_QUEUE_HEAD(nl_table_wait);
 
 static int netlink_dump(struct sock *sk);
@@ -96,6 +100,7 @@ static void netlink_skb_destructor(struct sk_buff *skb);
 
 DEFINE_RWLOCK(nl_table_lock);
 EXPORT_SYMBOL_GPL(nl_table_lock);
+// 2018-02-03
 static atomic_t nl_table_users = ATOMIC_INIT(0);
 
 #define nl_deref_protected(X) rcu_dereference_protected(X, lockdep_is_held(&nl_table_lock));
@@ -103,6 +108,7 @@ static atomic_t nl_table_users = ATOMIC_INIT(0);
 static ATOMIC_NOTIFIER_HEAD(netlink_chain);
 
 static DEFINE_SPINLOCK(netlink_tap_lock);
+// 2018-02-03
 static struct list_head netlink_tap_all __read_mostly;
 
 static inline u32 netlink_group_mask(u32 group)
@@ -229,6 +235,7 @@ static void __netlink_deliver_tap(struct sk_buff *skb)
 	}
 }
 
+// 2018-02-03
 static void netlink_deliver_tap(struct sk_buff *skb)
 {
 	rcu_read_lock();
@@ -239,6 +246,7 @@ static void netlink_deliver_tap(struct sk_buff *skb)
 	rcu_read_unlock();
 }
 
+// 2018-02-03
 static void netlink_overrun(struct sock *sk)
 {
 	struct netlink_sock *nlk = nlk_sk(sk);
@@ -833,9 +841,10 @@ static void netlink_ring_set_copied(struct sock *sk, struct sk_buff *skb)
 #define netlink_mmap_sendmsg(sk, msg, dst_portid, dst_group, siocb)	0
 #endif /* CONFIG_NETLINK_MMAP */
 
+// 2018-02-03
 static void netlink_skb_destructor(struct sk_buff *skb)
 {
-#ifdef CONFIG_NETLINK_MMAP
+#ifdef CONFIG_NETLINK_MMAP	// =n
 	struct nl_mmap_hdr *hdr;
 	struct netlink_ring *ring;
 	struct sock *sk;
@@ -878,9 +887,11 @@ static void netlink_skb_destructor(struct sk_buff *skb)
 		sock_rfree(skb);
 }
 
+// 2018-02-03
 static void netlink_skb_set_owner_r(struct sk_buff *skb, struct sock *sk)
 {
 	WARN_ON(skb->sk != NULL);
+	// owner 설정
 	skb->sk = sk;
 	skb->destructor = netlink_skb_destructor;
 	atomic_add(skb->truesize, &sk->sk_rmem_alloc);
@@ -961,6 +972,7 @@ void netlink_table_ungrab(void)
 	wake_up(&nl_table_wait);
 }
 
+// 2018-02-03
 static inline void
 netlink_lock_table(void)
 {
@@ -971,6 +983,7 @@ netlink_lock_table(void)
 	read_unlock(&nl_table_lock);
 }
 
+// 2018-02-03
 static inline void
 netlink_unlock_table(void)
 {
@@ -1632,20 +1645,22 @@ int netlink_attachskb(struct sock *sk, struct sk_buff *skb,
 	return 0;
 }
 
+// 2018-02-03
 static int __netlink_sendskb(struct sock *sk, struct sk_buff *skb)
 {
 	int len = skb->len;
 
 	netlink_deliver_tap(skb);
 
-#ifdef CONFIG_NETLINK_MMAP
+#ifdef CONFIG_NETLINK_MMAP	// =n
 	if (netlink_skb_is_mmaped(skb))
 		netlink_queue_mmaped_skb(sk, skb);
 	else if (netlink_rx_is_mmaped(sk))
 		netlink_ring_set_copied(sk, skb);
 	else
 #endif /* CONFIG_NETLINK_MMAP */
-		skb_queue_tail(&sk->sk_receive_queue, skb);
+	skb_queue_tail(&sk->sk_receive_queue, skb);
+	// call callback
 	sk->sk_data_ready(sk, len);
 	return len;
 }
@@ -1837,6 +1852,7 @@ int netlink_has_listeners(struct sock *sk, unsigned int group)
 }
 EXPORT_SYMBOL_GPL(netlink_has_listeners);
 
+// 2018-02-03
 static int netlink_broadcast_deliver(struct sock *sk, struct sk_buff *skb)
 {
 	struct netlink_sock *nlk = nlk_sk(sk);
@@ -1844,12 +1860,14 @@ static int netlink_broadcast_deliver(struct sock *sk, struct sk_buff *skb)
 	if (atomic_read(&sk->sk_rmem_alloc) <= sk->sk_rcvbuf &&
 	    !test_bit(NETLINK_CONGESTED, &nlk->state)) {
 		netlink_skb_set_owner_r(skb, sk);
+		// enque data
 		__netlink_sendskb(sk, skb);
 		return atomic_read(&sk->sk_rmem_alloc) > (sk->sk_rcvbuf >> 1);
 	}
 	return -1;
 }
 
+// 2018-02-03
 struct netlink_broadcast_data {
 	struct sock *exclude_sk;
 	struct net *net;
@@ -1865,6 +1883,7 @@ struct netlink_broadcast_data {
 	void *tx_data;
 };
 
+// 2018-02-03
 static int do_one_broadcast(struct sock *sk,
 				   struct netlink_broadcast_data *p)
 {
@@ -1886,6 +1905,10 @@ static int do_one_broadcast(struct sock *sk,
 		goto out;
 	}
 
+	// 질문: 아래에서 put 과정을 통해서 리소스 해제 로직을 보았고,
+	// 이런 경우, userspace의 app의 소켓이 무조건 해제되는 것은 아닌가?
+	// 답: 기본 적으로 +1 과정을 거쳐서
+	// br 이후에도 유지 될 것이다.
 	sock_hold(sk);
 	if (p->skb2 == NULL) {
 		if (skb_shared(p->skb)) {
@@ -1940,6 +1963,7 @@ int netlink_broadcast_filtered(struct sock *ssk, struct sk_buff *skb, u32 portid
 	skb = netlink_trim(skb, allocation);
 	// 2018-01-20 여기까지
 
+	// 2018-02-03 시작
 	info.exclude_sk = ssk;
 	info.net = net;
 	info.portid = portid;
@@ -1956,13 +1980,17 @@ int netlink_broadcast_filtered(struct sock *ssk, struct sk_buff *skb, u32 portid
 
 	/* While we sleep in clone, do not allow to change socket list */
 
+	// 2018-02-03
 	netlink_lock_table();
 
+	// 2018-02-03
 	sk_for_each_bound(sk, &nl_table[ssk->sk_protocol].mc_list)
 		do_one_broadcast(sk, &info);
 
+	// 2018-02-03
 	consume_skb(skb);
 
+	// 2018-02-03
 	netlink_unlock_table();
 
 	if (info.delivery_failure) {

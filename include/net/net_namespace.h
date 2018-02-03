@@ -159,7 +159,7 @@ extern struct list_head net_namespace_list;
 extern struct net *get_net_ns_by_pid(pid_t pid);
 extern struct net *get_net_ns_by_fd(int pid);
 
-#ifdef CONFIG_NET_NS
+#ifdef CONFIG_NET_NS    // =y
 extern void __put_net(struct net *net);
 
 static inline struct net *get_net(struct net *net)
@@ -180,6 +180,7 @@ static inline struct net *maybe_get_net(struct net *net)
 	return net;
 }
 
+// 2018-02-03
 static inline void put_net(struct net *net)
 {
 	if (atomic_dec_and_test(&net->count))

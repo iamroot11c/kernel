@@ -161,6 +161,7 @@ static int bus_uevent_filter(struct kset *kset, struct kobject *kobj)
 	return 0;
 }
 
+// 2018-02-03
 static const struct kset_uevent_ops bus_uevent_ops = {
 	.filter = bus_uevent_filter,
 };
@@ -937,6 +938,8 @@ static BUS_ATTR(uevent, S_IWUSR, NULL, bus_uevent_store);
  * infrastructure, then register the children subsystems it has:
  * the devices and drivers that belong to the subsystem.
  */
+// 2018-02-03
+// bus_register(&platform_bus_type);
 int bus_register(struct bus_type *bus)
 {
 	int retval;
@@ -1335,12 +1338,15 @@ int subsys_virtual_register(struct bus_type *subsys,
 }
 EXPORT_SYMBOL_GPL(subsys_virtual_register);
 
+// 2018-02-03
 int __init buses_init(void)
 {
+	// /sys/bus
 	bus_kset = kset_create_and_add("bus", &bus_uevent_ops, NULL);
 	if (!bus_kset)
 		return -ENOMEM;
 
+	// /devices/system
 	system_kset = kset_create_and_add("system", NULL, &devices_kset->kobj);
 	if (!system_kset)
 		return -ENOMEM;

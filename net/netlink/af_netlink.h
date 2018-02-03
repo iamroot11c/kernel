@@ -47,6 +47,7 @@ struct netlink_sock {
 #endif /* CONFIG_NETLINK_MMAP */
 };
 
+// 2018-02-03
 static inline struct netlink_sock *nlk_sk(struct sock *sk)
 {
 	return container_of(sk, struct netlink_sock, sk);

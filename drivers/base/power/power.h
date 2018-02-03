@@ -1,10 +1,12 @@
 #include <linux/pm_qos.h>
 
+// 2018-02-03
 static inline void device_pm_init_common(struct device *dev)
 {
 	if (!dev->power.early_init) {
 		spin_lock_init(&dev->power.lock);
 		dev->power.qos = NULL;
+        // set true
 		dev->power.early_init = true;
 	}
 }
@@ -72,10 +74,14 @@ static inline void device_pm_move_last(struct device *dev) {}
 
 #endif /* !CONFIG_PM_SLEEP */
 
+// 2018-02-03
 static inline void device_pm_init(struct device *dev)
 {
+    // 2018-02-03
 	device_pm_init_common(dev);
+    // 2018-02-03
 	device_pm_sleep_init(dev);
+    // 2018-02-03
 	pm_runtime_init(dev);
 }
 

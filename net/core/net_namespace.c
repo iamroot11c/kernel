@@ -290,6 +290,7 @@ struct net *copy_net_ns(unsigned long flags,
 }
 
 static DEFINE_SPINLOCK(cleanup_list_lock);
+// 2018-02-03
 static LIST_HEAD(cleanup_list);  /* Must hold cleanup_list_lock to touch */
 
 static void cleanup_net(struct work_struct *work)
@@ -343,8 +344,10 @@ static void cleanup_net(struct work_struct *work)
 		net_drop_ns(net);
 	}
 }
+// 2018-02-03
 static DECLARE_WORK(net_cleanup_work, cleanup_net);
 
+// 2018-02-03
 void __put_net(struct net *net)
 {
 	/* Cleanup the network namespace in process context */

@@ -54,6 +54,7 @@ struct file;
 #define UMH_WAIT_PROC	2	/* wait for the process to complete */
 #define UMH_KILLABLE	4	/* wait for EXEC/PROC killable */
 
+// 2018-02-03
 struct subprocess_info {
 	struct work_struct work;
 	struct completion *complete;

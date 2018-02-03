@@ -806,6 +806,7 @@ static inline void __xfrm_state_put(struct xfrm_state *x)
 	atomic_dec(&x->refcnt);
 }
 
+// 2018-02-03
 static inline void xfrm_state_put(struct xfrm_state *x)
 {
 	if (atomic_dec_and_test(&x->refcnt))
@@ -1002,6 +1003,7 @@ secpath_get(struct sec_path *sp)
 
 extern void __secpath_destroy(struct sec_path *sp);
 
+// 2018-02-03
 static inline void
 secpath_put(struct sec_path *sp)
 {

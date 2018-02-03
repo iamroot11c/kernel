@@ -297,6 +297,7 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 							    0, 1, GFP_KERNEL,
 							    kobj_bcast_filter,
 							    kobj);
+			// 2018-02-03
 			/* ENOBUFS should be handled in userspace */
 			if (retval == -ENOBUFS || retval == -ESRCH)
 				retval = 0;

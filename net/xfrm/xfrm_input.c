@@ -14,8 +14,10 @@
 #include <net/ip.h>
 #include <net/xfrm.h>
 
+// 2018-02-03
 static struct kmem_cache *secpath_cachep __read_mostly;
 
+// 2018-02-03
 void __secpath_destroy(struct sec_path *sp)
 {
 	int i;

@@ -126,6 +126,7 @@ struct nf_bridge_info {
 };
 #endif
 
+// 2018-02-03
 struct sk_buff_head {
 	/* These two members must be first. */
 	struct sk_buff	*next;
@@ -296,6 +297,7 @@ struct skb_shared_info {
 #define SKB_DATAREF_MASK ((1 << SKB_DATAREF_SHIFT) - 1)
 
 
+// 2018-02-03
 enum {
 	SKB_FCLONE_UNAVAILABLE,
 	SKB_FCLONE_ORIG,
@@ -743,6 +745,7 @@ static inline unsigned int skb_end_offset(const struct sk_buff *skb)
 #endif
 
 /* Internal */
+// 2018-02-03
 #define skb_shinfo(SKB)	((struct skb_shared_info *)(skb_end_pointer(SKB)))
 
 static inline struct skb_shared_hwtstamps *skb_hwtstamps(struct sk_buff *skb)
@@ -1090,6 +1093,8 @@ static inline void skb_queue_head_init_class(struct sk_buff_head *list,
  *	can only be called with interrupts disabled.
  */
 extern void        skb_insert(struct sk_buff *old, struct sk_buff *newsk, struct sk_buff_head *list);
+
+// 2018-02-03
 static inline void __skb_insert(struct sk_buff *newsk,
 				struct sk_buff *prev, struct sk_buff *next,
 				struct sk_buff_head *list)
@@ -1198,6 +1203,7 @@ static inline void __skb_queue_after(struct sk_buff_head *list,
 extern void skb_append(struct sk_buff *old, struct sk_buff *newsk,
 		       struct sk_buff_head *list);
 
+// 2018-02-03
 static inline void __skb_queue_before(struct sk_buff_head *list,
 				      struct sk_buff *next,
 				      struct sk_buff *newsk)
@@ -1232,6 +1238,7 @@ static inline void __skb_queue_head(struct sk_buff_head *list,
  *
  *	A buffer cannot be placed on two lists at the same time.
  */
+// 2018-02-03
 extern void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk);
 static inline void __skb_queue_tail(struct sk_buff_head *list,
 				   struct sk_buff *newsk)

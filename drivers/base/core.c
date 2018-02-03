@@ -47,6 +47,7 @@ early_param("sysfs.deprecated", sysfs_deprecated_setup);
 int (*platform_notify)(struct device *dev) = NULL;
 // 2017-06-03 
 int (*platform_notify_remove)(struct device *dev) = NULL;
+// 2018-02-03
 static struct kobject *dev_kobj;
 // 2017-05-12
 struct kobject *sysfs_dev_char_kobj;
@@ -265,6 +266,7 @@ static const void *device_namespace(struct kobject *kobj)
 	return ns;
 }
 
+// 2018-02-03
 static struct kobj_type device_ktype = {
 	.release	= device_release,
 	.sysfs_ops	= &dev_sysfs_ops,
@@ -770,6 +772,7 @@ static void klist_children_put(struct klist_node *n)
  * NOTE: Use put_device() to give up your reference instead of freeing
  * @dev directly once you have called this function.
  */
+// 2018-02-03
 void device_initialize(struct device *dev)
 {
 	dev->kobj.kset = devices_kset;
@@ -1258,9 +1261,13 @@ EXPORT_SYMBOL_GPL(device_add);
  * if it returned an error! Always use put_device() to give up the
  * reference initialized in this function instead.
  */
+// 2018-02-03
 int device_register(struct device *dev)
 {
+	// 2018-02-03
 	device_initialize(dev);
+	
+	// 2018-02-03, 누락했었음. 차주 진행 필요
 	return device_add(dev);
 }
 EXPORT_SYMBOL_GPL(device_register);
@@ -1536,18 +1543,24 @@ struct device *device_find_child(struct device *parent, void *data,
 EXPORT_SYMBOL_GPL(device_find_child);
 
 // 2018-01-13
+// sysfs 디바이스 드라이버를 위한 기본 dir 자료구조 작성
 int __init devices_init(void)
 {
 	// 2018-01-13
 	devices_kset = kset_create_and_add("devices", &device_uevent_ops, NULL);
+	// 2018-02-03
 	if (!devices_kset)
 		return -ENOMEM;
+	// 2018-02-03
+	// /sys/dev
 	dev_kobj = kobject_create_and_add("dev", NULL);
 	if (!dev_kobj)
 		goto dev_kobj_err;
+	// /sys/dev/block
 	sysfs_dev_block_kobj = kobject_create_and_add("block", dev_kobj);
 	if (!sysfs_dev_block_kobj)
 		goto block_kobj_err;
+	// /sys/dev/char
 	sysfs_dev_char_kobj = kobject_create_and_add("char", dev_kobj);
 	if (!sysfs_dev_char_kobj)
 		goto char_kobj_err;

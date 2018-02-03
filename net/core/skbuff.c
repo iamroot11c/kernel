@@ -73,7 +73,9 @@
 #include <trace/events/skb.h>
 #include <linux/highmem.h>
 
+// 2018-02-03
 struct kmem_cache *skbuff_head_cache __read_mostly;
+// 2018-02-03
 static struct kmem_cache *skbuff_fclone_cache __read_mostly;
 
 /**
@@ -468,6 +470,7 @@ static void skb_clone_fraglist(struct sk_buff *skb)
 		skb_get(list);
 }
 
+// 2018-02-03
 static void skb_free_head(struct sk_buff *skb)
 {
 	if (skb->head_frag)
@@ -476,6 +479,7 @@ static void skb_free_head(struct sk_buff *skb)
 		kfree(skb->head);
 }
 
+// 2018-02-03
 static void skb_release_data(struct sk_buff *skb)
 {
 	if (!skb->cloned ||
@@ -502,6 +506,7 @@ static void skb_release_data(struct sk_buff *skb)
 		if (skb_has_frag_list(skb))
 			skb_drop_fraglist(skb);
 
+		// free
 		skb_free_head(skb);
 	}
 }
@@ -509,6 +514,7 @@ static void skb_release_data(struct sk_buff *skb)
 /*
  *	Free an skbuff by memory without cleaning the state.
  */
+// 2018-02-03
 static void kfree_skbmem(struct sk_buff *skb)
 {
 	struct sk_buff *other;
@@ -540,31 +546,33 @@ static void kfree_skbmem(struct sk_buff *skb)
 	}
 }
 
+// 2018-02-03
 static void skb_release_head_state(struct sk_buff *skb)
 {
 	skb_dst_drop(skb);
-#ifdef CONFIG_XFRM
+#ifdef CONFIG_XFRM	// =y
 	secpath_put(skb->sp);
 #endif
 	if (skb->destructor) {
 		WARN_ON(in_irq());
 		skb->destructor(skb);
 	}
-#if IS_ENABLED(CONFIG_NF_CONNTRACK)
+#if IS_ENABLED(CONFIG_NF_CONNTRACK)	// =n
 	nf_conntrack_put(skb->nfct);
 #endif
-#ifdef CONFIG_BRIDGE_NETFILTER
+#ifdef CONFIG_BRIDGE_NETFILTER		// =n
 	nf_bridge_put(skb->nf_bridge);
 #endif
 /* XXX: IS this still necessary? - JHS */
-#ifdef CONFIG_NET_SCHED
+#ifdef CONFIG_NET_SCHED			// =n
 	skb->tc_index = 0;
-#ifdef CONFIG_NET_CLS_ACT
+#ifdef CONFIG_NET_CLS_ACT		// =n
 	skb->tc_verd = 0;
 #endif
 #endif
 }
 
+// 2018-02-03
 /* Free everything but the sk_buff shell. */
 static void skb_release_all(struct sk_buff *skb)
 {
@@ -585,7 +593,9 @@ static void skb_release_all(struct sk_buff *skb)
 // 2018-01-20
 void __kfree_skb(struct sk_buff *skb)
 {
+	// 2018-01-20
 	skb_release_all(skb);
+	// 2018-02-03
 	kfree_skbmem(skb);
 }
 EXPORT_SYMBOL(__kfree_skb);
@@ -597,6 +607,7 @@ EXPORT_SYMBOL(__kfree_skb);
  *	Drop a reference to the buffer and free it if the usage count has
  *	hit zero.
  */
+// 2018-02-03
 void kfree_skb(struct sk_buff *skb)
 {
 	if (unlikely(!skb))
@@ -606,6 +617,7 @@ void kfree_skb(struct sk_buff *skb)
 	else if (likely(!atomic_dec_and_test(&skb->users)))
 		return;
 	trace_kfree_skb(skb, __builtin_return_address(0));
+	// 2018-02-03
 	__kfree_skb(skb);
 }
 EXPORT_SYMBOL(kfree_skb);
@@ -2179,6 +2191,7 @@ EXPORT_SYMBOL(skb_queue_head);
  *
  *	A buffer cannot be placed on two lists at the same time.
  */
+// 2018-02-03
 void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk)
 {
 	unsigned long flags;

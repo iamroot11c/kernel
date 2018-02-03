@@ -18,8 +18,10 @@
 struct kobject *firmware_kobj;
 EXPORT_SYMBOL_GPL(firmware_kobj);
 
+// 2018-02-03
 int __init firmware_init(void)
 {
+	// /sys/firmware/
 	firmware_kobj = kobject_create_and_add("firmware", NULL);
 	if (!firmware_kobj)
 		return -ENOMEM;

@@ -718,7 +718,9 @@ struct device {
 
 	struct device_private	*p;
 
+    // 2018-02-03
 	struct kobject kobj;
+    // 2018-02-03
 	const char		*init_name; /* initial name of the device */
 	const struct device_type *type;
 
@@ -829,6 +831,7 @@ static inline int dev_to_node(struct device *dev)
 {
 	return -1;
 }
+// 2018-02-03
 static inline void set_dev_node(struct device *dev, int node)
 {
 }

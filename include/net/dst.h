@@ -264,6 +264,7 @@ static inline struct dst_entry *dst_clone(struct dst_entry *dst)
 
 extern void dst_release(struct dst_entry *dst);
 
+// 2018-02-03
 static inline void refdst_drop(unsigned long refdst)
 {
 	if (!(refdst & SKB_DST_NOREF))
@@ -276,6 +277,7 @@ static inline void refdst_drop(unsigned long refdst)
  *
  * Drops dst reference count if a reference was taken.
  */
+// 2018-02-03
 static inline void skb_dst_drop(struct sk_buff *skb)
 {
 	if (skb->_skb_refdst) {

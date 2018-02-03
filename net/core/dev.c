@@ -1588,6 +1588,7 @@ int call_netdevice_notifiers(unsigned long val, struct net_device *dev)
 }
 EXPORT_SYMBOL(call_netdevice_notifiers);
 
+// 2018-02-03
 static struct static_key netstamp_needed __read_mostly;
 #ifdef HAVE_JUMP_LABEL
 /* We are not allowed to call static_key_slow_dec() from irq context
@@ -1612,6 +1613,7 @@ void net_enable_timestamp(void)
 }
 EXPORT_SYMBOL(net_enable_timestamp);
 
+// 2018-02-03
 void net_disable_timestamp(void)
 {
 #ifdef HAVE_JUMP_LABEL

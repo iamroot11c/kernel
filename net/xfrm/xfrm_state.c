@@ -515,6 +515,7 @@ struct xfrm_state *xfrm_state_alloc(struct net *net)
 }
 EXPORT_SYMBOL(xfrm_state_alloc);
 
+// 2018-02-03
 void __xfrm_state_destroy(struct xfrm_state *x)
 {
 	struct net *net = xs_net(x);

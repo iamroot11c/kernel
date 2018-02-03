@@ -1,7 +1,29 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
-+ [153주차](http://bit.ly/2Cyb8MN) `2018.01.20
++ [154주차]() `2018.02.03
  - drive: 보름달님
+ - kernel/kernel/init/main.c::kernel_init() 진행
+ - kernel/kernel/init/main.c::kernel_init_freeable() 진행
+ - kernel/kernel/init/main.c::do_basic_setup() 진행
+ - drivers/base/init.c::driver_init() 진행중
+ - drivers/base/core.c::devices_init(); 진행 완료
+ - lib/kobject.c::kset_create_and_add() 진행 완료
+ - lib/kobject.c::kset_register() 진행 완료
+ - lib/kobject_uevent.c::kobject_uevent() 진행 완료
+ - lib/kobject_uevent.c::kobject_uevent_env() 진행 완료
+ - net/netlink/af_netlink.c::netlink_broadcast_filtered() 진행 완료
+ - drivers/base/bus.c::buses_init(); 진행 완료
+ - drivers/base/class.c::classes_init(); 진행 완료
+ - drivers/base/firmware.c::firmware_init(); 진행 완료
+ - drivers/base/hypervisor.c::hypervisor_init(); 진행 완료
+ - drivers/base/platform.c::platform_bus_init(); 진행 중
+ - drivers/base/core.c::device_register() 완료
+ - drivers/base/core.c::device_initialize() 완료
+ - drivers/base/core.c::device_add(dev); 진행 중
+ - drivers/base/bus.c:: bus_register() 진행 중
+
++ [153주차](http://bit.ly/2Cyb8MN) `2018.01.20
+ - drive: 홍진우님
  - kernel/kernel/init/main.c::kernel_init() 진행
  - kernel/kernel/init/main.c::kernel_init_freeable() 진행
  - kernel/kernel/init/main.c::do_basic_setup() 진행
