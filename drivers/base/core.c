@@ -81,6 +81,7 @@ static inline int device_is_not_partition(struct device *dev)
 	return !(dev->type == &part_type);
 }
 #else
+// 2018-02-24
 static inline int device_is_not_partition(struct device *dev)
 {
 	return 1;
@@ -463,6 +464,7 @@ static ssize_t online_store(struct device *dev, struct device_attribute *attr,
 // 2017-05-13
 static DEVICE_ATTR_RW(online);
 
+// 2018-02-24
 static int device_add_attributes(struct device *dev,
 				 struct device_attribute *attrs)
 {
@@ -493,6 +495,7 @@ static void device_remove_attributes(struct device *dev,
 			device_remove_file(dev, &attrs[i]);
 }
 
+// 2018-02-24
 static int device_add_bin_attributes(struct device *dev,
 				     struct bin_attribute *attrs)
 {
@@ -523,6 +526,7 @@ static void device_remove_bin_attributes(struct device *dev,
 			device_remove_bin_file(dev, &attrs[i]);
 }
 
+// 2018-02-24
 int device_add_groups(struct device *dev, const struct attribute_group **groups)
 {
 	return sysfs_create_groups(&dev->kobj, groups);
@@ -535,6 +539,7 @@ void device_remove_groups(struct device *dev,
 	sysfs_remove_groups(&dev->kobj, groups);
 }
 
+// 2018-02-24
 static int device_add_attrs(struct device *dev)
 {
 	struct class *class = dev->class;
@@ -542,12 +547,15 @@ static int device_add_attrs(struct device *dev)
 	int error;
 
 	if (class) {
+		// 2018-02-24
 		error = device_add_groups(dev, class->dev_groups);
 		if (error)
 			return error;
+		// 2018-02-24
 		error = device_add_attributes(dev, class->dev_attrs);
 		if (error)
 			goto err_remove_class_groups;
+		// 2018-02-24
 		error = device_add_bin_attributes(dev, class->dev_bin_attrs);
 		if (error)
 			goto err_remove_class_attrs;
@@ -636,6 +644,7 @@ struct kset *devices_kset;
  * @dev: device.
  * @attr: device attribute descriptor.
  */
+// 2018-02-24
 int device_create_file(struct device *dev,
 		       const struct device_attribute *attr)
 {
@@ -676,6 +685,7 @@ EXPORT_SYMBOL_GPL(device_remove_file);
  * @dev: device.
  * @attr: device binary attribute descriptor.
  */
+// 2018-02-24
 int device_create_bin_file(struct device *dev,
 			   const struct bin_attribute *attr)
 {
@@ -926,6 +936,7 @@ static void cleanup_device_parent(struct device *dev)
 	cleanup_glue_dir(dev, dev->kobj.parent);
 }
 
+// 2018-02-24
 static int device_add_class_symlinks(struct device *dev)
 {
 	int error;
@@ -933,6 +944,7 @@ static int device_add_class_symlinks(struct device *dev)
 	if (!dev->class)
 		return 0;
 
+	// 2018-02-24
 	error = sysfs_create_link(&dev->kobj,
 				  &dev->class->p->subsys.kobj,
 				  "subsystem");
@@ -946,7 +958,7 @@ static int device_add_class_symlinks(struct device *dev)
 			goto out_subsys;
 	}
 
-#ifdef CONFIG_BLOCK
+#ifdef CONFIG_BLOCK // == n
 	/* /sys/block has directories and does not need symlinks */
 	if (sysfs_deprecated && dev->class == &block_class)
 		return 0;
@@ -1025,6 +1037,7 @@ static struct kobject *device_to_dev_kobj(struct device *dev)
 	return kobj;
 }
 
+// 2018-02-24
 static int device_create_sys_dev_entry(struct device *dev)
 {
 	struct kobject *kobj = device_to_dev_kobj(dev);
@@ -1097,6 +1110,7 @@ int device_private_init(struct device *dev)
  * if it returned an error! Always use put_device() to give up your
  * reference instead.
  */
+// 2018-02-24
 int device_add(struct device *dev)
 {
 	struct device *parent = NULL;
@@ -1154,6 +1168,7 @@ int device_add(struct device *dev)
 	if (platform_notify)
 		platform_notify(dev);
 
+	// 2018-02-24
 	error = device_create_file(dev, &dev_attr_uevent);
 	if (error)
 		goto attrError;
@@ -1163,22 +1178,28 @@ int device_add(struct device *dev)
 		if (error)
 			goto ueventattrError;
 
+		// 2018-02-24
 		error = device_create_sys_dev_entry(dev);
 		if (error)
 			goto devtattrError;
 
+		// 2018-02-24
 		devtmpfs_create_node(dev);
 	}
 
+	// 2018-02-24
 	error = device_add_class_symlinks(dev);
 	if (error)
 		goto SymlinkError;
+	// 2018-02-24
 	error = device_add_attrs(dev);
 	if (error)
 		goto AttrsError;
+	// 2018-02-24
 	error = bus_add_device(dev);
 	if (error)
 		goto BusError;
+	// 2018-02-24 분석 예정
 	error = dpm_sysfs_add(dev);
 	if (error)
 		goto DPMError;

@@ -81,6 +81,8 @@ static inline int is_blockdev(struct device *dev)
 static inline int is_blockdev(struct device *dev) { return 0; }
 #endif
 
+// 2018-02-24
+// 작업 대상을 하나 만든 후 비동기 스레드에 처리 요청
 int devtmpfs_create_node(struct device *dev)
 {
 	const char *tmp = NULL;

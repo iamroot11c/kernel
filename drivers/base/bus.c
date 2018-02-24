@@ -456,6 +456,7 @@ int bus_for_each_drv(struct bus_type *bus, struct device_driver *start,
 }
 EXPORT_SYMBOL_GPL(bus_for_each_drv);
 
+// 2018-02-24
 static int device_add_attrs(struct bus_type *bus, struct device *dev)
 {
 	int error = 0;
@@ -494,6 +495,7 @@ static void device_remove_attrs(struct bus_type *bus, struct device *dev)
  * - Create links to device's bus.
  * - Add the device to its bus's list of devices.
  */
+// 2018-02-24
 int bus_add_device(struct device *dev)
 {
 	struct bus_type *bus = bus_get(dev->bus);

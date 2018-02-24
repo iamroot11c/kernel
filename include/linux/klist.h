@@ -43,6 +43,7 @@ struct klist_node {
 	struct kref		n_ref;
 };
 
+// 2018-02-24
 extern void klist_add_tail(struct klist_node *n, struct klist *k);
 extern void klist_add_head(struct klist_node *n, struct klist *k);
 extern void klist_add_after(struct klist_node *n, struct klist_node *pos);

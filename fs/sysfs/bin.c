@@ -492,6 +492,8 @@ void unmap_bin_file(struct sysfs_dirent *attr_sd)
  *	@kobj:	object.
  *	@attr:	attribute descriptor.
  */
+
+// 2018-02-24
 int sysfs_create_bin_file(struct kobject *kobj,
 			  const struct bin_attribute *attr)
 {

@@ -1,5 +1,16 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [155주차](http://bit.ly/2nEOHz2) `2018.02.03
+ - drive: 홍진우님
+ - kernel/kernel/init/main.c::kernel_init() 진행
+ - kernel/kernel/init/main.c::kernel_init_freeable() 진행
+ - kernel/kernel/init/main.c::do_basic_setup() 진행
+ - drivers/base/init.c::driver_init() 진행중
+ - drivers/base/platform.c::platform_bus_init(); 진행 중
+ - drivers/base/core.c::device_add(dev); 진행 중
+ - drivers/base/bus.c::bus_register() 진행 중
+ - drivers/base/bus.c::bus_add_device() 진행 완료
+ - drivers/base/bus.c::dpm_sysfs_add()  진행 예정
 + [154주차](http://bit.ly/2nEOHz2) `2018.02.03
  - drive: 보름달님
  - kernel/kernel/init/main.c::kernel_init() 진행

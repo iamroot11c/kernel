@@ -207,11 +207,13 @@ int __must_check sysfs_chmod_file(struct kobject *kobj,
 void sysfs_remove_file(struct kobject *kobj, const struct attribute *attr);
 void sysfs_remove_files(struct kobject *kobj, const struct attribute **attr);
 
+// 2018-02-24
 int __must_check sysfs_create_bin_file(struct kobject *kobj,
 				       const struct bin_attribute *attr);
 void sysfs_remove_bin_file(struct kobject *kobj,
 			   const struct bin_attribute *attr);
 
+// 2018-02-24
 int __must_check sysfs_create_link(struct kobject *kobj, struct kobject *target,
 				   const char *name);
 int __must_check sysfs_create_link_nowarn(struct kobject *kobj,
@@ -227,6 +229,7 @@ void sysfs_delete_link(struct kobject *dir, struct kobject *targ,
 
 int __must_check sysfs_create_group(struct kobject *kobj,
 				    const struct attribute_group *grp);
+// 2018-02-24
 int __must_check sysfs_create_groups(struct kobject *kobj,
 				     const struct attribute_group **groups);
 int sysfs_update_group(struct kobject *kobj,

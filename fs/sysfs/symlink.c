@@ -21,6 +21,7 @@
 
 #include "sysfs.h"
 
+// 2018-02-24
 static int sysfs_do_create_link_sd(struct sysfs_dirent *parent_sd,
 				   struct kobject *target,
 				   const char *name, int warn)
@@ -98,6 +99,7 @@ int sysfs_create_link_sd(struct sysfs_dirent *sd, struct kobject *target,
 	return sysfs_do_create_link_sd(sd, target, name, 1);
 }
 
+// 2018-02-24
 static int sysfs_do_create_link(struct kobject *kobj, struct kobject *target,
 				const char *name, int warn)
 {
@@ -120,6 +122,7 @@ static int sysfs_do_create_link(struct kobject *kobj, struct kobject *target,
  *	@target:	object we're pointing to.
  *	@name:		name of the symlink.
  */
+// 2018-02-24
 int sysfs_create_link(struct kobject *kobj, struct kobject *target,
 		      const char *name)
 {

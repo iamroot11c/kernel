@@ -148,6 +148,7 @@ do {								\
 	lockdep_init_map(&sd->dep_map, "s_active", key, 0);	\
 } while (0)
 #else
+// 2018-02-24
 #define sysfs_dirent_init_lockdep(sd) do {} while (0)
 #endif
 

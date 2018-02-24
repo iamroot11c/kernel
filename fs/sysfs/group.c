@@ -38,6 +38,7 @@ static void remove_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
 			sysfs_remove_bin_file(kobj, *bin_attr);
 }
 
+// 2018-02-24
 static int create_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
 			const struct attribute_group *grp, int update)
 {
@@ -89,7 +90,7 @@ exit:
 	return error;
 }
 
-
+// 2018-02-24
 static int internal_create_group(struct kobject *kobj, int update,
 				 const struct attribute_group *grp)
 {
@@ -107,6 +108,7 @@ static int internal_create_group(struct kobject *kobj, int update,
 		return -EINVAL;
 	}
 	if (grp->name) {
+		// 2018-02-24
 		error = sysfs_create_subdir(kobj, grp->name, &sd);
 		if (error)
 			return error;
@@ -132,6 +134,7 @@ static int internal_create_group(struct kobject *kobj, int update,
  *
  * Returns 0 on success or error.
  */
+// 2018-02-24
 int sysfs_create_group(struct kobject *kobj,
 		       const struct attribute_group *grp)
 {
@@ -152,6 +155,7 @@ EXPORT_SYMBOL_GPL(sysfs_create_group);
  *
  * Returns 0 on success or error code from sysfs_create_group on error.
  */
+// 2018-02-24
 int sysfs_create_groups(struct kobject *kobj,
 			const struct attribute_group **groups)
 {

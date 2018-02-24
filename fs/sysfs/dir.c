@@ -778,6 +778,7 @@ static int create_dir(struct kobject *kobj, struct sysfs_dirent *parent_sd,
 	return rc;
 }
 
+// 2018-02-24
 int sysfs_create_subdir(struct kobject *kobj, const char *name,
 			struct sysfs_dirent **p_sd)
 {

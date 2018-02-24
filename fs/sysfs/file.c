@@ -525,6 +525,7 @@ out:
 	return err;
 }
 
+// 2018-02-24
 int sysfs_add_file_mode(struct sysfs_dirent *dir_sd,
 			const struct attribute *attr, int type, umode_t amode)
 {
@@ -557,6 +558,7 @@ int sysfs_add_file_mode(struct sysfs_dirent *dir_sd,
 }
 
 
+// 2018-02-24
 int sysfs_add_file(struct sysfs_dirent *dir_sd, const struct attribute *attr,
 		   int type)
 {
@@ -569,6 +571,7 @@ int sysfs_add_file(struct sysfs_dirent *dir_sd, const struct attribute *attr,
  *	@kobj:	object we're creating for.
  *	@attr:	attribute descriptor.
  */
+// 2018-02-24
 int sysfs_create_file(struct kobject *kobj, const struct attribute *attr)
 {
 	BUG_ON(!kobj || !kobj->sd || !attr);
