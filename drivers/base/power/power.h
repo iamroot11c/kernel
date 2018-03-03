@@ -41,6 +41,7 @@ static inline void pm_runtime_remove(struct device *dev) {}
 extern int pm_async_enabled;
 
 /* drivers/base/power/main.c */
+// 2018-03-03
 extern struct list_head dpm_list;	/* The active device list */
 
 static inline struct device *to_device(struct list_head *entry)

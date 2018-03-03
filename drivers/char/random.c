@@ -415,6 +415,7 @@ module_param(debug, bool, 0644);
  **********************************************************************/
 
 struct entropy_store;
+// 2018-03-03
 struct entropy_store {
 	/* read-only data: */
 	struct poolinfo *poolinfo;
@@ -455,6 +456,7 @@ static struct entropy_store blocking_pool = {
 	.pool = blocking_pool_data
 };
 
+// 2018-03-03
 static struct entropy_store nonblocking_pool = {
 	.poolinfo = &poolinfo_table[1],
 	.name = "nonblocking",
@@ -957,6 +959,7 @@ static void extract_buf(struct entropy_store *r, __u8 *out)
 	memset(&hash, 0, sizeof(hash));
 }
 
+// 2018-03-03
 static ssize_t extract_entropy(struct entropy_store *r, void *buf,
 				 size_t nbytes, int min, int reserved)
 {
@@ -1051,6 +1054,7 @@ static ssize_t extract_entropy_user(struct entropy_store *r, void __user *buf,
  * TCP sequence numbers, etc.  It does not use the hw random number
  * generator, if available; use get_random_bytes_arch() for that.
  */
+// 2018-03-03
 void get_random_bytes(void *buf, int nbytes)
 {
 	extract_entropy(&nonblocking_pool, buf, nbytes, 0, 0);
@@ -1457,8 +1461,10 @@ struct ctl_table random_table[] = {
 };
 #endif 	/* CONFIG_SYSCTL */
 
-static u32 random_int_secret[MD5_MESSAGE_BYTES / 4] ____cacheline_aligned;
+// 2018-03-03
+static u32 random_int_secret[MD5_MESSAGE_BYTES / 4] ____cacheline_aligned;	// 64 / 4 = 16
 
+// 2018-03-03
 int random_int_secret_init(void)
 {
 	get_random_bytes(random_int_secret, sizeof(random_int_secret));

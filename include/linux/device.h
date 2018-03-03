@@ -108,6 +108,7 @@ struct bus_type {
 	const char		*name;
 	const char		*dev_name;
 	struct device		*dev_root;
+    // 2018-03-03
 	struct bus_attribute	*bus_attrs;	/* use bus_groups instead */
 	struct device_attribute	*dev_attrs;	/* use dev_groups instead */
 	struct driver_attribute	*drv_attrs;	/* use drv_groups instead */
@@ -729,6 +730,7 @@ struct device {
 					 */
 
 	struct bus_type	*bus;		/* type of bus device is on */
+    // 2018-03-03
 	struct device_driver *driver;	/* which driver has allocated this
 					   device */
 	void		*platform_data;	/* Platform specific data, device

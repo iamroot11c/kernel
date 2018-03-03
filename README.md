@@ -1,5 +1,27 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
++ [156주차]() `2018.03.03
+ - drive: 홍진우님
+ - kernel/kernel/init/main.c::kernel_init() 진행
+ - kernel/kernel/init/main.c::kernel_init_freeable() 진행 완료
+ - kernel/kernel/init/main.c::do_basic_setup() 진행 완료
+ - drivers/base/init.c::driver_init() 진행 완료
+ - drivers/base/platform.c::platform_bus_init(); 진행 완료
+ - drivers/base/core.c::device_add(dev); 진행 완료
+ - drivers/base/bus.c::bus_register() 진행 완료
+ - drivers/base/bus.c::bus_add_device() 완료
+ - drivers/base/bus.c::dpm_sysfs_add() done
+ - drivers/base/bus.c::kobject_uevent() done
+ - drivers/base/bus.c::bus_probe_device() done
+ - drivers/base/cpu.c::cpu_dev_init() done
+ - drivers/base/memory.c::memory_dev_init() done
+ - kernel/irq/proc.c::init_irq_proc() done
+ - include/linux/kmod.h::usermodehelper_enable() done
+ - kernel/init/main.c::do_initcalls() done
+ - drivers/char/random.c::random_int_secret_init() done
+ - kernel/init/main.c::load_default_modules() done
+ - kernel/async.c::async_synchronize_full() done
+
 + [155주차](http://bit.ly/2HIqvVC) `2018.02.24
  - drive: 홍진우님
  - kernel/kernel/init/main.c::kernel_init() 진행
@@ -11,6 +33,7 @@
  - drivers/base/bus.c::bus_register() 진행 중
  - drivers/base/bus.c::bus_add_device() 진행 완료
  - drivers/base/bus.c::dpm_sysfs_add()  진행 예정
+
 + [154주차](http://bit.ly/2nEOHz2) `2018.02.03
  - drive: 보름달님
  - kernel/kernel/init/main.c::kernel_init() 진행

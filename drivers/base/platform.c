@@ -915,8 +915,9 @@ int __init platform_bus_init(void)
 	error = device_register(&platform_bus);
 	if (error)
 		return error;
-	// 2018-02-03, 여기까지
+	// 2018-03-03, start
 	error =  bus_register(&platform_bus_type);
+	// 2018-03-03, end
 	if (error)
 		device_unregister(&platform_bus);
 	return error;

@@ -1001,6 +1001,7 @@ static void device_remove_class_symlinks(struct device *dev)
  * @dev: device
  * @fmt: format string for the device's name
  */
+// 2018-03-03
 int dev_set_name(struct device *dev, const char *fmt, ...)
 {
 	va_list vargs;
@@ -1200,7 +1201,9 @@ int device_add(struct device *dev)
 	if (error)
 		goto BusError;
 	// 2018-02-24 분석 예정
+	// 2018-03-03 시작
 	error = dpm_sysfs_add(dev);
+	// 2018-03-03, end
 	if (error)
 		goto DPMError;
 	device_pm_add(dev);
@@ -1212,7 +1215,9 @@ int device_add(struct device *dev)
 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
 					     BUS_NOTIFY_ADD_DEVICE, dev);
 
+	// uevent add
 	kobject_uevent(&dev->kobj, KOBJ_ADD);
+	// probe 호출 시점
 	bus_probe_device(dev);
 	if (parent)
 		klist_add_tail(&dev->p->knode_parent,
@@ -1290,6 +1295,7 @@ int device_register(struct device *dev)
 	
 	// 2018-02-03, 누락했었음. 차주 진행 필요
 	return device_add(dev);
+	// 2018-03-03
 }
 EXPORT_SYMBOL_GPL(device_register);
 

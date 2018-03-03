@@ -45,6 +45,7 @@ typedef int (*pm_callback_t)(struct device *);
  * dpm_list_mutex.
  */
 
+// 2018-03-03
 LIST_HEAD(dpm_list);
 static LIST_HEAD(dpm_prepared_list);
 static LIST_HEAD(dpm_suspended_list);
@@ -116,6 +117,7 @@ void device_pm_unlock(void)
  * device_pm_add - Add a device to the PM core's list of active devices.
  * @dev: Device to add to the list.
  */
+// 2018-03-03
 void device_pm_add(struct device *dev)
 {
 	pr_debug("PM: Adding info for %s:%s\n",

@@ -118,6 +118,7 @@ static struct elevator_type *elevator_get(const char *name, bool try_loading)
 	return e;
 }
 
+// 2018-03-03
 static char chosen_elevator[ELV_NAME_MAX];
 
 static int __init elevator_setup(char *str)
@@ -133,6 +134,7 @@ static int __init elevator_setup(char *str)
 __setup("elevator=", elevator_setup);
 
 /* called during boot to load the elevator chosen by the elevator param */
+// 2018-03-03
 void __init load_default_elevator_module(void)
 {
 	struct elevator_type *e;

@@ -124,6 +124,7 @@ static int parse_one(char *param,
 			pr_debug("handling %s with %p\n", param,
 				params[i].ops->set);
 			mutex_lock(&param_lock);
+			// call settter
 			err = params[i].ops->set(val, &params[i]);
 			mutex_unlock(&param_lock);
 			return err;
@@ -143,6 +144,7 @@ static int parse_one(char *param,
 
 /* You can use " around spaces, but can't escape ". */
 /* Hyphens and underscores equivalent in parameter names. */
+// 2018-03-03
 static char *next_arg(char *args, char **param, char **val)
 {
 	unsigned int i, equals = 0;
@@ -200,6 +202,12 @@ static char *next_arg(char *args, char **param, char **val)
 // parse_args("Booting kernel", static_command_line, __start___param,
 //                     __stop___param - __start___param,
 //                     -1, -1, &unknown_bootoption);
+// 
+// parse_args(initcall_level_names[level],
+//          static_command_line, __start___param,
+//           __stop___param - __start___param,
+//           level, level,
+//           &repair_env_string);
 int parse_args(const char *doing,
 	       char *args,
 	       const struct kernel_param *params,

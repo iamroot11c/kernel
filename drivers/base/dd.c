@@ -180,6 +180,7 @@ static int deferred_probe_initcall(void)
 }
 late_initcall(deferred_probe_initcall);
 
+// 2018-03-03
 static void driver_bound(struct device *dev)
 {
 	if (klist_node_attached(&dev->p->knode_driver)) {
@@ -205,6 +206,7 @@ static void driver_bound(struct device *dev)
 					     BUS_NOTIFY_BOUND_DRIVER, dev);
 }
 
+// 2018-03-03
 static int driver_sysfs_add(struct device *dev)
 {
 	int ret;
@@ -250,6 +252,7 @@ static void driver_sysfs_remove(struct device *dev)
  *
  * This function must be called with the device lock held.
  */
+// 2018-03-03
 int device_bind_driver(struct device *dev)
 {
 	int ret;
@@ -264,6 +267,7 @@ EXPORT_SYMBOL_GPL(device_bind_driver);
 static atomic_t probe_count = ATOMIC_INIT(0);
 static DECLARE_WAIT_QUEUE_HEAD(probe_waitqueue);
 
+// 2018-03-03
 static int really_probe(struct device *dev, struct device_driver *drv)
 {
 	int ret = 0;
@@ -291,6 +295,7 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 		if (ret)
 			goto probe_failed;
 	} else if (drv->probe) {
+		// probe 호출 시점
 		ret = drv->probe(dev);
 		if (ret)
 			goto probe_failed;
@@ -370,6 +375,7 @@ EXPORT_SYMBOL_GPL(wait_for_device_probe);
  * This function must be called with @dev lock held.  When called for a
  * USB interface, @dev->parent lock must be held as well.
  */
+// 2018-03-03
 int driver_probe_device(struct device_driver *drv, struct device *dev)
 {
 	int ret = 0;
@@ -387,6 +393,7 @@ int driver_probe_device(struct device_driver *drv, struct device *dev)
 	return ret;
 }
 
+// 2018-03-03
 static int __device_attach(struct device_driver *drv, void *data)
 {
 	struct device *dev = data;
@@ -411,6 +418,7 @@ static int __device_attach(struct device_driver *drv, void *data)
  *
  * When called for a USB interface, @dev->parent lock must be held.
  */
+// 2018-03-03
 int device_attach(struct device *dev)
 {
 	int ret = 0;
@@ -421,6 +429,7 @@ int device_attach(struct device *dev)
 			ret = 1;
 			goto out_unlock;
 		}
+		// 2018-03-03
 		ret = device_bind_driver(dev);
 		if (ret == 0)
 			ret = 1;

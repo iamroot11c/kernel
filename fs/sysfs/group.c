@@ -269,6 +269,7 @@ EXPORT_SYMBOL_GPL(sysfs_remove_groups);
  * files already exist in that group, in which case none of the new files
  * are created.
  */
+// 2018-03-03
 int sysfs_merge_group(struct kobject *kobj,
 		       const struct attribute_group *grp)
 {

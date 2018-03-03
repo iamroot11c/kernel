@@ -15,6 +15,7 @@
 
 #include "internals.h"
 
+// 2018-03-03
 static struct proc_dir_entry *root_irq_dir;
 
 #ifdef CONFIG_SMP
@@ -215,6 +216,7 @@ static int default_affinity_open(struct inode *inode, struct file *file)
 	return single_open(file, default_affinity_show, PDE_DATA(inode));
 }
 
+// 2018-03-03
 static const struct file_operations default_affinity_proc_fops = {
 	.open		= default_affinity_open,
 	.read		= seq_read,
@@ -307,6 +309,7 @@ void register_handler_proc(unsigned int irq, struct irqaction *action)
 
 #define MAX_NAMELEN 10
 
+// 2018-03-03
 void register_irq_proc(unsigned int irq, struct irq_desc *desc)
 {
 	char name [MAX_NAMELEN];
@@ -369,14 +372,16 @@ void unregister_handler_proc(unsigned int irq, struct irqaction *action)
 	proc_remove(action->dir);
 }
 
+// 2018-03-03
 static void register_default_affinity_proc(void)
 {
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP	// =y
 	proc_create("irq/default_smp_affinity", 0600, NULL,
 		    &default_affinity_proc_fops);
 #endif
 }
 
+// 2018-03-03
 void init_irq_proc(void)
 {
 	unsigned int irq;

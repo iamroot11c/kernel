@@ -1454,6 +1454,7 @@ static int exec_binprm(struct linux_binprm *bprm)
 /*
  * sys_execve() executes a new program.
  */
+// 2018-03-03
 static int do_execve_common(const char *filename,
 				struct user_arg_ptr argv,
 				struct user_arg_ptr envp)
@@ -1579,6 +1580,7 @@ out_ret:
 	return retval;
 }
 
+// 2018-03-03
 int do_execve(const char *filename,
 	const char __user *const __user *__argv,
 	const char __user *const __user *__envp)

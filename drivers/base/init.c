@@ -41,6 +41,10 @@ void __init driver_init(void)
 	 */
 	// 2018-02-03
 	platform_bus_init();
+	// 2018-03-03
 	cpu_dev_init();
-	memory_dev_init();
+	// 2018-03-03, end
+	// 2018-03-03, start
+	memory_dev_init();	// NOP
+	// 2018-03-03, end
 }

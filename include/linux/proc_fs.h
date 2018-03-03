@@ -9,7 +9,7 @@
 
 struct proc_dir_entry;
 
-#ifdef CONFIG_PROC_FS
+#ifdef CONFIG_PROC_FS   // =y
 
 extern void proc_root_init(void);
 extern void proc_flush_task(struct task_struct *);

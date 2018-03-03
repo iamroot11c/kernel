@@ -658,14 +658,17 @@ static struct attribute_group pm_qos_flags_attr_group = {
 	.attrs	= pm_qos_flags_attrs,
 };
 
+// 2018-03-03
 int dpm_sysfs_add(struct device *dev)
 {
 	int rc;
 
+	// 2018-03-03
 	rc = sysfs_create_group(&dev->kobj, &pm_attr_group);
 	if (rc)
 		return rc;
 
+	// false
 	if (pm_runtime_callbacks_present(dev)) {
 		rc = sysfs_merge_group(&dev->kobj, &pm_runtime_attr_group);
 		if (rc)

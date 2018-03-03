@@ -69,6 +69,7 @@ static DECLARE_RWSEM(umhelper_sem);
 /*
 	modprobe_path is set via /proc/sys.
 */
+// 2018-03-03
 char modprobe_path[KMOD_PATH_LEN] = "/sbin/modprobe";
 
 static void free_modprobe_argv(struct subprocess_info *info)
@@ -77,6 +78,7 @@ static void free_modprobe_argv(struct subprocess_info *info)
 	kfree(info->argv);
 }
 
+// 2018-03-03
 static int call_modprobe(char *module_name, int wait)
 {
 	struct subprocess_info *info;
@@ -131,6 +133,7 @@ out:
  * If module auto-loading support is disabled then this function
  * becomes a no-operation.
  */
+// 2018-03-03
 int __request_module(bool wait, const char *fmt, ...)
 {
 	va_list args;
@@ -190,6 +193,7 @@ int __request_module(bool wait, const char *fmt, ...)
 
 	trace_module_request(module_name, wait, _RET_IP_);
 
+	// core function
 	ret = call_modprobe(module_name, wait ? UMH_WAIT_PROC : UMH_WAIT_EXEC);
 
 	atomic_dec(&kmod_concurrent);
@@ -201,6 +205,7 @@ EXPORT_SYMBOL(__request_module);
 /*
  * This is the task which runs the usermode application
  */
+// 2018-03-03
 static int ____call_usermodehelper(void *data)
 {
 	struct subprocess_info *sub_info = data;
@@ -241,6 +246,7 @@ static int ____call_usermodehelper(void *data)
 
 	commit_creds(new);
 
+	// exec
 	retval = do_execve(sub_info->path,
 			   (const char __user *const __user *)sub_info->argv,
 			   (const char __user *const __user *)sub_info->envp);
@@ -283,6 +289,7 @@ static void umh_complete(struct subprocess_info *sub_info)
 }
 
 /* Keventd can't block, but this (a child) can. */
+// 2018-03-03
 static int wait_for_helper(void *data)
 {
 	struct subprocess_info *sub_info = data;
@@ -323,6 +330,7 @@ static int wait_for_helper(void *data)
 }
 
 /* This is run by khelper thread  */
+// 2018-03-03
 static void __call_usermodehelper(struct work_struct *work)
 {
 	struct subprocess_info *sub_info =
@@ -382,6 +390,7 @@ static DECLARE_WAIT_QUEUE_HEAD(running_helpers_waitq);
  * Used by usermodehelper_read_lock_wait() to wait for usermodehelper_disabled
  * to become 'false'.
  */
+// 2018-03-03
 static DECLARE_WAIT_QUEUE_HEAD(usermodehelper_disabled_waitq);
 
 /*
@@ -460,6 +469,8 @@ EXPORT_SYMBOL_GPL(usermodehelper_read_unlock);
  * Change the value of usermodehelper_disabled (under umhelper_sem locked for
  * writing) and wakeup tasks waiting for it to change.
  */
+// 2018-03-03
+// __usermodehelper_set_disable_depth(UMH_ENABLED);
 void __usermodehelper_set_disable_depth(enum umh_disable_depth depth)
 {
 	down_write(&umhelper_sem);

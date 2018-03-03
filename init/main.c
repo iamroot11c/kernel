@@ -132,8 +132,10 @@ extern void softirq_init(void);
 /* Untouched command line saved by arch-specific code. */
 char __initdata boot_command_line[COMMAND_LINE_SIZE];
 /* Untouched saved command line (eg. for /proc) */
+// 2018-03-03
 char *saved_command_line;
 /* Command line for parameter parsing */
+// 2018-03-03
 static char *static_command_line;
 
 static char *execute_command;
@@ -823,7 +825,7 @@ asmlinkage void __init start_kernel(void)
 /* Call all constructor functions linked into the kernel. */
 static void __init do_ctors(void)
 {
-#ifdef CONFIG_CONSTRUCTORS
+#ifdef CONFIG_CONSTRUCTORS	// =n
 	ctor_fn_t *fn = (ctor_fn_t *) __ctors_start;
 
 	for (; fn < (ctor_fn_t *) __ctors_end; fn++)
@@ -892,6 +894,7 @@ extern initcall_t __initcall6_start[];
 extern initcall_t __initcall7_start[];
 extern initcall_t __initcall_end[];
 
+// 2018-03-03
 static initcall_t *initcall_levels[] __initdata = {
 	__initcall0_start,
 	__initcall1_start,
@@ -905,6 +908,7 @@ static initcall_t *initcall_levels[] __initdata = {
 };
 
 /* Keep these in sync with initcalls in include/linux/init.h */
+// 2018-03-03
 static char *initcall_level_names[] __initdata = {
 	"early",
 	"core",
@@ -916,6 +920,7 @@ static char *initcall_level_names[] __initdata = {
 	"late",
 };
 
+// 2018-03-03
 static void __init do_initcall_level(int level)
 {
 	extern const struct kernel_param __start___param[], __stop___param[];
@@ -932,6 +937,7 @@ static void __init do_initcall_level(int level)
 		do_one_initcall(*fn);
 }
 
+// 2018-03-03
 static void __init do_initcalls(void)
 {
 	int level;
@@ -960,11 +966,22 @@ static void __init do_basic_setup(void)
 	// 2017-12-23, start
 	// 2017-12-23, 여기까지
 	driver_init();
+	// 2018-03-03, end
+	// 2018-03-03, start
 	init_irq_proc();
-	do_ctors();
+	// 2018-03-03, end
+	// 2018-03-03, start
+	do_ctors();	// NOP
+	// 2018-03-03, end
+	// 2018-03-03, start
 	usermodehelper_enable();
+	// 2018-03-03, end
+	// 2018-03-03, start
 	do_initcalls();
+	// 2018-03-03, end
+	// 2018-03-03, start
 	random_int_secret_init();
+	// 2018-03-03, end
 }
 
 // 2017-11-04
@@ -983,6 +1000,7 @@ static void __init do_pre_smp_initcalls(void)
  * exec'd.  If such modules are on either initrd or rootfs, they will be
  * loaded before control is passed to userland.
  */
+// 2018-03-03
 void __init load_default_modules(void)
 {
 	load_default_elevator_module();
@@ -1002,8 +1020,11 @@ static noinline void __init kernel_init_freeable(void);
 static int __ref kernel_init(void *unused)
 {
 	kernel_init_freeable();
+	// 2018-03-03, end
 	/* need to finish all async __init code before freeing the memory */
+	// 2018-03-03, start
 	async_synchronize_full();
+	// 2018-03-03, end, 여기까지
 	free_initmem();
 	mark_rodata_ro();
 	system_state = SYSTEM_RUNNING;
@@ -1084,7 +1105,9 @@ static noinline void __init kernel_init_freeable(void)
 
 	// 2017-12-16 시작
 	do_basic_setup();
+	// 2018-03-03 end
 
+	// 2018-03-03
 	/* Open the /dev/console on the rootfs, this should never fail */
 	if (sys_open((const char __user *) "/dev/console", O_RDWR, 0) < 0)
 		pr_err("Warning: unable to open an initial console.\n");
@@ -1111,5 +1134,6 @@ static noinline void __init kernel_init_freeable(void)
 	 */
 
 	/* rootfs is available now, try loading default modules */
+	// 2018-03-03
 	load_default_modules();
 }

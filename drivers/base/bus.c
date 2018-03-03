@@ -36,6 +36,7 @@ static struct kset *system_kset;
 static int __must_check bus_rescan_devices_helper(struct device *dev,
 						void *data);
 
+// 2018-03-03
 static struct bus_type *bus_get(struct bus_type *bus)
 {
 	if (bus) {
@@ -127,6 +128,7 @@ static const struct sysfs_ops bus_sysfs_ops = {
 	.store	= bus_attr_store,
 };
 
+// 2018-03-03
 int bus_create_file(struct bus_type *bus, struct bus_attribute *attr)
 {
 	int error;
@@ -437,6 +439,7 @@ static struct device_driver *next_driver(struct klist_iter *i)
  * in the callback. It must also be sure to increment the refcount
  * so it doesn't disappear before returning to the caller.
  */
+// 2018-03-03
 int bus_for_each_drv(struct bus_type *bus, struct device_driver *start,
 		     void *data, int (*fn)(struct device_driver *, void *))
 {
@@ -538,6 +541,7 @@ out_put:
  *
  * - Automatically probe for a driver if the bus allows it.
  */
+// 2018-03-03
 void bus_probe_device(struct device *dev)
 {
 	struct bus_type *bus = dev->bus;
@@ -548,6 +552,7 @@ void bus_probe_device(struct device *dev)
 		return;
 
 	if (bus->p->drivers_autoprobe) {
+		// 2018-03-03
 		ret = device_attach(dev);
 		WARN_ON(ret < 0);
 	}
@@ -656,6 +661,7 @@ static BUS_ATTR(drivers_probe, S_IWUSR, NULL, store_drivers_probe);
 static BUS_ATTR(drivers_autoprobe, S_IWUSR | S_IRUGO,
 		show_drivers_autoprobe, store_drivers_autoprobe);
 
+// 2018-03-03
 static int add_probe_files(struct bus_type *bus)
 {
 	int retval;
@@ -862,7 +868,7 @@ struct bus_type *find_bus(char *name)
  * bus_add_attrs - Add default attributes for this bus.
  * @bus: Bus that has just been registered.
  */
-
+// 2018-03-03
 static int bus_add_attrs(struct bus_type *bus)
 {
 	int error = 0;
@@ -893,6 +899,7 @@ static void bus_remove_attrs(struct bus_type *bus)
 	}
 }
 
+// 2018-03-03
 static int bus_add_groups(struct bus_type *bus,
 			  const struct attribute_group **groups)
 {
@@ -1244,11 +1251,13 @@ void subsys_interface_unregister(struct subsys_interface *sif)
 }
 EXPORT_SYMBOL_GPL(subsys_interface_unregister);
 
+// 2018-03-03
 static void system_root_device_release(struct device *dev)
 {
 	kfree(dev);
 }
 
+// 2018-03-03
 static int subsys_register(struct bus_type *subsys,
 			   const struct attribute_group **groups,
 			   struct kobject *parent_of_root)
@@ -1309,6 +1318,7 @@ err_dev:
  * directory itself and not some create fake root-device placed in
  * /sys/devices/system/<name>.
  */
+// 2018-03-03
 int subsys_system_register(struct bus_type *subsys,
 			   const struct attribute_group **groups)
 {

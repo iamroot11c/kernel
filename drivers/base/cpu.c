@@ -109,6 +109,7 @@ static DEVICE_ATTR(release, S_IWUSR, NULL, cpu_release_store);
 #endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
 #endif /* CONFIG_HOTPLUG_CPU */
 
+// 2018-03-03
 struct bus_type cpu_subsys = {
 	.name = "cpu",
 	.dev_name = "cpu",
@@ -343,6 +344,7 @@ static struct attribute_group cpu_root_attr_group = {
 	.attrs = cpu_root_attrs,
 };
 
+// 2018-03-03
 static const struct attribute_group *cpu_root_attr_groups[] = {
 	&cpu_root_attr_group,
 	NULL,
@@ -361,7 +363,7 @@ static DEFINE_PER_CPU(struct cpu, cpu_devices);
 
 static void __init cpu_dev_register_generic(void)
 {
-#ifdef CONFIG_GENERIC_CPU_DEVICES
+#ifdef CONFIG_GENERIC_CPU_DEVICES	// =n
 	int i;
 
 	for_each_possible_cpu(i) {
@@ -371,6 +373,7 @@ static void __init cpu_dev_register_generic(void)
 #endif
 }
 
+// 2018-03-03
 void __init cpu_dev_init(void)
 {
 	if (subsys_system_register(&cpu_subsys, cpu_root_attr_groups))

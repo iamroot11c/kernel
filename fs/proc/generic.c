@@ -442,6 +442,7 @@ EXPORT_SYMBOL(proc_symlink);
 
 // 2017-07-08
 // proc 파일시스템에서 새로운 디렉토리 생성
+// proc_mkdir_data("irq", 0, NULL, NULL);
 struct proc_dir_entry *proc_mkdir_data(const char *name, umode_t mode,
 		struct proc_dir_entry *parent, void *data)
 {
@@ -474,6 +475,7 @@ struct proc_dir_entry *proc_mkdir_mode(const char *name, umode_t mode,
 EXPORT_SYMBOL(proc_mkdir_mode);
 
 // 2017-07-08
+// proc_mkdir("irq", NULL);
 struct proc_dir_entry *proc_mkdir(const char *name,
 		struct proc_dir_entry *parent)
 {

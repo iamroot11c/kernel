@@ -127,6 +127,7 @@ static void irq_insert_desc(unsigned int irq, struct irq_desc *desc)
 	radix_tree_insert(&irq_desc_tree, irq, desc);
 }
 
+// 2018-03-03
 struct irq_desc *irq_to_desc(unsigned int irq)
 {
 	return radix_tree_lookup(&irq_desc_tree, irq);

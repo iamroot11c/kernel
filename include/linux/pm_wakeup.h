@@ -70,6 +70,7 @@ struct wakeup_source {
  * Changes to device_may_wakeup take effect on the next pm state change.
  */
 
+// 2018-03-03
 static inline bool device_can_wakeup(struct device *dev)
 {
 	return dev->power.can_wakeup;
