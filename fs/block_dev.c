@@ -409,6 +409,7 @@ static void init_once(void *foo)
 	mutex_init(&bdev->bd_fsfreeze_mutex);
 }
 
+// 2018-03-10
 static inline void __bd_forget(struct inode *inode)
 {
 	list_del_init(&inode->i_devices);
@@ -605,6 +606,7 @@ int sb_is_blkdev_sb(struct super_block *sb)
 
 /* Call when you free inode */
 
+// 2018-03-10
 void bd_forget(struct inode *inode)
 {
 	struct block_device *bdev = NULL;
@@ -612,6 +614,7 @@ void bd_forget(struct inode *inode)
 	spin_lock(&bdev_lock);
 	if (!sb_is_blkdev_sb(inode->i_sb))
 		bdev = inode->i_bdev;
+	// 2018-03-10
 	__bd_forget(inode);
 	spin_unlock(&bdev_lock);
 

@@ -207,6 +207,8 @@ int invalidate_inode_page(struct page *page)
  * truncate_inode_pages_range is able to handle cases where lend + 1 is not
  * page aligned properly.
  */
+// 2018-03-10
+// glance
 void truncate_inode_pages_range(struct address_space *mapping,
 				loff_t lstart, loff_t lend)
 {
@@ -360,6 +362,7 @@ EXPORT_SYMBOL(truncate_inode_pages_range);
  * mapping->nrpages can be non-zero when this function returns even after
  * truncation of the whole mapping.
  */
+// 2018-03-10
 void truncate_inode_pages(struct address_space *mapping, loff_t lstart)
 {
 	truncate_inode_pages_range(mapping, lstart, (loff_t)-1);

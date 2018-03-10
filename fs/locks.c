@@ -232,6 +232,7 @@ void locks_release_private(struct file_lock *fl)
 EXPORT_SYMBOL_GPL(locks_release_private);
 
 /* Free a lock which is not in use. */
+// 2018-03-10
 void locks_free_lock(struct file_lock *fl)
 {
 	BUG_ON(waitqueue_active(&fl->fl_wait));
@@ -521,6 +522,7 @@ locks_insert_global_locks(struct file_lock *fl)
 }
 
 /* Must be called with the i_lock held! */
+// 2018-03-10
 static inline void
 locks_delete_global_locks(struct file_lock *fl)
 {
@@ -550,6 +552,7 @@ locks_insert_global_blocked(struct file_lock *waiter)
 	hash_add(blocked_hash, &waiter->fl_link, posix_owner_key(waiter));
 }
 
+// 2018-03-10
 static inline void
 locks_delete_global_blocked(struct file_lock *waiter)
 {
@@ -561,6 +564,7 @@ locks_delete_global_blocked(struct file_lock *waiter)
  *
  * Must be called with blocked_lock_lock held.
  */
+// 2018-03-10
 static void __locks_delete_block(struct file_lock *waiter)
 {
 	locks_delete_global_blocked(waiter);
@@ -609,6 +613,7 @@ static void locks_insert_block(struct file_lock *blocker,
  *
  * Must be called with the inode->i_lock held!
  */
+// 2018-03-10
 static void locks_wake_up_blocks(struct file_lock *blocker)
 {
 	/*
@@ -660,6 +665,7 @@ static void locks_insert_lock(struct file_lock **pos, struct file_lock *fl)
  *
  * Must be called with the i_lock held!
  */
+// 2018-03-10
 static void locks_delete_lock(struct file_lock **thisfl_p)
 {
 	struct file_lock *fl = *thisfl_p;
@@ -1242,6 +1248,7 @@ static void lease_clear_pending(struct file_lock *fl, int arg)
 }
 
 /* We already had a lease on this file; just change its type */
+// 2018-03-10
 int lease_modify(struct file_lock **before, int arg)
 {
 	struct file_lock *fl = *before;
@@ -1250,12 +1257,14 @@ int lease_modify(struct file_lock **before, int arg)
 	if (error)
 		return error;
 	lease_clear_pending(fl, arg);
+	// 2018-03-10
 	locks_wake_up_blocks(fl);
 	if (arg == F_UNLCK) {
 		struct file *filp = fl->fl_file;
-
+		// 2018-03-10
 		f_delown(filp);
 		filp->f_owner.signum = 0;
+		// 2018-03-10
 		fasync_helper(0, fl->fl_file, 0, &fl->fl_fasync);
 		if (fl->fl_fasync != NULL) {
 			printk(KERN_ERR "locks_delete_lock: fasync == %p\n", fl->fl_fasync);
@@ -2172,6 +2181,7 @@ EXPORT_SYMBOL(locks_remove_posix);
 /*
  * This function is called on the last close of an open file.
  */
+// 2018-03-10
 void locks_remove_flock(struct file *filp)
 {
 	struct inode * inode = file_inode(filp);
@@ -2200,10 +2210,12 @@ void locks_remove_flock(struct file *filp)
 	while ((fl = *before) != NULL) {
 		if (fl->fl_file == filp) {
 			if (IS_FLOCK(fl)) {
+				// 2018-03-10
 				locks_delete_lock(before);
 				continue;
 			}
 			if (IS_LEASE(fl)) {
+				// 2018-03-10
 				lease_modify(before, F_UNLCK);
 				continue;
 			}

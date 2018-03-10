@@ -1492,6 +1492,7 @@ extern void mem_init_print_info(const char *str);
 
 /* Free the reserved page into the buddy system, so it gets managed. */
 // 2015-05-16
+// 2018-03-10
 static inline void __free_reserved_page(struct page *page)
 {
 	ClearPageReserved(page);
@@ -1499,6 +1500,7 @@ static inline void __free_reserved_page(struct page *page)
 	__free_page(page);
 }
 
+// 2018-03-10
 static inline void free_reserved_page(struct page *page)
 {
 	__free_reserved_page(page);
@@ -1517,6 +1519,7 @@ static inline void mark_page_reserved(struct page *page)
  * range [0, UCHAR_MAX].
  * Return pages freed into the buddy system.
  */
+// 2018-03-10
 static inline unsigned long free_initmem_default(int poison)
 {
 	extern char __init_begin[], __init_end[];

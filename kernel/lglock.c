@@ -18,11 +18,13 @@ void lg_lock_init(struct lglock *lg, char *name)
 }
 EXPORT_SYMBOL(lg_lock_init);
 
+// 2018-03-10
 void lg_local_lock(struct lglock *lg)
 {
 	arch_spinlock_t *lock;
 
 	preempt_disable();
+	// NOP
 	lock_acquire_shared(&lg->lock_dep_map, 0, 0, NULL, _RET_IP_);
 	lock = this_cpu_ptr(lg->lock);
 	arch_spin_lock(lock);

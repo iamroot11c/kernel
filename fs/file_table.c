@@ -43,8 +43,10 @@ DEFINE_STATIC_LGLOCK(files_lglock);
 // 2017-06-24
 static struct kmem_cache *filp_cachep __read_mostly;
 
+// 2018-03-10
 static struct percpu_counter nr_files __cacheline_aligned_in_smp;
 
+// 2018-03-10
 static void file_free_rcu(struct rcu_head *head)
 {
 	struct file *f = container_of(head, struct file, f_u.fu_rcuhead);
@@ -53,9 +55,11 @@ static void file_free_rcu(struct rcu_head *head)
 	kmem_cache_free(filp_cachep, f);
 }
 
+// 2018-03-10
 static inline void file_free(struct file *f)
 {
 	percpu_counter_dec(&nr_files);
+	// NOP
 	file_check_state(f);
 	call_rcu(&f->f_u.fu_rcuhead, file_free_rcu);
 }
@@ -207,6 +211,7 @@ EXPORT_SYMBOL(alloc_file);
  * to write to @file, along with access to write through
  * its vfsmount.
  */
+// 2018-03-10
 static void drop_file_write_access(struct file *file)
 {
 	struct vfsmount *mnt = file->f_path.mnt;
@@ -219,12 +224,15 @@ static void drop_file_write_access(struct file *file)
 		return;
 	if (file_check_writeable(file) != 0)
 		return;
+	// 2018-03-10
 	__mnt_drop_write(mnt);
+	// NOP
 	file_release_write(file);
 }
 
 /* the real guts of fput() - releasing the last reference to file
  */
+// 2018-03-10
 static void __fput(struct file *file)
 {
 	struct dentry *dentry = file->f_path.dentry;
@@ -238,35 +246,46 @@ static void __fput(struct file *file)
 	 * The function eventpoll_release() should be the first called
 	 * in the file cleanup chain.
 	 */
+	// 2018-03-10
 	eventpoll_release(file);
+	// 2018-03-10
 	locks_remove_flock(file);
 
 	if (unlikely(file->f_flags & FASYNC)) {
 		if (file->f_op && file->f_op->fasync)
 			file->f_op->fasync(-1, file, 0);
 	}
+	// NOP
 	ima_file_free(file);
 	if (file->f_op && file->f_op->release)
 		file->f_op->release(inode, file);
+	// 2018-03-10
 	security_file_free(file);
 	if (unlikely(S_ISCHR(inode->i_mode) && inode->i_cdev != NULL &&
 		     !(file->f_mode & FMODE_PATH))) {
 		cdev_put(inode->i_cdev);
 	}
+	// 2018-03-10
 	fops_put(file->f_op);
+	// 2018-03-10
 	put_pid(file->f_owner.pid);
 	if ((file->f_mode & (FMODE_READ | FMODE_WRITE)) == FMODE_READ)
 		i_readcount_dec(inode);
 	if (file->f_mode & FMODE_WRITE)
+		// 2018-03-10
 		drop_file_write_access(file);
 	file->f_path.dentry = NULL;
 	file->f_path.mnt = NULL;
 	file->f_inode = NULL;
+	// 2018-03-10
 	file_free(file);
+	// 2018-03-10
 	dput(dentry);
+	// 2018-03-10
 	mntput(mnt);
 }
 
+// 2018-03-10
 static LLIST_HEAD(delayed_fput_list);
 static void delayed_fput(struct work_struct *unused)
 {
@@ -275,6 +294,7 @@ static void delayed_fput(struct work_struct *unused)
 
 	for (; node; node = next) {
 		next = llist_next(node);
+		// 2018-03-10
 		__fput(llist_entry(node, struct file, f_u.fu_llist));
 	}
 }
@@ -294,6 +314,7 @@ static void ____fput(struct callback_head *work)
  * held and never call that from a thread that might need to do
  * some work on any kind of umount.
  */
+// 2018-03-10
 void flush_delayed_fput(void)
 {
 	delayed_fput(NULL);

@@ -26,6 +26,7 @@ static inline void fsnotify_d_instantiate(struct dentry *dentry,
 }
 
 /* Notify this dentry's parent about a child's events. */
+// 2018-03-10
 static inline int fsnotify_parent(struct path *path, struct dentry *dentry, __u32 mask)
 {
 	if (!dentry)
@@ -115,6 +116,7 @@ static inline void fsnotify_move(struct inode *old_dir, struct inode *new_dir,
 /*
  * fsnotify_inode_delete - and inode is being evicted from cache, clean up is needed
  */
+// 2018-03-10
 static inline void fsnotify_inode_delete(struct inode *inode)
 {
 	__fsnotify_inode_delete(inode);
@@ -123,6 +125,7 @@ static inline void fsnotify_inode_delete(struct inode *inode)
 /*
  * fsnotify_vfsmount_delete - a vfsmount is being destroyed, clean up is needed
  */
+// 2018-03-10
 static inline void fsnotify_vfsmount_delete(struct vfsmount *mnt)
 {
 	__fsnotify_vfsmount_delete(mnt);
@@ -241,6 +244,7 @@ static inline void fsnotify_open(struct file *file)
 /*
  * fsnotify_close - file was closed
  */
+// 2018-03-10
 static inline void fsnotify_close(struct file *file)
 {
 	struct path *path = &file->f_path;

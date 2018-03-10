@@ -31,6 +31,7 @@
 /*
  * Final freeing of a group
  */
+// 2018-03-10
 void fsnotify_final_destroy_group(struct fsnotify_group *group)
 {
 	if (group->ops->free_group_priv)
@@ -61,6 +62,7 @@ void fsnotify_destroy_group(struct fsnotify_group *group)
 /*
  * Get reference to a group.
  */
+// 2018-03-10
 void fsnotify_get_group(struct fsnotify_group *group)
 {
 	atomic_inc(&group->refcnt);

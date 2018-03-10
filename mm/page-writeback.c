@@ -1900,6 +1900,7 @@ EXPORT_SYMBOL(tag_pages_for_writeback);
  * tag we set). The rule we follow is that TOWRITE tag can be cleared only
  * by the process clearing the DIRTY tag (and submitting the page for IO).
  */
+// 2018-03-10
 int write_cache_pages(struct address_space *mapping,
 		      struct writeback_control *wbc, writepage_t writepage,
 		      void *data)
@@ -2060,6 +2061,7 @@ EXPORT_SYMBOL(write_cache_pages);
  * Function used by generic_writepages to call the real writepage
  * function and set the mapping flags on error
  */
+// 2018-03-10
 static int __writepage(struct page *page, struct writeback_control *wbc,
 		       void *data)
 {
@@ -2094,7 +2096,8 @@ int generic_writepages(struct address_space *mapping,
 }
 
 EXPORT_SYMBOL(generic_writepages);
-
+// 2018-03-10
+// glance
 int do_writepages(struct address_space *mapping, struct writeback_control *wbc)
 {
 	int ret;

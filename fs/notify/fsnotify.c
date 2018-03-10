@@ -31,12 +31,13 @@
 /*
  * Clear all of the marks on an inode when it is being evicted from core
  */
+// 2018-03-10
 void __fsnotify_inode_delete(struct inode *inode)
 {
 	fsnotify_clear_marks_by_inode(inode);
 }
 EXPORT_SYMBOL_GPL(__fsnotify_inode_delete);
-
+// 2018-03-10
 void __fsnotify_vfsmount_delete(struct vfsmount *mnt)
 {
 	fsnotify_clear_marks_by_mount(mnt);
@@ -87,6 +88,7 @@ void __fsnotify_update_child_dentry_flags(struct inode *inode)
 }
 
 /* Notify this dentry's parent about a child's events. */
+// 2018-03-10
 int __fsnotify_parent(struct path *path, struct dentry *dentry, __u32 mask)
 {
 	struct dentry *parent;

@@ -2076,6 +2076,7 @@ static inline int security_inode_alloc(struct inode *inode)
 	return 0;
 }
 
+// 2018-03-10
 static inline void security_inode_free(struct inode *inode)
 { }
 
@@ -2257,6 +2258,7 @@ static inline int security_file_alloc(struct file *file)
 	return 0;
 }
 
+// 2018-03-10
 static inline void security_file_free(struct file *file)
 { }
 

@@ -216,6 +216,7 @@ EXPORT_SYMBOL(register_shrinker);
 /*
  * Remove one
  */
+// 2018-03-10
 void unregister_shrinker(struct shrinker *shrinker)
 {
 	down_write(&shrinker_rwsem);

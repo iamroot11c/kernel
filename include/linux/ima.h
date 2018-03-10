@@ -13,7 +13,7 @@
 #include <linux/fs.h>
 struct linux_binprm;
 
-#ifdef CONFIG_IMA
+#ifdef CONFIG_IMA // n
 extern int ima_bprm_check(struct linux_binprm *bprm);
 extern int ima_file_check(struct file *file, int mask);
 extern void ima_file_free(struct file *file);
@@ -31,6 +31,7 @@ static inline int ima_file_check(struct file *file, int mask)
 	return 0;
 }
 
+// 2018-03-10
 static inline void ima_file_free(struct file *file)
 {
 	return;

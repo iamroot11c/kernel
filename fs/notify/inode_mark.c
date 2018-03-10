@@ -33,6 +33,7 @@
 /*
  * Recalculate the mask of events relevant to a given inode locked.
  */
+// 2018-03-10
 static void fsnotify_recalc_inode_mask_locked(struct inode *inode)
 {
 	struct fsnotify_mark *mark;
@@ -58,6 +59,7 @@ void fsnotify_recalc_inode_mask(struct inode *inode)
 	__fsnotify_update_child_dentry_flags(inode);
 }
 
+// 2018-03-10
 void fsnotify_destroy_inode_mark(struct fsnotify_mark *mark)
 {
 	struct inode *inode = mark->i.inode;
@@ -75,6 +77,7 @@ void fsnotify_destroy_inode_mark(struct fsnotify_mark *mark)
 	 * hold the inode->i_lock, so this is the perfect time to update the
 	 * inode->i_fsnotify_mask
 	 */
+	// 2018-03-10
 	fsnotify_recalc_inode_mask_locked(inode);
 
 	spin_unlock(&inode->i_lock);
@@ -83,6 +86,7 @@ void fsnotify_destroy_inode_mark(struct fsnotify_mark *mark)
 /*
  * Given an inode, destroy all of the marks associated with that inode.
  */
+// 2018-03-10
 void fsnotify_clear_marks_by_inode(struct inode *inode)
 {
 	struct fsnotify_mark *mark, *lmark;

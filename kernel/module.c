@@ -1001,6 +1001,7 @@ bool try_module_get(struct module *module)
 EXPORT_SYMBOL(try_module_get);
 
 // 2017-07-01
+// 2018-03-10
 void module_put(struct module *module)
 {
 	if (module) {

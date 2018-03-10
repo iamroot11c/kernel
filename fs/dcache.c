@@ -282,6 +282,7 @@ static void __d_free(struct rcu_head *head)
 /*
  * no locks, please.
  */
+// 2018-03-10
 static void d_free(struct dentry *dentry)
 {
 	BUG_ON((int)dentry->d_lockref.count > 0);
@@ -315,6 +316,7 @@ static inline void dentry_rcuwalk_barrier(struct dentry *dentry)
  * d_iput() operation if defined. Dentry has no refcount
  * and is unhashed.
  */
+// 2018-03-10
 static void dentry_iput(struct dentry * dentry)
 	__releases(dentry->d_lock)
 	__releases(dentry->d_inode->i_lock)
@@ -463,6 +465,7 @@ static void dentry_lru_del(struct dentry *dentry)
  * dentry->d_lock and parent->d_lock must be held by caller, and are dropped by
  * d_kill.
  */
+// 2018-03-10
 static struct dentry *d_kill(struct dentry *dentry, struct dentry *parent)
 	__releases(dentry->d_lock)
 	__releases(parent->d_lock)
@@ -521,6 +524,7 @@ static void __d_shrink(struct dentry *dentry)
  *
  * __d_drop requires dentry->d_lock.
  */
+// 2018-03-10
 void __d_drop(struct dentry *dentry)
 {
 	if (!d_unhashed(dentry)) {
@@ -544,6 +548,7 @@ EXPORT_SYMBOL(d_drop);
  * If ref is non-zero, then decrement the refcount too.
  * Returns dentry requiring refcount drop, or NULL if we're done.
  */
+// 2018-03-10
 static struct dentry *
 dentry_kill(struct dentry *dentry, int unlock_on_failure)
 	__releases(dentry->d_lock)
@@ -614,6 +619,7 @@ relock:
  * releasing its resources. If the parent dentries were scheduled for release
  * they too may now get deleted.
  */
+// 2018-03-10
 void dput(struct dentry *dentry)
 {
 	if (unlikely(!dentry))
@@ -715,6 +721,7 @@ static inline void __dget(struct dentry *dentry)
 	lockref_get(&dentry->d_lockref);
 }
 
+// 2018-03-10
 struct dentry *dget_parent(struct dentry *dentry)
 {
 	int gotref;
@@ -734,6 +741,7 @@ struct dentry *dget_parent(struct dentry *dentry)
 		dput(ret);
 	}
 
+	// 2018-03-10
 repeat:
 	/*
 	 * Don't need rcu_dereference because we re-check it was correct under

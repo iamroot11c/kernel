@@ -197,6 +197,7 @@ static inline void arch_spin_unlock(arch_spinlock_t *lock)
 	dsb_sev();
 }
 
+// 2018-03-10
 static inline int arch_spin_is_locked(arch_spinlock_t *lock)
 {
 	struct __raw_tickets tickets = ACCESS_ONCE(lock->tickets);

@@ -262,6 +262,7 @@ out_free_sb:
  *
  *	Frees a superblock.
  */
+// 2018-03-10
 static inline void destroy_super(struct super_block *s)
 {
 	list_lru_destroy(&s->s_dentry_lru);
@@ -282,6 +283,7 @@ static inline void destroy_super(struct super_block *s)
 /*
  * Drop a superblock's refcount.  The caller must hold sb_lock.
  */
+// 2018-03-10
 static void __put_super(struct super_block *sb)
 {
 	if (!--sb->s_count) {
@@ -297,6 +299,7 @@ static void __put_super(struct super_block *sb)
  *	Drops a temporary reference, frees superblock if there's no
  *	references left.
  */
+// 2018-03-10
 static void put_super(struct super_block *sb)
 {
 	spin_lock(&sb_lock);
@@ -316,10 +319,12 @@ static void put_super(struct super_block *sb)
  *
  *	Caller holds exclusive lock on superblock; that lock is released.
  */
+// 2018-03-10
 void deactivate_locked_super(struct super_block *s)
 {
 	struct file_system_type *fs = s->s_type;
 	if (atomic_dec_and_test(&s->s_active)) {
+		// 2018-03-10
 		cleancache_invalidate_fs(s);
 		fs->kill_sb(s);
 
@@ -343,6 +348,7 @@ EXPORT_SYMBOL(deactivate_locked_super);
  *	locked by caller.  If we are going to drop the final active reference,
  *	lock will be acquired prior to that.
  */
+// 2018-03-10
 void deactivate_super(struct super_block *s)
 {
         if (!atomic_add_unless(&s->s_active, -1, 1)) {

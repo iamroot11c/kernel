@@ -6135,12 +6135,13 @@ early_param("movablecore", cmdline_parse_movablecore);
 
 #endif /* CONFIG_HAVE_MEMBLOCK_NODE_MAP */
 
+// 2018-03-10
 void adjust_managed_page_count(struct page *page, long count)
 {
 	spin_lock(&managed_page_count_lock);
 	page_zone(page)->managed_pages += count;
 	totalram_pages += count;
-#ifdef CONFIG_HIGHMEM
+#ifdef CONFIG_HIGHMEM // y
 	if (PageHighMem(page))
 		totalhigh_pages += count;
 #endif
@@ -6148,6 +6149,7 @@ void adjust_managed_page_count(struct page *page, long count)
 }
 EXPORT_SYMBOL(adjust_managed_page_count);
 
+// 2018-03-10
 unsigned long free_reserved_area(void *start, void *end, int poison, char *s)
 {
 	void *pos;

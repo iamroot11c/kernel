@@ -500,6 +500,7 @@ void __init bootmem_init(void)
  * Poison init memory with an undefined instruction (ARM) or a branch to an
  * undefined instruction (Thumb).
  */
+// 2018-03-10
 static inline void poison_init_mem(void *s, size_t count)
 {
 	u32 *p = (u32 *)s;
@@ -787,9 +788,10 @@ void __init mem_init(void)
 	}
 }
 
+// 2018-03-10 
 void free_initmem(void)
 {
-#ifdef CONFIG_HAVE_TCM
+#ifdef CONFIG_HAVE_TCM // n
 	extern char __tcm_start, __tcm_end;
 
 	poison_init_mem(&__tcm_start, &__tcm_end - &__tcm_start);

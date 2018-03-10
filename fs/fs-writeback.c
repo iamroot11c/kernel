@@ -334,6 +334,7 @@ static int write_inode(struct inode *inode, struct writeback_control *wbc)
  * Wait for writeback on an inode to complete. Called with i_lock held.
  * Caller must make sure inode cannot go away when we drop i_lock.
  */
+// 2018-03-10
 static void __inode_wait_for_writeback(struct inode *inode)
 	__releases(inode->i_lock)
 	__acquires(inode->i_lock)
@@ -352,6 +353,7 @@ static void __inode_wait_for_writeback(struct inode *inode)
 /*
  * Wait for writeback on an inode to complete. Caller must have inode pinned.
  */
+// 2018-03-10
 void inode_wait_for_writeback(struct inode *inode)
 {
 	spin_lock(&inode->i_lock);
@@ -447,6 +449,7 @@ static void requeue_inode(struct inode *inode, struct bdi_writeback *wb,
  * linkage. That is left to the caller. The caller is also responsible for
  * setting I_SYNC flag and calling inode_sync_complete() to clear it.
  */
+// 2018-03-10
 static int
 __writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
 {
@@ -524,6 +527,7 @@ writeback_single_inode(struct inode *inode, struct bdi_writeback *wb,
 		 * inode reference or inode has I_WILL_FREE set, it cannot go
 		 * away under us.
 		 */
+		// 2018-03-10
 		__inode_wait_for_writeback(inode);
 	}
 	WARN_ON(inode->i_state & I_SYNC);

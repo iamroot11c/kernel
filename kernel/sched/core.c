@@ -2946,6 +2946,7 @@ static void __wake_up_common(wait_queue_head_t *q, unsigned int mode,
 // __wake_up(&pgdat->kswapd_wait, TASK_INTERRUPTIBLE, 1, NULL);
 // 2017-06-10
 // __wake_up(x, TASK_NORMAL, 1, NULL)
+// 2018-03-10
 void __wake_up(wait_queue_head_t *q, unsigned int mode,
 			int nr_exclusive, void *key)
 {

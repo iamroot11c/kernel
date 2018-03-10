@@ -133,6 +133,7 @@ struct nested_calls {
  * Avoid increasing the size of this struct, there can be many thousands
  * of these on a server and we do not want this to take another cache line.
  */
+// 2018-03-10
 struct epitem {
 	union {
 		/* RB tree node links this structure to the eventpoll RB tree */
@@ -521,6 +522,7 @@ static void ep_remove_wait_queue(struct eppoll_entry *pwq)
 	/* If it is cleared by POLLFREE, it should be rcu-safe */
 	whead = rcu_dereference(pwq->whead);
 	if (whead)
+		// 2018-03-10
 		remove_wait_queue(whead, &pwq->wait);
 	rcu_read_unlock();
 }
@@ -530,6 +532,7 @@ static void ep_remove_wait_queue(struct eppoll_entry *pwq)
  * descriptor.  Must be called with "mtx" held (or "epmutex" if called from
  * ep_free).
  */
+// 2018-03-10
 static void ep_unregister_pollwait(struct eventpoll *ep, struct epitem *epi)
 {
 	struct list_head *lsthead = &epi->pwqlist;
@@ -545,6 +548,7 @@ static void ep_unregister_pollwait(struct eventpoll *ep, struct epitem *epi)
 }
 
 /* call only when ep->mtx is held */
+// 2018-03-10
 static inline struct wakeup_source *ep_wakeup_source(struct epitem *epi)
 {
 	return rcu_dereference_check(epi->ws, lockdep_is_held(&epi->ep->mtx));
@@ -689,6 +693,7 @@ static void epi_rcu_free(struct rcu_head *head)
  * Removes a "struct epitem" from the eventpoll RB tree and deallocates
  * all the associated resources. Must be called with "mtx" held.
  */
+// 2018-03-10
 static int ep_remove(struct eventpoll *ep, struct epitem *epi)
 {
 	unsigned long flags;
@@ -702,6 +707,7 @@ static int ep_remove(struct eventpoll *ep, struct epitem *epi)
 	 * will run by holding the wait queue head lock and will call our callback
 	 * that will try to get "ep->lock".
 	 */
+	// 2018-03-10
 	ep_unregister_pollwait(ep, epi);
 
 	/* Remove the current item from the list of epoll hooks */
@@ -716,6 +722,7 @@ static int ep_remove(struct eventpoll *ep, struct epitem *epi)
 		list_del_init(&epi->rdllink);
 	spin_unlock_irqrestore(&ep->lock, flags);
 
+	// 2018-03-10
 	wakeup_source_unregister(ep_wakeup_source(epi));
 	/*
 	 * At this point it is safe to free the eventpoll item. Use the union
@@ -907,6 +914,7 @@ static const struct file_operations eventpoll_fops = {
  * interface. We need to have this facility to cleanup correctly files that are
  * closed without being removed from the eventpoll interface.
  */
+// 2018-03-10
 void eventpoll_release_file(struct file *file)
 {
 	struct eventpoll *ep;
@@ -929,6 +937,7 @@ void eventpoll_release_file(struct file *file)
 	list_for_each_entry_rcu(epi, &file->f_ep_links, fllink) {
 		ep = epi->ep;
 		mutex_lock_nested(&ep->mtx, 0);
+		// 2018-03-10
 		ep_remove(ep, epi);
 		mutex_unlock(&ep->mtx);
 	}

@@ -77,6 +77,7 @@ int lockref_get_not_zero(struct lockref *lockref)
 {
 	int retval;
 
+	// nop
 	CMPXCHG_LOOP(
 		new.count++;
 		if (!old.count)

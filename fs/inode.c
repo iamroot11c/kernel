@@ -235,17 +235,20 @@ void free_inode_nonrcu(struct inode *inode)
 }
 EXPORT_SYMBOL(free_inode_nonrcu);
 
+// 2018-03-10
 void __destroy_inode(struct inode *inode)
 {
 	BUG_ON(inode_has_buffers(inode));
-	security_inode_free(inode);
+	// NOP
+	security_inode_free(inode); 
+	// 2018-03-10
 	fsnotify_inode_delete(inode);
 	if (!inode->i_nlink) {
 		WARN_ON(atomic_long_read(&inode->i_sb->s_remove_count) == 0);
 		atomic_long_dec(&inode->i_sb->s_remove_count);
 	}
 
-#ifdef CONFIG_FS_POSIX_ACL
+#ifdef CONFIG_FS_POSIX_ACL // y
 	if (inode->i_acl && inode->i_acl != ACL_NOT_CACHED)
 		posix_acl_release(inode->i_acl);
 	if (inode->i_default_acl && inode->i_default_acl != ACL_NOT_CACHED)
@@ -255,12 +258,14 @@ void __destroy_inode(struct inode *inode)
 }
 EXPORT_SYMBOL(__destroy_inode);
 
+// 2018-03-10
 static void i_callback(struct rcu_head *head)
 {
 	struct inode *inode = container_of(head, struct inode, i_rcu);
 	kmem_cache_free(inode_cachep, inode);
 }
 
+// 2018-03-10
 static void destroy_inode(struct inode *inode)
 {
 	BUG_ON(!list_empty(&inode->i_lru));
@@ -489,6 +494,7 @@ EXPORT_SYMBOL(__insert_inode_hash);
  *
  *	Remove an inode from the superblock.
  */
+// 2018-03-10
 void __remove_inode_hash(struct inode *inode)
 {
 	spin_lock(&inode_hash_lock);
@@ -499,6 +505,7 @@ void __remove_inode_hash(struct inode *inode)
 }
 EXPORT_SYMBOL(__remove_inode_hash);
 
+// 2018-03-10
 void clear_inode(struct inode *inode)
 {
 	might_sleep();
@@ -531,6 +538,7 @@ EXPORT_SYMBOL(clear_inode);
  * the cache. This should occur atomically with setting the I_FREEING state
  * flag, so no inodes here should ever be on the LRU when being evicted.
  */
+// 2018-03-10
 static void evict(struct inode *inode)
 {
 	const struct super_operations *op = inode->i_sb->s_op;
@@ -555,6 +563,7 @@ static void evict(struct inode *inode)
 		op->evict_inode(inode);
 	} else {
 		if (inode->i_data.nrpages)
+			// 2018-03-10 glance
 			truncate_inode_pages(&inode->i_data, 0);
 		clear_inode(inode);
 	}
@@ -563,6 +572,7 @@ static void evict(struct inode *inode)
 	if (S_ISCHR(inode->i_mode) && inode->i_cdev)
 		cd_forget(inode);
 
+	// 2018-03-10
 	remove_inode_hash(inode);
 
 	spin_lock(&inode->i_lock);
@@ -570,6 +580,7 @@ static void evict(struct inode *inode)
 	BUG_ON(inode->i_state != (I_FREEING | I_CLEAR));
 	spin_unlock(&inode->i_lock);
 
+	// 2018-03-10
 	destroy_inode(inode);
 }
 
@@ -1360,6 +1371,7 @@ EXPORT_SYMBOL(generic_delete_inode);
  * in cache if fs is alive, sync and evict if fs is
  * shutting down.
  */
+// 2018-03-10
 static void iput_final(struct inode *inode)
 {
 	struct super_block *sb = inode->i_sb;
@@ -1394,6 +1406,7 @@ static void iput_final(struct inode *inode)
 		inode_lru_list_del(inode);
 	spin_unlock(&inode->i_lock);
 
+	// 2018-03-10
 	evict(inode);
 }
 
@@ -1406,6 +1419,7 @@ static void iput_final(struct inode *inode)
  *
  *	Consequently, iput() can sleep.
  */
+// 2018-03-10
 void iput(struct inode *inode)
 {
 	if (inode) {
@@ -1670,6 +1684,7 @@ int inode_needs_sync(struct inode *inode)
 }
 EXPORT_SYMBOL(inode_needs_sync);
 
+// 2018-03-10
 int inode_wait(void *word)
 {
 	schedule();

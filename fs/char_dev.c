@@ -419,6 +419,7 @@ static int chrdev_open(struct inode *inode, struct file *filp)
 	return ret;
 }
 
+// 2018-03-10
 void cd_forget(struct inode *inode)
 {
 	spin_lock(&cdev_lock);

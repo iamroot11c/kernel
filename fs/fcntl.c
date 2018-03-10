@@ -80,6 +80,8 @@ static int setfl(int fd, struct file * filp, unsigned long arg)
 	return error;
 }
 
+// 2018-03-10
+// f_modown(filp, NULL, PIDTYPE_PID, 1)
 static void f_modown(struct file *filp, struct pid *pid, enum pid_type type,
                      int force)
 {
@@ -131,6 +133,7 @@ int f_setown(struct file *filp, unsigned long arg, int force)
 }
 EXPORT_SYMBOL(f_setown);
 
+// 2018-03-10
 void f_delown(struct file *filp)
 {
 	f_modown(filp, NULL, PIDTYPE_PID, 1);
@@ -562,6 +565,7 @@ static void fasync_free_rcu(struct rcu_head *head)
  * match the state "is the filp on a fasync list".
  *
  */
+// 2018-03-10
 int fasync_remove_entry(struct file *filp, struct fasync_struct **fapp)
 {
 	struct fasync_struct *fa, **fp;
@@ -673,6 +677,8 @@ static int fasync_add_entry(int fd, struct file *filp, struct fasync_struct **fa
  * lease code. It returns negative on error, 0 if it did no changes
  * and positive if it added/deleted the entry.
  */
+// 2018-03-10
+// fasync_helper(0, fl->fl_file, 0, &fl->fl_fasync)
 int fasync_helper(int fd, struct file * filp, int on, struct fasync_struct **fapp)
 {
 	if (!on)

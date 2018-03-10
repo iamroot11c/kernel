@@ -118,6 +118,7 @@ static inline void cleancache_invalidate_inode(struct address_space *mapping)
 		__cleancache_invalidate_inode(mapping);
 }
 
+// 2018-03-10
 static inline void cleancache_invalidate_fs(struct super_block *sb)
 {
 	if (cleancache_enabled)

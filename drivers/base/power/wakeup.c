@@ -188,6 +188,7 @@ EXPORT_SYMBOL_GPL(wakeup_source_register);
  * @ws: Wakeup source object to unregister.
  */
 // 2017-06-03
+// 2018-03-10
 void wakeup_source_unregister(struct wakeup_source *ws)
 {
 	if (ws) {

@@ -115,6 +115,7 @@ void fsnotify_put_mark(struct fsnotify_mark *mark)
  * The caller had better be holding a reference to this mark so we don't actually
  * do the final put under the mark->lock
  */
+// 2018-03-10
 void fsnotify_destroy_mark_locked(struct fsnotify_mark *mark,
 				  struct fsnotify_group *group)
 {
@@ -134,8 +135,10 @@ void fsnotify_destroy_mark_locked(struct fsnotify_mark *mark,
 
 	if (mark->flags & FSNOTIFY_MARK_FLAG_INODE) {
 		inode = mark->i.inode;
+		// 2018-03-10
 		fsnotify_destroy_inode_mark(mark);
 	} else if (mark->flags & FSNOTIFY_MARK_FLAG_VFSMOUNT)
+		// 2018-03-10
 		fsnotify_destroy_vfsmount_mark(mark);
 	else
 		BUG();
@@ -145,6 +148,7 @@ void fsnotify_destroy_mark_locked(struct fsnotify_mark *mark,
 	spin_unlock(&mark->lock);
 
 	if (inode && (mark->flags & FSNOTIFY_MARK_FLAG_OBJECT_PINNED))
+		// 2018-03-10
 		iput(inode);
 	/* release lock temporarily */
 	mutex_unlock(&group->mark_mutex);
@@ -184,6 +188,7 @@ void fsnotify_destroy_mark_locked(struct fsnotify_mark *mark,
 	mutex_lock_nested(&group->mark_mutex, SINGLE_DEPTH_NESTING);
 }
 
+// 2018-03-10
 void fsnotify_destroy_mark(struct fsnotify_mark *mark,
 			   struct fsnotify_group *group)
 {

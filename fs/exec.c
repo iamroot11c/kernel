@@ -1505,6 +1505,7 @@ static int do_execve_common(const char *filename,
 	if (IS_ERR(file))
 		goto out_unmark;
 
+	// 실제 동작 라인
 	sched_exec();
 
 	bprm->file = file;

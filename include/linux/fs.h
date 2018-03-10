@@ -875,9 +875,12 @@ static inline int file_check_writeable(struct file *f)
 }
 #else /* !CONFIG_DEBUG_WRITECOUNT */
 static inline void file_take_write(struct file *filp) {}
+// 2018-03-10
 static inline void file_release_write(struct file *filp) {}
 static inline void file_reset_write(struct file *filp) {}
+// 2018-03-10
 static inline void file_check_state(struct file *filp) {}
+// 2018-03-10
 static inline int file_check_writeable(struct file *filp)
 {
 	return 0;
@@ -1561,6 +1564,7 @@ struct file_operations {
 	ssize_t (*sendpage) (struct file *, struct page *, int, size_t, loff_t *, int);
 	unsigned long (*get_unmapped_area)(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
 	int (*check_flags)(int);
+    // 2018-03-10
 	int (*flock) (struct file *, int, struct file_lock *);
 	ssize_t (*splice_write)(struct pipe_inode_info *, struct file *, loff_t *, size_t, unsigned int);
 	ssize_t (*splice_read)(struct file *, loff_t *, struct pipe_inode_info *, size_t, unsigned int);
@@ -2309,6 +2313,7 @@ static inline int deny_write_access(struct file *file)
 	struct inode *inode = file_inode(file);
 	return atomic_dec_unless_positive(&inode->i_writecount) ? 0 : -ETXTBSY;
 }
+// 2018-03-10
 static inline void put_write_access(struct inode * inode)
 {
 	atomic_dec(&inode->i_writecount);
@@ -2318,7 +2323,7 @@ static inline void allow_write_access(struct file *file)
 	if (file)
 		atomic_inc(&file_inode(file)->i_writecount);
 }
-#ifdef CONFIG_IMA
+#ifdef CONFIG_IMA // n
 static inline void i_readcount_dec(struct inode *inode)
 {
 	BUG_ON(!atomic_read(&inode->i_readcount));
@@ -2329,6 +2334,7 @@ static inline void i_readcount_inc(struct inode *inode)
 	atomic_inc(&inode->i_readcount);
 }
 #else
+// 2018-03-10
 static inline void i_readcount_dec(struct inode *inode)
 {
 	return;

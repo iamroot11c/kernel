@@ -30,6 +30,7 @@
 #include "fsnotify.h"
 #include "../mount.h"
 
+// 2018-03-10
 void fsnotify_clear_marks_by_mount(struct vfsmount *mnt)
 {
 	struct fsnotify_mark *mark, *lmark;
@@ -53,6 +54,7 @@ void fsnotify_clear_marks_by_mount(struct vfsmount *mnt)
 		group = mark->group;
 		spin_unlock(&mark->lock);
 
+		// 2018-03-10
 		fsnotify_destroy_mark(mark, group);
 		fsnotify_put_mark(mark);
 		fsnotify_put_group(group);
@@ -67,6 +69,7 @@ void fsnotify_clear_vfsmount_marks_by_group(struct fsnotify_group *group)
 /*
  * Recalculate the mask of events relevant to a given vfsmount locked.
  */
+// 2018-03-10
 static void fsnotify_recalc_vfsmount_mask_locked(struct vfsmount *mnt)
 {
 	struct mount *m = real_mount(mnt);
@@ -91,6 +94,7 @@ void fsnotify_recalc_vfsmount_mask(struct vfsmount *mnt)
 	spin_unlock(&mnt->mnt_root->d_lock);
 }
 
+// 2018-03-10
 void fsnotify_destroy_vfsmount_mark(struct fsnotify_mark *mark)
 {
 	struct vfsmount *mnt = mark->m.mnt;

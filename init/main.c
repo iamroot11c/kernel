@@ -95,7 +95,8 @@ extern void fork_init(unsigned long);
 extern void mca_init(void);
 extern void sbus_init(void);
 extern void radix_tree_init(void);
-#ifndef CONFIG_DEBUG_RODATA
+#ifndef CONFIG_DEBUG_RODATA // n
+// 2018-03-10
 static inline void mark_rodata_ro(void) { }
 #endif
 
@@ -1006,6 +1007,7 @@ void __init load_default_modules(void)
 	load_default_elevator_module();
 }
 
+// 2018-03-10
 static int run_init_process(const char *init_filename)
 {
 	argv_init[0] = init_filename;
@@ -1025,13 +1027,20 @@ static int __ref kernel_init(void *unused)
 	// 2018-03-03, start
 	async_synchronize_full();
 	// 2018-03-03, end, 여기까지
+	// 2018-03-10 시작
 	free_initmem();
+	// NOP
 	mark_rodata_ro();
 	system_state = SYSTEM_RUNNING;
+	// NOP
 	numa_default_policy();
 
+	// 2018-03-10
 	flush_delayed_fput();
+	// 2018-03-10
 
+	// 2018-03-10
+	// ramdisk_execute_command == "/init"
 	if (ramdisk_execute_command) {
 		if (!run_init_process(ramdisk_execute_command))
 			return 0;

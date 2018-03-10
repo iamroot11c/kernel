@@ -91,6 +91,7 @@ retry:
 	return res;
 }
 
+// 2018-03-10
 static void mnt_free_id(struct mount *mnt)
 {
 	int id = mnt->mnt_id;
@@ -137,6 +138,7 @@ void mnt_release_group_id(struct mount *mnt)
 /*
  * vfsmount lock must be held for read
  */
+// 2018-03-10
 static inline void mnt_add_count(struct mount *mnt, int n)
 {
 #ifdef CONFIG_SMP
@@ -151,6 +153,7 @@ static inline void mnt_add_count(struct mount *mnt, int n)
 /*
  * vfsmount lock must be held for write
  */
+// 2018-03-10
 unsigned int mnt_get_count(struct mount *mnt)
 {
 #ifdef CONFIG_SMP
@@ -258,6 +261,7 @@ static inline void mnt_inc_writers(struct mount *mnt)
 #endif
 }
 
+// 2018-03-10
 static inline void mnt_dec_writers(struct mount *mnt)
 {
 #ifdef CONFIG_SMP
@@ -427,6 +431,7 @@ EXPORT_SYMBOL_GPL(mnt_want_write_file);
  * performing writes to it.  Must be matched with
  * __mnt_want_write() call above.
  */
+// 2018-03-10
 void __mnt_drop_write(struct vfsmount *mnt)
 {
 	preempt_disable();
@@ -545,6 +550,7 @@ int sb_prepare_remount_readonly(struct super_block *sb)
 	return err;
 }
 
+// 2018-03-10
 static void free_vfsmnt(struct mount *mnt)
 {
 	kfree(mnt->mnt_devname);
@@ -880,6 +886,7 @@ static struct mount *clone_mnt(struct mount *old, struct dentry *root,
 	return ERR_PTR(err);
 }
 
+// 2018-03-10
 static inline void mntfree(struct mount *mnt)
 {
 	struct vfsmount *m = &mnt->mnt;
@@ -896,16 +903,21 @@ static inline void mntfree(struct mount *mnt)
 	 * so mnt_get_writers() below is safe.
 	 */
 	WARN_ON(mnt_get_writers(mnt));
+	// 2018-03-10
 	fsnotify_vfsmount_delete(m);
+	// 2018-03-10
 	dput(m->mnt_root);
+	// 2018-03-10
 	free_vfsmnt(mnt);
+	// 2018-03-10
 	deactivate_super(sb);
 }
 
+// 2018-03-10
 static void mntput_no_expire(struct mount *mnt)
 {
 put_again:
-#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP // y
 	br_read_lock(&vfsmount_lock);
 	if (likely(mnt->mnt_ns)) {
 		/* shouldn't be the last one */
@@ -937,9 +949,11 @@ put_again:
 
 	list_del(&mnt->mnt_instance);
 	br_write_unlock(&vfsmount_lock);
+	// 2018-03-10
 	mntfree(mnt);
 }
 
+// 2018-03-10
 void mntput(struct vfsmount *mnt)
 {
 	if (mnt) {
@@ -947,6 +961,7 @@ void mntput(struct vfsmount *mnt)
 		/* avoid cacheline pingpong, hope gcc doesn't get "smart" */
 		if (unlikely(m->mnt_expiry_mark))
 			m->mnt_expiry_mark = 0;
+		// 2018-03-10
 		mntput_no_expire(m);
 	}
 }
