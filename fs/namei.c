@@ -643,6 +643,7 @@ static int complete_walk(struct nameidata *nd)
 	return status;
 }
 
+// 2018-03-17
 static __always_inline void set_root(struct nameidata *nd)
 {
 	if (!nd->root.mnt)
@@ -1355,6 +1356,7 @@ static struct dentry *__lookup_hash(struct qstr *name,
  *  small and for now I'd prefer to have fast path as straight as possible.
  *  It _is_ time-critical.
  */
+// 2018-03-17
 static int lookup_fast(struct nameidata *nd,
 		       struct path *path, struct inode **inode)
 {
@@ -1767,6 +1769,7 @@ static inline unsigned long hash_name(const char *name, unsigned int *hashp)
  * Returns 0 and nd will have valid dentry and mnt on success.
  * Returns error and drops reference to input namei data on failure.
  */
+// 2018-03-17
 static int link_path_walk(const char *name, struct nameidata *nd)
 {
 	struct path next;
@@ -2899,6 +2902,7 @@ out_dput:
 /*
  * Handle the last step of open()
  */
+// 2018-03-17
 static int do_last(struct nameidata *nd, struct path *path,
 		   struct file *file, const struct open_flags *op,
 		   int *opened, struct filename *name)
@@ -2930,6 +2934,7 @@ static int do_last(struct nameidata *nd, struct path *path,
 		if (open_flag & O_PATH && !(nd->flags & LOOKUP_FOLLOW))
 			symlink_ok = true;
 		/* we _can_ be in RCU mode here */
+        // 2018-03-17
 		error = lookup_fast(nd, path, &inode);
 		if (likely(!error))
 			goto finish_lookup;
@@ -3021,6 +3026,7 @@ retry_lookup:
 
 	BUG_ON(nd->flags & LOOKUP_RCU);
 	inode = path->dentry->d_inode;
+// 2018-03-17
 finish_lookup:
 	/* we _can_ be in RCU mode here */
 	error = -ENOENT;
@@ -3190,6 +3196,7 @@ out:
 	return error;
 }
 
+// 2018-03-17
 static struct file *path_openat(int dfd, struct filename *pathname,
 		struct nameidata *nd, const struct open_flags *op, int flags)
 {
@@ -3210,15 +3217,18 @@ static struct file *path_openat(int dfd, struct filename *pathname,
 		goto out;
 	}
 
+    // 2018-03-17
 	error = path_init(dfd, pathname->name, flags | LOOKUP_PARENT, nd, &base);
 	if (unlikely(error))
 		goto out;
 
 	current->total_link_count = 0;
+    // 2018-03-17
 	error = link_path_walk(pathname->name, nd);
 	if (unlikely(error))
 		goto out;
 
+    // 2018-03-17
 	error = do_last(nd, &path, file, op, &opened, pathname);
 	while (unlikely(error > 0)) { /* trailing symlink */
 		struct path link = path;
@@ -3261,6 +3271,8 @@ out:
 	return file;
 }
 
+// 2018-03-17
+// do_filp_open(AT_FDCWD, &tmp, &open_exec_flags);
 struct file *do_filp_open(int dfd, struct filename *pathname,
 		const struct open_flags *op)
 {

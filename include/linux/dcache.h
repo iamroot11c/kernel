@@ -40,6 +40,7 @@ struct vfsmount;
  * hash comes first so it snuggles against d_parent in the
  * dentry.
  */
+// 2018-03-17
 struct qstr {
 	union {
 		struct {

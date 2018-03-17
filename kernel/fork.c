@@ -1990,6 +1990,7 @@ static int unshare_fd(unsigned long unshare_flags, struct files_struct **new_fdp
 	struct files_struct *fd = current->files;
 	int error = 0;
 
+    // 2018-03-17, CLONE_FILES
 	if ((unshare_flags & CLONE_FILES) &&
 	    (fd && atomic_read(&fd->count) > 1)) {
 		*new_fdp = dup_fd(fd, &error);
@@ -2132,6 +2133,7 @@ bad_unshare_out:
  *	the exec layer of the kernel.
  */
 
+// 2018-03-17
 int unshare_files(struct files_struct **displaced)
 {
 	struct task_struct *task = current;

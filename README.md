@@ -1,5 +1,21 @@
 ## IAMROOT.ORG Kernel 분석 스터디 `11차 C조` (ARM) ##
 ## Study History(일부 기록이 맞지 않을 수 있음) ##
+
+분석 완료 / 스터디 종료
+
++ [158주차]() `2018.03.17
+ - drive: 보름달님
+ - kernel/kernel/init/main.c::kernel_init() 진행완료
+ - kernel/kernel/init/main.c::kernel_init_freeable() 진행 완료
+ - kernel/kernel/init/main.c::flush_delayed_fput() 진행 완료
+ - kernel/kernel/init/main.c::run_init_process()
+ - kernel/fs/exec.c::do_execve() 완료
+ - kernel/fs/exec.c::do_execve_common() 완료
+ - kernel/fs/exec.c::prepare_binprm() 완료
+ - kernel/fs/exec.c::exec_binprm() 완료
+ - kernel/fs/exec.c::search_binary_handler() 완료
+ - 분석 완료
+
 + [157주차](http://bit.ly/2Cyb8MN) `2018.03.10
  - drive: 홍진우님
  - kernel/kernel/init/main.c::kernel_init() 진행완료
@@ -7,6 +23,7 @@
  - kernel/kernel/init/main.c::flush_delayed_fput() 진행 완료
  - kernel/kernel/init/main.c::run_init_process() glance
  - 부팅 전 과정 확인 완료
+
 + [156주차](http://bit.ly/2oLdSAA) `2018.03.03
  - drive: 보름달님
  - kernel/kernel/init/main.c::kernel_init() 진행

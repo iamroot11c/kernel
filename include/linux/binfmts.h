@@ -11,6 +11,7 @@
 /*
  * This structure is used to hold the arguments that are used when loading binaries.
  */
+// 2018-03-17
 struct linux_binprm {
 	char buf[BINPRM_BUF_SIZE];
 #ifdef CONFIG_MMU
@@ -70,6 +71,7 @@ struct coredump_params {
 struct linux_binfmt {
 	struct list_head lh;
 	struct module *module;
+    // 2018-03-17
 	int (*load_binary)(struct linux_binprm *);
 	int (*load_shlib)(struct file *);
 	int (*core_dump)(struct coredump_params *cprm);

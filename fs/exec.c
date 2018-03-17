@@ -68,6 +68,7 @@
 
 int suid_dumpable = 0;
 
+// 2018-03-17
 static LIST_HEAD(formats);
 static DEFINE_RWLOCK(binfmt_lock);
 
@@ -339,8 +340,10 @@ static void flush_arg_page(struct linux_binprm *bprm, unsigned long pos,
 {
 }
 
+// 2018-03-17
 static int __bprm_mm_init(struct linux_binprm *bprm)
 {
+    // current top of memory
 	bprm->p = PAGE_SIZE * MAX_ARG_PAGES - sizeof(void *);
 	return 0;
 }
@@ -358,6 +361,7 @@ static bool valid_arg_len(struct linux_binprm *bprm, long len)
  * flags, permissions, and offset, so we use temporary values.  We'll update
  * them later in setup_arg_pages().
  */
+// 2018-03-17
 static int bprm_mm_init(struct linux_binprm *bprm)
 {
 	int err;
@@ -372,6 +376,7 @@ static int bprm_mm_init(struct linux_binprm *bprm)
 	if (err)
 		goto err;
 
+    // 2018-03-17
 	err = __bprm_mm_init(bprm);
 	if (err)
 		goto err;
@@ -454,6 +459,7 @@ static int count(struct user_arg_ptr argv, int max)
  * processes's memory to the new process's stack.  The call to get_user_pages()
  * ensures the destination page is created and not swapped out.
  */
+// 2018-03-17
 static int copy_strings(int argc, struct user_arg_ptr argv,
 			struct linux_binprm *bprm)
 {
@@ -526,6 +532,8 @@ static int copy_strings(int argc, struct user_arg_ptr argv,
 				kpos = pos & PAGE_MASK;
 				flush_arg_page(bprm, kpos, kmapped_page);
 			}
+            // 2018-03-17
+            // copy
 			if (copy_from_user(kaddr+offset, str, bytes_to_copy)) {
 				ret = -EFAULT;
 				goto out;
@@ -545,6 +553,7 @@ out:
 /*
  * Like copy_strings, but get argv and its values from kernel memory.
  */
+// 2018-03-17
 int copy_strings_kernel(int argc, const char *const *__argv,
 			struct linux_binprm *bprm)
 {
@@ -751,6 +760,7 @@ EXPORT_SYMBOL(setup_arg_pages);
 
 #endif /* CONFIG_MMU */
 
+// 2018-03-17
 struct file *open_exec(const char *name)
 {
 	struct file *file;
@@ -763,6 +773,7 @@ struct file *open_exec(const char *name)
 		.lookup_flags = LOOKUP_FOLLOW,
 	};
 
+    // 2018-03-17
 	file = do_filp_open(AT_FDCWD, &tmp, &open_exec_flags);
 	if (IS_ERR(file))
 		goto out;
@@ -789,6 +800,7 @@ exit:
 }
 EXPORT_SYMBOL(open_exec);
 
+// 2018-03-17
 int kernel_read(struct file *file, loff_t offset,
 		char *addr, unsigned long count)
 {
@@ -799,6 +811,7 @@ int kernel_read(struct file *file, loff_t offset,
 	old_fs = get_fs();
 	set_fs(get_ds());
 	/* The cast to a user pointer is valid due to the set_fs() */
+    // 2018-03-17
 	result = vfs_read(file, (void __user *)addr, count, &pos);
 	set_fs(old_fs);
 	return result;
@@ -1155,6 +1168,7 @@ EXPORT_SYMBOL(setup_new_exec);
  * Or, if exec fails before, free_bprm() should release ->cred and
  * and unlock.
  */
+// 2018-03-17
 int prepare_bprm_creds(struct linux_binprm *bprm)
 {
 	if (mutex_lock_interruptible(&current->signal->cred_guard_mutex))
@@ -1226,6 +1240,7 @@ EXPORT_SYMBOL(install_exec_creds);
  * - the caller must hold ->cred_guard_mutex to protect against
  *   PTRACE_ATTACH
  */
+// 2018-03-17
 static int check_unsafe_exec(struct linux_binprm *bprm)
 {
 	struct task_struct *p = current, *t;
@@ -1249,6 +1264,8 @@ static int check_unsafe_exec(struct linux_binprm *bprm)
 	n_fs = 1;
 	spin_lock(&p->fs->lock);
 	rcu_read_lock();
+    // current의 fs를 다른 task에서도 사용하는지 확인
+    // 그 갯수를 구함
 	for (t = next_thread(p); t != p; t = next_thread(t)) {
 		if (t->fs == p->fs)
 			n_fs++;
@@ -1275,6 +1292,7 @@ static int check_unsafe_exec(struct linux_binprm *bprm)
  *
  * This may be called multiple times for binary chains (scripts for example).
  */
+// 2018-03-17
 int prepare_binprm(struct linux_binprm *bprm)
 {
 	umode_t mode;
@@ -1318,6 +1336,7 @@ int prepare_binprm(struct linux_binprm *bprm)
 	bprm->cred_prepared = 1;
 
 	memset(bprm->buf, 0, BINPRM_BUF_SIZE);
+    // 2018-03-17
 	return kernel_read(bprm->file, 0, bprm->buf, BINPRM_BUF_SIZE);
 }
 
@@ -1371,6 +1390,7 @@ EXPORT_SYMBOL(remove_arg_zero);
 /*
  * cycle the list of binary formats handler, until one recognizes the image
  */
+// 2018-03-17
 int search_binary_handler(struct linux_binprm *bprm)
 {
 	bool need_retry = IS_ENABLED(CONFIG_MODULES);
@@ -1397,6 +1417,7 @@ int search_binary_handler(struct linux_binprm *bprm)
 			continue;
 		read_unlock(&binfmt_lock);
 		bprm->recursion_depth++;
+        // 2018-03-17, load binary, maybe elf format
 		retval = fmt->load_binary(bprm);
 		bprm->recursion_depth--;
 		if (retval >= 0 || retval != -ENOEXEC ||
@@ -1423,6 +1444,7 @@ int search_binary_handler(struct linux_binprm *bprm)
 }
 EXPORT_SYMBOL(search_binary_handler);
 
+// 2018-03-17
 static int exec_binprm(struct linux_binprm *bprm)
 {
 	pid_t old_pid, old_vpid;
@@ -1481,6 +1503,7 @@ static int do_execve_common(const char *filename,
 	 * further execve() calls fail. */
 	current->flags &= ~PF_NPROC_EXCEEDED;
 
+    // 2018-03-17
 	retval = unshare_files(&displaced);
 	if (retval)
 		goto out_ret;
@@ -1490,28 +1513,31 @@ static int do_execve_common(const char *filename,
 	if (!bprm)
 		goto out_files;
 
+    // 2018-03-17
 	retval = prepare_bprm_creds(bprm);
 	if (retval)
 		goto out_free;
 
+    // 2018-03-17
 	retval = check_unsafe_exec(bprm);
 	if (retval < 0)
 		goto out_free;
 	clear_in_exec = retval;
 	current->in_execve = 1;
 
+    // 2018-03-17
 	file = open_exec(filename);
 	retval = PTR_ERR(file);
 	if (IS_ERR(file))
 		goto out_unmark;
 
-	// 실제 동작 라인
 	sched_exec();
 
 	bprm->file = file;
 	bprm->filename = filename;
 	bprm->interp = filename;
 
+    // 2018-03-17
 	retval = bprm_mm_init(bprm);
 	if (retval)
 		goto out_file;
@@ -1524,10 +1550,12 @@ static int do_execve_common(const char *filename,
 	if ((retval = bprm->envc) < 0)
 		goto out;
 
+    // 2018-03-17
 	retval = prepare_binprm(bprm);
 	if (retval < 0)
 		goto out;
 
+    // 2018-03-17
 	retval = copy_strings_kernel(1, &bprm->filename, bprm);
 	if (retval < 0)
 		goto out;
@@ -1541,6 +1569,7 @@ static int do_execve_common(const char *filename,
 	if (retval < 0)
 		goto out;
 
+    // 2018-03-17
 	retval = exec_binprm(bprm);
 	if (retval < 0)
 		goto out;

@@ -4,7 +4,7 @@
 
 #if defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2)
 
-#define S_IFMT  00170000 // 2015-09-05;
+#define S_IFMT  00170000 // 0xf000,2015-09-05;
 #define S_IFSOCK 0140000
 #define S_IFLNK	 0120000
 #define S_IFREG  0100000
