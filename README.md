@@ -3,7 +3,7 @@
 
 분석 완료 / 스터디 종료
 
-+ [158주차]() `2018.03.17
++ [158주차](http://bit.ly/2FHKfvn) `2018.03.17
  - drive: 보름달님
  - kernel/kernel/init/main.c::kernel_init() 진행완료
  - kernel/kernel/init/main.c::kernel_init_freeable() 진행 완료
